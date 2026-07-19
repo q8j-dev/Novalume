@@ -201,72 +201,72 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='NoOpt|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
-    <Import Project="..\PropertySheets\Common.props" />
+    <Import Project="$(SolutionDir)cmake\historical\msbuild\PropertySheets\Common.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='NoOptRcc|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
-    <Import Project="..\PropertySheets\Common.props" />
+    <Import Project="$(SolutionDir)cmake\historical\msbuild\PropertySheets\Common.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='NoOpt|Durango'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
-    <Import Project="..\PropertySheets\Common.props" />
+    <Import Project="$(SolutionDir)cmake\historical\msbuild\PropertySheets\Common.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='NoOptRcc|Durango'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
-    <Import Project="..\PropertySheets\Common.props" />
+    <Import Project="$(SolutionDir)cmake\historical\msbuild\PropertySheets\Common.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='NoOptStudio|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
-    <Import Project="..\PropertySheets\Common.props" />
+    <Import Project="$(SolutionDir)cmake\historical\msbuild\PropertySheets\Common.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='NoOptStudio|Durango'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
-    <Import Project="..\PropertySheets\Common.props" />
+    <Import Project="$(SolutionDir)cmake\historical\msbuild\PropertySheets\Common.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
-    <Import Project="..\PropertySheets\Common.props" />
+    <Import Project="$(SolutionDir)cmake\historical\msbuild\PropertySheets\Common.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseRcc|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
-    <Import Project="..\PropertySheets\Common.props" />
+    <Import Project="$(SolutionDir)cmake\historical\msbuild\PropertySheets\Common.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Durango'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
-    <Import Project="..\PropertySheets\Common.props" />
+    <Import Project="$(SolutionDir)cmake\historical\msbuild\PropertySheets\Common.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseRcc|Durango'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
-    <Import Project="..\PropertySheets\Common.props" />
+    <Import Project="$(SolutionDir)cmake\historical\msbuild\PropertySheets\Common.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseStudio|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
-    <Import Project="..\PropertySheets\Common.props" />
+    <Import Project="$(SolutionDir)cmake\historical\msbuild\PropertySheets\Common.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseStudio|Durango'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
-    <Import Project="..\PropertySheets\Common.props" />
+    <Import Project="$(SolutionDir)cmake\historical\msbuild\PropertySheets\Common.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
-    <Import Project="..\PropertySheets\Common.props" />
+    <Import Project="$(SolutionDir)cmake\historical\msbuild\PropertySheets\Common.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Durango'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
-    <Import Project="..\PropertySheets\Common.props" />
+    <Import Project="$(SolutionDir)cmake\historical\msbuild\PropertySheets\Common.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -429,7 +429,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\Base\include;..\fmod\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;..\Network\include;..\RBXCookies;..\Log\Include;..\ClientShared;..\App.BulletPhysics;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\Base\include;$(SolutionDir)third_party\quarantined\fmod\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;$(SolutionDir)engine\networking\include;..\RBXCookies;..\Log\Include;..\ClientShared;$(SolutionDir)third_party\bullet_historical;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;CURL_STATICLIB;WWW_MSWINDOWS;_DEBUG;_LIB;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -449,7 +449,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugRcc|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\Base\include;..\fmod\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;..\Network\include;..\RBXCookies;..\Log\Include;..\ClientShared;..\App.BulletPhysics;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\Base\include;$(SolutionDir)third_party\quarantined\fmod\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;$(SolutionDir)engine\networking\include;..\RBXCookies;..\Log\Include;..\ClientShared;$(SolutionDir)third_party\bullet_historical;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;CURL_STATICLIB;WWW_MSWINDOWS;_DEBUG;_LIB;_SCL_SECURE_NO_WARNINGS;RBX_RCC_SECURITY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -469,7 +469,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Durango'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\fmod\xbox\include;..\Base\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;..\Network\include;..\RBXCookies;..\Log\Include;..\ClientShared;..\App.BulletPhysics;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;$(SolutionDir)third_party\quarantined\fmod\xbox\include;..\Base\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;$(SolutionDir)engine\networking\include;..\RBXCookies;..\Log\Include;..\ClientShared;$(SolutionDir)third_party\bullet_historical;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>RBX_PLATFORM_DURANGO;BOOST_ASIO_WINDOWS_RUNTIME;WIN32;CURL_STATICLIB;WWW_MSWINDOWS;_DEBUG;_LIB;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -490,7 +490,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugRcc|Durango'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\fmod\xbox\include;..\Base\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;..\Network\include;..\RBXCookies;..\Log\Include;..\ClientShared;..\App.BulletPhysics;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;$(SolutionDir)third_party\quarantined\fmod\xbox\include;..\Base\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;$(SolutionDir)engine\networking\include;..\RBXCookies;..\Log\Include;..\ClientShared;$(SolutionDir)third_party\bullet_historical;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>RBX_PLATFORM_DURANGO;BOOST_ASIO_WINDOWS_RUNTIME;WIN32;CURL_STATICLIB;WWW_MSWINDOWS;_DEBUG;_LIB;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -511,7 +511,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugStudio|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\Base\include;..\fmod\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;..\Network\include;..\RBXCookies;..\Log\Include;..\ClientShared;..\App.BulletPhysics;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\Base\include;$(SolutionDir)third_party\quarantined\fmod\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;$(SolutionDir)engine\networking\include;..\RBXCookies;..\Log\Include;..\ClientShared;$(SolutionDir)third_party\bullet_historical;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;CURL_STATICLIB;WWW_MSWINDOWS;_DEBUG;_LIB;_SCL_SECURE_NO_WARNINGS;RBX_STUDIO_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -531,7 +531,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugStudio|Durango'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\fmod\xbox\include;..\Base\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;..\Network\include;..\RBXCookies;..\Log\Include;..\ClientShared;..\App.BulletPhysics;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;$(SolutionDir)third_party\quarantined\fmod\xbox\include;..\Base\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;$(SolutionDir)engine\networking\include;..\RBXCookies;..\Log\Include;..\ClientShared;$(SolutionDir)third_party\bullet_historical;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>RBX_PLATFORM_DURANGO;BOOST_ASIO_WINDOWS_RUNTIME;WIN32;CURL_STATICLIB;WWW_MSWINDOWS;_DEBUG;_LIB;_SCL_SECURE_NO_WARNINGS;RBX_STUDIO_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -556,7 +556,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <OmitFramePointers>false</OmitFramePointers>
-      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\Base\include;..\fmod\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;..\Network\include;..\RBXCookies;..\Log\Include;..\ClientShared;..\App.BulletPhysics;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\Base\include;$(SolutionDir)third_party\quarantined\fmod\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;$(SolutionDir)engine\networking\include;..\RBXCookies;..\Log\Include;..\ClientShared;$(SolutionDir)third_party\bullet_historical;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;CURL_STATICLIB;WWW_MSWINDOWS;NDEBUG;_LIB;_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -578,10 +578,10 @@ for /r %%x in (v8datamodel\*) do set /a size+=%%~zx
 echo #pragma once &gt; tmp.h
 echo #define RBX_BUILDSEED %size%  &gt;&gt; tmp.h
 
-fc /b tmp.h include\security\RandomConstant.h
+fc /b tmp.h $(SolutionDir)engine\security\include\security\RandomConstant.h
 if errorlevel 1 (
-    attrib -R include\security\RandomConstant.h
-    if not exist AlreadyBuiltRandomConstant.h move /Y tmp.h include\security\RandomConstant.h
+    attrib -R $(SolutionDir)engine\security\include\security\RandomConstant.h
+    if not exist AlreadyBuiltRandomConstant.h move /Y tmp.h $(SolutionDir)engine\security\include\security\RandomConstant.h
     echo HappyBuilding &gt; AlreadyBuiltRandomConstant.h
 ) else (
     del tmp.h
@@ -597,7 +597,7 @@ cmd /c "exit /b 0"</Command>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <OmitFramePointers>false</OmitFramePointers>
-      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\Base\include;..\fmod\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;..\Network\include;..\RBXCookies;..\Log\Include;..\ClientShared;..\App.BulletPhysics;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\Base\include;$(SolutionDir)third_party\quarantined\fmod\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;$(SolutionDir)engine\networking\include;..\RBXCookies;..\Log\Include;..\ClientShared;$(SolutionDir)third_party\bullet_historical;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;CURL_STATICLIB;WWW_MSWINDOWS;NDEBUG;_LIB;_RELEASE;RBX_RCC_SECURITY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -619,10 +619,10 @@ for /r %%x in (v8datamodel\*) do set /a size+=%%~zx
 echo #pragma once &gt; tmp.h
 echo #define RBX_BUILDSEED %size%  &gt;&gt; tmp.h
 
-fc /b tmp.h include\security\RandomConstant.h
+fc /b tmp.h $(SolutionDir)engine\security\include\security\RandomConstant.h
 if errorlevel 1 (
-    attrib -R include\security\RandomConstant.h
-    move /Y tmp.h include\security\RandomConstant.h
+    attrib -R $(SolutionDir)engine\security\include\security\RandomConstant.h
+    move /Y tmp.h $(SolutionDir)engine\security\include\security\RandomConstant.h
 ) else (
     del tmp.h
 )
@@ -637,7 +637,7 @@ cmd /c "exit /b 0"</Command>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <OmitFramePointers>false</OmitFramePointers>
-      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\fmod\xbox\include;..\Base\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;..\Network\include;..\RBXCookies;..\Log\Include;..\ClientShared;..\App.BulletPhysics;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;$(SolutionDir)third_party\quarantined\fmod\xbox\include;..\Base\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;$(SolutionDir)engine\networking\include;..\RBXCookies;..\Log\Include;..\ClientShared;$(SolutionDir)third_party\bullet_historical;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>RBX_PLATFORM_DURANGO;BOOST_ASIO_WINDOWS_RUNTIME=1;WIN32;CURL_STATICLIB;NDEBUG;_LIB;_RELEASE;WWW_MSWINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -663,7 +663,7 @@ cmd /c "exit /b 0"</Command>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <OmitFramePointers>false</OmitFramePointers>
-      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\fmod\xbox\include;..\Base\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;..\Network\include;..\RBXCookies;..\Log\Include;..\ClientShared;..\App.BulletPhysics;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;$(SolutionDir)third_party\quarantined\fmod\xbox\include;..\Base\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;$(SolutionDir)engine\networking\include;..\RBXCookies;..\Log\Include;..\ClientShared;$(SolutionDir)third_party\bullet_historical;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>RBX_PLATFORM_DURANGO;BOOST_ASIO_WINDOWS_RUNTIME=1;WIN32;CURL_STATICLIB;NDEBUG;_LIB;_RELEASE;WWW_MSWINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -689,7 +689,7 @@ cmd /c "exit /b 0"</Command>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <OmitFramePointers>false</OmitFramePointers>
-      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\Base\include;..\fmod\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;..\Network\include;..\RBXCookies;..\Log\Include;..\ClientShared;..\App.BulletPhysics;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\Base\include;$(SolutionDir)third_party\quarantined\fmod\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;$(SolutionDir)engine\networking\include;..\RBXCookies;..\Log\Include;..\ClientShared;$(SolutionDir)third_party\bullet_historical;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;CURL_STATICLIB;WWW_MSWINDOWS;NDEBUG;_LIB;_RELEASE;RBX_STUDIO_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -710,7 +710,7 @@ cmd /c "exit /b 0"</Command>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <OmitFramePointers>false</OmitFramePointers>
-      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\fmod\xbox\include;..\Base\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;..\Network\include;..\RBXCookies;..\Log\Include;..\ClientShared;..\App.BulletPhysics;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;$(SolutionDir)third_party\quarantined\fmod\xbox\include;..\Base\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;$(SolutionDir)engine\networking\include;..\RBXCookies;..\Log\Include;..\ClientShared;$(SolutionDir)third_party\bullet_historical;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>RBX_PLATFORM_DURANGO;BOOST_ASIO_WINDOWS_RUNTIME;WIN32;CURL_STATICLIB;WWW_MSWINDOWS;NDEBUG;_LIB;_RELEASE;RBX_STUDIO_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -732,7 +732,7 @@ cmd /c "exit /b 0"</Command>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <OmitFramePointers>false</OmitFramePointers>
-      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\Base\include;..\fmod\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;..\Network\include;..\RBXCookies;..\Log\Include;..\ClientShared;..\App.BulletPhysics;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\Base\include;$(SolutionDir)third_party\quarantined\fmod\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;$(SolutionDir)engine\networking\include;..\RBXCookies;..\Log\Include;..\ClientShared;$(SolutionDir)third_party\bullet_historical;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;CURL_STATICLIB;WWW_MSWINDOWS;NDEBUG;_LIB;_RELEASE;RBX_TEST_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -753,7 +753,7 @@ cmd /c "exit /b 0"</Command>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <OmitFramePointers>false</OmitFramePointers>
-      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\fmod\xbox\include;..\Base\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;..\Network\include;..\RBXCookies;..\Log\Include;..\ClientShared;..\App.BulletPhysics;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;$(SolutionDir)third_party\quarantined\fmod\xbox\include;..\Base\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;$(SolutionDir)engine\networking\include;..\RBXCookies;..\Log\Include;..\ClientShared;$(SolutionDir)third_party\bullet_historical;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>RBX_PLATFORM_DURANGO;BOOST_ASIO_WINDOWS_RUNTIME;WIN32;CURL_STATICLIB;WWW_MSWINDOWS;NDEBUG;_LIB;_RELEASE;RBX_TEST_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -775,7 +775,7 @@ cmd /c "exit /b 0"</Command>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <OmitFramePointers>false</OmitFramePointers>
-      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\Base\include;..\fmod\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;..\Network\include;..\RBXCookies;..\Log\Include;..\ClientShared;..\App.BulletPhysics;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\Base\include;$(SolutionDir)third_party\quarantined\fmod\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;$(SolutionDir)engine\networking\include;..\RBXCookies;..\Log\Include;..\ClientShared;$(SolutionDir)third_party\bullet_historical;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;CURL_STATICLIB;WWW_MSWINDOWS;NDEBUG;_LIB;_RELEASE;_NOOPT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>
@@ -796,7 +796,7 @@ cmd /c "exit /b 0"</Command>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <OmitFramePointers>false</OmitFramePointers>
-      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\Base\include;..\fmod\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;..\Network\include;..\RBXCookies;..\Log\Include;..\ClientShared;..\App.BulletPhysics;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\Base\include;$(SolutionDir)third_party\quarantined\fmod\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;$(SolutionDir)engine\networking\include;..\RBXCookies;..\Log\Include;..\ClientShared;$(SolutionDir)third_party\bullet_historical;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;CURL_STATICLIB;WWW_MSWINDOWS;NDEBUG;_LIB;_RELEASE;_NOOPT;RBX_RCC_SECURITY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>
@@ -817,7 +817,7 @@ cmd /c "exit /b 0"</Command>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <OmitFramePointers>false</OmitFramePointers>
-      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\fmod\xbox\include;..\Base\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;..\Network\include;..\RBXCookies;..\Log\Include;..\ClientShared;..\App.BulletPhysics;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;$(SolutionDir)third_party\quarantined\fmod\xbox\include;..\Base\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;$(SolutionDir)engine\networking\include;..\RBXCookies;..\Log\Include;..\ClientShared;$(SolutionDir)third_party\bullet_historical;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>RBX_PLATFORM_DURANGO;BOOST_ASIO_WINDOWS_RUNTIME=1;WIN32;CURL_STATICLIB;WWW_MSWINDOWS;NDEBUG;_LIB;_RELEASE;_NOOPT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>
@@ -839,7 +839,7 @@ cmd /c "exit /b 0"</Command>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <OmitFramePointers>false</OmitFramePointers>
-      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\fmod\xbox\include;..\Base\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;..\Network\include;..\RBXCookies;..\Log\Include;..\ClientShared;..\App.BulletPhysics;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;$(SolutionDir)third_party\quarantined\fmod\xbox\include;..\Base\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;$(SolutionDir)engine\networking\include;..\RBXCookies;..\Log\Include;..\ClientShared;$(SolutionDir)third_party\bullet_historical;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>RBX_PLATFORM_DURANGO;BOOST_ASIO_WINDOWS_RUNTIME=1;WIN32;CURL_STATICLIB;WWW_MSWINDOWS;NDEBUG;_LIB;_RELEASE;_NOOPT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>
@@ -861,7 +861,7 @@ cmd /c "exit /b 0"</Command>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <OmitFramePointers>false</OmitFramePointers>
-      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\Base\include;..\fmod\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;..\Network\include;..\RBXCookies;..\Log\Include;..\ClientShared;..\App.BulletPhysics;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\Base\include;$(SolutionDir)third_party\quarantined\fmod\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;$(SolutionDir)engine\networking\include;..\RBXCookies;..\Log\Include;..\ClientShared;$(SolutionDir)third_party\bullet_historical;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;CURL_STATICLIB;WWW_MSWINDOWS;NDEBUG;_LIB;_RELEASE;_NOOPT;RBX_STUDIO_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>
@@ -882,7 +882,7 @@ cmd /c "exit /b 0"</Command>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <OmitFramePointers>false</OmitFramePointers>
-      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;..\fmod\xbox\include;..\Base\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;..\Network\include;..\RBXCookies;..\Log\Include;..\ClientShared;..\App.BulletPhysics;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Library\SDL2\include;..\Library\boost\include;..\Library\cpp-netlib;..\Library\curl\include;..\Library\VMProtect\include;..\Library\w3c-libwww\Library\src;.\include;$(SolutionDir)third_party\quarantined\fmod\xbox\include;..\Base\include;.\lua-5.1.4\src;..\Rendering;..\Rendering\g3d\include;..\Rendering\g3d\zlib;..\Rendering\RbxG3D\include;..\Rendering\AppDraw\include;..\Rendering\GfxBase\include;$(SolutionDir)engine\networking\include;..\RBXCookies;..\Log\Include;..\ClientShared;$(SolutionDir)third_party\bullet_historical;..\Win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>RBX_PLATFORM_DURANGO;BOOST_ASIO_WINDOWS_RUNTIME;WIN32;CURL_STATICLIB;WWW_MSWINDOWS;NDEBUG;_LIB;_RELEASE;_NOOPT;RBX_STUDIO_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>
@@ -1146,7 +1146,7 @@ cmd /c "exit /b 0"</Command>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='DebugStudio|Win32'">Level2</WarningLevel>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='DebugStudio|Durango'">Level2</WarningLevel>
     </ClCompile>
-    <ClCompile Include="lz4\lz4.c">
+    <ClCompile Include="$(SolutionDir)third_party\lz4_historical\lz4.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Durango'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NoOpt|Win32'">NotUsing</PrecompiledHeader>
@@ -1168,7 +1168,7 @@ cmd /c "exit /b 0"</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseStudio|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseStudio|Durango'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="lz4\lz4hc.c">
+    <ClCompile Include="$(SolutionDir)third_party\lz4_historical\lz4hc.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Durango'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NoOpt|Win32'">NotUsing</PrecompiledHeader>
@@ -1195,7 +1195,7 @@ cmd /c "exit /b 0"</Command>
     <ClCompile Include="script\LuaVM.cpp" />
     <ClCompile Include="script\ModuleScript.cpp" />
     <ClCompile Include="script\ScriptAnalyzer.cpp" />
-    <ClCompile Include="security\FuzzyTokens.cpp" />
+    <ClCompile Include="$(SolutionDir)engine\security\src\FuzzyTokens.cpp" />
     <ClCompile Include="solver\Constraint.cpp" />
     <ClCompile Include="solver\ConstraintJacobian.cpp" />
     <ClCompile Include="solver\Solver.cpp" />
@@ -1439,8 +1439,8 @@ cmd /c "exit /b 0"</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseRcc|Durango'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='NoOptStudio|Durango'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="util\Sound.cpp" />
-    <ClCompile Include="util\SoundService.cpp" />
+    <ClCompile Include="..\engine\audio\src\Sound.cpp" />
+    <ClCompile Include="..\engine\audio\src\SoundService.cpp" />
     <ClCompile Include="util\SpatialRegion.cpp" />
     <ClCompile Include="util\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Win32'">Create</PrecompiledHeader>
@@ -2019,7 +2019,7 @@ cmd /c "exit /b 0"</Command>
     <ClCompile Include="util\ContentId.cpp" />
     <ClCompile Include="Util\ContentProvider.cpp" />
     <ClCompile Include="util\ContentProviderJob.cpp" />
-    <ClCompile Include="..\ClientShared\CountersClient.cpp">
+    <ClCompile Include="$(SolutionDir)apps\player\shared\client\CountersClient.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseStudio|Durango'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugStudio|Durango'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Durango'">true</ExcludedFromBuild>
@@ -2034,7 +2034,7 @@ cmd /c "exit /b 0"</Command>
     <ClCompile Include="Util\Extents.cpp" />
     <ClCompile Include="util\Face.cpp" />
     <ClCompile Include="util\Faces.cpp" />
-    <ClCompile Include="..\ClientShared\format_string.cpp">
+    <ClCompile Include="$(SolutionDir)apps\player\shared\client\format_string.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Durango'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NoOpt|Win32'">NotUsing</PrecompiledHeader>
@@ -2166,12 +2166,12 @@ cmd /c "exit /b 0"</Command>
     <ClCompile Include="util\Region2.cpp" />
     <ClCompile Include="util\Region3.cpp" />
     <ClCompile Include="util\Region3int16.cpp" />
-    <ClCompile Include="..\ClientShared\RobloxServicesTools.cpp" />
+    <ClCompile Include="$(SolutionDir)apps\player\shared\client\RobloxServicesTools.cpp" />
     <ClCompile Include="util\RunningAverage.cpp" />
     <ClCompile Include="Util\RunStateOwner.cpp" />
     <ClCompile Include="util\ScriptInformationProvider.cpp" />
-    <ClCompile Include="util\SoundChannel.cpp" />
-    <ClCompile Include="util\SoundWorld.cpp" />
+    <ClCompile Include="..\engine\audio\src\SoundChannel.cpp" />
+    <ClCompile Include="..\engine\audio\src\SoundWorld.cpp" />
     <ClCompile Include="util\SpanningEdge.cpp" />
     <ClCompile Include="util\SpanningNode.cpp" />
     <ClCompile Include="util\SpanningTree.cpp" />
@@ -2255,23 +2255,23 @@ cmd /c "exit /b 0"</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseStudio|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseStudio|Durango'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="humanoid\Balancing.cpp" />
-    <ClCompile Include="humanoid\FallingDown.cpp" />
-    <ClCompile Include="humanoid\Flying.cpp" />
-    <ClCompile Include="humanoid\Freefall.cpp" />
-    <ClCompile Include="humanoid\GettingUp.cpp" />
-    <ClCompile Include="humanoid\Humanoid.cpp" />
-    <ClCompile Include="humanoid\HumanoidState.cpp" />
-    <ClCompile Include="humanoid\Jumping.cpp" />
-    <ClCompile Include="humanoid\MovingNoPhysicsBase.cpp" />
-    <ClCompile Include="humanoid\Ragdoll.cpp" />
-    <ClCompile Include="humanoid\Running.cpp" />
-    <ClCompile Include="humanoid\RunningBase.cpp" />
-    <ClCompile Include="humanoid\RunningNoPhysics.cpp" />
-    <ClCompile Include="humanoid\Seated.cpp" />
-    <ClCompile Include="humanoid\StatusInstance.cpp" />
-    <ClCompile Include="humanoid\StrafingNoPhysics.cpp" />
-    <ClCompile Include="humanoid\Swimming.cpp" />
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\Balancing.cpp" />
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\FallingDown.cpp" />
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\Flying.cpp" />
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\Freefall.cpp" />
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\GettingUp.cpp" />
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\Humanoid.cpp" />
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\HumanoidState.cpp" />
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\Jumping.cpp" />
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\MovingNoPhysicsBase.cpp" />
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\Ragdoll.cpp" />
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\Running.cpp" />
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\RunningBase.cpp" />
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\RunningNoPhysics.cpp" />
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\Seated.cpp" />
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\StatusInstance.cpp" />
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\StrafingNoPhysics.cpp" />
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\Swimming.cpp" />
     <ClCompile Include="tool\AdvDragTool.cpp" />
     <ClCompile Include="tool\AdvLuaDragger.cpp" />
     <ClCompile Include="tool\AdvLuaDragTool.cpp" />
@@ -2300,7 +2300,7 @@ cmd /c "exit /b 0"</Command>
     <ClCompile Include="tool\ResizeTool.cpp" />
     <ClCompile Include="Tool\RunDragger.cpp" />
     <ClCompile Include="Tool\ToolsArrow.cpp" />
-    <ClCompile Include="security\SecurityContext.cpp" />
+    <ClCompile Include="$(SolutionDir)engine\security\src\SecurityContext.cpp" />
     <ClCompile Include="Gui\ChatOutput.cpp" />
     <ClCompile Include="gui\ChatWidget.cpp" />
     <ClCompile Include="Gui\EquationDisplay.cpp" />
@@ -4312,7 +4312,7 @@ cmd /c "exit /b 0"</Command>
       <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Win32'">4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Durango'">4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
-    <ClCompile Include="voxel2\Grid.cpp">
+    <ClCompile Include="..\engine\terrain\src\smooth\Grid.cpp">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='ReleaseStudio|Win32'">$(IntDir)\Grid1.obj</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='ReleaseStudio|Durango'">$(IntDir)\Grid1.obj</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Win32'">$(IntDir)\Grid1.obj</ObjectFileName>
@@ -4334,15 +4334,15 @@ cmd /c "exit /b 0"</Command>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='DebugStudio|Win32'">$(IntDir)\Grid1.obj</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='DebugStudio|Durango'">$(IntDir)\Grid1.obj</ObjectFileName>
     </ClCompile>
-    <ClCompile Include="voxel2\MaterialTable.cpp" />
-    <ClCompile Include="voxel2\Mesher.cpp" />
-    <ClCompile Include="voxel\Cell.cpp" />
-    <ClCompile Include="voxel\Grid.Chunk.cpp" />
-    <ClCompile Include="voxel\Grid.cpp" />
-    <ClCompile Include="voxel\Serializer.cpp" />
-    <ClCompile Include="voxel\Util.cpp" />
-    <ClCompile Include="voxel\Voxelizer.cpp" />
-    <ClCompile Include="voxel\Water.cpp" />
+    <ClCompile Include="..\engine\terrain\src\smooth\MaterialTable.cpp" />
+    <ClCompile Include="..\engine\terrain\src\smooth\Mesher.cpp" />
+    <ClCompile Include="..\engine\terrain\src\voxel\Cell.cpp" />
+    <ClCompile Include="..\engine\terrain\src\voxel\Grid.Chunk.cpp" />
+    <ClCompile Include="..\engine\terrain\src\voxel\Grid.cpp" />
+    <ClCompile Include="..\engine\terrain\src\runtime\Serializer.cpp" />
+    <ClCompile Include="..\engine\terrain\src\voxel\Util.cpp" />
+    <ClCompile Include="..\engine\terrain\src\runtime\Voxelizer.cpp" />
+    <ClCompile Include="..\engine\terrain\src\voxel\Water.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Library\w3c-libwww\Library\src\HTList.h" />
@@ -4354,10 +4354,10 @@ cmd /c "exit /b 0"</Command>
     <ClInclude Include="include\script\LuaVM.h" />
     <ClInclude Include="include\script\ModuleScript.h" />
     <ClInclude Include="include\script\ScriptAnalyzer.h" />
-    <ClInclude Include="include\security\ApiSecurity.h" />
-    <ClInclude Include="include\security\FuzzyTokens.h" />
-    <ClInclude Include="include\security\JunkCode.h" />
-    <ClInclude Include="include\security\RandomConstant.h" />
+    <ClInclude Include="$(SolutionDir)engine\security\include\security\ApiSecurity.h" />
+    <ClInclude Include="$(SolutionDir)engine\security\include\security\FuzzyTokens.h" />
+    <ClInclude Include="$(SolutionDir)engine\security\include\security\JunkCode.h" />
+    <ClInclude Include="$(SolutionDir)engine\security\include\security\RandomConstant.h" />
     <ClInclude Include="include\solver\Constraint.h" />
     <ClInclude Include="include\solver\ConstraintJacobian.h" />
     <ClInclude Include="include\solver\DebugSerializer.h" />
@@ -4389,8 +4389,8 @@ cmd /c "exit /b 0"</Command>
     <ClInclude Include="include\util\Region3int32.h" />
     <ClInclude Include="include\util\RobloxGoogleAnalytics.h" />
     <ClInclude Include="include\util\Analytics.h" />
-    <ClInclude Include="include\util\Sound.h" />
-    <ClInclude Include="include\util\SoundService.h" />
+    <ClInclude Include="..\engine\audio\include\audio\Sound.h" />
+    <ClInclude Include="..\engine\audio\include\audio\SoundService.h" />
     <ClInclude Include="include\util\SpatialRegion.h" />
     <ClInclude Include="include\util\StreamRegion.h" />
     <ClInclude Include="include\util\URL.h" />
@@ -4455,20 +4455,20 @@ cmd /c "exit /b 0"</Command>
     <ClInclude Include="include\v8world\SmoothClusterGeometry.h" />
     <ClInclude Include="include\v8world\TriangleMesh.h" />
     <ClInclude Include="include\v8xml\SerializerBinary.h" />
-    <ClInclude Include="include\voxel2\Grid.h" />
-    <ClInclude Include="include\voxel2\MaterialTable.h" />
-    <ClInclude Include="include\voxel2\Mesher.h" />
-    <ClInclude Include="include\voxel\AreaCopy.h" />
-    <ClInclude Include="include\voxel\Cell.h" />
-    <ClInclude Include="include\voxel\CellChangeListener.h" />
-    <ClInclude Include="include\voxel\ChunkMap.h" />
-    <ClInclude Include="include\voxel\Grid.Chunk.h" />
-    <ClInclude Include="include\voxel\Grid.h" />
-    <ClInclude Include="include\voxel\Region.h" />
-    <ClInclude Include="include\voxel\Serializer.h" />
-    <ClInclude Include="include\voxel\Util.h" />
-    <ClInclude Include="include\voxel\Voxelizer.h" />
-    <ClInclude Include="include\voxel\Water.h" />
+    <ClInclude Include="..\engine\terrain\include\voxel2\Grid.h" />
+    <ClInclude Include="..\engine\terrain\include\voxel2\MaterialTable.h" />
+    <ClInclude Include="..\engine\terrain\include\voxel2\Mesher.h" />
+    <ClInclude Include="..\engine\terrain\include\voxel\AreaCopy.h" />
+    <ClInclude Include="..\engine\terrain\include\voxel\Cell.h" />
+    <ClInclude Include="..\engine\terrain\include\voxel\CellChangeListener.h" />
+    <ClInclude Include="..\engine\terrain\include\voxel\ChunkMap.h" />
+    <ClInclude Include="..\engine\terrain\include\voxel\Grid.Chunk.h" />
+    <ClInclude Include="..\engine\terrain\include\voxel\Grid.h" />
+    <ClInclude Include="..\engine\terrain\include\voxel\Region.h" />
+    <ClInclude Include="..\engine\terrain\include\voxel\Serializer.h" />
+    <ClInclude Include="..\engine\terrain\include\voxel\Util.h" />
+    <ClInclude Include="..\engine\terrain\include\voxel\Voxelizer.h" />
+    <ClInclude Include="..\engine\terrain\include\voxel\Water.h" />
     <ClInclude Include="Lua-5.1.4\src\lapi.h" />
     <ClInclude Include="Lua-5.1.4\src\lauxlib.h" />
     <ClInclude Include="Lua-5.1.4\src\lcode.h" />
@@ -4714,7 +4714,7 @@ cmd /c "exit /b 0"</Command>
     <ClInclude Include="include\util\ContentId.h" />
     <ClInclude Include="include\util\ContentProviderJob.h" />
     <ClInclude Include="include\util\ControlledLRUCache.h" />
-    <ClInclude Include="..\ClientShared\CountersClient.h">
+    <ClInclude Include="$(SolutionDir)apps\player\shared\client\CountersClient.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Durango'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseRcc|Durango'">true</ExcludedFromBuild>
     </ClInclude>
@@ -4729,7 +4729,7 @@ cmd /c "exit /b 0"</Command>
     <ClInclude Include="include\util\FeatherweightDict.h" />
     <ClInclude Include="include\util\FixedArray.h" />
     <ClInclude Include="include\util\FixedSizeCircularBuffer.h" />
-    <ClInclude Include="..\ClientShared\format_string.h" />
+    <ClInclude Include="$(SolutionDir)apps\player\shared\client\format_string.h" />
     <ClInclude Include="include\util\G3DCore.h" />
     <ClInclude Include="include\util\GameMode.h" />
     <ClInclude Include="include\util\gpc.h" />
@@ -4773,15 +4773,15 @@ cmd /c "exit /b 0"</Command>
     <ClInclude Include="include\util\Region2.h" />
     <ClInclude Include="include\util\Region3.h" />
     <ClInclude Include="include\util\Region3int16.h" />
-    <ClInclude Include="..\ClientShared\RobloxServicesTools.h" />
+    <ClInclude Include="$(SolutionDir)apps\player\shared\client\RobloxServicesTools.h" />
     <ClInclude Include="include\util\RunningAverage.h" />
     <ClInclude Include="include\Util\RunStateOwner.h" />
     <ClInclude Include="include\util\ScopedAssign.h" />
     <ClInclude Include="include\util\ScriptInformationProvider.h" />
     <ClInclude Include="include\util\Selectable.h" />
     <ClInclude Include="include\util\SimSendFilter.h" />
-    <ClInclude Include="include\util\SoundChannel.h" />
-    <ClInclude Include="include\util\SoundWorld.h" />
+    <ClInclude Include="..\engine\audio\include\audio\SoundChannel.h" />
+    <ClInclude Include="..\engine\audio\include\audio\SoundWorld.h" />
     <ClInclude Include="include\util\SpanningEdge.h" />
     <ClInclude Include="include\util\SpanningNode.h" />
     <ClInclude Include="include\util\SpanningTree.h" />
@@ -4820,7 +4820,7 @@ cmd /c "exit /b 0"</Command>
     <ClInclude Include="include\Lua\lua.hpp" />
     <ClInclude Include="include\script\LuaArguments.h" />
     <ClInclude Include="include\script\LuaAtomicClasses.h" />
-    <ClInclude Include="include\lua\LuaBridge.h" />
+    <ClInclude Include="..\engine\scripting\include\lua\LuaBridge.h" />
     <ClInclude Include="include\script\LuaEnum.h" />
     <ClInclude Include="include\script\LuaInstanceBridge.h" />
     <ClInclude Include="include\script\LuaLibrary.h" />
@@ -4843,23 +4843,23 @@ cmd /c "exit /b 0"</Command>
     <ClInclude Include="include\reflection\reflection.h" />
     <ClInclude Include="include\reflection\Type.h" />
     <ClInclude Include="include\reflection\YieldFunction.h" />
-    <ClInclude Include="include\humanoid\Balancing.h" />
-    <ClInclude Include="include\humanoid\FallingDown.h" />
-    <ClInclude Include="include\humanoid\Flying.h" />
-    <ClInclude Include="include\humanoid\Freefall.h" />
-    <ClInclude Include="include\humanoid\GettingUp.h" />
-    <ClInclude Include="include\humanoid\Humanoid.h" />
-    <ClInclude Include="include\humanoid\HumanoidState.h" />
-    <ClInclude Include="include\humanoid\Jumping.h" />
-    <ClInclude Include="include\humanoid\MovingNoPhysicsBase.h" />
-    <ClInclude Include="include\humanoid\Ragdoll.h" />
-    <ClInclude Include="include\humanoid\Running.h" />
-    <ClInclude Include="include\humanoid\RunningBase.h" />
-    <ClInclude Include="include\humanoid\RunningNoPhysics.h" />
-    <ClInclude Include="include\humanoid\Seated.h" />
-    <ClInclude Include="include\humanoid\StatusInstance.h" />
-    <ClInclude Include="include\humanoid\StrafingNoPhysics.h" />
-    <ClInclude Include="include\humanoid\Swimming.h" />
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\Balancing.h" />
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\FallingDown.h" />
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\Flying.h" />
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\Freefall.h" />
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\GettingUp.h" />
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\Humanoid.h" />
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\HumanoidState.h" />
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\Jumping.h" />
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\MovingNoPhysicsBase.h" />
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\Ragdoll.h" />
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\Running.h" />
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\RunningBase.h" />
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\RunningNoPhysics.h" />
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\Seated.h" />
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\StatusInstance.h" />
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\StrafingNoPhysics.h" />
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\Swimming.h" />
     <ClInclude Include="include\tool\AdvDragTool.h" />
     <ClInclude Include="include\tool\AdvLuaDragger.h" />
     <ClInclude Include="include\tool\AdvLuaDragTool.h" />
@@ -4970,38 +4970,38 @@ cmd /c "exit /b 0"</Command>
     <ClInclude Include="include\v8world\RightAngleRampPoly.h" />
     <ClInclude Include="include\v8world\WedgeMesh.h" />
     <ClInclude Include="include\v8world\WedgePoly.h" />
-    <ClInclude Include="include\security\SecurityContext.h" />
-    <ClInclude Include="lz4\lz4.h" />
-    <ClInclude Include="lz4\lz4hc.h" />
-    <ClInclude Include="lz4\lz4hc_encoder.h" />
-    <ClInclude Include="lz4\lz4_decoder.h" />
-    <ClInclude Include="lz4\lz4_encoder.h" />
+    <ClInclude Include="$(SolutionDir)engine\security\include\security\SecurityContext.h" />
+    <ClInclude Include="$(SolutionDir)third_party\lz4_historical\lz4.h" />
+    <ClInclude Include="$(SolutionDir)third_party\lz4_historical\lz4hc.h" />
+    <ClInclude Include="$(SolutionDir)third_party\lz4_historical\lz4hc_encoder.h" />
+    <ClInclude Include="$(SolutionDir)third_party\lz4_historical\lz4_decoder.h" />
+    <ClInclude Include="$(SolutionDir)third_party\lz4_historical\lz4_encoder.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="include\util\Math.inl" />
     <None Include="include\Util\Quaternion.inl" />
     <None Include="include\v8world\SpatialHashMultiRes.inl" />
-    <None Include="include\voxel\AreaCopy.inl" />
-    <None Include="include\voxel\ChunkMap.inl" />
-    <None Include="include\voxel\Region.inl" />
-    <None Include="include\voxel\Region.iterator.inl" />
-    <None Include="include\voxel\Region.xline_iterator.inl" />
-    <None Include="include\voxel\Water.inl" />
+    <None Include="..\engine\terrain\include\voxel\AreaCopy.inl" />
+    <None Include="..\engine\terrain\include\voxel\ChunkMap.inl" />
+    <None Include="..\engine\terrain\include\voxel\Region.inl" />
+    <None Include="..\engine\terrain\include\voxel\Region.iterator.inl" />
+    <None Include="..\engine\terrain\include\voxel\Region.xline_iterator.inl" />
+    <None Include="..\engine\terrain\include\voxel\Water.inl" />
     <None Include="script\LuaGenCS.inl" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\App.BulletPhysics\App.BulletPhysics.vcxproj">
+    <ProjectReference Include="$(SolutionDir)third_party\bullet_historical\App.BulletPhysics.vcxproj">
       <Project>{c9285114-dcc1-4e90-aa76-f590cefb94c2}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\Base\Base.vcxproj">
+    <ProjectReference Include="$(SolutionDir)engine\core\historical\base\Base.vcxproj">
       <Project>{3025c00a-7746-469b-a279-96127c72abee}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\boostlibs\boost.static.vcxproj">
+    <ProjectReference Include="$(SolutionDir)third_party\boost\build\boost.static.vcxproj">
       <Project>{5423bfb6-d3eb-4b00-a82b-38001eb8745f}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\CSG\CSG.vcxproj">
+    <ProjectReference Include="..\engine\geometry\csg\CSG.vcxproj">
       <Project>{9b6c66f7-6887-44d3-ac5e-3c2bd94661fc}</Project>
       <Private>false</Private>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>

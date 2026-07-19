@@ -37,6 +37,21 @@ WORLD_MATRIX_ARRAY(WorldMatrixArray, 72);
 
 uniform float4 LayerScale;
 
+struct TerrainShadowOutput
+{
+    float4 HPosition: POSITION;
+    float Depth: TEXCOORD0;
+};
+
+TerrainShadowOutput SmoothClusterShadowVS(Appdata IN)
+{
+    TerrainShadowOutput OUT = (TerrainShadowOutput)0;
+    float3 posWorld = IN.Position.xyz * WorldMatrixArray[0].w + WorldMatrixArray[0].xyz;
+    OUT.HPosition = mul(G(ViewProjection), float4(posWorld, 1));
+    OUT.Depth = OUT.HPosition.z / OUT.HPosition.w;
+    return OUT;
+}
+
 float4 getUV(float3 position, ATTR_INT material, ATTR_INT projection, float seed)
 {
 	float3 u = WorldMatrixArray[1 + int(projection)].xyz;
@@ -125,7 +140,12 @@ void TerrainPS(VertexOutput IN,
     out float4 oColor0: COLOR0)
 {
     float4 light = lgridSample(TEXTURE(LightMap), TEXTURE(LightMapLookup), IN.LightPosition_Fog.xyz);
+#ifdef PIN_HQ
+    float shadow = shadowSample(TEXTURE(ShadowMap),
+        shadowPrepareSample(G(CameraPosition).xyz - IN.View_Depth.xyz), light.a);
+#else
     float shadow = shadowSample(TEXTURE(ShadowMap), IN.PosLightSpace, light.a);
+#endif
 
 	float3 w = IN.Weights.xyz;
 

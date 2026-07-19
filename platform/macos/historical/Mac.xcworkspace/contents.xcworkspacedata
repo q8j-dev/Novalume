@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "group:../../../tools/core_script_converter/CoreScriptConverter.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../../../iOS/RobloxMobile.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../../../apps/player/macos/MacClient.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../../../apps/studio/source/RobloxStudio.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../../../Installer/BootstrapperMac/Roblox/Roblox.xcodeproj">
+   </FileRef>
+</Workspace>

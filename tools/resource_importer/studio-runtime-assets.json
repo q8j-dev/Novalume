@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "sourceBuild": "LIVE-WindowsStudio64-version-ed7d8193e8564b1f",
+  "assets": [
+    {
+      "source": "ExtraContent/models/ServerCoreScripts.rbxm",
+      "target": "content/models/ServerCoreScripts.rbxm",
+      "size": 215297,
+      "sha256": "180627a4304494ae1a8c8a59ddd26e4d6cf5310e2c9a76f856760e7caa50aafe"
+    }
+  ]
+}

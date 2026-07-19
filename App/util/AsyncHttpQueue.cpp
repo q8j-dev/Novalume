@@ -128,7 +128,13 @@ shared_ptr<const Reflection::ValueArray> AsyncHttpQueue::getRequestQueueUrls()
 void AsyncHttpQueue::setThreadPool(int count)
 {
 	if(!threadPool || (threadPool->getThreadCount() != count)){
-		threadPool.reset(new PriorityThreadPool(count, ThreadPool::NoAction));
+		// AsyncHttpQueue::processRequests reports failures and invokes callbacks
+		// through process-wide services.  Detached workers from a destroyed queue
+		// can therefore outlive both the queue owner and those services during
+		// DataModel/application teardown.  The destructor explicitly calls
+		// setThreadPool(0) to join these workers, so use the policy that actually
+		// honors that lifecycle contract.
+		threadPool.reset(new PriorityThreadPool(count, ThreadPool::WaitForRunningTasks));
 	}
 }
 

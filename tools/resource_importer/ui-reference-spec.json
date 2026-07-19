@@ -1,0 +1,254 @@
+{
+  "schemaVersion": 1,
+  "scope": {
+    "productSurface": "in-experience-player-core-ui",
+    "included": [
+      "loading-offline-error",
+      "top-bar-hud",
+      "in-game-chat",
+      "player-list",
+      "backpack-hotbar-inventory",
+      "in-game-menu-settings",
+      "dialogs-prompts-notifications",
+      "text-input-and-control-states",
+      "gamepad-vr-and-touch-controls",
+      "performance-network-and-voice-overlays",
+      "safe-area-and-density-variants"
+    ],
+    "excluded": [
+      "authentication",
+      "home-and-discovery",
+      "marketplace-and-catalog",
+      "profile-friends-and-social-messaging",
+      "standalone-avatar-editor",
+      "app-navigation-and-settings",
+      "webview-shell",
+      "ExtraContent/textures/ui/LuaApp",
+      "ExtraContent/textures/ui/LuaChat",
+      "ExtraContent/textures/ui/LuaChatV2",
+      "ExtraContent/textures/ui/LuaDiscussions"
+    ]
+  },
+  "corpora": {
+    "apk": {
+      "kind": "zip",
+      "description": "Supplied Roblox Android 2.730.790 package; static archive inspection only",
+      "expectedSha256": "bcfa47ad89cacb265d9bc98fd97c2567f69ce59024b5a97096c7c0edc30d3040"
+    },
+    "legacy": {
+      "kind": "directory",
+      "description": "Checked-in 2016 client source root used as the UI compatibility baseline"
+    },
+    "player": {
+      "kind": "directory",
+      "description": "Supplied 2026 Windows Roblox Player snapshot ddf02245bdbb428c"
+    }
+  },
+  "rules": [
+    {
+      "id": "legacy-core-ui",
+      "corpus": "legacy",
+      "include": ["content/textures/ui/**/*"],
+      "stripPrefix": "content/",
+      "logicalPrefix": "rbxasset://",
+      "category": "legacy-player-ui-baseline",
+      "purpose": "2016 same-path baseline for deterministic client UI comparison",
+      "platformVariant": "shared-with-historical-platform-assumptions",
+      "licenseDecision": "existing-source-content",
+      "compatibilityStatus": "legacy-runtime-baseline",
+      "conversion": "preserve-unless-versioned-overlay-supersedes",
+      "packageDestination": null
+    },
+    {
+      "id": "legacy-font-registry",
+      "corpus": "legacy",
+      "include": ["content/fonts/*", "content/fonts/families/**/*"],
+      "stripPrefix": "content/",
+      "logicalPrefix": "rbxasset://",
+      "category": "legacy-font-baseline",
+      "purpose": "2016 font baseline for compatibility and fallback comparison",
+      "platformVariant": "shared",
+      "licenseDecision": "existing-source-content",
+      "compatibilityStatus": "legacy-runtime-baseline",
+      "conversion": "preserve-unless-versioned-overlay-supersedes",
+      "packageDestination": null
+    },
+    {
+      "id": "player-core-ui",
+      "corpus": "player",
+      "include": [
+        "content/textures/ui/**/*",
+        "content/textures/Cursors/KeyboardMouse/**/*"
+      ],
+      "stripPrefix": "content/",
+      "logicalPrefix": "rbxasset://",
+      "category": "player-ui",
+      "purpose": "Authentic in-experience UI imagery, state variants, and nine-slice research",
+      "platformVariant": "shared-with-platform-specific-density-selection",
+      "licenseDecision": "research-only-pending-redistribution-review",
+      "compatibilityStatus": "reference-only-not-yet-mapped",
+      "conversion": "none-pending-provenance-and-runtime-mapping",
+      "packageDestination": null
+    },
+    {
+      "id": "player-in-experience-extra-ui",
+      "corpus": "player",
+      "include": [
+        "ExtraContent/textures/ui/AvatarExperience/**/*",
+        "ExtraContent/textures/ui/Controls/**/*",
+        "ExtraContent/textures/ui/Gamepad/**/*",
+        "ExtraContent/textures/ui/ImageSet/InGameMenu/**/*",
+        "ExtraContent/textures/ui/InGameChat/**/*",
+        "ExtraContent/textures/ui/InGameMenu/**/*",
+        "ExtraContent/textures/ui/Settings/**/*"
+      ],
+      "stripPrefix": "",
+      "logicalPrefix": "reference://player/",
+      "category": "in-experience-player-extra-ui",
+      "purpose": "Current in-experience CoreGui imagery outside the canonical content mount; standalone app/home/social UI is explicitly excluded",
+      "platformVariant": "shared-and-platform-specific",
+      "licenseDecision": "research-only-pending-redistribution-review",
+      "compatibilityStatus": "reference-only-runtime-mount-not-yet-mapped",
+      "conversion": "none-pending-provenance-and-runtime-mapping",
+      "packageDestination": null
+    },
+    {
+      "id": "player-builder-icons",
+      "corpus": "player",
+      "include": [
+        "ExtraContent/LuaPackages/Packages/_Index/BuilderIcons/BuilderIcons/BuilderIcons.json",
+        "ExtraContent/LuaPackages/Packages/_Index/BuilderIcons/BuilderIcons/Font/BuilderIcons-Regular.ttf",
+        "ExtraContent/LuaPackages/Packages/_Index/BuilderIcons/BuilderIcons/Font/BuilderIcons-Filled.ttf"
+      ],
+      "stripPrefix": "",
+      "logicalPrefix": "reference://player/",
+      "category": "in-experience-icon-font",
+      "purpose": "Exact Builder Icons font family used by the 2026 Player Chrome, Unibar, chat, menu, and control surfaces",
+      "platformVariant": "shared",
+      "licenseDecision": "research-only-pending-redistribution-review",
+      "compatibilityStatus": "reference-only-runtime-font-contract",
+      "conversion": "none",
+      "packageDestination": null
+    },
+    {
+      "id": "player-font-registry",
+      "corpus": "player",
+      "include": ["content/fonts/*", "content/fonts/families/**/*"],
+      "stripPrefix": "content/",
+      "logicalPrefix": "rbxasset://",
+      "category": "in-experience-text-font",
+      "purpose": "Player text stack used by in-experience labels, Builder Sans weights, localization fallback, symbols, and emoji",
+      "platformVariant": "shared",
+      "licenseDecision": "research-only-pending-per-font-license-review",
+      "compatibilityStatus": "packaged-runtime-font-stack; individual family contracts are enabled as their UI surfaces are backported",
+      "conversion": "none",
+      "packageDestination": null
+    },
+    {
+      "id": "player-foundation-images",
+      "corpus": "player",
+      "include": [
+        "ExtraContent/LuaPackages/Packages/_Index/FoundationImages/FoundationImages/**/*"
+      ],
+      "stripPrefix": "",
+      "logicalPrefix": "reference://player/",
+      "category": "in-experience-foundation-images",
+      "purpose": "Exact Foundation sprite sheets and image metadata requested by the 2026 in-experience menu, controls, and input hints",
+      "platformVariant": "shared-with-density-selection",
+      "licenseDecision": "research-only-pending-redistribution-review",
+      "compatibilityStatus": "packaged-runtime-foundation-image-contract",
+      "conversion": "none",
+      "packageDestination": null
+    },
+    {
+      "id": "player-avatar-context-menu-model",
+      "corpus": "player",
+      "include": ["ExtraContent/models/AvatarContextMenu/AvatarContextArrow.rbxm"],
+      "stripPrefix": "ExtraContent/",
+      "logicalPrefix": "rbxasset://",
+      "category": "in-experience-ui-model",
+      "purpose": "Exact local model loaded by the 2026 Avatar Context Menu selection indicator",
+      "platformVariant": "shared",
+      "licenseDecision": "research-only-pending-redistribution-review",
+      "compatibilityStatus": "packaged-runtime-model",
+      "conversion": "none",
+      "packageDestination": null
+    },
+    {
+      "id": "player-date-time-locales",
+      "corpus": "player",
+      "include": ["content/configs/DateTimeLocaleConfigs/*.json"],
+      "stripPrefix": "content/",
+      "logicalPrefix": "rbxasset://",
+      "category": "in-experience-date-time-locale",
+      "purpose": "Exact locale calendars and format tokens consumed by the current Foundation DateTimePicker and other in-experience UI",
+      "platformVariant": "shared",
+      "licenseDecision": "research-only-pending-redistribution-review",
+      "compatibilityStatus": "packaged-runtime-locale-data",
+      "conversion": "none",
+      "packageDestination": null
+    },
+    {
+      "id": "apk-mobile-controls-extra",
+      "corpus": "apk",
+      "include": [
+        "assets/ExtraContent/textures/ui/Controls/**/*",
+        "assets/ExtraContent/textures/ui/InGameMenu/TouchControls/**/*"
+      ],
+      "stripPrefix": "",
+      "logicalPrefix": "reference://apk/",
+      "category": "mobile-controls",
+      "purpose": "Touch, action, jump, D-pad, and thumbstick density-variant research",
+      "platformVariant": "mobile",
+      "licenseDecision": "research-only-prefer-canonical-player-equivalent",
+      "compatibilityStatus": "reference-only-mobile-semantics-not-yet-integrated",
+      "conversion": "none-pending-provenance-and-density-mapping",
+      "packageDestination": null
+    },
+    {
+      "id": "apk-mobile-controls-core",
+      "corpus": "apk",
+      "include": [
+        "assets/content/textures/ui/Controls/**/*",
+        "assets/content/textures/ui/Input/**/*"
+      ],
+      "stripPrefix": "",
+      "logicalPrefix": "reference://apk/",
+      "category": "mobile-input-and-controls",
+      "purpose": "Mobile input affordance, gesture, controller coexistence, and density research",
+      "platformVariant": "mobile",
+      "licenseDecision": "research-only-prefer-canonical-player-equivalent",
+      "compatibilityStatus": "reference-only-mobile-semantics-not-yet-integrated",
+      "conversion": "none-pending-provenance-and-density-mapping",
+      "packageDestination": null
+    },
+    {
+      "id": "apk-mobile-place",
+      "corpus": "apk",
+      "include": ["assets/ExtraContent/places/Mobile.rbxl"],
+      "stripPrefix": "",
+      "logicalPrefix": "reference://apk/",
+      "category": "mobile-runtime-fixture",
+      "purpose": "Canonical mobile lifecycle and controller structure research; not an acceptance place",
+      "platformVariant": "mobile",
+      "licenseDecision": "research-only-never-package-as-player-content",
+      "compatibilityStatus": "reference-only-not-yet-parsed",
+      "conversion": "none",
+      "packageDestination": null
+    }
+  ],
+  "comparisons": [
+    {
+      "id": "windows-client-core-ui-vs-2016",
+      "baselineCorpus": "legacy",
+      "candidateCorpus": "player",
+      "logicalPrefix": "rbxasset://textures/ui/"
+    },
+    {
+      "id": "windows-client-fonts-vs-2016",
+      "baselineCorpus": "legacy",
+      "candidateCorpus": "player",
+      "logicalPrefix": "rbxasset://fonts/"
+    }
+  ]
+}

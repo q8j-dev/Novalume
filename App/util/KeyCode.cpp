@@ -198,6 +198,30 @@ namespace Reflection {
 		addPair(SDLK_GAMEPAD_DPADDOWN, "DPadDown");
 		addPair(SDLK_GAMEPAD_THUMBSTICK1, "Thumbstick1");
 		addPair(SDLK_GAMEPAD_THUMBSTICK2, "Thumbstick2");
+		addPair(SDLK_GAMEPAD_THUMBSTICK1UP, "Thumbstick1Up");
+		addPair(SDLK_GAMEPAD_THUMBSTICK1DOWN, "Thumbstick1Down");
+		addPair(SDLK_GAMEPAD_THUMBSTICK1LEFT, "Thumbstick1Left");
+		addPair(SDLK_GAMEPAD_THUMBSTICK1RIGHT, "Thumbstick1Right");
+		addPair(SDLK_GAMEPAD_THUMBSTICK2UP, "Thumbstick2Up");
+		addPair(SDLK_GAMEPAD_THUMBSTICK2DOWN, "Thumbstick2Down");
+		addPair(SDLK_GAMEPAD_THUMBSTICK2LEFT, "Thumbstick2Left");
+		addPair(SDLK_GAMEPAD_THUMBSTICK2RIGHT, "Thumbstick2Right");
+		addPair(SDLK_MOUSE_LEFT_BUTTON, "MouseLeftButton");
+		addPair(SDLK_MOUSE_RIGHT_BUTTON, "MouseRightButton");
+		addPair(SDLK_MOUSE_MIDDLE_BUTTON, "MouseMiddleButton");
+		addPair(SDLK_MOUSE_BACK_BUTTON, "MouseBackButton");
+		addPair(SDLK_MOUSE_NO_BUTTON, "MouseNoButton");
+		addPair(SDLK_MOUSE_X, "MouseX");
+		addPair(SDLK_MOUSE_Y, "MouseY");
+		addPair(SDLK_MOUSE_POSITION, "MousePosition");
+		addPair(SDLK_TOUCH_POSITION, "TouchPosition");
+		addLegacyName("Touch", SDLK_TOUCH_POSITION);
+		addPair(SDLK_MOUSE_WHEEL, "MouseWheel");
+		addPair(SDLK_TRACKPAD_PAN, "TrackpadPan");
+		addPair(SDLK_TRACKPAD_PINCH, "TrackpadPinch");
+		addPair(SDLK_MOUSE_DELTA, "MouseDelta");
+		addPair(SDLK_TOUCH_DELTA, "TouchDelta");
+		addPair(SDLK_TOUCH_PINCH, "TouchPinch");
     }
     
     template<>

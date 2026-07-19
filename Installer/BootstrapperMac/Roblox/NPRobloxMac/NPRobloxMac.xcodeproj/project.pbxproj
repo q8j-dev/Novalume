@@ -14,10 +14,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		1F9E5A5218C1683B00EFE020 /* CookiesEngine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CookiesEngine.cpp; path = ../../../../ClientShared/Mac/CookiesEngine.cpp; sourceTree = "<group>"; };
-		651D34391476E2EB00D61E5B /* format_string.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = format_string.cpp; path = ../../../../ClientShared/format_string.cpp; sourceTree = SOURCE_ROOT; };
+		1F9E5A5218C1683B00EFE020 /* CookiesEngine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CookiesEngine.cpp; path = ../../../../apps/player/shared/client/Mac/CookiesEngine.cpp; sourceTree = "<group>"; };
+		651D34391476E2EB00D61E5B /* format_string.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = format_string.cpp; path = ../../../../apps/player/shared/client/format_string.cpp; sourceTree = SOURCE_ROOT; };
 		9FDF74FA162E368B008A0D9E /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Cocoa.framework; sourceTree = "<group>"; };
-		E92F97DF139CAE81008105F3 /* CookiesEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CookiesEngine.h; path = ../../../../ClientShared/CookiesEngine.h; sourceTree = SOURCE_ROOT; };
+		E92F97DF139CAE81008105F3 /* CookiesEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CookiesEngine.h; path = ../../../../apps/player/shared/client/CookiesEngine.h; sourceTree = SOURCE_ROOT; };
 		E92F97E0139CAE8F008105F3 /* nproblox_main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = nproblox_main.cpp; sourceTree = "<group>"; };
 		E9EBC580135DD1E100CA529D /* NPRoblox.plugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NPRoblox.plugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		E9EBC582135DD1E100CA529D /* NPRoblox-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "NPRoblox-Info.plist"; sourceTree = "<group>"; };

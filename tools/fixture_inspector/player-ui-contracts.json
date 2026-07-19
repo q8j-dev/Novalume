@@ -1,0 +1,97 @@
+{
+  "schema": 1,
+  "scope": "in-experience-player-ui",
+  "contracts": [
+    {
+      "id": "screen-gui-safe-area",
+      "surface": "ScreenGui",
+      "binary_strings": [
+        "ScreenInsets",
+        "DeviceSafeInsets",
+        "CoreUISafeInsets",
+        "TopbarSafeInsets",
+        "SafeAreaCompatibility",
+        "FullscreenExtension",
+        "ClipToDeviceSafeArea"
+      ],
+      "rtti_strings": [
+        "EnumPropDescriptor@VScreenGui@RBX@@W4SafeAreaCompatMode",
+        "EnumPropDescriptor@VScreenGui@RBX@@W4ScreenInsetsType"
+      ],
+      "source_strings": [
+        "ScreenInsets",
+        "SafeAreaCompatibility",
+        "ClipToDeviceSafeArea"
+      ]
+    },
+    {
+      "id": "preferred-input",
+      "surface": "UserInputService",
+      "binary_strings": [
+        "PreferredInput",
+        "KeyboardAndMouse",
+        "Gamepad",
+        "Touch"
+      ],
+      "rtti_strings": [
+        "EnumPropDescriptor@VUserInputService@RBX@@W4PreferredInput",
+        "GetImpl@P8UserInputServiceProp@RBX@@EBA?AW4PreferredInput@Enums"
+      ],
+      "source_strings": [
+        "PreferredInput"
+      ]
+    },
+    {
+      "id": "gui-object-layout-state",
+      "surface": "GuiObject",
+      "binary_strings": [
+        "AutomaticSize",
+        "GuiState",
+        "SelectionGroup"
+      ],
+      "rtti_strings": [
+        "EnumPropDescriptor@VGuiObject@RBX@@W4AutomaticSize",
+        "EnumPropDescriptor@VGuiObject@RBX@@W4GuiState"
+      ],
+      "source_strings": [
+        "AutomaticSize",
+        "GuiState",
+        "SelectionGroup"
+      ]
+    },
+    {
+      "id": "canvas-group",
+      "surface": "CanvasGroup",
+      "binary_strings": [
+        "CanvasGroup",
+        "GroupColor3",
+        "GroupTransparency"
+      ],
+      "rtti_strings": [
+        "DescribedCreatable@VCanvasGroup@RBX@@VGuiObject"
+      ],
+      "source_strings": [
+        "CanvasGroup",
+        "GroupColor3",
+        "GroupTransparency"
+      ]
+    },
+    {
+      "id": "core-gui-configuration",
+      "surface": "CoreGui",
+      "binary_strings": [
+        "BaseCoreGuiConfiguration",
+        "CoreGuiConfiguration",
+        "PlayerListConfiguration"
+      ],
+      "rtti_strings": [
+        "DescribedCreatable@VCoreGuiConfiguration@RBX@@VServiceInstance",
+        "DescribedCreatable@VPlayerListConfiguration@RBX@@VBaseCoreGuiConfiguration"
+      ],
+      "source_strings": [
+        "CoreGuiConfiguration",
+        "PlayerListConfiguration"
+      ]
+    }
+  ]
+}

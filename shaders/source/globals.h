@@ -29,6 +29,14 @@ struct Globals
 	float4 ShadowMatrix0;
 	float4 ShadowMatrix1;
 	float4 ShadowMatrix2;
+	float4 ShadowMatrix3;
+	float4 ShadowMatrix4;
+	float4 ShadowMatrix5;
+	float4 ShadowMatrix6;
+	float4 ShadowMatrix7;
+	float4 ShadowMatrix8;
+	float4 ShadowCascadeInfo;
+	float4 ShadowParams;
 #ifndef GLSL
 };
 

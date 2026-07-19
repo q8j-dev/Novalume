@@ -8,13 +8,6 @@
 
 #include "util/LegacyContentTable.h"
 
-// Remove this after removal of FFlag::UseNewUrlClass and defaulting to it
-// {
-#undef HAVE_MEMCPY
-#undef HAVE_CTYPE_H
-#include "util/HTW3C.h"
-// }
-
 #include "util/URL.h"
 
 DYNAMIC_FASTFLAGVARIABLE(UrlReconstructToAssetGame, false);
@@ -22,7 +15,8 @@ DYNAMIC_FASTFLAGVARIABLE(UrlReconstructToAssetGameSecure, false);
 DYNAMIC_FASTFLAGVARIABLE(UrlReconstructRejectInvalidSchemes, false);
 
 namespace
-{			
+{
+	const char* kAssetDeliveryBase = "https://assetdelivery.roblox.com/v1/asset/?id=";
 	const char* kNamedUniverseAssetBase = "rbxgameasset://";
 	const char* kNamedUniverseAssetAssetNameParam = "assetName=";
 
@@ -45,17 +39,13 @@ namespace
 		"game/visit.ashx"
 	};
 
-	void createIdUrl(std::string& result, const std::string& baseUrl, const std::string& id)
+	void createIdUrl(std::string& result, const std::string& id)
 	{
-		result.reserve(baseUrl.size() + id.size() + 16);
-		
-		result = baseUrl;
-		
-		// append slash only if baseUrl does not end with one
-		if (result.empty() || result[result.size() - 1] != '/')
-			result += '/';
-		
-		result += "asset/?id=";
+		// Numeric Roblox asset IDs are served by Asset Delivery.  The historical
+		// website /asset endpoint now returns 404 for current assets; named
+		// universe assets and rbxhttp URLs still use the configured experience
+		// base URL below.
+		result.assign(kAssetDeliveryBase);
 		result += id;
 	}
 }
@@ -110,7 +100,7 @@ namespace RBX
 	void ContentId::convertAssetId(const std::string& baseUrl, int universeId)
 	{
 		if(isAssetId())
-			createIdUrl(id, baseUrl, id.substr(13));
+			createIdUrl(id, id.substr(13));
 		else if(isRbxHttp()){
 			id = baseUrl + id.substr(10);
 		}
@@ -135,7 +125,7 @@ namespace RBX
 		}
 	}
 	
-	void ContentId::convertToLegacyContent(const std::string& baseUrl)
+	void ContentId::convertToLegacyContent(const std::string& /*baseUrl*/)
 	{	
 		if (isAsset())
 		{
@@ -146,7 +136,7 @@ namespace RBX
 			if (!mappedAssetId.empty())
             {
                 if (isdigit(mappedAssetId[0]))
-                    createIdUrl(id, baseUrl, mappedAssetId);
+					createIdUrl(id, mappedAssetId);
                 else
                     id = mappedAssetId;
             }
@@ -169,7 +159,6 @@ namespace RBX
 		}
 		*urlIter = '\0';
         
-        if (DFFlag::UseNewUrlClass)
         {
             const RBX::Url parsed = RBX::Url::fromString(url.get());
 
@@ -249,79 +238,42 @@ namespace RBX
             } // for all paths[]
             
             return false;
-        } // if (DFFlag::UseNewUrlClass)
-
-        // parse out host and path
-        char* simplifiedUrl = url.get();
-        simplifiedUrl = HTSimplify(&simplifiedUrl);
-        boost::scoped_ptr<char> chost(HTParse(simplifiedUrl, NULL, PARSE_HOST));
-        boost::scoped_ptr<char> cscheme(HTParse(simplifiedUrl, NULL, PARSE_ACCESS));
-        boost::scoped_ptr<char> cpath(HTParse(simplifiedUrl, NULL, PARSE_PATH));
-
-        std::string scheme = cscheme.get();
-        std::string path = cpath.get();
-        std::string host = chost.get();
-
-        if (scheme != "http" && scheme != "https")
-            return true;
-
-        // remove any leading '/' from path
-        int pathStart = path.find_first_not_of("/");
-        if (pathStart == std::string::npos)
-            return false; // invalid path
-
-        path = path.substr(pathStart);
-
-        for (int i = 0; i < pathCount; i++)
-        {
-            size_t pathLength = strlen(paths[i]);
-
-            if (boost::istarts_with(path, paths[i]) && (path.size() == pathLength || path[pathLength] == '?'))
-            {
-                static const char* domain = ".robloxlabs.com";
-
-                if (DFFlag::UrlReconstructToAssetGame)
-                {
-                    // Allow assets from prod to be used on test sites
-                    if (baseUrl.find(domain) != std::string::npos && host.find(domain) == std::string::npos)
-                        id = "http://www.roblox.com/" + path;
-                    else
-                        id = baseUrl + (baseUrl[baseUrl.size()-1] != '/' ? "/" : "") + path;
-
-                    if (DFFlag::UrlReconstructToAssetGameSecure)
-                    {
-                        // Note that we rewrite both HTTP and HTTPS to use HTTPS since web team wants to do HTTPS-exclusive calls
-                        if (boost::starts_with(id, "http://www."))
-                            id = "https://assetgame." + id.substr(11);
-                        else if (boost::starts_with(id, "https://www."))
-                            id = "https://assetgame." + id.substr(12);
-                    }
-                    else
-                    {
-                        if (boost::starts_with(id, "http://www."))
-                            id = "http://assetgame." + id.substr(11);
-                        else if (boost::starts_with(id, "https://www."))
-                            id = "https://assetgame." + id.substr(12);
-                    }
-                }
-                else
-                {
-                    size_t robloxLabsPos = host.find(domain);
-                    if (robloxLabsPos != std::string::npos)
-                        id = baseUrl + "/" + path;
-                    else
-                        id = "http://www.roblox.com/" + path;
-                }
-
-                return true;
-            }
-        } // for all paths[]
-
-		return false;
+		}
 	}
 
 	bool ContentId::reconstructAssetUrl(const std::string& baseUrl)
 	{
+		// Numeric IDs are converted to Roblox's current Asset Delivery endpoint
+		// before this validation pass.  Preserve that already-canonical trusted
+		// URL instead of feeding it through the legacy /asset host rewriter.
+		// The generic HTTP path remains allowlisted below.
+		const RBX::Url parsed = RBX::Url::fromString(id);
+		if (parsed.hasHttpScheme() &&
+			parsed.host() == "assetdelivery.roblox.com" &&
+			parsed.pathEqualsCaseInsensitive("/v1/asset/"))
+			return true;
+
+		// Studio-authored rigs and other long-lived Roblox content still store
+		// trusted /asset/?id= URLs. Route numeric IDs through the same current
+		// HTTPS asset-delivery endpoint as rbxassetid:// instead of reconstructing
+		// the obsolete cleartext www/asset URL.
+		if (parsed.hasHttpScheme() &&
+			parsed.pathEqualsCaseInsensitive("/asset/") &&
+			parsed.isSubdomainOf("roblox.com"))
+		{
+			const std::string assetId = getAssetId();
+			std::string query = parsed.query();
+			std::transform(query.begin(), query.end(), query.begin(), tolower);
+			if (!assetId.empty() &&
+				query == "id=" + assetId &&
+				std::find_if(assetId.begin(), assetId.end(),
+					[](char value) { return value < '0' || value > '9'; }) == assetId.end())
+			{
+				id = std::string(kAssetDeliveryBase) + assetId;
+				return true;
+			}
+		}
+
 		return reconstructUrl(baseUrl, kValidAssetPaths, ARRAYSIZE(kValidAssetPaths));
 	}
 

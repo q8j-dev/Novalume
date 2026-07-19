@@ -923,7 +923,7 @@
     <ClCompile Include="util\ContentProviderJob.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\ClientShared\CountersClient.cpp">
+    <ClCompile Include="$(SolutionDir)apps\player\shared\client\CountersClient.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
     <ClCompile Include="Util\Extents.cpp">
@@ -935,7 +935,7 @@
     <ClCompile Include="util\Faces.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\ClientShared\format_string.cpp">
+    <ClCompile Include="$(SolutionDir)apps\player\shared\client\format_string.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
     <ClCompile Include="util\gpc.c">
@@ -1019,7 +1019,7 @@
     <ClCompile Include="util\Region3int16.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\ClientShared\RobloxServicesTools.cpp">
+    <ClCompile Include="$(SolutionDir)apps\player\shared\client\RobloxServicesTools.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
     <ClCompile Include="util\RunningAverage.cpp">
@@ -1031,7 +1031,7 @@
     <ClCompile Include="util\ScriptInformationProvider.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
-    <ClCompile Include="util\SoundWorld.cpp">
+    <ClCompile Include="..\engine\audio\src\SoundWorld.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
     <ClCompile Include="util\SpanningEdge.cpp">
@@ -1154,55 +1154,55 @@
     <ClCompile Include="reflection\type.cpp">
       <Filter>Source Files\reflection Source</Filter>
     </ClCompile>
-    <ClCompile Include="humanoid\Balancing.cpp">
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\Balancing.cpp">
       <Filter>Source Files\Humanoid Source</Filter>
     </ClCompile>
-    <ClCompile Include="humanoid\FallingDown.cpp">
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\FallingDown.cpp">
       <Filter>Source Files\Humanoid Source</Filter>
     </ClCompile>
-    <ClCompile Include="humanoid\Flying.cpp">
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\Flying.cpp">
       <Filter>Source Files\Humanoid Source</Filter>
     </ClCompile>
-    <ClCompile Include="humanoid\Freefall.cpp">
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\Freefall.cpp">
       <Filter>Source Files\Humanoid Source</Filter>
     </ClCompile>
-    <ClCompile Include="humanoid\GettingUp.cpp">
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\GettingUp.cpp">
       <Filter>Source Files\Humanoid Source</Filter>
     </ClCompile>
-    <ClCompile Include="humanoid\Humanoid.cpp">
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\Humanoid.cpp">
       <Filter>Source Files\Humanoid Source</Filter>
     </ClCompile>
-    <ClCompile Include="humanoid\HumanoidState.cpp">
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\HumanoidState.cpp">
       <Filter>Source Files\Humanoid Source</Filter>
     </ClCompile>
-    <ClCompile Include="humanoid\Jumping.cpp">
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\Jumping.cpp">
       <Filter>Source Files\Humanoid Source</Filter>
     </ClCompile>
-    <ClCompile Include="humanoid\MovingNoPhysicsBase.cpp">
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\MovingNoPhysicsBase.cpp">
       <Filter>Source Files\Humanoid Source</Filter>
     </ClCompile>
-    <ClCompile Include="humanoid\Ragdoll.cpp">
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\Ragdoll.cpp">
       <Filter>Source Files\Humanoid Source</Filter>
     </ClCompile>
-    <ClCompile Include="humanoid\Running.cpp">
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\Running.cpp">
       <Filter>Source Files\Humanoid Source</Filter>
     </ClCompile>
-    <ClCompile Include="humanoid\RunningBase.cpp">
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\RunningBase.cpp">
       <Filter>Source Files\Humanoid Source</Filter>
     </ClCompile>
-    <ClCompile Include="humanoid\RunningNoPhysics.cpp">
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\RunningNoPhysics.cpp">
       <Filter>Source Files\Humanoid Source</Filter>
     </ClCompile>
-    <ClCompile Include="humanoid\Seated.cpp">
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\Seated.cpp">
       <Filter>Source Files\Humanoid Source</Filter>
     </ClCompile>
-    <ClCompile Include="humanoid\StatusInstance.cpp">
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\StatusInstance.cpp">
       <Filter>Source Files\Humanoid Source</Filter>
     </ClCompile>
-    <ClCompile Include="humanoid\StrafingNoPhysics.cpp">
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\StrafingNoPhysics.cpp">
       <Filter>Source Files\Humanoid Source</Filter>
     </ClCompile>
-    <ClCompile Include="humanoid\Swimming.cpp">
+    <ClCompile Include="$(SolutionDir)engine\avatar\humanoid\src\Swimming.cpp">
       <Filter>Source Files\Humanoid Source</Filter>
     </ClCompile>
     <ClCompile Include="tool\AdvDragTool.cpp">
@@ -1289,7 +1289,7 @@
     <ClCompile Include="Tool\ToolsArrow.cpp">
       <Filter>Source Files\Tool Source</Filter>
     </ClCompile>
-    <ClCompile Include="security\SecurityContext.cpp">
+    <ClCompile Include="$(SolutionDir)engine\security\src\SecurityContext.cpp">
       <Filter>Source Files\Security Sources</Filter>
     </ClCompile>
     <ClCompile Include="Gui\ChatOutput.cpp">
@@ -1427,28 +1427,28 @@
     <ClCompile Include="v8xml\SerializerBinary.cpp">
       <Filter>Source Files\V8Xml Source</Filter>
     </ClCompile>
-    <ClCompile Include="lz4\lz4.c">
+    <ClCompile Include="$(SolutionDir)third_party\lz4_historical\lz4.c">
       <Filter>lz4</Filter>
     </ClCompile>
-    <ClCompile Include="lz4\lz4hc.c">
+    <ClCompile Include="$(SolutionDir)third_party\lz4_historical\lz4hc.c">
       <Filter>lz4</Filter>
     </ClCompile>
-    <ClCompile Include="voxel\Cell.cpp">
+    <ClCompile Include="..\engine\terrain\src\voxel\Cell.cpp">
       <Filter>Source Files\Voxel Source</Filter>
     </ClCompile>
-    <ClCompile Include="voxel\Grid.Chunk.cpp">
+    <ClCompile Include="..\engine\terrain\src\voxel\Grid.Chunk.cpp">
       <Filter>Source Files\Voxel Source</Filter>
     </ClCompile>
-    <ClCompile Include="voxel\Grid.cpp">
+    <ClCompile Include="..\engine\terrain\src\voxel\Grid.cpp">
       <Filter>Source Files\Voxel Source</Filter>
     </ClCompile>
-    <ClCompile Include="voxel\Serializer.cpp">
+    <ClCompile Include="..\engine\terrain\src\runtime\Serializer.cpp">
       <Filter>Source Files\Voxel Source</Filter>
     </ClCompile>
-    <ClCompile Include="voxel\Util.cpp">
+    <ClCompile Include="..\engine\terrain\src\voxel\Util.cpp">
       <Filter>Source Files\Voxel Source</Filter>
     </ClCompile>
-    <ClCompile Include="voxel\Water.cpp">
+    <ClCompile Include="..\engine\terrain\src\voxel\Water.cpp">
       <Filter>Source Files\Voxel Source</Filter>
     </ClCompile>
     <ClCompile Include="v8datamodel\InputObject.cpp">
@@ -1583,7 +1583,7 @@
     <ClCompile Include="script\ScriptAnalyzer.cpp">
       <Filter>Source Files\Script Source</Filter>
     </ClCompile>
-    <ClCompile Include="voxel\Voxelizer.cpp">
+    <ClCompile Include="..\engine\terrain\src\runtime\Voxelizer.cpp">
       <Filter>Source Files\Voxel Source</Filter>
     </ClCompile>
     <ClCompile Include="v8datamodel\PartCookie.cpp">
@@ -1640,13 +1640,13 @@
     <ClCompile Include="v8datamodel\Folder.cpp">
       <Filter>Source Files\V8DataModel Source</Filter>
     </ClCompile>
-    <ClCompile Include="voxel2\Grid.cpp">
+    <ClCompile Include="..\engine\terrain\src\smooth\Grid.cpp">
       <Filter>Source Files\Voxel2 Source</Filter>
     </ClCompile>
-    <ClCompile Include="voxel2\MaterialTable.cpp">
+    <ClCompile Include="..\engine\terrain\src\smooth\MaterialTable.cpp">
       <Filter>Source Files\Voxel2 Source</Filter>
     </ClCompile>
-    <ClCompile Include="voxel2\Mesher.cpp">
+    <ClCompile Include="..\engine\terrain\src\smooth\Mesher.cpp">
       <Filter>Source Files\Voxel2 Source</Filter>
     </ClCompile>
     <ClCompile Include="v8world\SmoothClusterGeometry.cpp">
@@ -1655,13 +1655,13 @@
     <ClCompile Include="v8datamodel\HttpRbxApiService.cpp">
       <Filter>Source Files\V8DataModel Source</Filter>
     </ClCompile>
-    <ClCompile Include="util\SoundService.cpp">
+    <ClCompile Include="..\engine\audio\src\SoundService.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
-    <ClCompile Include="util\SoundChannel.cpp">
+    <ClCompile Include="..\engine\audio\src\SoundChannel.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
-    <ClCompile Include="util\Sound.cpp">
+    <ClCompile Include="..\engine\audio\src\Sound.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
     <ClCompile Include="util\Win\CheatEngine.cpp">
@@ -1679,7 +1679,7 @@
     <ClCompile Include="v8datamodel\RobloxReplicatedStorage.cpp">
       <Filter>Source Files\V8DataModel Source</Filter>
     </ClCompile>
-    <ClCompile Include="security\FuzzyTokens.cpp">
+    <ClCompile Include="$(SolutionDir)engine\security\src\FuzzyTokens.cpp">
       <Filter>Source Files\Security Sources</Filter>
     </ClCompile>
     <ClCompile Include="v8datamodel\SelectionSphere.cpp">
@@ -2524,7 +2524,7 @@
     <ClInclude Include="include\util\ControlledLRUCache.h">
       <Filter>Header Files\Util Header</Filter>
     </ClInclude>
-    <ClInclude Include="..\ClientShared\CountersClient.h">
+    <ClInclude Include="$(SolutionDir)apps\player\shared\client\CountersClient.h">
       <Filter>Header Files\Util Header</Filter>
     </ClInclude>
     <ClInclude Include="include\util\Cursors.h">
@@ -2557,7 +2557,7 @@
     <ClInclude Include="include\util\FixedSizeCircularBuffer.h">
       <Filter>Header Files\Util Header</Filter>
     </ClInclude>
-    <ClInclude Include="..\ClientShared\format_string.h">
+    <ClInclude Include="$(SolutionDir)apps\player\shared\client\format_string.h">
       <Filter>Header Files\Util Header</Filter>
     </ClInclude>
     <ClInclude Include="include\util\G3DCore.h">
@@ -2689,7 +2689,7 @@
     <ClInclude Include="include\util\Region3int16.h">
       <Filter>Header Files\Util Header</Filter>
     </ClInclude>
-    <ClInclude Include="..\ClientShared\RobloxServicesTools.h">
+    <ClInclude Include="$(SolutionDir)apps\player\shared\client\RobloxServicesTools.h">
       <Filter>Header Files\Util Header</Filter>
     </ClInclude>
     <ClInclude Include="include\util\RunningAverage.h">
@@ -2710,7 +2710,7 @@
     <ClInclude Include="include\util\SimSendFilter.h">
       <Filter>Header Files\Util Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\util\SoundWorld.h">
+    <ClInclude Include="..\engine\audio\include\audio\SoundWorld.h">
       <Filter>Header Files\Util Header</Filter>
     </ClInclude>
     <ClInclude Include="include\util\SpanningEdge.h">
@@ -2827,7 +2827,7 @@
     <ClInclude Include="include\script\LuaAtomicClasses.h">
       <Filter>Header Files\Script Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\lua\LuaBridge.h">
+    <ClInclude Include="..\engine\scripting\include\lua\LuaBridge.h">
       <Filter>Header Files\Script Header</Filter>
     </ClInclude>
     <ClInclude Include="include\script\LuaEnum.h">
@@ -2896,55 +2896,55 @@
     <ClInclude Include="include\reflection\YieldFunction.h">
       <Filter>Header Files\Reflection Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\humanoid\Balancing.h">
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\Balancing.h">
       <Filter>Header Files\Humanoid Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\humanoid\FallingDown.h">
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\FallingDown.h">
       <Filter>Header Files\Humanoid Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\humanoid\Flying.h">
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\Flying.h">
       <Filter>Header Files\Humanoid Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\humanoid\Freefall.h">
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\Freefall.h">
       <Filter>Header Files\Humanoid Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\humanoid\GettingUp.h">
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\GettingUp.h">
       <Filter>Header Files\Humanoid Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\humanoid\Humanoid.h">
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\Humanoid.h">
       <Filter>Header Files\Humanoid Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\humanoid\HumanoidState.h">
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\HumanoidState.h">
       <Filter>Header Files\Humanoid Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\humanoid\Jumping.h">
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\Jumping.h">
       <Filter>Header Files\Humanoid Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\humanoid\MovingNoPhysicsBase.h">
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\MovingNoPhysicsBase.h">
       <Filter>Header Files\Humanoid Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\humanoid\Ragdoll.h">
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\Ragdoll.h">
       <Filter>Header Files\Humanoid Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\humanoid\Running.h">
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\Running.h">
       <Filter>Header Files\Humanoid Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\humanoid\RunningBase.h">
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\RunningBase.h">
       <Filter>Header Files\Humanoid Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\humanoid\RunningNoPhysics.h">
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\RunningNoPhysics.h">
       <Filter>Header Files\Humanoid Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\humanoid\Seated.h">
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\Seated.h">
       <Filter>Header Files\Humanoid Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\humanoid\StatusInstance.h">
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\StatusInstance.h">
       <Filter>Header Files\Humanoid Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\humanoid\StrafingNoPhysics.h">
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\StrafingNoPhysics.h">
       <Filter>Header Files\Humanoid Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\humanoid\Swimming.h">
+    <ClInclude Include="$(SolutionDir)engine\avatar\humanoid\include\humanoid\Swimming.h">
       <Filter>Header Files\Humanoid Header</Filter>
     </ClInclude>
     <ClInclude Include="include\tool\AdvDragTool.h">
@@ -3277,7 +3277,7 @@
     <ClInclude Include="include\v8world\WedgePoly.h">
       <Filter>Header Files\V8World Header\Contact</Filter>
     </ClInclude>
-    <ClInclude Include="include\security\SecurityContext.h">
+    <ClInclude Include="$(SolutionDir)engine\security\include\security\SecurityContext.h">
       <Filter>Header Files\Security Headers</Filter>
     </ClInclude>
     <ClInclude Include="include\v8datamodel\ContextActionService.h">
@@ -3295,49 +3295,49 @@
     <ClInclude Include="include\v8xml\SerializerBinary.h">
       <Filter>Header Files\V8Xml Header</Filter>
     </ClInclude>
-    <ClInclude Include="lz4\lz4.h">
+    <ClInclude Include="$(SolutionDir)third_party\lz4_historical\lz4.h">
       <Filter>lz4</Filter>
     </ClInclude>
-    <ClInclude Include="lz4\lz4_decoder.h">
+    <ClInclude Include="$(SolutionDir)third_party\lz4_historical\lz4_decoder.h">
       <Filter>lz4</Filter>
     </ClInclude>
-    <ClInclude Include="lz4\lz4_encoder.h">
+    <ClInclude Include="$(SolutionDir)third_party\lz4_historical\lz4_encoder.h">
       <Filter>lz4</Filter>
     </ClInclude>
-    <ClInclude Include="lz4\lz4hc.h">
+    <ClInclude Include="$(SolutionDir)third_party\lz4_historical\lz4hc.h">
       <Filter>lz4</Filter>
     </ClInclude>
-    <ClInclude Include="lz4\lz4hc_encoder.h">
+    <ClInclude Include="$(SolutionDir)third_party\lz4_historical\lz4hc_encoder.h">
       <Filter>lz4</Filter>
     </ClInclude>
-    <ClInclude Include="include\voxel\AreaCopy.h">
+    <ClInclude Include="..\engine\terrain\include\voxel\AreaCopy.h">
       <Filter>Header Files\Voxel Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\voxel\Cell.h">
+    <ClInclude Include="..\engine\terrain\include\voxel\Cell.h">
       <Filter>Header Files\Voxel Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\voxel\CellChangeListener.h">
+    <ClInclude Include="..\engine\terrain\include\voxel\CellChangeListener.h">
       <Filter>Header Files\Voxel Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\voxel\ChunkMap.h">
+    <ClInclude Include="..\engine\terrain\include\voxel\ChunkMap.h">
       <Filter>Header Files\Voxel Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\voxel\Grid.Chunk.h">
+    <ClInclude Include="..\engine\terrain\include\voxel\Grid.Chunk.h">
       <Filter>Header Files\Voxel Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\voxel\Grid.h">
+    <ClInclude Include="..\engine\terrain\include\voxel\Grid.h">
       <Filter>Header Files\Voxel Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\voxel\Region.h">
+    <ClInclude Include="..\engine\terrain\include\voxel\Region.h">
       <Filter>Header Files\Voxel Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\voxel\Serializer.h">
+    <ClInclude Include="..\engine\terrain\include\voxel\Serializer.h">
       <Filter>Header Files\Voxel Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\voxel\Util.h">
+    <ClInclude Include="..\engine\terrain\include\voxel\Util.h">
       <Filter>Header Files\Voxel Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\voxel\Water.h">
+    <ClInclude Include="..\engine\terrain\include\voxel\Water.h">
       <Filter>Header Files\Voxel Header</Filter>
     </ClInclude>
     <ClInclude Include="include\v8datamodel\InputObject.h">
@@ -3460,7 +3460,7 @@
     <ClInclude Include="include\v8datamodel\PathfindingService.h">
       <Filter>Header Files\V8DataModel Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\voxel\Voxelizer.h">
+    <ClInclude Include="..\engine\terrain\include\voxel\Voxelizer.h">
       <Filter>Header Files\Voxel Header</Filter>
     </ClInclude>
     <ClInclude Include="include\v8datamodel\PartCookie.h">
@@ -3526,25 +3526,25 @@
     <ClInclude Include="include\v8datamodel\HttpRbxApiJob.h">
       <Filter>Header Files\V8DataModel Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\util\SoundService.h">
+    <ClInclude Include="..\engine\audio\include\audio\SoundService.h">
       <Filter>Header Files\Util Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\util\SoundChannel.h">
+    <ClInclude Include="..\engine\audio\include\audio\SoundChannel.h">
       <Filter>Header Files\Util Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\util\Sound.h">
+    <ClInclude Include="..\engine\audio\include\audio\Sound.h">
       <Filter>Header Files\Util Header</Filter>
     </ClInclude>
     <ClInclude Include="include\util\HttpPlatformImpl.h">
       <Filter>Header Files\Util Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\voxel2\Grid.h">
+    <ClInclude Include="..\engine\terrain\include\voxel2\Grid.h">
       <Filter>Header Files\Voxel2 Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\voxel2\MaterialTable.h">
+    <ClInclude Include="..\engine\terrain\include\voxel2\MaterialTable.h">
       <Filter>Header Files\Voxel2 Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\voxel2\Mesher.h">
+    <ClInclude Include="..\engine\terrain\include\voxel2\Mesher.h">
       <Filter>Header Files\Voxel2 Header</Filter>
     </ClInclude>
     <ClInclude Include="include\v8world\SmoothClusterGeometry.h">
@@ -3562,7 +3562,7 @@
     <ClInclude Include="include\v8datamodel\RobloxReplicatedStorage.h">
       <Filter>Header Files\V8DataModel Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\security\FuzzyTokens.h">
+    <ClInclude Include="$(SolutionDir)engine\security\include\security\FuzzyTokens.h">
       <Filter>Header Files\Security Headers</Filter>
     </ClInclude>
     <ClInclude Include="include\v8datamodel\SelectionSphere.h">
@@ -3574,7 +3574,7 @@
     <ClInclude Include="include\script\LuaSourceContainer.h">
       <Filter>Header Files\Script Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\security\ApiSecurity.h">
+    <ClInclude Include="$(SolutionDir)engine\security\include\security\ApiSecurity.h">
       <Filter>Header Files\Security Headers</Filter>
     </ClInclude>
     <ClInclude Include="include\v8datamodel\NumberSequence.h">
@@ -3589,10 +3589,10 @@
     <ClInclude Include="include\v8datamodel\BaseRenderJob.h">
       <Filter>Header Files\V8DataModel Header</Filter>
     </ClInclude>
-    <ClInclude Include="include\security\RandomConstant.h">
+    <ClInclude Include="$(SolutionDir)engine\security\include\security\RandomConstant.h">
       <Filter>Header Files\Security Headers</Filter>
     </ClInclude>
-    <ClInclude Include="include\security\JunkCode.h">
+    <ClInclude Include="$(SolutionDir)engine\security\include\security\JunkCode.h">
       <Filter>Header Files\Security Headers</Filter>
     </ClInclude>
     <ClInclude Include="include\util\Analytics.h">
@@ -3684,22 +3684,22 @@
     <None Include="include\v8world\SpatialHashMultiRes.inl">
       <Filter>Header Files\V8World Header</Filter>
     </None>
-    <None Include="include\voxel\AreaCopy.inl">
+    <None Include="..\engine\terrain\include\voxel\AreaCopy.inl">
       <Filter>Header Files\Voxel Header</Filter>
     </None>
-    <None Include="include\voxel\ChunkMap.inl">
+    <None Include="..\engine\terrain\include\voxel\ChunkMap.inl">
       <Filter>Header Files\Voxel Header</Filter>
     </None>
-    <None Include="include\voxel\Region.inl">
+    <None Include="..\engine\terrain\include\voxel\Region.inl">
       <Filter>Header Files\Voxel Header</Filter>
     </None>
-    <None Include="include\voxel\Region.iterator.inl">
+    <None Include="..\engine\terrain\include\voxel\Region.iterator.inl">
       <Filter>Header Files\Voxel Header</Filter>
     </None>
-    <None Include="include\voxel\Region.xline_iterator.inl">
+    <None Include="..\engine\terrain\include\voxel\Region.xline_iterator.inl">
       <Filter>Header Files\Voxel Header</Filter>
     </None>
-    <None Include="include\voxel\Water.inl">
+    <None Include="..\engine\terrain\include\voxel\Water.inl">
       <Filter>Header Files\Voxel Header</Filter>
     </None>
     <None Include="script\LuaGenCS.inl">

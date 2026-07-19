@@ -17,6 +17,8 @@
 mono_crash.*
 
 # Build results
+/out/
+.DS_Store
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
@@ -483,4 +485,3 @@ XboxClient/libraries/*
 !Library/cabsdk/bin
 
 !Library/xulrunner/*
-

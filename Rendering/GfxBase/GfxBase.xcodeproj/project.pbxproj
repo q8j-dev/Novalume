@@ -403,12 +403,12 @@
 					../../Log/include,
 					include,
 					../../App/include,
-					../../Base/include,
+					../../engine/core/include,
 					../AppDraw/include,
 					../G3D/include,
 					../RBXG3D/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
-					../../App.BulletPhysics,
+					../../third_party/bullet_historical,
 					"$(CONTRIB_PATH)/SDL2.0.4/include",
 				);
 				INSTALL_PATH = /usr/local/lib;
@@ -429,12 +429,12 @@
 					../../Log/include,
 					include,
 					../../App/include,
-					../../Base/include,
+					../../engine/core/include,
 					../AppDraw/include,
 					../G3D/include,
 					../RBXG3D/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
-					../../App.BulletPhysics,
+					../../third_party/bullet_historical,
 					"$(CONTRIB_PATH)/SDL2.0.4/include",
 				);
 				INSTALL_PATH = /usr/local/lib;
@@ -464,12 +464,12 @@
 				HEADER_SEARCH_PATHS = (
 					include,
 					../../App/include,
-					../../Base/include,
+					../../engine/core/include,
 					../AppDraw/include,
 					../G3D/include,
 					../RBXG3D/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
-					../../App.BulletPhysics,
+					../../third_party/bullet_historical,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = YES;
@@ -498,12 +498,12 @@
 				HEADER_SEARCH_PATHS = (
 					include,
 					../../App/include,
-					../../Base/include,
+					../../engine/core/include,
 					../AppDraw/include,
 					../G3D/include,
 					../RBXG3D/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
-					../../App.BulletPhysics,
+					../../third_party/bullet_historical,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = YES;
@@ -533,12 +533,12 @@
 					../../Log/include,
 					include,
 					../../App/include,
-					../../Base/include,
+					../../engine/core/include,
 					../AppDraw/include,
 					../G3D/include,
 					../RBXG3D/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
-					../../App.BulletPhysics,
+					../../third_party/bullet_historical,
 					"$(CONTRIB_PATH)/SDL2.0.4/include",
 				);
 				INSTALL_PATH = /usr/local/lib;
@@ -571,12 +571,12 @@
 					../../Log/include,
 					include,
 					../../App/include,
-					../../Base/include,
+					../../engine/core/include,
 					../AppDraw/include,
 					../G3D/include,
 					../RBXG3D/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
-					../../App.BulletPhysics,
+					../../third_party/bullet_historical,
 					"$(CONTRIB_PATH)/SDL2.0.4/include",
 				);
 				INSTALL_PATH = /usr/local/lib;
@@ -612,12 +612,12 @@
 				HEADER_SEARCH_PATHS = (
 					include,
 					../../App/include,
-					../../Base/include,
+					../../engine/core/include,
 					../AppDraw/include,
 					../G3D/include,
 					../RBXG3D/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
-					../../App.BulletPhysics,
+					../../third_party/bullet_historical,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = YES;
@@ -639,12 +639,12 @@
 					../../Log/include,
 					include,
 					../../App/include,
-					../../Base/include,
+					../../engine/core/include,
 					../AppDraw/include,
 					../G3D/include,
 					../RBXG3D/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
-					../../App.BulletPhysics,
+					../../third_party/bullet_historical,
 					"$(CONTRIB_PATH)/SDL2.0.4/include",
 				);
 				INSTALL_PATH = /usr/local/lib;
@@ -671,12 +671,12 @@
 					../../Log/include,
 					include,
 					../../App/include,
-					../../Base/include,
+					../../engine/core/include,
 					../AppDraw/include,
 					../G3D/include,
 					../RBXG3D/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
-					../../App.BulletPhysics,
+					../../third_party/bullet_historical,
 					"$(CONTRIB_PATH)/SDL2.0.4/include",
 				);
 				INSTALL_PATH = /usr/local/lib;

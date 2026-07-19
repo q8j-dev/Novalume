@@ -19,7 +19,7 @@
 #include "script/ScriptContext.h"
 #include "v8xml/Serializer.h"
 #include "rbx/CEvent.h"
-#include "../RobloxMac/GameVerbs.h"
+#include "../../apps/player/macos/source/GameVerbs.h"
 #include "Network/Players.h"
 #include "../ClientBase/RenderSettingsItem.h"
 #include "rbx/SystemUtil.h"
@@ -29,7 +29,7 @@
 
 #include <boost/iostreams/copy.hpp>
 
-#include "../RobloxMac/Roblox.h"
+#include "../../apps/player/macos/source/Roblox.h"
 #include "V8DataModel/GameBasicSettings.h"
 
 #include "FastLog.h"

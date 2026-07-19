@@ -190,7 +190,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\ClientShared\CountersClient.cpp">
+    <ClCompile Include="$(SolutionDir)apps\player\shared\client\CountersClient.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -200,7 +200,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\ClientShared\SimpleJSON.cpp">
+    <ClCompile Include="$(SolutionDir)apps\player\shared\client\SimpleJSON.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -210,7 +210,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\ClientShared\StringConv.cpp">
+    <ClCompile Include="$(SolutionDir)apps\player\shared\client\StringConv.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -220,7 +220,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Win\SharedLauncher.cpp" />
+    <ClCompile Include="$(SolutionDir)platform\windows\historical\SharedLauncher.cpp" />
     <ClCompile Include="..\Bootstrapper\SettingsLoader.cpp" />
     <ClCompile Include="BootstrapperQTStudio.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -233,10 +233,10 @@
     <ClCompile Include="WindowsStudioInstallerSettings.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\ClientShared\CountersClient.h" />
-    <ClInclude Include="..\..\ClientShared\SimpleJSON.h" />
-    <ClInclude Include="..\..\ClientShared\StringConv.h" />
-    <ClInclude Include="..\..\Win\SharedLauncher.h" />
+    <ClInclude Include="$(SolutionDir)apps\player\shared\client\CountersClient.h" />
+    <ClInclude Include="$(SolutionDir)apps\player\shared\client\SimpleJSON.h" />
+    <ClInclude Include="$(SolutionDir)apps\player\shared\client\StringConv.h" />
+    <ClInclude Include="$(SolutionDir)platform\windows\historical\SharedLauncher.h" />
     <ClInclude Include="..\Bootstrapper\resource.h" />
     <ClInclude Include="..\Bootstrapper\SettingsLoader.h" />
     <ClInclude Include="BootstrapperQTStudio.h" />

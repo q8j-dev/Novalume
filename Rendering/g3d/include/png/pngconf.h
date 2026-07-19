@@ -305,6 +305,12 @@
 #  endif
 #endif
 
+/* TARGET_OS_MAC is also defined by modern Darwin SDKs, but the legacy
+ * Classic Mac <fp.h> header no longer exists there. */
+#if defined(__APPLE__) && defined(__MACH__)
+#  undef MACOS
+#endif
+
 /* enough people need this for various reasons to include it here */
 #if !defined(MACOS) && !defined(RISCOS) && !defined(_WIN32_WCE)
 #  include <sys/types.h>

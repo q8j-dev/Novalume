@@ -59,6 +59,7 @@ namespace RBX {
 		bool isFile() const { return id.compare(0, 7, "file://") == 0; }
 		bool isRbxHttp() const { return id.compare(0, 10, "rbxhttp://") == 0; }
 		bool isAppContent() const { return id.compare(0, 9, "rbxapp://") == 0; }
+		bool isRbxThumb() const { return id.compare(0, 11, "rbxthumb://") == 0; }
 		bool isNamedAsset() const;
 		bool isConvertedNamedAsset() const;
 

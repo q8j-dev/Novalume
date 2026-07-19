@@ -18,22 +18,22 @@
     <ClCompile Include="BootstrapperQTStudio.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ClientShared\CountersClient.cpp">
+    <ClCompile Include="$(SolutionDir)apps\player\shared\client\CountersClient.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Bootstrapper\SettingsLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Win\SharedLauncher.cpp">
+    <ClCompile Include="$(SolutionDir)platform\windows\historical\SharedLauncher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ClientShared\SimpleJSON.cpp">
+    <ClCompile Include="$(SolutionDir)apps\player\shared\client\SimpleJSON.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ClientShared\StringConv.cpp">
+    <ClCompile Include="$(SolutionDir)apps\player\shared\client\StringConv.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StudioProgressDialog.cpp">
@@ -47,7 +47,7 @@
     <ClInclude Include="BootstrapperQTStudio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ClientShared\CountersClient.h">
+    <ClInclude Include="$(SolutionDir)apps\player\shared\client\CountersClient.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Bootstrapper\resource.h">
@@ -56,16 +56,16 @@
     <ClInclude Include="..\Bootstrapper\SettingsLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Win\SharedLauncher.h">
+    <ClInclude Include="$(SolutionDir)platform\windows\historical\SharedLauncher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ClientShared\SimpleJSON.h">
+    <ClInclude Include="$(SolutionDir)apps\player\shared\client\SimpleJSON.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ClientShared\StringConv.h">
+    <ClInclude Include="$(SolutionDir)apps\player\shared\client\StringConv.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StudioProgressDialog.h">

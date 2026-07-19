@@ -2999,9 +2999,9 @@
 		425759ED190EBE1900FEFD23 /* ProgramMemoryChecker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ProgramMemoryChecker.cpp; path = Unix/ProgramMemoryChecker.cpp; sourceTree = "<group>"; };
 		426351CA194B777C0026FD3A /* ScriptAnalyzer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScriptAnalyzer.h; sourceTree = "<group>"; };
 		426351CE194B778A0026FD3A /* ScriptAnalyzer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ScriptAnalyzer.cpp; sourceTree = "<group>"; };
-		427F0A8319F827D400405D13 /* Grid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Grid.cpp; path = voxel2/Grid.cpp; sourceTree = "<group>"; };
-		427F0A8419F827D400405D13 /* MaterialTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MaterialTable.cpp; path = voxel2/MaterialTable.cpp; sourceTree = "<group>"; };
-		427F0A8519F827D400405D13 /* Mesher.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mesher.cpp; path = voxel2/Mesher.cpp; sourceTree = "<group>"; };
+		427F0A8319F827D400405D13 /* Grid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Grid.cpp; path = ../engine/terrain/src/smooth/Grid.cpp; sourceTree = "<group>"; };
+		427F0A8419F827D400405D13 /* MaterialTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MaterialTable.cpp; path = ../engine/terrain/src/smooth/MaterialTable.cpp; sourceTree = "<group>"; };
+		427F0A8519F827D400405D13 /* Mesher.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Mesher.cpp; path = ../engine/terrain/src/smooth/Mesher.cpp; sourceTree = "<group>"; };
 		427F0A9719F827E000405D13 /* SmoothClusterGeometry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SmoothClusterGeometry.cpp; sourceTree = "<group>"; };
 		42975353192BFD3F00566182 /* BinaryString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BinaryString.h; sourceTree = "<group>"; };
 		42975354192BFD3F00566182 /* HttpAsync.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpAsync.h; sourceTree = "<group>"; };
@@ -3138,7 +3138,7 @@
 		56F917D9197DEAFA002AFFF8 /* HttpPlatformImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpPlatformImpl.h; sourceTree = "<group>"; };
 		65129C9A13B8FF90000E7CB6 /* TextureTrail.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextureTrail.h; sourceTree = "<group>"; };
 		65129C9C13B8FFA6000E7CB6 /* TextureTrail.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextureTrail.cpp; sourceTree = "<group>"; };
-		651AFF191649D99F007369C5 /* format_string.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = format_string.h; path = ../../../ClientShared/format_string.h; sourceTree = "<group>"; };
+		651AFF191649D99F007369C5 /* format_string.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = format_string.h; path = ../../../apps/player/shared/client/format_string.h; sourceTree = "<group>"; };
 		651BBD4F14DA0EDF00BACEFD /* Buoyancy.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Buoyancy.cpp; sourceTree = "<group>"; };
 		651BBDBA14DA107F00BACEFD /* Buoyancy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Buoyancy.h; sourceTree = "<group>"; };
 		651E72A713BAB12B00812059 /* TeleportService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TeleportService.h; sourceTree = "<group>"; };
@@ -3196,22 +3196,22 @@
 		94DD54861C6E859000A2E2DE /* HapticService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HapticService.h; sourceTree = "<group>"; };
 		94DD54881C6E85A400A2E2DE /* HapticService.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HapticService.cpp; sourceTree = "<group>"; };
 		94DF679118457BFD006E50E5 /* KeyCode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = KeyCode.cpp; sourceTree = "<group>"; };
-		94F82F8619F870DA0010C135 /* SoundChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundChannel.h; sourceTree = "<group>"; };
-		94F82F8719F870DA0010C135 /* SoundService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundService.h; sourceTree = "<group>"; };
-		94F82F9019F870EA0010C135 /* SoundChannel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoundChannel.cpp; sourceTree = "<group>"; };
-		94F82F9119F870EA0010C135 /* SoundService.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoundService.cpp; sourceTree = "<group>"; };
+		94F82F8619F870DA0010C135 /* SoundChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ../../../engine/audio/include/audio/SoundChannel.h; sourceTree = "<group>"; };
+		94F82F8719F870DA0010C135 /* SoundService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ../../../engine/audio/include/audio/SoundService.h; sourceTree = "<group>"; };
+		94F82F9019F870EA0010C135 /* SoundChannel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ../../engine/audio/src/SoundChannel.cpp; sourceTree = "<group>"; };
+		94F82F9119F870EA0010C135 /* SoundService.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ../../engine/audio/src/SoundService.cpp; sourceTree = "<group>"; };
 		9F04773E1836CD8000DFD102 /* SurfaceGui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SurfaceGui.cpp; sourceTree = "<group>"; };
 		9F0477421836CDD600DFD102 /* SurfaceGui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SurfaceGui.h; sourceTree = "<group>"; };
-		9F0D96D916E8088C00098C8D /* Water.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Water.h; path = include/voxel/Water.h; sourceTree = "<group>"; };
-		9F0D96DA16E8088C00098C8D /* Water.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Water.inl; path = include/voxel/Water.inl; sourceTree = "<group>"; };
-		9F0D96DD16E808A400098C8D /* Water.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Water.cpp; path = voxel/Water.cpp; sourceTree = "<group>"; };
-		9F13F7DB173DBDE8002EDB7C /* lz4_decoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lz4_decoder.h; path = lz4/lz4_decoder.h; sourceTree = "<group>"; };
-		9F13F7DC173DBDE8002EDB7C /* lz4_encoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lz4_encoder.h; path = lz4/lz4_encoder.h; sourceTree = "<group>"; };
-		9F13F7DD173DBDE8002EDB7C /* lz4.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lz4.c; path = lz4/lz4.c; sourceTree = "<group>"; };
-		9F13F7DE173DBDE8002EDB7C /* lz4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lz4.h; path = lz4/lz4.h; sourceTree = "<group>"; };
-		9F13F7DF173DBDE8002EDB7C /* lz4hc_encoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lz4hc_encoder.h; path = lz4/lz4hc_encoder.h; sourceTree = "<group>"; };
-		9F13F7E0173DBDE8002EDB7C /* lz4hc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lz4hc.c; path = lz4/lz4hc.c; sourceTree = "<group>"; };
-		9F13F7E1173DBDE8002EDB7C /* lz4hc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lz4hc.h; path = lz4/lz4hc.h; sourceTree = "<group>"; };
+		9F0D96D916E8088C00098C8D /* Water.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Water.h; path = ../engine/terrain/include/voxel/Water.h; sourceTree = "<group>"; };
+		9F0D96DA16E8088C00098C8D /* Water.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Water.inl; path = ../engine/terrain/include/voxel/Water.inl; sourceTree = "<group>"; };
+		9F0D96DD16E808A400098C8D /* Water.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Water.cpp; path = ../engine/terrain/src/voxel/Water.cpp; sourceTree = "<group>"; };
+		9F13F7DB173DBDE8002EDB7C /* lz4_decoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lz4_decoder.h; path = ../third_party/lz4_historical/lz4_decoder.h; sourceTree = "<group>"; };
+		9F13F7DC173DBDE8002EDB7C /* lz4_encoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lz4_encoder.h; path = ../third_party/lz4_historical/lz4_encoder.h; sourceTree = "<group>"; };
+		9F13F7DD173DBDE8002EDB7C /* lz4.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lz4.c; path = ../third_party/lz4_historical/lz4.c; sourceTree = "<group>"; };
+		9F13F7DE173DBDE8002EDB7C /* lz4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lz4.h; path = ../third_party/lz4_historical/lz4.h; sourceTree = "<group>"; };
+		9F13F7DF173DBDE8002EDB7C /* lz4hc_encoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lz4hc_encoder.h; path = ../third_party/lz4_historical/lz4hc_encoder.h; sourceTree = "<group>"; };
+		9F13F7E0173DBDE8002EDB7C /* lz4hc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lz4hc.c; path = ../third_party/lz4_historical/lz4hc.c; sourceTree = "<group>"; };
+		9F13F7E1173DBDE8002EDB7C /* lz4hc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lz4hc.h; path = ../third_party/lz4_historical/lz4hc.h; sourceTree = "<group>"; };
 		9F13F7F2173DBE0B002EDB7C /* SerializerBinary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SerializerBinary.h; sourceTree = "<group>"; };
 		9F13F7F9173DBE3B002EDB7C /* SerializerBinary.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SerializerBinary.cpp; sourceTree = "<group>"; };
 		9F14D2F517ECF63800F64369 /* Remote.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Remote.h; sourceTree = "<group>"; };
@@ -3220,22 +3220,22 @@
 		9F1A32171823088500AAB73F /* DataStoreService.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataStoreService.cpp; sourceTree = "<group>"; };
 		9F1A321E182308AC00AAB73F /* DataStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataStore.h; sourceTree = "<group>"; };
 		9F1A321F182308AC00AAB73F /* DataStoreService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataStoreService.h; sourceTree = "<group>"; };
-		9F204AB816CAFDE600423E9B /* Cell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Cell.h; path = include/voxel/Cell.h; sourceTree = "<group>"; };
-		9F204AB916CAFDE600423E9B /* Grid.Chunk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Grid.Chunk.h; path = include/voxel/Grid.Chunk.h; sourceTree = "<group>"; };
-		9F204ABA16CAFDE600423E9B /* Grid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Grid.h; path = include/voxel/Grid.h; sourceTree = "<group>"; };
-		9F204ABB16CAFDE600423E9B /* Region.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Region.h; path = include/voxel/Region.h; sourceTree = "<group>"; };
-		9F204ABC16CAFDE600423E9B /* Region.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Region.inl; path = include/voxel/Region.inl; sourceTree = "<group>"; };
-		9F204ABE16CAFDE600423E9B /* Region.iterator.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Region.iterator.inl; path = include/voxel/Region.iterator.inl; sourceTree = "<group>"; };
-		9F204ABF16CAFDE600423E9B /* Serializer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Serializer.h; path = include/voxel/Serializer.h; sourceTree = "<group>"; };
-		9F204AC016CAFDE600423E9B /* Util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Util.h; path = include/voxel/Util.h; sourceTree = "<group>"; };
-		9F204AD016CAFE3E00423E9B /* Cell.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Cell.cpp; path = voxel/Cell.cpp; sourceTree = "<group>"; };
-		9F204AD116CAFE3E00423E9B /* Grid.Chunk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Grid.Chunk.cpp; path = voxel/Grid.Chunk.cpp; sourceTree = "<group>"; };
-		9F204AD216CAFE3E00423E9B /* Grid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Grid.cpp; path = voxel/Grid.cpp; sourceTree = "<group>"; };
-		9F204AD316CAFE3E00423E9B /* Serializer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Serializer.cpp; path = voxel/Serializer.cpp; sourceTree = "<group>"; };
-		9F204AD416CAFE3E00423E9B /* Util.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Util.cpp; path = voxel/Util.cpp; sourceTree = "<group>"; };
-		9F24B9D116EFDA65006717FC /* AreaCopy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AreaCopy.h; path = include/voxel/AreaCopy.h; sourceTree = "<group>"; };
-		9F24B9D216EFDA65006717FC /* AreaCopy.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = AreaCopy.inl; path = include/voxel/AreaCopy.inl; sourceTree = "<group>"; };
-		9F24B9D316EFDA65006717FC /* Region.xline_iterator.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Region.xline_iterator.inl; path = include/voxel/Region.xline_iterator.inl; sourceTree = "<group>"; };
+		9F204AB816CAFDE600423E9B /* Cell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Cell.h; path = ../engine/terrain/include/voxel/Cell.h; sourceTree = "<group>"; };
+		9F204AB916CAFDE600423E9B /* Grid.Chunk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Grid.Chunk.h; path = ../engine/terrain/include/voxel/Grid.Chunk.h; sourceTree = "<group>"; };
+		9F204ABA16CAFDE600423E9B /* Grid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Grid.h; path = ../engine/terrain/include/voxel/Grid.h; sourceTree = "<group>"; };
+		9F204ABB16CAFDE600423E9B /* Region.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Region.h; path = ../engine/terrain/include/voxel/Region.h; sourceTree = "<group>"; };
+		9F204ABC16CAFDE600423E9B /* Region.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Region.inl; path = ../engine/terrain/include/voxel/Region.inl; sourceTree = "<group>"; };
+		9F204ABE16CAFDE600423E9B /* Region.iterator.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Region.iterator.inl; path = ../engine/terrain/include/voxel/Region.iterator.inl; sourceTree = "<group>"; };
+		9F204ABF16CAFDE600423E9B /* Serializer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Serializer.h; path = ../engine/terrain/include/voxel/Serializer.h; sourceTree = "<group>"; };
+		9F204AC016CAFDE600423E9B /* Util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Util.h; path = ../engine/terrain/include/voxel/Util.h; sourceTree = "<group>"; };
+		9F204AD016CAFE3E00423E9B /* Cell.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Cell.cpp; path = ../engine/terrain/src/voxel/Cell.cpp; sourceTree = "<group>"; };
+		9F204AD116CAFE3E00423E9B /* Grid.Chunk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Grid.Chunk.cpp; path = ../engine/terrain/src/voxel/Grid.Chunk.cpp; sourceTree = "<group>"; };
+		9F204AD216CAFE3E00423E9B /* Grid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Grid.cpp; path = ../engine/terrain/src/voxel/Grid.cpp; sourceTree = "<group>"; };
+		9F204AD316CAFE3E00423E9B /* Serializer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Serializer.cpp; path = ../engine/terrain/src/runtime/Serializer.cpp; sourceTree = "<group>"; };
+		9F204AD416CAFE3E00423E9B /* Util.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Util.cpp; path = ../engine/terrain/src/voxel/Util.cpp; sourceTree = "<group>"; };
+		9F24B9D116EFDA65006717FC /* AreaCopy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AreaCopy.h; path = ../engine/terrain/include/voxel/AreaCopy.h; sourceTree = "<group>"; };
+		9F24B9D216EFDA65006717FC /* AreaCopy.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = AreaCopy.inl; path = ../engine/terrain/include/voxel/AreaCopy.inl; sourceTree = "<group>"; };
+		9F24B9D316EFDA65006717FC /* Region.xline_iterator.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Region.xline_iterator.inl; path = ../engine/terrain/include/voxel/Region.xline_iterator.inl; sourceTree = "<group>"; };
 		9F28E38F13BD3E100017C300 /* FloorWire.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FloorWire.h; sourceTree = "<group>"; };
 		9F28E39113BD3E2A0017C300 /* FloorWire.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FloorWire.cpp; sourceTree = "<group>"; };
 		9F29073B153DE748003544CF /* Swimming.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Swimming.cpp; sourceTree = "<group>"; };
@@ -3254,8 +3254,8 @@
 		9F719660195E18A7002B7320 /* PathfindingService.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PathfindingService.cpp; sourceTree = "<group>"; };
 		9F719665195E18BC002B7320 /* PartCookie.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PartCookie.h; sourceTree = "<group>"; };
 		9F719666195E18BC002B7320 /* PathfindingService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PathfindingService.h; sourceTree = "<group>"; };
-		9F71966B195E1D72002B7320 /* Voxelizer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Voxelizer.cpp; path = voxel/Voxelizer.cpp; sourceTree = "<group>"; };
-		9F71966E195E1D99002B7320 /* Voxelizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Voxelizer.h; path = include/voxel/Voxelizer.h; sourceTree = "<group>"; };
+		9F71966B195E1D72002B7320 /* Voxelizer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Voxelizer.cpp; path = ../engine/terrain/src/runtime/Voxelizer.cpp; sourceTree = "<group>"; };
+		9F71966E195E1D99002B7320 /* Voxelizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Voxelizer.h; path = ../engine/terrain/include/voxel/Voxelizer.h; sourceTree = "<group>"; };
 		9F77EB64154B7412006BFEAD /* BuoyancyConnector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BuoyancyConnector.h; sourceTree = "<group>"; };
 		9F77EB66154B741F006BFEAD /* BuoyancyConnector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BuoyancyConnector.cpp; sourceTree = "<group>"; };
 		9F77FF741592B94A006BFEAD /* ClusterCellIterator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ClusterCellIterator.h; sourceTree = "<group>"; };
@@ -3275,8 +3275,8 @@
 		9FA354DC16BC48A300D3AC22 /* ProgramMemoryChecker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProgramMemoryChecker.h; sourceTree = "<group>"; };
 		9FA907C8168119DD00F12363 /* GuiBase2d.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GuiBase2d.h; sourceTree = "<group>"; };
 		9FA907CC16811A0500F12363 /* GuiBase2d.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GuiBase2d.cpp; sourceTree = "<group>"; };
-		9FB404E216FBC7150022DE13 /* ChunkMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ChunkMap.h; path = include/voxel/ChunkMap.h; sourceTree = "<group>"; };
-		9FB404E316FBC7150022DE13 /* ChunkMap.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = ChunkMap.inl; path = include/voxel/ChunkMap.inl; sourceTree = "<group>"; };
+		9FB404E216FBC7150022DE13 /* ChunkMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ChunkMap.h; path = ../engine/terrain/include/voxel/ChunkMap.h; sourceTree = "<group>"; };
+		9FB404E316FBC7150022DE13 /* ChunkMap.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = ChunkMap.inl; path = ../engine/terrain/include/voxel/ChunkMap.inl; sourceTree = "<group>"; };
 		9FC0FD1317E3DB74008B0F59 /* HttpService.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HttpService.cpp; sourceTree = "<group>"; };
 		9FC0FD1617E3DB85008B0F59 /* HttpService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HttpService.h; sourceTree = "<group>"; };
 		9FCE722A168CFCEF0093D8E9 /* FeatherweightDict.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FeatherweightDict.h; sourceTree = "<group>"; };
@@ -3291,7 +3291,7 @@
 		9FF305791A9697860034D011 /* LuaSourceContainer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LuaSourceContainer.h; sourceTree = "<group>"; };
 		9FFB292E16DC55C200F8DC2A /* MachineIdUploader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MachineIdUploader.h; sourceTree = "<group>"; };
 		9FFB293216DC55D400F8DC2A /* MachineIdUploader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MachineIdUploader.cpp; sourceTree = "<group>"; };
-		9FFB29F416DF013600F8DC2A /* CellChangeListener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CellChangeListener.h; path = include/voxel/CellChangeListener.h; sourceTree = "<group>"; };
+		9FFB29F416DF013600F8DC2A /* CellChangeListener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CellChangeListener.h; path = ../engine/terrain/include/voxel/CellChangeListener.h; sourceTree = "<group>"; };
 		9FFBC84F172B3AFE008865A7 /* SleepingJob.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SleepingJob.h; sourceTree = "<group>"; };
 		9FFBC851172B3B17008865A7 /* SleepingJob.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SleepingJob.cpp; sourceTree = "<group>"; };
 		9FFC2A4716C3413400B3275A /* Light.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Light.cpp; sourceTree = "<group>"; };
@@ -3324,8 +3324,8 @@
 		C8C1B71118F8A23000B57DF3 /* PartOperation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PartOperation.cpp; sourceTree = "<group>"; };
 		C8EDBEBA19C7A74B0046D07C /* SolidModelContentProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SolidModelContentProvider.h; sourceTree = "<group>"; };
 		C8EDBEC419C7A7BD0046D07C /* SolidModelContentProvider.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SolidModelContentProvider.cpp; sourceTree = "<group>"; };
-		CF9652BB14E1C74D001686EB /* RobloxServicesTools.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RobloxServicesTools.cpp; path = ../ClientShared/RobloxServicesTools.cpp; sourceTree = SOURCE_ROOT; };
-		CF9652BD14E1C767001686EB /* RobloxServicesTools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RobloxServicesTools.h; path = ../ClientShared/RobloxServicesTools.h; sourceTree = SOURCE_ROOT; };
+		CF9652BB14E1C74D001686EB /* RobloxServicesTools.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RobloxServicesTools.cpp; path = ../apps/player/shared/client/RobloxServicesTools.cpp; sourceTree = SOURCE_ROOT; };
+		CF9652BD14E1C767001686EB /* RobloxServicesTools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RobloxServicesTools.h; path = ../apps/player/shared/client/RobloxServicesTools.h; sourceTree = SOURCE_ROOT; };
 		D04EEF6B1C6386D400E47001 /* URL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = URL.h; sourceTree = "<group>"; };
 		D0E20C1A1C3541B2002EFFB9 /* URL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = URL.cpp; sourceTree = "<group>"; };
 		D2AAC046055464E500DB518D /* libApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libApp.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -3496,8 +3496,8 @@
 		EAE9A0081291E9A000A46637 /* ScopedAssign.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScopedAssign.h; sourceTree = "<group>"; };
 		EAE9A0091291E9A000A46637 /* ScriptInformationProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScriptInformationProvider.h; sourceTree = "<group>"; };
 		EAE9A00B1291E9A000A46637 /* SimSendFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimSendFilter.h; sourceTree = "<group>"; };
-		EAE9A00C1291E9A000A46637 /* Sound.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Sound.h; sourceTree = "<group>"; };
-		EAE9A00D1291E9A000A46637 /* SoundWorld.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundWorld.h; sourceTree = "<group>"; };
+		EAE9A00C1291E9A000A46637 /* Sound.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ../../../engine/audio/include/audio/Sound.h; sourceTree = "<group>"; };
+		EAE9A00D1291E9A000A46637 /* SoundWorld.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ../../../engine/audio/include/audio/SoundWorld.h; sourceTree = "<group>"; };
 		EAE9A00E1291E9A000A46637 /* SpanningEdge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpanningEdge.h; sourceTree = "<group>"; };
 		EAE9A00F1291E9A000A46637 /* SpanningNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpanningNode.h; sourceTree = "<group>"; };
 		EAE9A0101291E9A000A46637 /* SpanningTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpanningTree.h; sourceTree = "<group>"; };
@@ -3854,8 +3854,8 @@
 		EAE9A35E1291E9D800A46637 /* RunningAverage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RunningAverage.cpp; sourceTree = "<group>"; };
 		EAE9A35F1291E9D800A46637 /* RunStateOwner.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RunStateOwner.cpp; sourceTree = "<group>"; };
 		EAE9A3601291E9D800A46637 /* ScriptInformationProvider.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ScriptInformationProvider.cpp; sourceTree = "<group>"; };
-		EAE9A3621291E9D800A46637 /* Sound.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Sound.cpp; sourceTree = "<group>"; };
-		EAE9A3631291E9D800A46637 /* SoundWorld.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoundWorld.cpp; sourceTree = "<group>"; };
+		EAE9A3621291E9D800A46637 /* Sound.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ../../engine/audio/src/Sound.cpp; sourceTree = "<group>"; };
+		EAE9A3631291E9D800A46637 /* SoundWorld.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ../../engine/audio/src/SoundWorld.cpp; sourceTree = "<group>"; };
 		EAE9A3641291E9D800A46637 /* SpanningEdge.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpanningEdge.cpp; sourceTree = "<group>"; };
 		EAE9A3651291E9D800A46637 /* SpanningNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpanningNode.cpp; sourceTree = "<group>"; };
 		EAE9A3661291E9D800A46637 /* SpanningTree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpanningTree.cpp; sourceTree = "<group>"; };
@@ -4430,7 +4430,7 @@
 				EAE99F761291E9A000A46637 /* StrafingNoPhysics.h */,
 			);
 			name = humanoid;
-			path = include/humanoid;
+			path = ../engine/avatar/humanoid/include/humanoid;
 			sourceTree = "<group>";
 		};
 		EAE99F771291E9A000A46637 /* lua */ = {
@@ -4440,7 +4440,7 @@
 				EAE99F791291E9A000A46637 /* LuaBridge.h */,
 			);
 			name = lua;
-			path = include/lua;
+			path = ../engine/scripting/include/lua;
 			sourceTree = "<group>";
 		};
 		EAE99F7A1291E9A000A46637 /* reflection */ = {
@@ -4502,7 +4502,7 @@
 				EAE99F981291E9A000A46637 /* SecurityContext.h */,
 			);
 			name = security;
-			path = include/security;
+			path = ../engine/security/include/security;
 			sourceTree = "<group>";
 		};
 		EAE99F991291E9A000A46637 /* tool */ = {
@@ -5121,7 +5121,7 @@
 				E53BC2DE1A78701C006D992E /* FuzzyTokens.cpp */,
 				EAE9A30F1291E9D800A46637 /* SecurityContext.cpp */,
 			);
-			path = security;
+			path = ../engine/security/src;
 			sourceTree = "<group>";
 		};
 		EAE9A3101291E9D800A46637 /* tool */ = {
@@ -5645,7 +5645,7 @@
 				EAE9A5CA1291E9E400A46637 /* Seated.cpp */,
 				EAE9A5CB1291E9E400A46637 /* StrafingNoPhysics.cpp */,
 			);
-			path = humanoid;
+			path = ../engine/avatar/humanoid/src;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -8772,7 +8772,7 @@
 					../Log/include,
 					../RBXCookies,
 					./include,
-					../Base/include,
+					../engine/core/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"$(CONTRIB_PATH)/VMProtectWin",
 					"./lua-5.1.4/src",
@@ -8780,12 +8780,12 @@
 					../Rendering/g3d/zlib,
 					../Rendering/RbxG3D/include,
 					../Rendering/AppDraw/include,
-					../Rendering/GfxBase/include,
-					../Network/include,
-					../App.BulletPhysics,
+					../Rendering/Gfxengine/core/include,
+					../engine/networking/include,
+					../third_party/bullet_historical,
 					"$(CONTRIB_PATH)/cpp-netlib-0.11.0-final",
 					"$(CONTRIB_PATH)/darwin/x86/curl/curl-7.43.0/include",
-					../fmod/include,
+					../third_party/quarantined/fmod/include,
 					"$(CONTRIB_PATH)/SDL2.0.4/include",
 				);
 				INSTALL_PATH = /usr/local/lib;
@@ -8817,7 +8817,7 @@
 					../Log/include,
 					../RBXCookies,
 					./include,
-					../Base/include,
+					../engine/core/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"$(CONTRIB_PATH)/VMProtectWin",
 					"./lua-5.1.4/src",
@@ -8825,12 +8825,12 @@
 					../Rendering/g3d/zlib,
 					../Rendering/RbxG3D/include,
 					../Rendering/AppDraw/include,
-					../Rendering/GfxBase/include,
-					../Network/include,
-					../App.BulletPhysics,
+					../Rendering/Gfxengine/core/include,
+					../engine/networking/include,
+					../third_party/bullet_historical,
 					"$(CONTRIB_PATH)/cpp-netlib-0.11.0-final",
 					"$(CONTRIB_PATH)/darwin/x86/curl/curl-7.43.0/include",
-					../fmod/include,
+					../third_party/quarantined/fmod/include,
 					"$(CONTRIB_PATH)/SDL2.0.4/include",
 				);
 				INSTALL_PATH = /usr/local/lib;
@@ -8870,18 +8870,18 @@
 				HEADER_SEARCH_PATHS = (
 					../Log/include,
 					./include,
-					../Base/include,
+					../engine/core/include,
 					"$(CONTRIB_PATH)/VMProtectWin",
 					"./lua-5.1.4/src",
 					../Rendering/g3d/include,
 					../Rendering/g3d/zlib,
 					../Rendering/RbxG3D/include,
 					../Rendering/AppDraw/include,
-					../Rendering/GfxBase/include,
-					../Network/include,
+					../Rendering/Gfxengine/core/include,
+					../engine/networking/include,
 					../ClientShared,
-					../App.BulletPhysics,
-					../fmod/include,
+					../third_party/bullet_historical,
+					../third_party/quarantined/fmod/include,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = YES;
@@ -8918,18 +8918,18 @@
 				HEADER_SEARCH_PATHS = (
 					../Log/include,
 					./include,
-					../Base/include,
+					../engine/core/include,
 					"$(CONTRIB_PATH)/VMProtectWin",
 					"./lua-5.1.4/src",
 					../Rendering/g3d/include,
 					../Rendering/g3d/zlib,
 					../Rendering/RbxG3D/include,
 					../Rendering/AppDraw/include,
-					../Rendering/GfxBase/include,
-					../Network/include,
+					../Rendering/Gfxengine/core/include,
+					../engine/networking/include,
 					../ClientShared,
-					../App.BulletPhysics,
-					../fmod/include,
+					../third_party/bullet_historical,
+					../third_party/quarantined/fmod/include,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = YES;
@@ -8969,8 +8969,8 @@
 					../Log/include,
 					../RBXCookies,
 					./include,
-					../Base/include,
-					../fmod/include,
+					../engine/core/include,
+					../third_party/quarantined/fmod/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"$(CONTRIB_PATH)/VMProtectWin",
 					"./lua-5.1.4/src",
@@ -8978,11 +8978,11 @@
 					../Rendering/g3d/zlib,
 					../Rendering/RbxG3D/include,
 					../Rendering/AppDraw/include,
-					../Rendering/GfxBase/include,
-					../Network/include,
+					../Rendering/Gfxengine/core/include,
+					../engine/networking/include,
 					include,
 					../include,
-					../App.BulletPhysics,
+					../third_party/bullet_historical,
 					"$(CONTRIB_PATH)/cpp-netlib-0.11.0-final",
 					"$(CONTRIB_PATH)/iOS/universal/curl/curl-7.43.0/include",
 					"$(CONTRIB_PATH)/w3c-libwww-5.4.0/Library/src",
@@ -9028,8 +9028,8 @@
 					../Log/include,
 					../RBXCookies,
 					./include,
-					../Base/include,
-					../fmod/include,
+					../engine/core/include,
+					../third_party/quarantined/fmod/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"$(CONTRIB_PATH)/VMProtectWin",
 					"./lua-5.1.4/src",
@@ -9037,11 +9037,11 @@
 					../Rendering/g3d/zlib,
 					../Rendering/RbxG3D/include,
 					../Rendering/AppDraw/include,
-					../Rendering/GfxBase/include,
-					../Network/include,
+					../Rendering/Gfxengine/core/include,
+					../engine/networking/include,
 					include,
 					../include,
-					../App.BulletPhysics,
+					../third_party/bullet_historical,
 					"$(CONTRIB_PATH)/cpp-netlib-0.11.0-final",
 					"$(CONTRIB_PATH)/iOS/universal/curl/curl-7.43.0/include",
 					"$(CONTRIB_PATH)/w3c-libwww-5.4.0/Library/src",
@@ -9081,7 +9081,7 @@
 					../Log/include,
 					../RBXCookies,
 					./include,
-					../Base/include,
+					../engine/core/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"$(CONTRIB_PATH)/VMProtectWin",
 					"./lua-5.1.4/src",
@@ -9089,12 +9089,12 @@
 					../Rendering/g3d/zlib,
 					../Rendering/RbxG3D/include,
 					../Rendering/AppDraw/include,
-					../Rendering/GfxBase/include,
-					../Network/include,
-					../App.BulletPhysics,
+					../Rendering/Gfxengine/core/include,
+					../engine/networking/include,
+					../third_party/bullet_historical,
 					"$(CONTRIB_PATH)/cpp-netlib-0.11.0-final",
 					"$(CONTRIB_PATH)/darwin/x86/curl/curl-7.43.0/include",
-					../fmod/include,
+					../third_party/quarantined/fmod/include,
 					"$(CONTRIB_PATH)/SDL2.0.4/include",
 				);
 				INSTALL_PATH = /usr/local/lib;
@@ -9127,7 +9127,7 @@
 					../Log/include,
 					../RBXCookies,
 					./include,
-					../Base/include,
+					../engine/core/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"$(CONTRIB_PATH)/VMProtectWin",
 					"./lua-5.1.4/src",
@@ -9135,12 +9135,12 @@
 					../Rendering/g3d/zlib,
 					../Rendering/RbxG3D/include,
 					../Rendering/AppDraw/include,
-					../Rendering/GfxBase/include,
-					../Network/include,
-					../App.BulletPhysics,
+					../Rendering/Gfxengine/core/include,
+					../engine/networking/include,
+					../third_party/bullet_historical,
 					"$(CONTRIB_PATH)/cpp-netlib-0.11.0-final",
 					"$(CONTRIB_PATH)/darwin/x86/curl/curl-7.43.0/include",
-					../fmod/include,
+					../third_party/quarantined/fmod/include,
 					"$(CONTRIB_PATH)/SDL2.0.4/include",
 				);
 				INSTALL_PATH = /usr/local/lib;
@@ -9171,7 +9171,7 @@
 					../Log/include,
 					../RBXCookies,
 					./include,
-					../Base/include,
+					../engine/core/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"$(CONTRIB_PATH)/VMProtectWin",
 					"./lua-5.1.4/src",
@@ -9179,12 +9179,12 @@
 					../Rendering/g3d/zlib,
 					../Rendering/RbxG3D/include,
 					../Rendering/AppDraw/include,
-					../Rendering/GfxBase/include,
-					../Network/include,
-					../App.BulletPhysics,
+					../Rendering/Gfxengine/core/include,
+					../engine/networking/include,
+					../third_party/bullet_historical,
 					"$(CONTRIB_PATH)/cpp-netlib-0.11.0-final",
 					"$(CONTRIB_PATH)/darwin/x86/curl/curl-7.43.0/include",
-					../fmod/include,
+					../third_party/quarantined/fmod/include,
 					"$(CONTRIB_PATH)/SDL2.0.4/include",
 				);
 				INSTALL_PATH = /usr/local/lib;
@@ -9214,7 +9214,7 @@
 					../Log/include,
 					../RBXCookies,
 					./include,
-					../Base/include,
+					../engine/core/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"$(CONTRIB_PATH)/VMProtectWin",
 					"./lua-5.1.4/src",
@@ -9222,12 +9222,12 @@
 					../Rendering/g3d/zlib,
 					../Rendering/RbxG3D/include,
 					../Rendering/AppDraw/include,
-					../Rendering/GfxBase/include,
-					../Network/include,
-					../App.BulletPhysics,
+					../Rendering/Gfxengine/core/include,
+					../engine/networking/include,
+					../third_party/bullet_historical,
 					"$(CONTRIB_PATH)/cpp-netlib-0.11.0-final",
 					"$(CONTRIB_PATH)/darwin/x86/curl/curl-7.43.0/include",
-					../fmod/include,
+					../third_party/quarantined/fmod/include,
 					"$(CONTRIB_PATH)/SDL2.0.4/include",
 				);
 				INSTALL_PATH = /usr/local/lib;
@@ -9270,18 +9270,18 @@
 				HEADER_SEARCH_PATHS = (
 					../Log/include,
 					./include,
-					../Base/include,
+					../engine/core/include,
 					"$(CONTRIB_PATH)/VMProtectWin",
 					"./lua-5.1.4/src",
 					../Rendering/g3d/include,
 					../Rendering/g3d/zlib,
 					../Rendering/RbxG3D/include,
 					../Rendering/AppDraw/include,
-					../Rendering/GfxBase/include,
-					../Network/include,
+					../Rendering/Gfxengine/core/include,
+					../engine/networking/include,
 					../ClientShared,
-					../App.BulletPhysics,
-					../fmod/include,
+					../third_party/bullet_historical,
+					../third_party/quarantined/fmod/include,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = YES;
@@ -9310,7 +9310,7 @@
 					../Log/include,
 					../RBXCookies,
 					./include,
-					../Base/include,
+					../engine/core/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"$(CONTRIB_PATH)/VMProtectWin",
 					"./lua-5.1.4/src",
@@ -9318,12 +9318,12 @@
 					../Rendering/g3d/zlib,
 					../Rendering/RbxG3D/include,
 					../Rendering/AppDraw/include,
-					../Rendering/GfxBase/include,
-					../Network/include,
-					../App.BulletPhysics,
+					../Rendering/Gfxengine/core/include,
+					../engine/networking/include,
+					../third_party/bullet_historical,
 					"$(CONTRIB_PATH)/cpp-netlib-0.11.0-final",
 					"$(CONTRIB_PATH)/darwin/x86/curl/curl-7.43.0/include",
-					../fmod/include,
+					../third_party/quarantined/fmod/include,
 					"$(CONTRIB_PATH)/SDL2.0.4/include",
 				);
 				INSTALL_PATH = /usr/local/lib;
@@ -9362,8 +9362,8 @@
 					../Log/include,
 					../RBXCookies,
 					./include,
-					../Base/include,
-					../fmod/include,
+					../engine/core/include,
+					../third_party/quarantined/fmod/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"$(CONTRIB_PATH)/VMProtectWin",
 					"./lua-5.1.4/src",
@@ -9371,11 +9371,11 @@
 					../Rendering/g3d/zlib,
 					../Rendering/RbxG3D/include,
 					../Rendering/AppDraw/include,
-					../Rendering/GfxBase/include,
-					../Network/include,
+					../Rendering/Gfxengine/core/include,
+					../engine/networking/include,
 					include,
 					../include,
-					../App.BulletPhysics,
+					../third_party/bullet_historical,
 					"$(CONTRIB_PATH)/cpp-netlib-0.11.0-final",
 					"$(CONTRIB_PATH)/iOS/universal/curl/curl-7.43.0/include",
 					"$(CONTRIB_PATH)/w3c-libwww-5.4.0/Library/src",
@@ -9410,7 +9410,7 @@
 					../Log/include,
 					../RBXCookies,
 					./include,
-					../Base/include,
+					../engine/core/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"$(CONTRIB_PATH)/VMProtectWin",
 					"./lua-5.1.4/src",
@@ -9418,12 +9418,12 @@
 					../Rendering/g3d/zlib,
 					../Rendering/RbxG3D/include,
 					../Rendering/AppDraw/include,
-					../Rendering/GfxBase/include,
-					../Network/include,
-					../App.BulletPhysics,
+					../Rendering/Gfxengine/core/include,
+					../engine/networking/include,
+					../third_party/bullet_historical,
 					"$(CONTRIB_PATH)/cpp-netlib-0.11.0-final",
 					"$(CONTRIB_PATH)/darwin/x86/curl/curl-7.43.0/include",
-					../fmod/include,
+					../third_party/quarantined/fmod/include,
 					"$(CONTRIB_PATH)/SDL2.0.4/include",
 				);
 				INSTALL_PATH = /usr/local/lib;
@@ -9455,7 +9455,7 @@
 					../Log/include,
 					../RBXCookies,
 					./include,
-					../Base/include,
+					../engine/core/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"$(CONTRIB_PATH)/VMProtectWin",
 					"./lua-5.1.4/src",
@@ -9463,12 +9463,12 @@
 					../Rendering/g3d/zlib,
 					../Rendering/RbxG3D/include,
 					../Rendering/AppDraw/include,
-					../Rendering/GfxBase/include,
-					../Network/include,
-					../App.BulletPhysics,
+					../Rendering/Gfxengine/core/include,
+					../engine/networking/include,
+					../third_party/bullet_historical,
 					"$(CONTRIB_PATH)/cpp-netlib-0.11.0-final",
 					"$(CONTRIB_PATH)/darwin/x86/curl/curl-7.43.0/include",
-					../fmod/include,
+					../third_party/quarantined/fmod/include,
 					"$(CONTRIB_PATH)/SDL2.0.4/include",
 				);
 				INSTALL_PATH = /usr/local/lib;

@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "program": "player-ui",
+  "legacySource": "shaders/source/ui.hlsl",
+  "vertex": "shaders/source/vs_player_ui.sc",
+  "fragment": "shaders/source/fs_player_ui.sc",
+  "varying": "shaders/varying/player_ui.def.sc",
+  "samplers": [
+    { "name": "s_color", "stage": 0, "semantic": "uiTexture" }
+  ],
+  "variants": ["textured-color"],
+  "status": "pipeline-ported-not-yet-wired-to-VisualEngine"
+}

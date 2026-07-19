@@ -674,7 +674,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\Library\SDL2\include;.\include;.\freetype\include;..\..\Library\boost\include;..\..\Base\include;..\..\TBB_4_1\include;..\..\App\Include;..\..\ClientShared;..\GfxBase\include;..\GfxCore\include;..\g3d\include;..\g3d\zlib;..\AppDraw\include;..\RbxG3D\include;..\..\Library\SDK\Include;..\..\Log\include;..\..\App.BulletPhysics;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Library\SDL2\include;.\include;.\freetype\include;..\..\Library\boost\include;..\..\Base\include;..\..\TBB_4_1\include;..\..\App\Include;..\..\ClientShared;..\GfxBase\include;..\GfxCore\include;..\g3d\include;..\g3d\zlib;..\AppDraw\include;..\RbxG3D\include;..\..\Library\SDK\Include;..\..\Log\include;$(SolutionDir)third_party\bullet_historical;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -691,7 +691,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Durango'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\include;.\freetype\include;..\..\Library\boost\include;..\..\Base\include;..\..\TBB_4_1\include;..\..\App\Include;..\..\ClientShared;..\GfxBase\include;..\GfxCore\include;..\g3d\include;..\g3d\zlib;..\AppDraw\include;..\RbxG3D\include;..\..\Log\include;..\..\App.BulletPhysics;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\include;.\freetype\include;..\..\Library\boost\include;..\..\Base\include;..\..\TBB_4_1\include;..\..\App\Include;..\..\ClientShared;..\GfxBase\include;..\GfxCore\include;..\g3d\include;..\g3d\zlib;..\AppDraw\include;..\RbxG3D\include;..\..\Log\include;$(SolutionDir)third_party\bullet_historical;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>RBX_PLATFORM_DURANGO;WIN32;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -714,7 +714,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <OmitFramePointers>false</OmitFramePointers>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\..\Library\SDL2\include;.\include;.\freetype\include;..\..\Library\boost\include;..\..\Base\include;..\..\TBB_4_1\include;..\..\App\Include;..\..\ClientShared;..\GfxBase\include;..\GfxCore\include;..\g3d\include;..\g3d\zlib;..\AppDraw\include;..\RbxG3D\include;..\..\Library\SDK\Include;..\..\Log\include;..\..\App.BulletPhysics;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Library\SDL2\include;.\include;.\freetype\include;..\..\Library\boost\include;..\..\Base\include;..\..\TBB_4_1\include;..\..\App\Include;..\..\ClientShared;..\GfxBase\include;..\GfxCore\include;..\g3d\include;..\g3d\zlib;..\AppDraw\include;..\RbxG3D\include;..\..\Library\SDK\Include;..\..\Log\include;$(SolutionDir)third_party\bullet_historical;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_RELEASE;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -736,7 +736,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <OmitFramePointers>false</OmitFramePointers>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\..\Library\SDL2\include;.\freetype\include;.\include;..\..\Library\boost\include;..\..\Base\include;..\..\App\Include;..\..\ClientShared;..\GfxBase\include;..\GfxCore\include;..\g3d\include;..\g3d\zlib;..\AppDraw\include;..\RbxG3D\include;..\..\Log\include;..\..\App.BulletPhysics;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Library\SDL2\include;.\freetype\include;.\include;..\..\Library\boost\include;..\..\Base\include;..\..\App\Include;..\..\ClientShared;..\GfxBase\include;..\GfxCore\include;..\g3d\include;..\g3d\zlib;..\AppDraw\include;..\RbxG3D\include;..\..\Log\include;$(SolutionDir)third_party\bullet_historical;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>RBX_PLATFORM_DURANGO;WIN32;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;NDEBUG;_LIB;_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -759,7 +759,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <OmitFramePointers>false</OmitFramePointers>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\..\Library\SDL2\include;.\include;.\freetype\include;..\..\Library\boost\include;..\..\Base\include;..\..\TBB_4_1\include;..\..\App\Include;..\..\ClientShared;..\GfxBase\include;..\GfxCore\include;..\g3d\include;..\g3d\zlib;..\AppDraw\include;..\RbxG3D\include;..\..\Library\SDK\Include;..\..\Log\include;..\..\App.BulletPhysics;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Library\SDL2\include;.\include;.\freetype\include;..\..\Library\boost\include;..\..\Base\include;..\..\TBB_4_1\include;..\..\App\Include;..\..\ClientShared;..\GfxBase\include;..\GfxCore\include;..\g3d\include;..\g3d\zlib;..\AppDraw\include;..\RbxG3D\include;..\..\Library\SDK\Include;..\..\Log\include;$(SolutionDir)third_party\bullet_historical;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_RELEASE;RBX_TEST_BUILD;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -781,7 +781,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <OmitFramePointers>false</OmitFramePointers>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>.\include;.\freetype\include;..\..\Library\boost\include;..\..\Base\include;..\..\TBB_4_1\include;..\..\App\Include;..\..\ClientShared;..\GfxBase\include;..\GfxCore\include;..\g3d\include;..\g3d\zlib;..\AppDraw\include;..\RbxG3D\include;..\..\Log\include;..\..\App.BulletPhysics;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\include;.\freetype\include;..\..\Library\boost\include;..\..\Base\include;..\..\TBB_4_1\include;..\..\App\Include;..\..\ClientShared;..\GfxBase\include;..\GfxCore\include;..\g3d\include;..\g3d\zlib;..\AppDraw\include;..\RbxG3D\include;..\..\Log\include;$(SolutionDir)third_party\bullet_historical;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>RBX_PLATFORM_DURANGO;WIN32;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;NDEBUG;_LIB;_RELEASE;RBX_TEST_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -801,7 +801,7 @@
       <AdditionalOptions>/D "_SECURE_SCL=0" /Zm130 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\..\Library\SDL2\include;.\include;.\freetype\include;..\..\Library\boost\include;..\..\Base\include;..\..\TBB_4_1\include;..\..\App\Include;..\..\ClientShared;..\GfxBase\include;..\GfxCore\include;..\g3d\include;..\g3d\zlib;..\AppDraw\include;..\RbxG3D\include;..\..\Library\SDK\Include;..\..\Log\include;..\..\App.BulletPhysics;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Library\SDL2\include;.\include;.\freetype\include;..\..\Library\boost\include;..\..\Base\include;..\..\TBB_4_1\include;..\..\App\Include;..\..\ClientShared;..\GfxBase\include;..\GfxCore\include;..\g3d\include;..\g3d\zlib;..\AppDraw\include;..\RbxG3D\include;..\..\Library\SDK\Include;..\..\Log\include;$(SolutionDir)third_party\bullet_historical;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_NOOPT;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>
@@ -820,7 +820,7 @@
       <AdditionalOptions>/D "_SECURE_SCL=0" /Zm130 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\..\Library\SDL2\include;.\freetype\include;.\include;..\..\Library\boost\include;..\..\Base\include;..\..\TBB_4_1\include;..\..\App\Include;..\..\ClientShared;..\GfxBase\include;..\GfxCore\include;..\g3d\include;..\g3d\zlib;..\AppDraw\include;..\RbxG3D\include;..\..\Log\include;..\..\App.BulletPhysics;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Library\SDL2\include;.\freetype\include;.\include;..\..\Library\boost\include;..\..\Base\include;..\..\TBB_4_1\include;..\..\App\Include;..\..\ClientShared;..\GfxBase\include;..\GfxCore\include;..\g3d\include;..\g3d\zlib;..\AppDraw\include;..\RbxG3D\include;..\..\Log\include;$(SolutionDir)third_party\bullet_historical;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>RBX_PLATFORM_DURANGO;WIN32;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;_WINDOWS;NDEBUG;_NOOPT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>

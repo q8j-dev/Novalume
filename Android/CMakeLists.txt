@@ -34,8 +34,8 @@ list(APPEND SOURCES libroblox/RobloxInput.cpp)
 list(APPEND HEADERS libroblox/Teleporter.h)
 list(APPEND SOURCES libroblox/Teleporter.cpp)
 list(APPEND HEADERS libroblox/RobloxInput.h)
-list(APPEND HEADERS ../ClientBase/RenderSettingsItem.h)
-list(APPEND SOURCES ../ClientBase/RenderSettingsItem.cpp)
+list(APPEND HEADERS ../apps/player/shared/client_base/RenderSettingsItem.h)
+list(APPEND SOURCES ../apps/player/shared/client_base/RenderSettingsItem.cpp)
 
 # This is GPL code and cannot be shipped.
 #

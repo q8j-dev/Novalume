@@ -19,7 +19,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\ClientShared\Win\CookiesEngine.cpp">
+    <ClCompile Include="$(SolutionDir)apps\player\shared\client\Win\CookiesEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="dlldatax.c">
@@ -28,7 +28,7 @@
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ClientShared\format_string.cpp">
+    <ClCompile Include="$(SolutionDir)apps\player\shared\client\format_string.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Launcher.cpp">
@@ -37,13 +37,13 @@
     <ClCompile Include="RobloxProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Win\SharedLauncher.cpp">
+    <ClCompile Include="$(SolutionDir)platform\windows\historical\SharedLauncher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Win\VistaTools.cpp">
+    <ClCompile Include="$(SolutionDir)platform\windows\historical\VistaTools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RobloxProxy_i.c">
@@ -73,7 +73,7 @@
     <ClInclude Include="_ILauncherEvents_CP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ClientShared\CookiesEngine.h">
+    <ClInclude Include="$(SolutionDir)apps\player\shared\client\CookiesEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dlldatax.h">
@@ -82,7 +82,7 @@
     <ClInclude Include="dllmain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ClientShared\format_string.h">
+    <ClInclude Include="$(SolutionDir)apps\player\shared\client\format_string.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Launcher.h">
@@ -91,7 +91,7 @@
     <ClInclude Include="Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Win\sitelock.h">
+    <ClInclude Include="$(SolutionDir)platform\windows\historical\sitelock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
@@ -100,7 +100,7 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Win\VistaTools.h">
+    <ClInclude Include="$(SolutionDir)platform\windows\historical\VistaTools.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RobloxProxy_i.h">

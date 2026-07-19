@@ -11,6 +11,8 @@ struct Appdata
 
     float4 Color : COLOR0;
     ATTR_INT4 Extra : COLOR1;
+	ATTR_INT4 SkinIndices : TEXCOORD4;
+	float4 SkinWeights : TEXCOORD5;
 
 #ifdef PIN_SURFACE
     float3 Tangent       : TEXCOORD2;
@@ -47,18 +49,31 @@ struct VertexOutput
 #ifdef PIN_DEBUG
 uniform float4 DebugColor;
 #endif
-
 VertexOutput DefaultVS(Appdata IN, out float4 HPosition: POSITION)
 {
     VertexOutput OUT = (VertexOutput)0;
 
     // Transform position and normal to world space
 #ifdef PIN_SKINNED
-    int boneIndex = IN.Extra.r;
-
-    float4 worldRow0 = WorldMatrixArray[boneIndex * 3 + 0];
-    float4 worldRow1 = WorldMatrixArray[boneIndex * 3 + 1];
-    float4 worldRow2 = WorldMatrixArray[boneIndex * 3 + 2];
+	int boneIndex0 = int(IN.SkinIndices.x);
+	int boneIndex1 = int(IN.SkinIndices.y);
+	int boneIndex2 = int(IN.SkinIndices.z);
+	int boneIndex3 = int(IN.SkinIndices.w);
+	float4 worldRow0 =
+		WorldMatrixArray[boneIndex0 * 3 + 0] * IN.SkinWeights.x +
+		WorldMatrixArray[boneIndex1 * 3 + 0] * IN.SkinWeights.y +
+		WorldMatrixArray[boneIndex2 * 3 + 0] * IN.SkinWeights.z +
+		WorldMatrixArray[boneIndex3 * 3 + 0] * IN.SkinWeights.w;
+	float4 worldRow1 =
+		WorldMatrixArray[boneIndex0 * 3 + 1] * IN.SkinWeights.x +
+		WorldMatrixArray[boneIndex1 * 3 + 1] * IN.SkinWeights.y +
+		WorldMatrixArray[boneIndex2 * 3 + 1] * IN.SkinWeights.z +
+		WorldMatrixArray[boneIndex3 * 3 + 1] * IN.SkinWeights.w;
+	float4 worldRow2 =
+		WorldMatrixArray[boneIndex0 * 3 + 2] * IN.SkinWeights.x +
+		WorldMatrixArray[boneIndex1 * 3 + 2] * IN.SkinWeights.y +
+		WorldMatrixArray[boneIndex2 * 3 + 2] * IN.SkinWeights.z +
+		WorldMatrixArray[boneIndex3 * 3 + 2] * IN.SkinWeights.w;
 		
 	float3 posWorld = float3(dot(worldRow0, IN.Position), dot(worldRow1, IN.Position), dot(worldRow2, IN.Position));
     float3 normalWorld = float3(dot(worldRow0.xyz, IN.Normal), dot(worldRow1.xyz, IN.Normal), dot(worldRow2.xyz, IN.Normal));
@@ -280,7 +295,8 @@ void DefaultPS(VertexOutput IN,
 #endif
 
     float4 light = lgridSample(TEXTURE(LightMap), TEXTURE(LightMapLookup), IN.LightPosition_Fog.xyz);
-	float shadow = shadowSample(TEXTURE(ShadowMap), IN.PosLightSpace_Reflectance.xyz, light.a);
+	float shadow = shadowSample(TEXTURE(ShadowMap),
+		shadowPrepareSample(G(CameraPosition).xyz - IN.View_Depth.xyz), light.a);
 
     // Compute reflection term
 #if defined(PIN_SURFACE) || defined(PIN_REFLECTION)

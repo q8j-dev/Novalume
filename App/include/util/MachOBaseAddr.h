@@ -9,8 +9,11 @@
 #ifndef App_MachOBaseAddr_h
 #define App_MachOBaseAddr_h
 
-uint32_t machODynamicBaseAddress(void);
+#include <cstddef>
+#include <cstdint>
 
-uint32_t machOTextSize(void);
+uintptr_t machODynamicBaseAddress(void);
+
+size_t machOTextSize(void);
 
 #endif

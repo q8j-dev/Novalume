@@ -85,12 +85,14 @@
     { "name": "MegaClusterFS", "source": "megacluster.hlsl", "target": "ps_2_0", "entrypoint": "MegaClusterPS" },
     { "name": "MegaClusterHQFS", "source": "megacluster.hlsl", "target": "ps_2_a", "entrypoint": "MegaClusterPS", "defines": "PIN_HQ" },
     { "name": "MegaClusterHQGBufferFS", "source": "megacluster.hlsl", "target": "ps_2_a", "entrypoint": "MegaClusterPS", "defines": "PIN_HQ PIN_GBUFFER", "exclude": "glsles" },
+	{ "name": "MegaClusterShadowVS", "source": "megacluster.hlsl", "target": "vs_2_0", "entrypoint": "MegaClusterShadowVS" },
 
     { "name": "SmoothClusterVS", "source": "smoothcluster.hlsl", "target": "vs_2_0", "entrypoint": "TerrainVS" },
     { "name": "SmoothClusterHQVS", "source": "smoothcluster.hlsl", "target": "vs_3_0", "entrypoint": "TerrainVS", "defines": "PIN_HQ" },
     { "name": "SmoothClusterFS", "source": "smoothcluster.hlsl", "target": "ps_2_0", "entrypoint": "TerrainPS" },
     { "name": "SmoothClusterHQFS", "source": "smoothcluster.hlsl", "target": "ps_3_0", "entrypoint": "TerrainPS", "defines": "PIN_HQ" },
     { "name": "SmoothClusterHQGBufferFS", "source": "smoothcluster.hlsl", "target": "ps_3_0", "entrypoint": "TerrainPS", "defines": "PIN_HQ PIN_GBUFFER", "exclude": "glsles" },
+	{ "name": "SmoothClusterShadowVS", "source": "smoothcluster.hlsl", "target": "vs_3_0", "entrypoint": "SmoothClusterShadowVS" },
 
     { "name": "ParticleVS", "source": "particle.hlsl", "target": "vs_1_1", "entrypoint": "vs" },
     { "name": "ParticleAddFS", "source": "particle.hlsl", "target": "ps_2_0", "entrypoint": "psAdd" },

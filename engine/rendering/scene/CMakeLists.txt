@@ -1,0 +1,103 @@
+add_library(rbx-render-scene STATIC EXCLUDE_FROM_ALL
+    src/CullableSceneNode.cpp
+    src/CustomEmitter.cpp
+    src/Emitter.cpp
+    src/ExplosionEmitter.cpp
+    src/FastCluster.cpp
+    src/GeometryGenerator.cpp
+    src/LightGrid.cpp
+    src/LightObject.cpp
+    src/MegaCluster.cpp
+    src/ObjectExporter.cpp
+    src/ParticleEmitter.cpp
+    src/RenderCamera.cpp
+    src/RenderNode.cpp
+    src/RenderQueue.cpp
+    src/RenderView.cpp
+    src/SceneManager.cpp
+    src/SceneUpdater.cpp
+    src/Sky.cpp
+    src/SmoothCluster.cpp
+    src/SpatialHashedScene.cpp
+    src/SuperCluster.cpp
+    src/VertexStreamer.cpp
+    src/ViewportRenderer.cpp
+    src/VisualEngine.cpp
+    src/Water.cpp
+    src/stdafx.cpp
+    include/GfxRender/CullableSceneNode.h
+    include/GfxRender/CustomEmitter.h
+    include/GfxRender/Emitter.h
+    include/GfxRender/EmitterShared.h
+    include/GfxRender/ExplosionEmitter.h
+    include/GfxRender/FastCluster.h
+    include/GfxRender/GeometryGenerator.h
+    include/GfxRender/LightGrid.h
+    include/GfxRender/LightObject.h
+    include/GfxRender/MegaCluster.h
+    include/GfxRender/ObjectExporter.h
+    include/GfxRender/ParticleEmitter.h
+    include/GfxRender/RenderCamera.h
+    include/GfxRender/RenderNode.h
+    include/GfxRender/RenderQueue.h
+    include/GfxRender/RenderView.h
+    include/GfxRender/SceneManager.h
+    include/GfxRender/SceneUpdater.h
+    include/GfxRender/Sky.h
+    include/GfxRender/SmoothCluster.h
+    include/GfxRender/SpatialGrid.h
+    include/GfxRender/SpatialHashedScene.h
+    include/GfxRender/SuperCluster.h
+    include/GfxRender/Util.h
+    include/GfxRender/VertexStreamer.h
+    include/GfxRender/ViewportRenderer.h
+    include/GfxRender/VisualEngine.h
+    include/GfxRender/Water.h
+)
+add_library(Roblox::RenderScene ALIAS rbx-render-scene)
+
+target_include_directories(rbx-render-scene
+    PUBLIC
+        "${CMAKE_CURRENT_SOURCE_DIR}/include"
+        "${CMAKE_SOURCE_DIR}/Library/boost/include"
+    PRIVATE
+        "${CMAKE_SOURCE_DIR}/engine/rendering/scene/include/GfxRender"
+        "${CMAKE_SOURCE_DIR}/engine/rendering/materials/include/GfxRender"
+        "${CMAKE_SOURCE_DIR}/engine/rendering/text/include/GfxRender"
+        "${CMAKE_SOURCE_DIR}/engine/rendering/ui/include/GfxRender"
+        "${CMAKE_SOURCE_DIR}/engine/datamodel/runtime/include"
+        "${CMAKE_SOURCE_DIR}/engine/animation/include"
+        "${CMAKE_SOURCE_DIR}/engine/interaction/tools/include"
+        "${CMAKE_SOURCE_DIR}/engine/ui/runtime/include"
+        "${CMAKE_SOURCE_DIR}/engine/scripting/include"
+        "${CMAKE_SOURCE_DIR}/engine/simulation/include"
+        "${CMAKE_SOURCE_DIR}/engine/rendering/foundation/include"
+        "${CMAKE_SOURCE_DIR}/engine/rendering/adorn/include"
+        "${CMAKE_SOURCE_DIR}/Rendering/RbxG3D/include"
+        "${CMAKE_SOURCE_DIR}/Rendering/g3d/include"
+        "${CMAKE_SOURCE_DIR}/engine/core/include"
+        "${CMAKE_SOURCE_DIR}/engine/core/include"
+        "${CMAKE_SOURCE_DIR}/Log/include"
+        "${CMAKE_SOURCE_DIR}/App/include"
+        "${CMAKE_SOURCE_DIR}/engine/terrain/include"
+        "${CMAKE_SOURCE_DIR}/engine/avatar/humanoid/include"
+        "${CMAKE_SOURCE_DIR}/third_party/bullet_historical"
+        "${CMAKE_SOURCE_DIR}/apps/player/shared/client"
+        "${CMAKE_SOURCE_DIR}/Library/boost/include"
+        "${CMAKE_SOURCE_DIR}/Library/SDL2/include"
+)
+target_link_libraries(rbx-render-scene
+    PUBLIC
+        Roblox::GfxCoreContract
+        Roblox::RenderFoundation
+        Roblox::RenderAdorn
+        Roblox::RenderMaterials
+        Roblox::RenderText
+        Roblox::RenderUI)
+target_compile_features(rbx-render-scene PUBLIC cxx_std_20)
+target_compile_definitions(rbx-render-scene
+    PUBLIC BOOST_NO_CXX98_FUNCTION_BASE=1
+    PRIVATE
+    _LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR=1)
+target_compile_options(rbx-render-scene PRIVATE
+    $<$<COMPILE_LANG_AND_ID:CXX,AppleClang>:-Wno-enum-constexpr-conversion>)

@@ -42,6 +42,11 @@ namespace RBX {
 		UDim operator+ (const UDim& v) const;
 		UDim operator- (const UDim& v) const;
 		UDim operator- () const;
+		UDim lerp(const UDim& goal, float alpha) const
+		{
+			return UDim(scale + (goal.scale - scale) * alpha,
+				static_cast<G3D::int16>(offset + (goal.offset - offset) * alpha));
+		}
 	};
 
 	class UDim2
@@ -81,6 +86,10 @@ namespace RBX {
 		UDim2 operator+ (const UDim2& v) const;
 		UDim2 operator- (const UDim2& v) const;
 		UDim2 operator- () const;
+		UDim2 lerp(const UDim2& goal, float alpha) const
+		{
+			return UDim2(x.lerp(goal.x, alpha), y.lerp(goal.y, alpha));
+		}
 
 
 		const UDim& operator[] (int i) const {

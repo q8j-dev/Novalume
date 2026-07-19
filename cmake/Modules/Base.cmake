@@ -1,5 +1,5 @@
-include_directories("${CMAKE_SOURCE_DIR}/Base/include")
+include_directories("${CMAKE_SOURCE_DIR}/engine/core/include")
 include_directories("${CMAKE_SOURCE_DIR}/Log/include")
 if(ANDROID)
-  include_directories("${CMAKE_SOURCE_DIR}/Base/include/rbx/Android")
+  include_directories("${CMAKE_SOURCE_DIR}/engine/core/include/rbx/Android")
 endif(ANDROID)

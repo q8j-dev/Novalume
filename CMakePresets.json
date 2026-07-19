@@ -1,0 +1,53 @@
+{
+  "version": 8,
+  "cmakeMinimumRequired": { "major": 3, "minor": 28, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "macos-arm64-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_OSX_ARCHITECTURES": "arm64",
+        "CMAKE_OSX_DEPLOYMENT_TARGET": "13.0",
+        "RBX_BUILD_PLAYER": "ON",
+        "RBX_BUILD_TESTS": "ON",
+        "RBX_ENABLE_LEGACY_BUILD": "OFF",
+        "RBX_ENABLE_LEGACY_RENDERERS": "OFF",
+        "RBX_OPENSSL_ROOT": "${sourceDir}/out/dependencies/openssl-3.5.7/macos-arm64/install",
+        "RBX_PLAYER_REFERENCE_ROOT": "${sourceDir}/../WindowsPlayer-version-ddf02245bdbb428c",
+        "RBX_STUDIO_REFERENCE_ROOT": "${sourceDir}/../LIVE-WindowsStudio64-version-ed7d8193e8564b1f",
+        "RBX_ARCHIVED_AVATAR_ASSET_ROOT": "${sourceDir}/../out/avatar-assets/rthro",
+        "RBX_APK_REFERENCE_PATH": "${sourceDir}/../Roblox_2.730.790.apk"
+      }
+    },
+    {
+      "name": "macos-arm64-debug",
+      "inherits": "macos-arm64-base",
+      "displayName": "macOS arm64 Debug",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "macos-arm64-release",
+      "inherits": "macos-arm64-base",
+      "displayName": "macOS arm64 Release",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    }
+  ],
+  "buildPresets": [
+    { "name": "macos-arm64-debug", "configurePreset": "macos-arm64-debug" },
+    { "name": "macos-arm64-release", "configurePreset": "macos-arm64-release" }
+  ],
+  "testPresets": [
+    {
+      "name": "macos-arm64-debug",
+      "configurePreset": "macos-arm64-debug",
+      "output": { "outputOnFailure": true }
+    },
+    {
+      "name": "macos-arm64-release",
+      "configurePreset": "macos-arm64-release",
+      "output": { "outputOnFailure": true }
+    }
+  ]
+}

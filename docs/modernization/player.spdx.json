@@ -1,0 +1,126 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "RobloxPlayer default dependency inventory",
+  "documentNamespace": "https://roblox-modernization.invalid/spdx/player-2026-07-16",
+  "creationInfo": {
+    "created": "2026-07-16T00:00:00Z",
+    "creators": ["Tool: Codex modernization build"]
+  },
+  "documentDescribes": ["SPDXRef-RobloxPlayer"],
+  "packages": [
+    {
+      "name": "RobloxPlayer",
+      "SPDXID": "SPDXRef-RobloxPlayer",
+      "versionInfo": "0.1.0",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "bgfx",
+      "SPDXID": "SPDXRef-bgfx",
+      "versionInfo": "759bdeb936ea95e4ac13d1ba8d4ce2e91c5c17d2",
+      "downloadLocation": "https://github.com/bkaradzic/bgfx.git",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-2-Clause",
+      "licenseDeclared": "BSD-2-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "bx",
+      "SPDXID": "SPDXRef-bx",
+      "versionInfo": "c98e98cde15498250fedbc41ad6da75a896fbae0",
+      "downloadLocation": "https://github.com/bkaradzic/bx.git",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-2-Clause",
+      "licenseDeclared": "BSD-2-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "bimg",
+      "SPDXID": "SPDXRef-bimg",
+      "versionInfo": "c3cf9afef058f99846de57050c74b183815d5ee7",
+      "downloadLocation": "https://github.com/bkaradzic/bimg.git",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-2-Clause",
+      "licenseDeclared": "BSD-2-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "bgfx.cmake",
+      "SPDXID": "SPDXRef-bgfx-cmake",
+      "versionInfo": "572868c0cb952add48019d267223453958e958b8",
+      "downloadLocation": "https://github.com/bkaradzic/bgfx.cmake.git",
+      "filesAnalyzed": false,
+      "licenseConcluded": "CC0-1.0",
+      "licenseDeclared": "CC0-1.0",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "miniaudio",
+      "SPDXID": "SPDXRef-miniaudio",
+      "versionInfo": "0.11.25+9634bedb5b5a2ca38c1ee7108a9358a4e233f14d",
+      "downloadLocation": "https://github.com/mackron/miniaudio.git",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT-0",
+      "licenseDeclared": "MIT-0",
+      "copyrightText": "Copyright 2025 David Reid"
+    },
+    {
+      "name": "GameNetworkingSockets",
+      "SPDXID": "SPDXRef-GameNetworkingSockets",
+      "versionInfo": "1.5.0+4fbfe83ef4d59a12dc32baeff2c33e511af93157",
+      "downloadLocation": "https://github.com/ValveSoftware/GameNetworkingSockets.git",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "protobuf",
+      "SPDXID": "SPDXRef-protobuf",
+      "versionInfo": "35.1+35cd01f9fe9afbeea38cc7b979a3b6bfcde82c03",
+      "downloadLocation": "https://github.com/protocolbuffers/protobuf.git",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "Abseil",
+      "SPDXID": "SPDXRef-Abseil",
+      "versionInfo": "20250512.1+76bb24329e8bf5f39704eb10d21b9a80befa7c81",
+      "downloadLocation": "https://github.com/abseil/abseil-cpp.git",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "OpenSSL",
+      "SPDXID": "SPDXRef-OpenSSL",
+      "versionInfo": "3.5.7+8cf17aaeb4599f8af87fefd810b5b5fee90fe69e",
+      "downloadLocation": "https://github.com/openssl/openssl.git",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION"
+    }
+  ],
+  "relationships": [
+    {"spdxElementId": "SPDXRef-DOCUMENT", "relationshipType": "DESCRIBES", "relatedSpdxElement": "SPDXRef-RobloxPlayer"},
+    {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-bgfx"},
+    {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-bx"},
+    {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-bimg"},
+    {"spdxElementId": "SPDXRef-bgfx-cmake", "relationshipType": "BUILD_DEPENDENCY_OF", "relatedSpdxElement": "SPDXRef-RobloxPlayer"},
+    {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-miniaudio"},
+    {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-GameNetworkingSockets"},
+    {"spdxElementId": "SPDXRef-GameNetworkingSockets", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-protobuf"},
+    {"spdxElementId": "SPDXRef-protobuf", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-Abseil"},
+    {"spdxElementId": "SPDXRef-GameNetworkingSockets", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-OpenSSL"}
+  ]
+}

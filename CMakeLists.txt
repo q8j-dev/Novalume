@@ -1,166 +1,95 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.28)
 
-project(roblox C CXX ASM)
+project(RobloxModernization VERSION 0.1.0 LANGUAGES C CXX)
 
-if(NOT UNIX)
-  message(FATAL_ERROR "Unsupported platform.")
-endif(NOT UNIX)
+option(RBX_BUILD_PLAYER "Build the shared RobloxPlayer runtime" ON)
+option(RBX_BUILD_TESTS "Build modernization tests" ON)
+option(RBX_FETCH_DEPENDENCIES "Fetch pinned open-source dependencies into the build tree" ON)
+option(RBX_ENABLE_LEGACY_BUILD "Configure the historical monolithic build (migration only)" OFF)
+option(RBX_ENABLE_LEGACY_RENDERERS "Compile historical D3D/OpenGL renderers" OFF)
+set(RBX_PLAYER_REFERENCE_ROOT "" CACHE PATH
+    "Build-time path to the supplied Windows Player snapshot for verified resource import")
+set(RBX_STUDIO_REFERENCE_ROOT "" CACHE PATH
+    "Build-time path to the supplied Windows Studio snapshot for verified avatar import")
+set(RBX_ARCHIVED_AVATAR_ASSET_ROOT "" CACHE PATH
+    "Build-time path to the authorized, hash-pinned avatar asset archive")
+set(RBX_APK_REFERENCE_PATH "" CACHE FILEPATH
+    "Build-time path to the supplied Android APK for static mobile inventory verification")
 
-list(APPEND CMAKE_PREFIX_PATH "${CONTRIB_PATH}")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
-
-# Set the CONTRIB_PATH from ENV.
-if(NOT CONTRIB_PATH)
-  file(TO_CMAKE_PATH "$ENV{CONTRIB_PATH}" CONTRIB_PATH)
-endif(NOT CONTRIB_PATH)
-if(NOT CONTRIB_PATH)
-  message(FATAL_ERROR "CONTRIB_PATH is not set")
-endif(NOT CONTRIB_PATH)
-file(TO_CMAKE_PATH "${CONTRIB_PATH}" CONTRIB_PATH)
-message(STATUS "CONTRIB_PATH=${CONTRIB_PATH}")
-
-string(TOLOWER ${CMAKE_BUILD_TYPE} RBX_BUILD_TYPE)
-
-if(ANDROID)
-  message(STATUS "ANDROID_TOOLCHAIN_NAME=${ANDROID_TOOLCHAIN_NAME}")
-  message(STATUS "ANDROID_STL=${ANDROID_STL}")
-  message(STATUS "ANDROID_ABI=${ANDROID_ABI}")
-  message(STATUS "ANDROID_NATIVE_API_LEVEL=${ANDROID_NATIVE_API_LEVEL}")
-  message(STATUS "ANDROID_SYSROOT=${ANDROID_SYSROOT}")
-  message(STATUS "ANDROID_EXCEPTIONS=${ANDROID_EXCEPTIONS}")
-  message(STATUS "ANDROID_RTTI=${ANDROID_RTTI}")
-  message(STATUS "ANDROID_NDK_HOST_X64=${ANDROID_NDK_HOST_X64}")
-endif(ANDROID)
-message(STATUS "CMAKE_SYSROOT=${CMAKE_SYSROOT}")
-message(STATUS "CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}")
-if(NOT RBX_STL_INCLUDE_DIRS)
-  message(FATAL_ERROR "RBX_STL_INCLUDE_DIRS must be set to stdlib directories.")
-else()
-  message(STATUS "RBX_STL_INCLUDE_DIRS=")
-  set(_RBX_STL_INCLUDE_PATTERNS "")
-  foreach(dir ${RBX_STL_INCLUDE_DIRS})
-    message(STATUS "    ${dir}")
-    list(APPEND _RBX_STL_INCLUDE_PATTERNS "${dir}/*")
-  endforeach()
-endif(NOT RBX_STL_INCLUDE_DIRS)
-
-# Include any modules we'll need.
-include(ListFilter)
-include(IncludeProjectFiles)
-include(Boost)
-include(FMOD)
-include(SSL)
-include(SDL2)
-
-if(NOT RBX_SETTINGS_INITIALIZED)
-  if(UNIX)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden" CACHE STRING "" FORCE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden" CACHE STRING "" FORCE)
-
-    set(CMAKE_ECLIPSE_MAKE_ARGUMENTS "-j -l4")
-  endif(UNIX)
-
-  if(ANDROID)
-    # Use the stdlib with exception handling and rtti if we're building
-    # for Android.  This is set in the configure_android script.
-
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mfloat-abi=softfp -MMD -MP" CACHE STRING "" FORCE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfloat-abi=softfp -MMD -MP" CACHE STRING "" FORCE)
-
-    # Because we want to use breakpad, let's even put debug symbols into our release builds.
-    # These will be stripped out by the NDK when we package up an APK.
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g" CACHE STRING "" FORCE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -g" CACHE STRING "" FORCE)
-  endif(ANDROID)
-  
-  # By default, try to get all warnings.  In the future, treat them as errors.
-  # Ignore some warnings that currently are in a lot of our code base.
-  # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror" CACHE STRING "" FORCE)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall" CACHE STRING "" FORCE)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unknown-pragmas -Wno-unused-variable -Wno-unused-local-typedefs -Wno-main" CACHE STRING "" FORCE)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-reorder -Wno-unused-local-typedefs" CACHE STRING "" FORCE)
-
-  # Enable C++11 with GNU extensions
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11" CACHE STRING "" FORCE)
-
-  set(RBX_SETTINGS_INITIALIZED TRUE CACHE INTERNAL "" FORCE)
-endif(NOT RBX_SETTINGS_INITIALIZED)
-
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  set(APPLE ON)
-  if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm")
-    set(APPLE_IOS ON)
-  endif()
+if(RBX_ENABLE_LEGACY_BUILD)
+    include(cmake/LegacyRoot.cmake)
+    return()
 endif()
 
-include_project_files(SystemHeaders "${CMAKE_SYSROOT}/usr/include/*.h;${RBX_STL_INCLUDE_DIRS}")
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Add some subdirectories that should have CMakeLists.txt in them.
-if(WIN32)
-  add_subdirectory(DeviceCaps)
-endif(WIN32)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(RbxCompilerWarnings)
 
-add_subdirectory(boostlibs)
-add_subdirectory(ClientShared)
-add_subdirectory(Base)
-add_subdirectory(Log)
-add_subdirectory(Rendering)
-add_subdirectory(Network)
-add_subdirectory(App)
-add_subdirectory(Android)
-add_subdirectory(App.BulletPhysics)
+if(APPLE)
+    # bgfx's Metal implementation contains Objective-C++ translation units, so
+    # enable the language before its targets are created.
+    enable_language(OBJCXX)
+endif()
 
-# Configure platform's external dependencies.
-if(UNIX)
-  if(ANDROID)
-    include(Curl)
-    include_project_files(curl "${CURL_ROOT}/include/*.h")
-    # find_package(CURL)
-    set(DEPENDENCIES "${DEPENDENCIES} \"${CURL_ROOT}/lib/libcurl.a\"")
-    set(DEPENDENCIES "${DEPENDENCIES} \"${SSL_ROOT}/lib/libssl.a\"")
-    set(DEPENDENCIES "${DEPENDENCIES} \"${SSL_ROOT}/lib/libcrypto.a\"")
+include(RbxDependencies)
 
-    include(Breakpad)
-    set(DEPENDENCIES "${DEPENDENCIES} \"${BREAKPAD_LIB_ROOT}/libbreakpad_client.a\"")
+add_subdirectory(third_party/boost_runtime)
+add_subdirectory(shaders)
+add_subdirectory(engine/core)
+add_subdirectory(engine/security)
+add_subdirectory(engine/reflection)
+add_subdirectory(engine/value_types)
+add_subdirectory(engine/audio)
+add_subdirectory(engine/media)
+add_subdirectory(third_party/lz4_historical)
+add_subdirectory(engine/serialization)
+add_subdirectory(engine/assets)
+add_subdirectory(engine/datamodel/tree)
+add_subdirectory(engine/physics)
+add_subdirectory(engine/terrain)
+add_subdirectory(engine/simulation)
+add_subdirectory(engine/animation)
+add_subdirectory(platform/common)
+if(APPLE)
+    add_subdirectory(platform/macos)
+endif()
+add_subdirectory(engine/datamodel/runtime)
+add_subdirectory(engine/runtime_support)
+add_subdirectory(engine/terrain/runtime)
+add_subdirectory(engine/avatar/humanoid)
+add_subdirectory(engine/networking/transport)
+add_subdirectory(engine/networking/runtime)
+add_subdirectory(engine/geometry/csg)
+add_subdirectory(engine/rendering/core)
+add_subdirectory(engine/rendering/foundation)
+add_subdirectory(engine/rendering/adorn)
+add_subdirectory(engine/interaction/tools)
+add_subdirectory(engine/ui/layout)
+add_subdirectory(engine/ui/input)
+add_subdirectory(engine/ui/runtime)
+add_subdirectory(engine/scripting)
+add_subdirectory(engine/rendering/materials)
+add_subdirectory(engine/rendering/text)
+add_subdirectory(engine/rendering/ui)
+add_subdirectory(engine/rendering/scene)
 
-    set(DEPENDENCIES "${DEPENDENCIES} -landroid")
-    set(DEPENDENCIES "${DEPENDENCIES} -lGLESv2")
-    set(DEPENDENCIES "${DEPENDENCIES} -lEGL")
-    set(DEPENDENCIES "${DEPENDENCIES} -llog")
-  else()
-    set(DEPENDENCIES "${DEPENDENCIES} -lGLESv2")
-  endif(ANDROID)
+if(RBX_BUILD_PLAYER)
+    add_subdirectory(apps/player)
+endif()
 
-  if(RBX_BUILD_TYPE MATCHES "release")
-    set(DEPENDENCIES "${DEPENDENCIES} -lfmod")
-  else()
-    set(DEPENDENCIES "${DEPENDENCIES} -lfmodL")
-  endif()
-  
-  set(DEPENDENCIES "${DEPENDENCIES} -lz")
-endif(UNIX)
+if(RBX_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
 
-add_library(roblox SHARED
-  $<TARGET_OBJECTS:boost>
-  $<TARGET_OBJECTS:Base>
-  $<TARGET_OBJECTS:Log>
-  $<TARGET_OBJECTS:App>
-  $<TARGET_OBJECTS:Network>
-  $<TARGET_OBJECTS:G3D>
-  $<TARGET_OBJECTS:AppDraw>
-  $<TARGET_OBJECTS:RbxG3D>
-  $<TARGET_OBJECTS:GfxBase>
-  $<TARGET_OBJECTS:GfxCore>
-  $<TARGET_OBJECTS:GfxRender>
-  $<TARGET_OBJECTS:Android>
-  $<TARGET_OBJECTS:App.BulletPhysics>)
-set_target_properties(roblox PROPERTIES LINKER_LANGUAGE CXX)
-
-# Setup linker flag.
-if(UNIX)
-  set(RBX_LINKER_DEPENDENCY_FLAGS "-Wl,--no-whole-archive,--no-gc-sections")
-endif(UNIX)
-
-string(STRIP "${DEPENDENCIES}" deps_strip_str)
-target_link_libraries(roblox
-  ${RBX_LINKER_DEPENDENCY_FLAGS} ${deps_strip_str})
+add_custom_target(check-dependency-boundaries
+    COMMAND "${CMAKE_COMMAND}"
+        -DSOURCE_ROOT="${CMAKE_CURRENT_SOURCE_DIR}"
+        -P "${CMAKE_CURRENT_SOURCE_DIR}/tools/dependency_boundary/check.cmake"
+    COMMENT "Checking engine/platform/application dependency boundaries"
+    VERBATIM)

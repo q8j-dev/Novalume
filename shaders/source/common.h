@@ -228,8 +228,50 @@ float3 terrainNormal(float4 tnp0, float4 tnp1, float4 tnp2, float3 w, float3 nor
 float3 shadowPrepareSample(float3 p)
 {
 	float4 c = float4(p, 1);
+	// Cascades cover successive camera-depth ranges.  Radial distance switches
+	// too early at the edges of a wide field of view and produces visible rings.
+	float distanceToCamera = max(0, dot(p - G(CameraPosition).xyz, -G(ViewDir).xyz));
+	float cascade = distanceToCamera > G(ShadowCascadeInfo).x ? 1 : 0;
+	cascade = distanceToCamera > G(ShadowCascadeInfo).y ? 2 : cascade;
+	cascade = min(cascade, G(ShadowCascadeInfo).z - 1);
 
-	return float3(dot(G(ShadowMatrix0), c), dot(G(ShadowMatrix1), c), dot(G(ShadowMatrix2), c));
+	float3 result;
+	float4 bounds;
+	if (cascade < 0.5)
+	{
+		result = float3(dot(G(ShadowMatrix0), c), dot(G(ShadowMatrix1), c), dot(G(ShadowMatrix2), c));
+		bounds = G(ShadowCascadeInfo).z > 1.5
+			? (G(ShadowCascadeInfo).w < 0 ? float4(0, 0.5, 0.5, 1) : float4(0, 0, 0.5, 0.5))
+			: float4(0, 0, 1, 1);
+	}
+	else if (cascade < 1.5)
+	{
+		result = float3(dot(G(ShadowMatrix3), c), dot(G(ShadowMatrix4), c), dot(G(ShadowMatrix5), c));
+		bounds = G(ShadowCascadeInfo).w < 0 ? float4(0.5, 0.5, 1, 1) : float4(0.5, 0, 1, 0.5);
+	}
+	else
+	{
+		result = float3(dot(G(ShadowMatrix6), c), dot(G(ShadowMatrix7), c), dot(G(ShadowMatrix8), c));
+		bounds = G(ShadowCascadeInfo).w < 0 ? float4(0, 0, 0.5, 0.5) : float4(0, 0.5, 0.5, 1);
+	}
+
+	// A perspective-frustum corner can leave the orthographic footprint chosen
+	// by camera depth.  Fall through to a wider cascade instead of clamping into
+	// an adjacent atlas tile or punching an unshadowed hole at the screen edge.
+	if ((result.x < bounds.x || result.y < bounds.y || result.x > bounds.z || result.y > bounds.w) && cascade < 0.5 && G(ShadowCascadeInfo).z > 1.5)
+	{
+		result = float3(dot(G(ShadowMatrix3), c), dot(G(ShadowMatrix4), c), dot(G(ShadowMatrix5), c));
+		bounds = G(ShadowCascadeInfo).w < 0 ? float4(0.5, 0.5, 1, 1) : float4(0.5, 0, 1, 0.5);
+		cascade = 1;
+	}
+	if ((result.x < bounds.x || result.y < bounds.y || result.x > bounds.z || result.y > bounds.w) && cascade < 1.5 && G(ShadowCascadeInfo).z > 2.5)
+	{
+		result = float3(dot(G(ShadowMatrix6), c), dot(G(ShadowMatrix7), c), dot(G(ShadowMatrix8), c));
+		bounds = G(ShadowCascadeInfo).w < 0 ? float4(0, 0, 0.5, 0.5) : float4(0, 0.5, 0.5, 1);
+	}
+	if (result.x < bounds.x || result.y < bounds.y || result.x > bounds.z || result.y > bounds.w)
+		result.z = -1;
+	return result;
 }
 
 float shadowDepth(float3 lpos)

@@ -67,7 +67,7 @@ namespace Lua
 	private:
 		typedef DescribedNonCreatable<RunService, Instance, sRunService, Reflection::ClassDescriptor::RUNTIME_LOCAL> Super;
 
-		typedef std::pair<std::string, Lua::WeakFunctionRef>  FunctionNameRefPair;
+		typedef std::pair<std::string, Lua::WeakFunctionRef> FunctionNameRefPair;
 		typedef std::map<int,std::vector<FunctionNameRefPair> > EventCallbackMap;
 
 		friend class PhysicsJob;
@@ -134,7 +134,7 @@ namespace Lua
 		void pause() {setRunState(RS_PAUSED);}
 		void stop() {setRunState(RS_STOPPED);}
         
-		void stopTasks();
+		void stopTasks(bool blocking = false);
 		void start();
 
 		void raiseHeartbeat(double step, const Time::Interval& stepBudget);
@@ -147,11 +147,14 @@ namespace Lua
 		bool isRunState() const				{return (runState == RS_RUNNING);}
 		bool isPauseState()	const			{return (runState == RS_PAUSED);}
 		bool isRunning() 					{return (runState == RS_RUNNING);}
+		std::string getRobloxVersion() { return "0.730.23.7300792"; }
+		std::string getCoreScriptVersion() { return "509f1eb81d0196e64d5980688abd0d3c3d079d7a7e3f062d5343b1c953a44a69a633907052c075b23969529543798a3c712fdb4d3db6837afdef7f52cb0a1152"; }
 
 		bool isServer();
 		bool isClient();
 		bool isStudio();
 		bool isRunMode();
+		bool isEdit() { return isEditState(); }
 
 		//////////////////////////////////////////////////////
 		//

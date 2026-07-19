@@ -99,22 +99,22 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
-    <Import Project="..\..\PropertySheets\Common.props" />
+    <Import Project="$(SolutionDir)cmake\historical\msbuild\PropertySheets\Common.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Durango'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
-    <Import Project="..\..\PropertySheets\Common.props" />
+    <Import Project="$(SolutionDir)cmake\historical\msbuild\PropertySheets\Common.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
-    <Import Project="..\..\PropertySheets\Common.props" />
+    <Import Project="$(SolutionDir)cmake\historical\msbuild\PropertySheets\Common.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Durango'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
-    <Import Project="..\..\PropertySheets\Common.props" />
+    <Import Project="$(SolutionDir)cmake\historical\msbuild\PropertySheets\Common.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -183,7 +183,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\Library\SDL2\include;..\..\TBB_4_1\include;..\..\Library\SDL2\include;..\G3D\png;..\g3d\include;.\include;..\..\Base\include;..\..\Library\zlib\include\zlib;..\..\Library\boost\include;..\..\app\include;..\App\include;..\GfxBase\include;..\AppDraw\include;..\RbxG3D\include;..\..\Log\include;..\..\App.BulletPhysics;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Library\SDL2\include;..\..\TBB_4_1\include;..\..\Library\SDL2\include;..\G3D\png;..\g3d\include;.\include;..\..\Base\include;..\..\Library\zlib\include\zlib;..\..\Library\boost\include;..\..\app\include;..\App\include;..\GfxBase\include;..\AppDraw\include;..\RbxG3D\include;..\..\Log\include;$(SolutionDir)third_party\bullet_historical;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -203,7 +203,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Durango'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\TBB_4_1\include;..\..\Library\SDL2\include;..\G3D\png;..\g3d\include;.\include;..\..\Base\include;..\..\Library\zlib\include\zlib;..\..\Library\boost\include;..\..\app\include;..\App\include;..\GfxBase\include;..\AppDraw\include;..\RbxG3D\include;..\..\Log\include;..\..\App.BulletPhysics;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\TBB_4_1\include;..\..\Library\SDL2\include;..\G3D\png;..\g3d\include;.\include;..\..\Base\include;..\..\Library\zlib\include\zlib;..\..\Library\boost\include;..\..\app\include;..\App\include;..\GfxBase\include;..\AppDraw\include;..\RbxG3D\include;..\..\Log\include;$(SolutionDir)third_party\bullet_historical;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>RBX_PLATFORM_DURANGO;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -227,7 +227,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <OmitFramePointers>false</OmitFramePointers>
-      <AdditionalIncludeDirectories>..\..\Library\SDL2\include;..\..\TBB_4_1\include;..\..\Library\SDL2\include;..\G3D\png;..\g3d\include;.\include;..\..\Base\include;..\..\Library\zlib\include\zlib;..\..\Library\boost\include;..\..\app\include;..\App\include;..\GfxBase\include;..\AppDraw\include;..\RbxG3D\include;..\..\Log\include;..\..\App.BulletPhysics;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Library\SDL2\include;..\..\TBB_4_1\include;..\..\Library\SDL2\include;..\G3D\png;..\g3d\include;.\include;..\..\Base\include;..\..\Library\zlib\include\zlib;..\..\Library\boost\include;..\..\app\include;..\App\include;..\GfxBase\include;..\AppDraw\include;..\RbxG3D\include;..\..\Log\include;$(SolutionDir)third_party\bullet_historical;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;RBX_TEST_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -250,7 +250,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <OmitFramePointers>false</OmitFramePointers>
-      <AdditionalIncludeDirectories>..\..\Library\SDL2\include;..\G3D\png;..\g3d\include;.\include;..\..\Base\include;..\..\Library\zlib\include\zlib;..\..\Library\boost\include;..\..\app\include;..\App\include;..\GfxBase\include;..\AppDraw\include;..\RbxG3D\include;..\..\Log\include;..\..\App.BulletPhysics;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Library\SDL2\include;..\G3D\png;..\g3d\include;.\include;..\..\Base\include;..\..\Library\zlib\include\zlib;..\..\Library\boost\include;..\..\app\include;..\App\include;..\GfxBase\include;..\AppDraw\include;..\RbxG3D\include;..\..\Log\include;$(SolutionDir)third_party\bullet_historical;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>RBX_PLATFORM_DURANGO;WIN32;NDEBUG;_LIB;RBX_TEST_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -274,7 +274,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <OmitFramePointers>false</OmitFramePointers>
-      <AdditionalIncludeDirectories>..\..\Library\SDL2\include;..\..\TBB_4_1\include;..\..\Library\SDL2\include;..\G3D\png;..\g3d\include;.\include;..\..\Base\include;..\..\Library\zlib\include\zlib;..\..\Library\boost\include;..\..\app\include;..\App\include;..\GfxBase\include;..\AppDraw\include;..\RbxG3D\include;..\..\Log\include;..\..\App.BulletPhysics;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Library\SDL2\include;..\..\TBB_4_1\include;..\..\Library\SDL2\include;..\G3D\png;..\g3d\include;.\include;..\..\Base\include;..\..\Library\zlib\include\zlib;..\..\Library\boost\include;..\..\app\include;..\App\include;..\GfxBase\include;..\AppDraw\include;..\RbxG3D\include;..\..\Log\include;$(SolutionDir)third_party\bullet_historical;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;RBX_TEST_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -298,7 +298,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <OmitFramePointers>false</OmitFramePointers>
-      <AdditionalIncludeDirectories>..\..\TBB_4_1\include;..\..\Library\SDL2\include;..\G3D\png;..\g3d\include;.\include;..\..\Base\include;..\..\Library\zlib\include\zlib;..\..\Library\boost\include;..\..\app\include;..\App\include;..\GfxBase\include;..\AppDraw\include;..\RbxG3D\include;..\..\Log\include;..\..\App.BulletPhysics;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\TBB_4_1\include;..\..\Library\SDL2\include;..\G3D\png;..\g3d\include;.\include;..\..\Base\include;..\..\Library\zlib\include\zlib;..\..\Library\boost\include;..\..\app\include;..\App\include;..\GfxBase\include;..\AppDraw\include;..\RbxG3D\include;..\..\Log\include;$(SolutionDir)third_party\bullet_historical;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>RBX_PLATFORM_DURANGO;WIN32;NDEBUG;_LIB;RBX_TEST_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -321,7 +321,7 @@
     <ClCompile>
       <AdditionalOptions>/D "_SECURE_SCL=0" %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\Library\SDL2\include;..\..\TBB_4_1\include;..\..\Library\SDL2\include;..\G3D\png;..\g3d\include;.\include;..\..\Base\include;..\..\Library\zlib\include\zlib;..\..\Library\boost\include;..\..\app\include;..\App\include;..\GfxBase\include;..\AppDraw\include;..\RbxG3D\include;..\..\Log\include;..\..\App.BulletPhysics;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Library\SDL2\include;..\..\TBB_4_1\include;..\..\Library\SDL2\include;..\G3D\png;..\g3d\include;.\include;..\..\Base\include;..\..\Library\zlib\include\zlib;..\..\Library\boost\include;..\..\app\include;..\App\include;..\GfxBase\include;..\AppDraw\include;..\RbxG3D\include;..\..\Log\include;$(SolutionDir)third_party\bullet_historical;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_LIB;_CRASH_RBXASSERT;__NEW_GRAPHICS__;NDEBUG;_NOOPT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -338,7 +338,7 @@
     <ClCompile>
       <AdditionalOptions>/D "_SECURE_SCL=0" %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\Library\SDL2\include;..\..\Library\SDL2\include;..\G3D\png;..\g3d\include;.\include;..\..\Base\include;..\..\Library\zlib\include\zlib;..\..\Library\boost\include;..\..\app\include;..\App\include;..\GfxBase\include;..\AppDraw\include;..\RbxG3D\include;..\..\Log\include;..\..\App.BulletPhysics;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Library\SDL2\include;..\..\Library\SDL2\include;..\G3D\png;..\g3d\include;.\include;..\..\Base\include;..\..\Library\zlib\include\zlib;..\..\Library\boost\include;..\..\app\include;..\App\include;..\GfxBase\include;..\AppDraw\include;..\RbxG3D\include;..\..\Log\include;$(SolutionDir)third_party\bullet_historical;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>RBX_PLATFORM_DURANGO;WIN32;_LIB;_CRASH_RBXASSERT;__NEW_GRAPHICS__;NDEBUG;_NOOPT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>

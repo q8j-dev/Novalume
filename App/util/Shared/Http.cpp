@@ -13,7 +13,6 @@
 #include "util/HttpPlatformImpl.h"
 #undef HAVE_MEMCPY
 #undef HAVE_CTYPE_H
-#include "util/HTW3C.h"
 #include "util/URL.h"
 #include "util/RobloxGoogleAnalytics.h"
 #include "util/standardout.h"
@@ -71,14 +70,9 @@ int rbx_isMoneySite(const char* url);
 
 namespace
 {
-#if defined(RBX_PLATFORM_DURANGO)
-static bool useCurlHttpImpl = false;
-#else
-static bool useCurlHttpImpl = true;
-#endif
-
 static const int kNumberThreadPoolThreads = 16;
 static ThreadPool* threadPool;
+static boost::scoped_ptr<ThreadPool> threadPoolOwner;
 
 static bool inline sendHttpFailureToEvents()
 {
@@ -98,20 +92,6 @@ static bool inline sendHttpInfluxEvents()
     return r < DFInt::HttpInfluxHundredthsPercentage;
 }
     
-bool isValidScheme(const char* scheme)
-{
-    return 0 == strncmp(scheme, "http", 4) || 0 == strncmp(scheme, "https", 5);
-}
-
-bool hasEnding(const std::string& fullString, const std::string& ending)
-{
-    if (fullString.length() >= ending.length()) {
-        return (0 == fullString.compare (fullString.length() - ending.length(), ending.length(), ending));
-    } else {
-        return false;
-    }
-}
-
 class HTTPStatistics
 {
     static HTTPStatistics httpStatistics;
@@ -273,32 +253,16 @@ class HTTPStatistics
 
     static ServiceCategory getServiceCategory(const char* url)
     {
-        if (DFFlag::UseNewUrlClass)
-        {
-            RBX::Url parsed = RBX::Url::fromString(url);
-            if (parsed.pathEquals(DataStore::urlApiPath()))
-            {
-                return ServiceCategoryDataStore;
-            }
-
-            if (parsed.pathEquals(MarketplaceService::urlApiPath()))
-            {
-                return ServiceCategoryMarketPlace;
-            }
-            return ServiceCategoryOther;
-        }
-
-        boost::scoped_ptr<char> chost(HTParse(url, NULL, PARSE_PATH));
-        if (chost.get() == strstr(chost.get(), DataStore::urlApiPath()))
+        RBX::Url parsed = RBX::Url::fromString(url);
+        if (parsed.pathEquals(DataStore::urlApiPath()))
         {
             return ServiceCategoryDataStore;
         }
 
-        if (chost.get() == strstr(chost.get(), MarketplaceService::urlApiPath()))
+        if (parsed.pathEquals(MarketplaceService::urlApiPath()))
         {
             return ServiceCategoryMarketPlace;
         }
-
         return ServiceCategoryOther;
     }
 
@@ -411,52 +375,6 @@ RBX::mutex *Http::cdnResponceLock = NULL;
 
 Http::MutexGuard Http::lockGuard;
 
-#ifdef __APPLE__
-// NOTICE: Remove these calls after transition for Apple is complete.
-namespace Cocoa
-{
-extern void httpGetPostCocoa(const std::string &url, const std::string &authDomainUrl, bool isPost, std::istream& data, const std::string& contentType, bool compressData, HttpAux::AdditionalHeaders& additionalHeaders, bool externalRequest, std::string& response, bool useDefaultTimeout, int requestTimeoutMillis);
-}
-
-void Http::httpGetPostImpl(bool isPost, std::istream& data, const std::string& contentType, bool compressData, const HttpAux::AdditionalHeaders& additionalHeaders, bool externalRequest, std::string& response)
-{
-    if(externalRequest)
-        ThrowIfFailure(trustCheck(url.c_str(), true), "Trust check failed");
-    
-    HttpAux::AdditionalHeaders headers = additionalHeaders;
-
-    if (!externalRequest)
-    {
-        if (Http::gameSessionID.length() > 0 && headers.end() == headers.find(kGameSessionHeaderKey))
-        {
-            headers[kGameSessionHeaderKey] = Http::gameSessionID;
-        }
-
-        if (Http::gameID.length() > 0 && headers.end() == headers.find(kGameIdHeaderKey))
-        {
-            headers[kGameIdHeaderKey] = Http::gameID;
-        }
-
-        if (Http::placeID.length() > 0 && headers.end() == headers.find(kPlaceIdHeaderKey))
-        {
-            headers[kPlaceIdHeaderKey] = Http::placeID;
-        }
-
-        if (Http::requester.length() > 0 && headers.end() == headers.find(kRequesterHeaderKey))
-        {
-            headers[kRequesterHeaderKey] = Http::requester;
-        }
-
-        if (headers.end() == headers.find(kPlayerCountHeaderKey))
-    	{
-            headers[kPlayerCountHeaderKey] = RBX::format("%d", Http::playerCount);
-    	}
-    }
-
-    // call Mac specific http implementation
-    RBX::Cocoa::httpGetPostCocoa(url, authDomainUrl, isPost, data, contentType, compressData, headers, externalRequest, response, useDefaultTimeouts, responseTimeoutMillis);
-}
-#endif // ifdef __APPLE__
 } // RBX
 
 Http::MutexGuard::MutexGuard()
@@ -513,12 +431,23 @@ void Http::init()
 
 void Http::init(API api, CookieSharingPolicy sharingPolicy)
 {
-    static boost::scoped_ptr<ThreadPool> tp(new ThreadPool(kNumberThreadPoolThreads));
-    threadPool = tp.get();
+    if (!threadPoolOwner)
+        threadPoolOwner.reset(new ThreadPool(kNumberThreadPoolThreads,
+            BaseThreadPool::WaitForRunningTasks));
+    threadPool = threadPoolOwner.get();
     Http::defaultApi = api;
     FASTLOG2(FLog::Http, "Http initialization M1 = 0x%x M2=0x%x", &Http::robloxResponceLock, &Http::cdnResponceLock);
     cookieSharingPolicy = sharingPolicy;
-	Http::SetUseCurl(useCurlHttpImpl);
+	Http::SetUseCurl(true);
+}
+
+void Http::shutdown()
+{
+    // Stop producers before the curl pool.  Both pools use an explicit joining
+    // policy so no request can outlive libcurl/OpenSSL process state.
+    threadPool = NULL;
+    threadPoolOwner.reset();
+    HttpPlatformImpl::shutdown();
 }
 
 void Http::SetUseStatistics(bool value)
@@ -533,33 +462,21 @@ void Http::SetUseStatistics(bool value)
 
 void Http::SetUseCurl(bool value)
 {
-	FASTLOGS(DFLog::HttpTrace, "Use the new http api: %s", value ? "yes" : "no");
-    useCurlHttpImpl = value;
-
-    if (useCurlHttpImpl)
+	FASTLOGS(DFLog::HttpTrace, "Use the current http api: %s", "yes");
+    (void)value;
+    static boost::mutex mutex;
+    static bool initialized = false;
+    boost::mutex::scoped_lock lock(mutex);
+    if (!initialized)
     {
-        static boost::mutex mutex;
-        static bool initialized = false;
-
-        boost::mutex::scoped_lock lock(mutex);
-
-        if (!initialized)
-        {
-            HttpPlatformImpl::init(cookieSharingPolicy);
-            initialized = true;
-        }
+        HttpPlatformImpl::init(cookieSharingPolicy);
+        initialized = true;
     }
 }
 
 void Http::setCookiesForDomain(const std::string& domain, const std::string& cookies)
 {
     HttpPlatformImpl::setCookiesForDomain(domain, cookies);
-#if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-	if (!useCurlHttpImpl && Http::defaultApi == WinInet)
-	{
-		setCookiesForDomainWinInet(domain, cookies);
-	}
-#endif
 }
 
 void Http::getCookiesForDomain(const std::string& domain, std::string& cookies){
@@ -607,43 +524,9 @@ void dprintf( const char* fmt, ... );
 void Http::httpGetPost(bool isPost, std::istream& dataStream,
 					   const std::string& contentType, bool compressData,
 					   const HttpAux::AdditionalHeaders& additionalHeaders,
-					   bool externalRequest, std::string& response,
-					   bool forceNativeHttp)
+					   bool externalRequest, std::string& response)
 {
     RBX::Timer<RBX::Time::Fast> httpTimer;
-#ifdef __APPLE__
-	if (!useCurlHttpImpl || forceNativeHttp)
-    {
-        RBXASSERT(isPost == !contentType.empty());
-        try
-        {
-            // instanceApi is irrelevant on a Mac, there is only one style NSUrl
-            httpGetPostImpl(isPost, dataStream, contentType, compressData, additionalHeaders, externalRequest, response);
-            if (recordStatistics)
-            {
-                HTTPStatistics::success(httpTimer.delta().msec(), url.c_str(), response.size());
-            }
-        }
-        catch (const RBX::http_status_error& e)
-        {
-            if (recordStatistics)
-            {
-                HTTPStatistics::failure(httpTimer.delta().msec(), url.c_str(), response.size(), e.what(), e.statusCode);
-            }
-            throw;
-        }
-        catch (const std::exception& e)
-        {
-            if (recordStatistics)
-            {
-                HTTPStatistics::failure(httpTimer.delta().msec(), url.c_str(), response.size(),  e.what());
-            }
-            throw;
-        }
-        return;
-    }
-#endif // ifdef __APPLE__
-    
     RBXASSERT(isPost == !contentType.empty());
 
 	ThrowIfFailure(trustCheck(url.c_str(), externalRequest), "Trust check failed");
@@ -688,7 +571,7 @@ void Http::httpGetPost(bool isPost, std::istream& dataStream,
             headers[kRequesterHeaderKey] = Http::requester;
         }
 
-		if (useCurlHttpImpl && !forceNativeHttp)
+		if (true)
         {
             if (externalRequest && headers.end() == headers.find(kAccessHeaderKey))
             {
@@ -700,81 +583,6 @@ void Http::httpGetPost(bool isPost, std::istream& dataStream,
             }
         }
     }
-
-#if defined(RBX_PLATFORM_DURANGO)
-	if (!useCurlHttpImpl || forceNativeHttp)
-	{
-        if (url.find("http://") == 0) // starts with http?
-        {
-            dprintf( "WARN HTTP: %s\n", url.c_str() );
-        }
-
-		try
-		{
-			httpGetPostXbox(isPost, dataStream, contentType, compressData, headers, externalRequest, cachePolicy, response);
-			if (recordStatistics)
-			{
-				HTTPStatistics::success(httpTimer.delta().msec(), url.c_str(), response.size());
-			}
-		}
-		catch (const RBX::http_status_error& e)
-		{
-			if (recordStatistics)
-			{
-				HTTPStatistics::failure(httpTimer.delta().msec(), url.c_str(), response.size(), e.what(), e.statusCode);
-			}
-			throw;
-		}
-		catch (const std::exception& e)
-		{
-			if (recordStatistics)
-			{
-				HTTPStatistics::failure(httpTimer.delta().msec(), url.c_str(), response.size(), e.what());
-			}
-			throw;
-		}
-		return;
-	}
-#elif defined(_WIN32)
-	if (!useCurlHttpImpl || forceNativeHttp)
-    {
-        try
-        {
-            switch (instanceApi)
-            {
-            case WinInet:
-                httpGetPostWinInet(isPost, dataStream, contentType, compressData, headers, externalRequest, response);
-                break;
-            case WinHttp:
-                httpGetPostWinHttp(isPost, dataStream, contentType, compressData, headers, externalRequest, response);
-                break;
-            default:
-                RBXASSERT(false);
-            }
-            if (recordStatistics)
-            {
-                HTTPStatistics::success(httpTimer.delta().msec(), url.c_str(), response.size());
-            }
-        }
-        catch (const RBX::http_status_error& e)
-        {
-            if (recordStatistics)
-            {
-                HTTPStatistics::failure(httpTimer.delta().msec(), url.c_str(), response.size(), e.what(), e.statusCode);
-            }
-            throw;
-        }
-        catch (const std::exception& e)
-        {
-            if (recordStatistics)
-            {
-                HTTPStatistics::failure(httpTimer.delta().msec(), url.c_str(), response.size(), e.what());
-            }
-            throw;
-        }
-        return;
-    }
-#endif // ifdef _WIN32
 
     HttpPlatformImpl::HttpOptions httpOpts(url, externalRequest, cachePolicy, connectTimeoutMillis, responseTimeoutMillis);
     if (isPost)
@@ -793,14 +601,11 @@ void Http::httpGetPost(bool isPost, std::istream& dataStream,
     }
     catch (const RBX::http_status_error& e)
     {
-		bool didMakeNativeRequest = doHttpGetPostWithNativeFallbackForReporting(isPost, dataStream, contentType, compressData, additionalHeaders,
-				externalRequest, response);
-		
         if (recordStatistics)
         {
             HTTPStatistics::failure(httpTimer.delta().msec(), url.c_str(), response.size(), e.what(), e.statusCode);
         }
-		if(!didMakeNativeRequest) throw;
+        throw;
     }
     catch (const std::exception& e)
     {
@@ -971,32 +776,8 @@ void Http::get(std::string& response, bool externalRequest)
 
 bool Http::isScript(const char* url)
 {
-#if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-    if (!useCurlHttpImpl)
-    {
-        CUrl crack;
-        crack.CrackUrl(url);
-        switch (crack.GetScheme())
-        {
-        case ATL_URL_SCHEME_HTTP:
-        case ATL_URL_SCHEME_HTTPS:
-        {
-            return false;
-        }
-        default:
-        {
-            CString sUrl = url;
-            if (sUrl.Find("javascript:")==0)
-                return true;
-            if (sUrl.Find("jscript:")==0)
-                return true;
-
-            return false;
-        }
-        }
-    }
-#endif // ifdef _WIN32
-
+    if (!url)
+        return false;
     static const char* javascript = "javascript:";
     static const char* jscript = "jscript:";
     return
@@ -1006,216 +787,47 @@ bool Http::isScript(const char* url)
 
 bool Http::isMoneySite(const char* url)
 {
-#ifdef __APPLE__
-    if (!useCurlHttpImpl)
-    {
-        return rbx_isMoneySite(url) != 0;
-    }
-#endif // ifdef __APPLE__
-
-#if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-    if (!useCurlHttpImpl)
-    {
-        CUrl crack;
-        crack.CrackUrl(url);
-        switch (crack.GetScheme())
-        {
-        case ATL_URL_SCHEME_HTTP:
-        case ATL_URL_SCHEME_HTTPS:
-        case ATL_URL_SCHEME_FTP:
-        {
-            // only trust urls from roblox.com
-            CString hostName = crack.GetHostName();
-            hostName.MakeLower();
-            if (hostName.Right(10)=="paypal.com")
-                return true;
-            if (hostName.Right(9)=="rixty.com")
-                return true;
-            return false;
-        }
-        default:
-        {
-            return false;
-        }
-        }
-    }
-#endif // ifdef _WIN32
-
-    if (DFFlag::UseNewUrlClass)
-    {
-        RBX::Url parsed = RBX::Url::fromString(url);
-
-        return parsed.hasHttpScheme() &&
-            (parsed.isSubdomainOf("paypal.com") || parsed.isSubdomainOf("rixty.com"));
-    }
-    
-    std::string host;
-	boost::scoped_ptr<char> cscheme(HTParse(url, NULL, PARSE_ACCESS));
-	if (!isValidScheme(cscheme.get()))
-	{
-		return false;
-	}
-
-	boost::scoped_ptr<char> chost(HTParse(url, NULL, PARSE_HOST));
-	host = chost.get();
-
-    std::transform(host.begin(), host.end(), host.begin(), ::tolower);
-
-    // Only trust urls from roblox.com.
-    if ("paypal.com" == host || hasEnding(host, ".paypal.com"))
-    {
-        return true;
-    }
-    if ("rixty.com" == host || hasEnding(host, ".rixty.com"))
-    {
-        return true;
-    }
-
-    return false;
+    const RBX::Url parsed = RBX::Url::fromString(url ? url : "");
+    return parsed.hasHttpScheme() &&
+        (parsed.isSubdomainOf("paypal.com") || parsed.isSubdomainOf("rixty.com"));
 }
 
 // This allows just roblox domains, not roblox trusted domains like facebook.
 bool Http::isStrictlyRobloxSite(const char* url)
 {
-    if (DFFlag::UseNewUrlClass)
-    {
-        RBX::Url parsed = RBX::Url::fromString(url);
-    
-        return parsed.isSubdomainOf("roblox.com") || parsed.isSubdomainOf("robloxlabs.com");
-    }
-
-    std::string host(HTParse(url, NULL, PARSE_HOST));
-    if ("roblox.com" != host && !hasEnding(host, ".roblox.com") 
-        && "robloxlabs.com" != host && !hasEnding(host, ".robloxlabs.com"))
-    {
-        return false;
-    }
-    return true;
+    const RBX::Url parsed = RBX::Url::fromString(url ? url : "");
+    return parsed.hasHttpScheme() &&
+        (parsed.isSubdomainOf("roblox.com") || parsed.isSubdomainOf("robloxlabs.com"));
 }
 
 bool Http::isRobloxSite(const char* url)
 {
-#ifdef __APPLE__
-    if (!useCurlHttpImpl)
-    {
-        return rbx_isRobloxSite(url) != 0;
-    }
-#endif // ifdef __APPLE__
-
-#if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-    if (!useCurlHttpImpl)
-    {
-        CUrl crack;
-        crack.CrackUrl(url);
-        switch (crack.GetScheme())
-        {
-        case ATL_URL_SCHEME_HTTP:
-        case ATL_URL_SCHEME_HTTPS:
-        case ATL_URL_SCHEME_FTP:
-        {
-            CString hostName = crack.GetHostName();
-            hostName.MakeLower();
-            CString urlPath = crack.GetUrlPath();
-            urlPath.MakeLower();
-
-            // trust urls from roblox.com
-			if (hostName.Right(10)=="roblox.com" || hostName.Right(14)=="robloxlabs.com")
-				return true;
-
-            // trust facebook login
-            if ((hostName == "login.facebook.com" && urlPath == "/login.php")
-                || (hostName == "ssl.facebook.com" && urlPath == "/connect/uiserver.php")
-                || (hostName == "www.facebook.com" && (urlPath == "/connect/uiserver.php" || urlPath == "/logout.php")))
-                return true;
-
-            // trust google/youtube upload/auth
-            if (hostName == "www.youtube.com" && (urlPath == "/auth_sub_request" || urlPath == "/signin" || urlPath == "/issue_auth_sub_token"))
-                return true;
-            if (hostName == "uploads.gdata.youtube.com")
-                return true;
-            if (hostName == "www.google.com" && urlPath == "/accounts/serviceloginauth")
-                return true;
-            if (hostName == "accounts.google.com" && urlPath == "/serviceloginauth") {
-                return true;
-            }
-
-            return false;
-        }
-        default:
-        {
-            return false;
-        }
-        }
-    }
-#endif // ifdef _WIN32
-    
-    if (DFFlag::UseNewUrlClass)
-    {
-        RBX::Url parsed = RBX::Url::fromString(url);
-        if (!parsed.hasHttpScheme())
-        {
-            return false;
-        }
-    
-        const bool isRoblox =
-            parsed.isSubdomainOf("roblox.com") ||
-            parsed.isSubdomainOf("robloxlabs.com");
-
-        const bool isFacebook =
-            ("login.facebook.com" == parsed.host()
-                && parsed.pathEqualsCaseInsensitive("/login.php")) ||
-            ("ssl.facebook.com" == parsed.host()
-                && parsed.pathEqualsCaseInsensitive("/connect/uiserver.php")) ||
-            ("www.facebook.com" == parsed.host()
-                && (parsed.pathEqualsCaseInsensitive("/connect/uiserver.php")
-                    || parsed.pathEqualsCaseInsensitive("/logout.php")));
-        
-        const bool isYoutube =
-            ("www.youtube.com" == parsed.host()
-                && (parsed.pathEqualsCaseInsensitive("/auth_sub_request")
-                || parsed.pathEqualsCaseInsensitive("/signin")
-                || parsed.pathEqualsCaseInsensitive("/issue_auth_sub_token"))) ||
-            ("uploads.gdata.youtube.com" == parsed.host());
-        
-        const bool isGoogle =
-            ("www.google.com" == parsed.host()
-                && parsed.pathEqualsCaseInsensitive("/accounts/serviceloginauth")) ||
-            ("accounts.google.com" == parsed.host()
-                && parsed.pathEqualsCaseInsensitive("/serviceloginauth"));
-
-        return isRoblox || isFacebook || isYoutube || isGoogle;
-    } // if (DFFlag::UseNewUrlClass)
-
-    std::string host;
-    std::string path;
-
-    boost::scoped_ptr<char> cscheme(HTParse(url, NULL, PARSE_ACCESS));
-    if (!isValidScheme(cscheme.get()))
-    {
+    const RBX::Url parsed = RBX::Url::fromString(url ? url : "");
+    if (!parsed.hasHttpScheme())
         return false;
-    }
 
-    boost::scoped_ptr<char> chost(HTParse(url, NULL, PARSE_HOST));
-    host = chost.get();
-
-    boost::scoped_ptr<char> cpath(HTParse(url, NULL, PARSE_PATH));
-    path = cpath.get();
-
-    std::transform(host.begin(), host.end(), host.begin(), ::tolower);
-    std::transform(path.begin(), path.end(), path.begin(), ::tolower);
-
-    return
-        "roblox.com" == host || hasEnding(host, ".roblox.com") ||
-        "robloxlabs.com" == host || hasEnding(host, ".robloxlabs.com") ||
-        // trust facebook login
-        ("login.facebook.com" == host && "/login.php") ||
-        ("ssl.facebook.com" == host && "/connect/uiserver.php" == path) ||
-        ("www.facebook.com" == host && ("/connect/uiserver.php" == path || "/logout.php" == path)) ||
-        // trust google/youtube upload/auth
-        ("www.youtube.com" == host && ("/auth_sub_request" == path || "/signin" == path || "/issue_auth_sub_token" == path)) ||
-        ("uploads.gdata.youtube.com" == host) ||
-        ("www.google.com" == host && "/accounts/serviceloginauth" == path) ||
-        ("accounts.google.com" == host && "/serviceloginauth" == path);
+    const bool isRoblox = parsed.isSubdomainOf("roblox.com") ||
+        parsed.isSubdomainOf("robloxlabs.com");
+    const bool isFacebook =
+        ("login.facebook.com" == parsed.host() &&
+            parsed.pathEqualsCaseInsensitive("/login.php")) ||
+        ("ssl.facebook.com" == parsed.host() &&
+            parsed.pathEqualsCaseInsensitive("/connect/uiserver.php")) ||
+        ("www.facebook.com" == parsed.host() &&
+            (parsed.pathEqualsCaseInsensitive("/connect/uiserver.php") ||
+                parsed.pathEqualsCaseInsensitive("/logout.php")));
+    const bool isYoutube =
+        ("www.youtube.com" == parsed.host() &&
+            (parsed.pathEqualsCaseInsensitive("/auth_sub_request") ||
+                parsed.pathEqualsCaseInsensitive("/signin") ||
+                parsed.pathEqualsCaseInsensitive("/issue_auth_sub_token"))) ||
+        "uploads.gdata.youtube.com" == parsed.host();
+    const bool isGoogle =
+        ("www.google.com" == parsed.host() &&
+            parsed.pathEqualsCaseInsensitive("/accounts/serviceloginauth")) ||
+        ("accounts.google.com" == parsed.host() &&
+            parsed.pathEqualsCaseInsensitive("/serviceloginauth"));
+    return isRoblox || isFacebook || isYoutube || isGoogle;
 }
 
 bool Http::trustCheckBrowser(const char* url)
@@ -1225,56 +837,10 @@ bool Http::trustCheckBrowser(const char* url)
 
 bool Http::isExternalRequest(const char* url)
 {
-#if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-    if (!useCurlHttpImpl)
-    {
-        std::string urlLower = url;
-        std::transform(urlLower.begin(), urlLower.end(), urlLower.begin(), tolower);
-
-        CUrl urlParsed;
-        urlParsed.CrackUrl(urlLower.c_str());
-
-        ATL_URL_SCHEME scheme = urlParsed.GetScheme();
-        if(scheme != ATL_URL_SCHEME_HTTP && scheme != ATL_URL_SCHEME_HTTPS)
-            return false;
-
-        std::string hostname = urlParsed.GetHostName();
-
-        if(hostname.find("roblox.com") != std::string::npos || hostname.find("robloxlabs.com") != std::string::npos)
-            return false;
-
-        return true;
-    }
-#endif // ifdef _WIn32
-
-    if (DFFlag::UseNewUrlClass)
-    {
-        RBX::Url parsed = RBX::Url::fromString(url);
-        if (!parsed.hasHttpScheme())
-        {
-            return false;
-        }
-
-        return !parsed.isSubdomainOf("roblox.com")
-            && !parsed.isSubdomainOf("robloxlabs.com");
-    }
-
-    std::string host;
-
-    boost::scoped_ptr<char> cscheme(HTParse(url, NULL, PARSE_ACCESS));
-    if (!isValidScheme(cscheme.get()))
-    {
-        return false;
-    }
-
-    boost::scoped_ptr<char> chost(HTParse(url, NULL, PARSE_HOST));
-    host = chost.get();
-
-    std::transform(host.begin(), host.end(), host.begin(), ::tolower);
-
-    return
-        "roblox.com" != host && !hasEnding(host, ".roblox.com") &&
-        "robloxlabs.com" != host && !hasEnding(host, ".robloxlabs.com");
+    const RBX::Url parsed = RBX::Url::fromString(url ? url : "");
+    return parsed.hasHttpScheme() &&
+        !parsed.isSubdomainOf("roblox.com") &&
+        !parsed.isSubdomainOf("robloxlabs.com");
 }
 
 void Http::setProxy(const std::string& host, long port)
@@ -1284,157 +850,11 @@ void Http::setProxy(const std::string& host, long port)
 
 bool Http::trustCheck(const char* url, bool externalRequest)
 {
-    static const bool kSkipTrustCheck = true;
-    if (kSkipTrustCheck)
-    {
-        return true;
-    }
-
-    if (externalRequest)
-    {
-        return isExternalRequest(url);
-    }
-
-    if (std::string("about:blank") == url ||
-        isRobloxSite(url) ||
-        isScript(url))
-    {
-        return true;
-    }
-
-#if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-    if (!useCurlHttpImpl)
-    {
-        CUrl crack;
-        crack.CrackUrl(url);
-        switch (crack.GetScheme())
-        {
-        case ATL_URL_SCHEME_HTTP:
-        case ATL_URL_SCHEME_HTTPS:
-        {
-            return false;
-        }
-        default:
-        {
-            // also trust some embedded resources
-            CString sUrl = url;
-            // Patch for IE6:
-            sUrl.Replace("%20", " ");
-            if (sUrl.Find("res://")==0)
-            {
-                if (sUrl.Find("res://mshtml.dll")==0)
-                    return true;
-                if (sUrl.Find("res://ieframe.dll")==0)
-                    return true;
-                if (sUrl.Find("res://shdoclc.dll")==0)
-                    return true;
-
-                // Allow resources embedded inside this app
-                TCHAR module[_MAX_PATH];
-                if (GetModuleFileName(NULL, module, _MAX_PATH))
-                {
-                    CString strResourceURL;
-                    strResourceURL.Format(_T("res://%s"), module);
-                    if (sUrl.Find(strResourceURL)==0)
-                        return true;
-                }
-            }
-
-            return false;
-        }
-        }
-    }
-    else
-    {
-        if (DFFlag::UseNewUrlClass)
-        {
-		    RBX::Url parsed = RBX::Url::fromString(url);
-		
-		    if (parsed.hasHttpScheme())
-		    {
-			    return false;
-		    }
-
-		    if ("mshtml.dll" == parsed.host() ||
-			    "ieframe.dll" == parsed.host() ||
-			    "shdoclc.dll" == parsed.host())
-		    {
-			    return true;
-		    }
-
-		    // Allow resources embedded inside this app
-		    TCHAR module[_MAX_PATH];
-		    if (GetModuleFileName(NULL, module, _MAX_PATH))
-		    {
-			    if ("res" == parsed.scheme() && 0 == parsed.host().find(module))
-			    {
-			        return true;
-			    }
-		    }
-
-		    return false;
-        } // if (DFFlag::UseNewUrlClass)
-
-        std::string host;
-        boost::scoped_ptr<char> cscheme(HTParse(url, NULL, PARSE_ACCESS));
-        if (isValidScheme(cscheme.get()))
-        {
-            return false;
-        }
-
-        boost::scoped_ptr<char> chost(HTParse(url, NULL, PARSE_HOST));
-        host = chost.get();
-
-        if ("mshtml.dll" == host ||
-            "ieframe.dll" == host ||
-            "shdoclc.dll" == host)
-        {
-            return true;
-        }
-
-        // Allow resources embedded inside this app
-        TCHAR module[_MAX_PATH];
-        if (GetModuleFileName(NULL, module, _MAX_PATH))
-        {
-            std::stringstream ss;
-            ss << "res://" << module;
-            if (0 == host.find(ss.str()))
-            {
-                return true;
-            }
-        }
-
+    if (!url)
         return false;
-    }
-#else // not ifdef _WIN32
-    return false;
-#endif // not ifdef _WIN32
-}
-
-bool Http::doHttpGetPostWithNativeFallbackForReporting(bool isPost, std::istream& dataStream, const std::string& contentType, bool compressData, const HttpAux::AdditionalHeaders& additionalHeaders, bool allowExternal, std::string& response)
-{
-#ifdef __ANDROID__
-	return false;
-#endif
-
-	std::string googleAnalyticsBaseURL = RobloxGoogleAnalytics::kGoogleAnalyticsBaseURL;
-	std::string counterMultiUrl = GetCountersMultiIncrementUrl(::GetBaseURL(), RBX::Stats::countersApiKey);
-	std::string counterSingleUrl = GetCountersUrl(::GetBaseURL(), RBX::Stats::countersApiKey);
-	std::string statsURL = RBX::format("%sgame/report-stats", ::GetBaseURL().c_str());
-	std::string inFluxBaseURL = DFString::HttpInfluxURL;
-	
-
-	if((url.compare(0, googleAnalyticsBaseURL.length(), googleAnalyticsBaseURL) == 0 || 
-		url.compare(0, counterMultiUrl.length(), counterMultiUrl) == 0 ||
-		url.compare(0, counterSingleUrl.length(), counterSingleUrl) == 0 ||
-		url.compare(0, statsURL.length(), statsURL) == 0 ||
-		url.compare(0, inFluxBaseURL.length(), inFluxBaseURL) == 0 ))
-	{
-		response.clear();
-		httpGetPost(isPost, dataStream, contentType, compressData, additionalHeaders, allowExternal, response, true);
-		return true;
-	}
-	return false;
+    if (externalRequest)
+        return isExternalRequest(url);
+    return std::string("about:blank") == url || isRobloxSite(url) || isScript(url);
 }
 
 void Http::applyAdditionalHeaders(RBX::HttpAux::AdditionalHeaders& outHeaders)
@@ -1444,4 +864,3 @@ void Http::applyAdditionalHeaders(RBX::HttpAux::AdditionalHeaders& outHeaders)
 		this->additionalHeaders[itr->first] = itr->second;
 	}
 }
-

@@ -183,6 +183,11 @@ float4 ShadowBlurPS(VertexOutput IN): COLOR0
 #endif
 
 	float2 step = Params1.xy;
+	float atlasTiles = Params2.x;
+	float2 tileOrigin = atlasTiles > 1.5 ? floor(IN.uv * 2) * 0.5 : float2(0, 0);
+	float2 tileExtent = atlasTiles > 1.5 ? float2(0.5, 0.5) : float2(1, 1);
+	float2 tileMin = tileOrigin + TextureSize.zw * 0.5;
+	float2 tileMax = tileOrigin + tileExtent - TextureSize.zw * 0.5;
 
 	float sigmaN1 = 1 / sqrt(2 * 3.1415926 * sigma * sigma);
 	float sigmaN2 = 1 / (2 * sigma * sigma);
@@ -196,16 +201,17 @@ float4 ShadowBlurPS(VertexOutput IN): COLOR0
         float ix = i;
 		float iw = exp(-ix * ix * sigmaN2) * sigmaN1;
 
-        float4 data = tex2D(Texture, IN.uv + step * ix);
+		float2 sampleUv = clamp(IN.uv + step * ix, tileMin, tileMax);
+		float4 data = tex2D(Texture, sampleUv);
 
         depth = min(depth, data.x);
         color += data.y * iw;
 		weight += iw;
 	}
 
-    float mask = tex2D(Mask, IN.uv).r;
+	float2 maskUv = atlasTiles > 1.5 ? frac(IN.uv * 2) : IN.uv;
+	float mask = tex2D(Mask, maskUv).r;
 
 	// Since the above is an approximation of the integral with step functions, normalization compensates for the error
 	return float4(depth, color * mask * (1 / weight), 0, 0);
 }
-

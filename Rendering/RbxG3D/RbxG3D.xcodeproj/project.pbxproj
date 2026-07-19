@@ -233,15 +233,15 @@
 				HEADER_SEARCH_PATHS = (
 					include,
 					../../App/include,
-					../../Base/include,
+					../../engine/core/include,
 					../AppDraw/include,
-					../GfxBase/include,
-					../GfxBase/include/GfxBase,
+					../Gfxengine/core/include,
+					../Gfxengine/core/include/GfxBase,
 					../G3D/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"$(CONTRIB_PATH)/GeekInfo/geekinfo-2.1.4/include",
 					../../log/include,
-					../../App.BulletPhysics,
+					../../third_party/bullet_historical,
 				);
 				INSTALL_PATH = /usr/local/lib;
 				PRODUCT_NAME = RbxG3D;
@@ -259,15 +259,15 @@
 				HEADER_SEARCH_PATHS = (
 					include,
 					../../App/include,
-					../../Base/include,
+					../../engine/core/include,
 					../AppDraw/include,
-					../GfxBase/include,
-					../GfxBase/include/GfxBase,
+					../Gfxengine/core/include,
+					../Gfxengine/core/include/GfxBase,
 					../G3D/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"$(CONTRIB_PATH)/GeekInfo/geekinfo-2.1.4/include",
 					../../log/include,
-					../../App.BulletPhysics,
+					../../third_party/bullet_historical,
 				);
 				INSTALL_PATH = /usr/local/lib;
 				PRODUCT_NAME = RbxG3D;
@@ -293,14 +293,14 @@
 				HEADER_SEARCH_PATHS = (
 					include,
 					../../App/include,
-					../../Base/include,
+					../../engine/core/include,
 					../AppDraw/include,
-					../GfxBase/include,
-					../GfxBase/include/GfxBase,
+					../Gfxengine/core/include,
+					../Gfxengine/core/include/GfxBase,
 					../G3D/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"$(CONTRIB_PATH)/GeekInfo/geekinfo-2.1.4/include",
-					../../App.BulletPhysics,
+					../../third_party/bullet_historical,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = YES;
@@ -329,14 +329,14 @@
 				HEADER_SEARCH_PATHS = (
 					include,
 					../../App/include,
-					../../Base/include,
+					../../engine/core/include,
 					../AppDraw/include,
-					../GfxBase/include,
-					../GfxBase/include/GfxBase,
+					../Gfxengine/core/include,
+					../Gfxengine/core/include/GfxBase,
 					../G3D/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"$(CONTRIB_PATH)/GeekInfo/geekinfo-2.1.4/include",
-					../../App.BulletPhysics,
+					../../third_party/bullet_historical,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = YES;
@@ -365,15 +365,15 @@
 				HEADER_SEARCH_PATHS = (
 					include,
 					../../App/include,
-					../../Base/include,
+					../../engine/core/include,
 					../AppDraw/include,
-					../GfxBase/include,
-					../GfxBase/include/GfxBase,
+					../Gfxengine/core/include,
+					../Gfxengine/core/include/GfxBase,
 					../G3D/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"$(CONTRIB_PATH)/GeekInfo/geekinfo-2.1.4/include",
 					../../log/include,
-					../../App.BulletPhysics,
+					../../third_party/bullet_historical,
 				);
 				INSTALL_PATH = /usr/local/lib;
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;
@@ -403,15 +403,15 @@
 				HEADER_SEARCH_PATHS = (
 					include,
 					../../App/include,
-					../../Base/include,
+					../../engine/core/include,
 					../AppDraw/include,
-					../GfxBase/include,
-					../GfxBase/include/GfxBase,
+					../Gfxengine/core/include,
+					../Gfxengine/core/include/GfxBase,
 					../G3D/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"$(CONTRIB_PATH)/GeekInfo/geekinfo-2.1.4/include",
 					../../log/include,
-					../../App.BulletPhysics,
+					../../third_party/bullet_historical,
 				);
 				INSTALL_PATH = /usr/local/lib;
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;
@@ -446,14 +446,14 @@
 				HEADER_SEARCH_PATHS = (
 					include,
 					../../App/include,
-					../../Base/include,
+					../../engine/core/include,
 					../AppDraw/include,
-					../GfxBase/include,
-					../GfxBase/include/GfxBase,
+					../Gfxengine/core/include,
+					../Gfxengine/core/include/GfxBase,
 					../G3D/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"$(CONTRIB_PATH)/GeekInfo/geekinfo-2.1.4/include",
-					../../App.BulletPhysics,
+					../../third_party/bullet_historical,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = YES;
@@ -473,15 +473,15 @@
 				HEADER_SEARCH_PATHS = (
 					include,
 					../../App/include,
-					../../Base/include,
+					../../engine/core/include,
 					../AppDraw/include,
-					../GfxBase/include,
-					../GfxBase/include/GfxBase,
+					../Gfxengine/core/include,
+					../Gfxengine/core/include/GfxBase,
 					../G3D/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"$(CONTRIB_PATH)/GeekInfo/geekinfo-2.1.4/include",
 					../../log/include,
-					../../App.BulletPhysics,
+					../../third_party/bullet_historical,
 				);
 				INSTALL_PATH = /usr/local/lib;
 				PRODUCT_NAME = RbxG3D;
@@ -506,15 +506,15 @@
 				HEADER_SEARCH_PATHS = (
 					include,
 					../../App/include,
-					../../Base/include,
+					../../engine/core/include,
 					../AppDraw/include,
-					../GfxBase/include,
-					../GfxBase/include/GfxBase,
+					../Gfxengine/core/include,
+					../Gfxengine/core/include/GfxBase,
 					../G3D/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"$(CONTRIB_PATH)/GeekInfo/geekinfo-2.1.4/include",
 					../../log/include,
-					../../App.BulletPhysics,
+					../../third_party/bullet_historical,
 				);
 				INSTALL_PATH = /usr/local/lib;
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;

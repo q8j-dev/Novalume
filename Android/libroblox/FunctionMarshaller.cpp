@@ -9,7 +9,7 @@
 
 #include "util/StandardOut.h"
 #include "rbx/boost.hpp"
-#include "../RobloxMac/Roblox.h"
+#include "../../apps/player/macos/source/Roblox.h"
 #include "JNIMain.h"
 
 // ----------------------------------------------------------------------------

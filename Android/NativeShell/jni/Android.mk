@@ -22,7 +22,7 @@ include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := fmod
-LOCAL_SRC_FILES := ../../../fmod/Android/armeabi-v7a/libfmod${FMOD_SUFFIX}.so
+LOCAL_SRC_FILES := ../../../third_party/quarantined/fmod/Android/armeabi-v7a/libfmod${FMOD_SUFFIX}.so
 include $(PREBUILT_SHARED_LIBRARY)
 
 
@@ -30,7 +30,7 @@ all: POST_BUILD_STEP
 
 .PHONY: POST_BUILD_STEP
 POST_BUILD_STEP:
-	sh "./${PATH_PREFIX}../../buildshaders.sh"
+	sh "./${PATH_PREFIX}../../tools/shader_pipeline/legacy/buildshaders.sh"
 	sh "./${PATH_PREFIX}packAndroidAssets.sh"
 
 # PATH_PREFIX is used when building with Android Studio, and comes from NativeShell/build.gradle

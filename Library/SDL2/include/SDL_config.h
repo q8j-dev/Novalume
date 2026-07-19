@@ -19,6 +19,12 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+#if defined(__APPLE__)
+
+#include "SDL_config_macosx.h"
+
+#else
+
 #ifndef SDL_config_windows_h_
 #define SDL_config_windows_h_
 #define SDL_config_h_
@@ -258,3 +264,5 @@ typedef unsigned int uintptr_t;
 #endif
 
 #endif /* SDL_config_windows_h_ */
+
+#endif /* __APPLE__ */

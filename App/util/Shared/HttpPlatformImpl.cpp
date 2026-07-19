@@ -5,6 +5,7 @@
  * before you will see the effect of these things.
  **/
 
+#include "stdafx.h"
 #include "util/HttpPlatformImpl.h"
 #include "util/Http.h"
 #include "FastLog.h"
@@ -79,6 +80,7 @@ static Http::CookieSharingPolicy cookieSharingPolicy = Http::CookieSharingUndefi
 static bool initialized = false;
 
 static boost::shared_ptr<CURLSH> gCurlsh;
+static boost::scoped_ptr<boost::thread> cacheStatisticsThread;
 
 // For sharing cookie data within the same process in multiple threads.
 SAFE_HEAP_STATIC(boost::mutex, curlshCookieMutex);
@@ -594,7 +596,8 @@ public:
         setupDebugger();
         
         
-        logCurlError("CURLOPT_SSLVERSION", curl_easy_setopt(curl,  CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1));
+        logCurlError("CURLOPT_SSLVERSION", curl_easy_setopt(curl,
+            CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2));
 
         // Setup our handle to share data.
         logCurlError("CURLOPT_SHARE", curl_easy_setopt(curl,  CURLOPT_SHARE, curlsh.get()));
@@ -648,7 +651,18 @@ public:
         logCurlError("CURLOPT_ACCEPT_ENCODING", curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, ""));
 
         // Don't verify SSL peers.  Less secure, but means we don't have to install certificates.
-        logCurlError("CURLOPT_SSL_VERIFYPEER", curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0));
+        logCurlError("CURLOPT_SSL_VERIFYPEER", curl_easy_setopt(curl,
+            CURLOPT_SSL_VERIFYPEER, 1L));
+        logCurlError("CURLOPT_SSL_VERIFYHOST", curl_easy_setopt(curl,
+            CURLOPT_SSL_VERIFYHOST, 2L));
+        logCurlError("CURLOPT_PROTOCOLS_STR", curl_easy_setopt(curl,
+            CURLOPT_PROTOCOLS_STR, "http,https"));
+        logCurlError("CURLOPT_REDIR_PROTOCOLS_STR", curl_easy_setopt(curl,
+            CURLOPT_REDIR_PROTOCOLS_STR, "http,https"));
+#if defined(__APPLE__) && !defined(RBX_PLATFORM_IOS)
+        logCurlError("CURLOPT_CAINFO", curl_easy_setopt(curl,
+            CURLOPT_CAINFO, "/etc/ssl/cert.pem"));
+#endif
 
         // Don't use signals, which will prevent problems with resolver timeouts in multi-threaded environments.
         // XXX Might need to setup SSL's mutex callback mechanism, per this URL:
@@ -1142,16 +1156,18 @@ namespace RBX
 namespace HttpPlatformImpl
 {
 
-	static const int kNumberThreadPoolThreads = 4;
-	static ThreadPool* threadPool;
+		static const int kNumberThreadPoolThreads = 4;
+		static ThreadPool* threadPool;
+		static boost::scoped_ptr<ThreadPool> threadPoolOwner;
 
 void init(Http::CookieSharingPolicy cookieSharingPolicy)
 {
     RBXASSERT(!initialized);
     if (!initialized)
     {
-		static boost::scoped_ptr<ThreadPool> tp(new ThreadPool(kNumberThreadPoolThreads));
-		threadPool = tp.get();
+			threadPoolOwner.reset(new ThreadPool(kNumberThreadPoolThreads,
+				BaseThreadPool::WaitForRunningTasks));
+			threadPool = threadPoolOwner.get();
 
         ::cookieSharingPolicy = cookieSharingPolicy;
 
@@ -1169,14 +1185,33 @@ void init(Http::CookieSharingPolicy cookieSharingPolicy)
         
         setCookiesForDomain(robloxCookieOverrideDomain, robloxCookieOverride);
 
-        {
-            boost::function0<void> f = boost::bind(&CacheStatistics::initializeCachingThreadHandler);
-            boost::function0<void> g = boost::bind(&StandardOut::print_exception, f, MESSAGE_ERROR, false);
-            boost::thread(thread_wrapper(g, "rbx_http_cache_stats_report"));
-        }
+        boost::function0<void> f = boost::bind(&CacheStatistics::initializeCachingThreadHandler);
+        boost::function0<void> g = boost::bind(&StandardOut::print_exception, f, MESSAGE_ERROR, false);
+        cacheStatisticsThread.reset(
+            new boost::thread(thread_wrapper(g, "rbx_http_cache_stats_report")));
 
         initialized = true;
     }
+}
+
+void shutdown()
+{
+    if (!initialized)
+        return;
+
+    if (cacheStatisticsThread)
+    {
+        cacheStatisticsThread->interrupt();
+        cacheStatisticsThread->join();
+        cacheStatisticsThread.reset();
+    }
+    threadPool = NULL;
+    threadPoolOwner.reset();
+    gCurlsh.reset();
+#ifndef __ANDROID__
+    curl_global_cleanup();
+#endif
+    initialized = false;
 }
 
 void setProxy(const std::string& host, long port)

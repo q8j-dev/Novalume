@@ -30,7 +30,7 @@
     <ClCompile Include="ComModule.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ClientShared\Win\CookiesEngine.cpp">
+    <ClCompile Include="$(SolutionDir)apps\player\shared\client\Win\CookiesEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FileDeployer.cpp">
@@ -39,7 +39,7 @@
     <ClCompile Include="FileSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ClientShared\format_string.cpp">
+    <ClCompile Include="$(SolutionDir)apps\player\shared\client\format_string.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GoogleAnalyticsHelper.cpp">
@@ -48,7 +48,7 @@
     <ClCompile Include="HttpTools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ClientShared\InfluxDbHelper.cpp">
+    <ClCompile Include="$(SolutionDir)apps\player\shared\client\InfluxDbHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LegacyDialog.cpp">
@@ -63,7 +63,7 @@
     <ClCompile Include="ProgressDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ClientShared\RobloxServicesTools.cpp">
+    <ClCompile Include="$(SolutionDir)apps\player\shared\client\RobloxServicesTools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SharedHelpers.cpp">
@@ -78,7 +78,7 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ClientShared\StringConv.cpp">
+    <ClCompile Include="$(SolutionDir)apps\player\shared\client\StringConv.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TaskDialog.cpp">
@@ -87,10 +87,10 @@
     <ClCompile Include="Unzipper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Win\VersionInfo.cpp">
+    <ClCompile Include="$(SolutionDir)platform\windows\historical\VersionInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Win\VistaTools.cpp">
+    <ClCompile Include="$(SolutionDir)platform\windows\historical\VistaTools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="zlib\adler32.c">
@@ -167,7 +167,7 @@
     <ClInclude Include="CommonResourceConstants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ClientShared\CookiesEngine.h">
+    <ClInclude Include="$(SolutionDir)apps\player\shared\client\CookiesEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FileDeployer.h">
@@ -176,7 +176,7 @@
     <ClInclude Include="FileSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ClientShared\format_string.h">
+    <ClInclude Include="$(SolutionDir)apps\player\shared\client\format_string.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GoogleAnalyticsHelper.h">
@@ -185,7 +185,7 @@
     <ClInclude Include="HttpTools.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ClientShared\InfluxDbHelper.h">
+    <ClInclude Include="$(SolutionDir)apps\player\shared\client\InfluxDbHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LegacyDialog.h">
@@ -197,7 +197,7 @@
     <ClInclude Include="MD5Hasher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Win\ProcessInformation.h">
+    <ClInclude Include="$(SolutionDir)platform\windows\historical\ProcessInformation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Progress.h">
@@ -209,7 +209,7 @@
     <ClInclude Include="Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ClientShared\RobloxServicesTools.h">
+    <ClInclude Include="$(SolutionDir)apps\player\shared\client\RobloxServicesTools.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SharedHelpers.h">
@@ -224,7 +224,7 @@
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ClientShared\StringConv.h">
+    <ClInclude Include="$(SolutionDir)apps\player\shared\client\StringConv.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="targetver.h">
@@ -236,10 +236,10 @@
     <ClInclude Include="Unzipper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Win\VersionInfo.h">
+    <ClInclude Include="$(SolutionDir)platform\windows\historical\VersionInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Win\VistaTools.h">
+    <ClInclude Include="$(SolutionDir)platform\windows\historical\VistaTools.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="zlib\crc32.h">

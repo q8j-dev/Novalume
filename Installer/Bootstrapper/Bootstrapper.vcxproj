@@ -182,7 +182,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\ClientShared\format_string.cpp">
+    <ClCompile Include="$(SolutionDir)apps\player\shared\client\format_string.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -192,9 +192,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\ClientShared\InfluxDbHelper.cpp" />
-    <ClCompile Include="..\..\ClientShared\RobloxServicesTools.cpp" />
-    <ClCompile Include="..\..\ClientShared\StringConv.cpp">
+    <ClCompile Include="$(SolutionDir)apps\player\shared\client\InfluxDbHelper.cpp" />
+    <ClCompile Include="$(SolutionDir)apps\player\shared\client\RobloxServicesTools.cpp" />
+    <ClCompile Include="$(SolutionDir)apps\player\shared\client\StringConv.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -204,7 +204,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\ClientShared\Win\CookiesEngine.cpp">
+    <ClCompile Include="$(SolutionDir)apps\player\shared\client\Win\CookiesEngine.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -214,8 +214,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Win\VersionInfo.cpp" />
-    <ClCompile Include="..\..\Win\VistaTools.cpp" />
+    <ClCompile Include="$(SolutionDir)platform\windows\historical\VersionInfo.cpp" />
+    <ClCompile Include="$(SolutionDir)platform\windows\historical\VistaTools.cpp" />
     <ClCompile Include="Bootstrapper.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
@@ -429,14 +429,14 @@
     <None Include="Roblox.inf" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\ClientShared\CookiesEngine.h" />
-    <ClInclude Include="..\..\ClientShared\format_string.h" />
-    <ClInclude Include="..\..\ClientShared\InfluxDbHelper.h" />
-    <ClInclude Include="..\..\ClientShared\RobloxServicesTools.h" />
-    <ClInclude Include="..\..\ClientShared\StringConv.h" />
-    <ClInclude Include="..\..\Win\ProcessInformation.h" />
-    <ClInclude Include="..\..\Win\VersionInfo.h" />
-    <ClInclude Include="..\..\Win\VistaTools.h" />
+    <ClInclude Include="$(SolutionDir)apps\player\shared\client\CookiesEngine.h" />
+    <ClInclude Include="$(SolutionDir)apps\player\shared\client\format_string.h" />
+    <ClInclude Include="$(SolutionDir)apps\player\shared\client\InfluxDbHelper.h" />
+    <ClInclude Include="$(SolutionDir)apps\player\shared\client\RobloxServicesTools.h" />
+    <ClInclude Include="$(SolutionDir)apps\player\shared\client\StringConv.h" />
+    <ClInclude Include="$(SolutionDir)platform\windows\historical\ProcessInformation.h" />
+    <ClInclude Include="$(SolutionDir)platform\windows\historical\VersionInfo.h" />
+    <ClInclude Include="$(SolutionDir)platform\windows\historical\VistaTools.h" />
     <ClInclude Include="Bootstrapper.h" />
     <ClInclude Include="BootstrapperSite.h" />
     <ClInclude Include="ComModule.h" />

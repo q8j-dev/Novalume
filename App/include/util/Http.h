@@ -119,6 +119,7 @@ namespace RBX
         void init();
 	public:
 		static void init(API api, CookieSharingPolicy cookieSharingPolicy);
+		static void shutdown();
         static void SetUseStatistics(bool value);
         static void SetUseCurl(bool value);
         static rbx::atomic<int> cdnSuccessCount;
@@ -192,17 +193,13 @@ namespace RBX
 		void applyAdditionalHeaders(RBX::HttpAux::AdditionalHeaders& outHeaders);
 
 	private:
-        void httpGetPost(bool isPost, std::istream& dataStream, const std::string& contentType, bool compressData, const HttpAux::AdditionalHeaders& additionalHeaders, bool allowExternal, std::string& response, bool forceNativeHttp = false);
+        void httpGetPost(bool isPost, std::istream& dataStream, const std::string& contentType, bool compressData, const HttpAux::AdditionalHeaders& additionalHeaders, bool allowExternal, std::string& response);
 #if defined(RBX_PLATFORM_DURANGO)
 		void httpGetPostXbox(bool isPost, std::istream& dataStream, const std::string& contentType, bool compressData, const HttpAux::AdditionalHeaders& additionalHeaders, bool allowExternal, HttpCache::Policy cachePolicy, std::string& response);
 #elif defined(_WIN32)
         void httpGetPostWinInet(bool isPost, std::istream& dataStream, const std::string& contentType, bool compressData, const HttpAux::AdditionalHeaders& additionalHeaders, bool allowExternal, std::string& response);
         void httpGetPostWinHttp(bool isPost, std::istream& dataStream, const std::string& contentType, bool compressData, const HttpAux::AdditionalHeaders& additionalHeaders, bool allowExternal, std::string& response);
-#elif defined(__APPLE__)
-        void httpGetPostImpl(bool isPost, std::istream& dataStream, const std::string& contentType, bool compressData, const HttpAux::AdditionalHeaders& additionalHeaders, bool allowExternal, std::string& response);
 #endif
-		bool doHttpGetPostWithNativeFallbackForReporting(bool isPost, std::istream& dataStream, const std::string& contentType, bool compressData, const HttpAux::AdditionalHeaders& additionalHeaders, bool allowExternal, std::string& response);
-
 		void ThrowIfFailure(bool success, const char* message);
 
 #ifdef _WIN32

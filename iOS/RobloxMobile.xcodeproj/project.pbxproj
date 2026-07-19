@@ -1512,9 +1512,9 @@
 		108AAE3B1612928C000ECC88 /* shaders */ = {isa = PBXFileReference; lastKnownFileType = folder; name = shaders; path = ../shaders; sourceTree = "<group>"; };
 		108AAE3C1612928C000ECC88 /* content */ = {isa = PBXFileReference; lastKnownFileType = folder; name = content; path = ../content; sourceTree = "<group>"; };
 		108AAE511612928C000ECC88 /* libfmodex_iphoneos.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; name = libfmodex_iphoneos.a; path = ../../../../Contrib2/FMOD_43205/ios/libfmodex_iphoneos.a; sourceTree = "<group>"; };
-		10D7AC2A1612A733001D98D3 /* RenderSettingsItem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RenderSettingsItem.cpp; path = ../ClientBase/RenderSettingsItem.cpp; sourceTree = "<group>"; };
-		10D7AC2B1612A733001D98D3 /* RenderSettingsItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RenderSettingsItem.h; path = ../ClientBase/RenderSettingsItem.h; sourceTree = "<group>"; };
-		10D7AC3B1612ACCE001D98D3 /* DataModelEmptySerialize.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DataModelEmptySerialize.cpp; path = ../ClientShared/DataModelEmptySerialize.cpp; sourceTree = SOURCE_ROOT; };
+		10D7AC2A1612A733001D98D3 /* RenderSettingsItem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RenderSettingsItem.cpp; path = ../apps/player/shared/client_base/RenderSettingsItem.cpp; sourceTree = "<group>"; };
+		10D7AC2B1612A733001D98D3 /* RenderSettingsItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RenderSettingsItem.h; path = ../apps/player/shared/client_base/RenderSettingsItem.h; sourceTree = "<group>"; };
+		10D7AC3B1612ACCE001D98D3 /* DataModelEmptySerialize.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DataModelEmptySerialize.cpp; path = ../apps/player/shared/client/DataModelEmptySerialize.cpp; sourceTree = SOURCE_ROOT; };
 		121E7A421989C2E300DC59EB /* RBMobileWebViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RBMobileWebViewController.mm; sourceTree = "<group>"; };
 		1222946F194F70C400E1C8CE /* RBPurchaseViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RBPurchaseViewController.h; sourceTree = "<group>"; };
 		12229470194F70C400E1C8CE /* RBPurchaseViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; lineEnding = 0; path = RBPurchaseViewController.mm; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
@@ -1541,10 +1541,10 @@
 		1F0C0011191441E4002B6388 /* GameKitHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GameKitHelper.h; path = SharedCode/GameKitHelper.h; sourceTree = SOURCE_ROOT; };
 		1F0C0012191441E4002B6388 /* GameKitHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GameKitHelper.m; path = SharedCode/GameKitHelper.m; sourceTree = SOURCE_ROOT; };
 		1F0CD507161631DE0045AB68 /* App.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = App.xcodeproj; path = ../App/App.xcodeproj; sourceTree = "<group>"; };
-		1F0CD514161633820045AB68 /* Base.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Base.xcodeproj; path = ../Base/Base.xcodeproj; sourceTree = "<group>"; };
-		1F0CD520161634B50045AB68 /* boost.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = boost.xcodeproj; path = ../boostlibs/boost.xcodeproj; sourceTree = "<group>"; };
+		1F0CD514161633820045AB68 /* Base.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Base.xcodeproj; path = ../engine/core/historical/base/Base.xcodeproj; sourceTree = "<group>"; };
+		1F0CD520161634B50045AB68 /* boost.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = boost.xcodeproj; path = ../third_party/boost/build/boost.xcodeproj; sourceTree = "<group>"; };
 		1F0CD52F1616361C0045AB68 /* Log.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Log.xcodeproj; path = ../Log/Log.xcodeproj; sourceTree = "<group>"; };
-		1F0CD53B161636460045AB68 /* Network.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Network.xcodeproj; path = ../Network/Network.xcodeproj; sourceTree = "<group>"; };
+		1F0CD53B161636460045AB68 /* Network.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Network.xcodeproj; path = ../engine/networking/Network.xcodeproj; sourceTree = "<group>"; };
 		1F0CD547161637700045AB68 /* AppDraw.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = AppDraw.xcodeproj; path = ../Rendering/AppDraw/AppDraw.xcodeproj; sourceTree = "<group>"; };
 		1F0CD550161637860045AB68 /* G3D.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = G3D.xcodeproj; path = ../Rendering/g3d/G3D.xcodeproj; sourceTree = "<group>"; };
 		1F0CD56B161638B30045AB68 /* GfxBase.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = GfxBase.xcodeproj; path = ../Rendering/GfxBase/GfxBase.xcodeproj; sourceTree = "<group>"; };
@@ -1659,7 +1659,7 @@
 		2FF388FE1A312B4B00325F0D /* MainStoryboard_iPhone.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = MainStoryboard_iPhone.storyboard; sourceTree = "<group>"; };
 		2FFB21671AAFA0980044F9FF /* NonRotatableNavigationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NonRotatableNavigationController.h; sourceTree = "<group>"; };
 		2FFB21681AAFA0980044F9FF /* NonRotatableNavigationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NonRotatableNavigationController.m; sourceTree = "<group>"; };
-		3925140419816DD6007725D2 /* App.BulletPhysics.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = App.BulletPhysics.xcodeproj; path = ../App.BulletPhysics/App.BulletPhysics.xcodeproj; sourceTree = "<group>"; };
+		3925140419816DD6007725D2 /* App.BulletPhysics.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = App.BulletPhysics.xcodeproj; path = ../third_party/bullet_historical/App.BulletPhysics.xcodeproj; sourceTree = "<group>"; };
 		427BFB6D19A72AC300197531 /* LuaVMClient.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LuaVMClient.cpp; path = ../App/script/LuaVMClient.cpp; sourceTree = "<group>"; };
 		456903C7192AD437006A4B30 /* GameVerbs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GameVerbs.h; path = ../SharedCode/GameVerbs.h; sourceTree = "<group>"; };
 		456903E3192AD5C8006A4B30 /* GameVerbs.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = GameVerbs.mm; path = SharedCode/GameVerbs.mm; sourceTree = SOURCE_ROOT; };
@@ -1797,8 +1797,8 @@
 		9F0B1D5519DCEF02005608A9 /* RBVotesView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RBVotesView.h; sourceTree = "<group>"; };
 		9F0B1D5619DCEF02005608A9 /* RBVotesView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RBVotesView.m; sourceTree = "<group>"; };
 		9F155BA21AB389AA00881802 /* Bolts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Bolts.framework; path = iOS/Bolts/1.1.4/Bolts.framework; sourceTree = CONTRIB_PATH; };
-		9F199C901A9BD30F00213305 /* RBHybridModuleAnalytics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RBHybridModuleAnalytics.h; path = ../RobloxHybrid/platforms/ios/Modules/analytics/RBHybridModuleAnalytics.h; sourceTree = "<group>"; };
-		9F199C911A9BD30F00213305 /* RBHybridModuleAnalytics.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RBHybridModuleAnalytics.m; path = ../RobloxHybrid/platforms/ios/Modules/analytics/RBHybridModuleAnalytics.m; sourceTree = "<group>"; };
+		9F199C901A9BD30F00213305 /* RBHybridModuleAnalytics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RBHybridModuleAnalytics.h; path = ../platform/mobile/hybrid/platforms/ios/Modules/analytics/RBHybridModuleAnalytics.h; sourceTree = "<group>"; };
+		9F199C911A9BD30F00213305 /* RBHybridModuleAnalytics.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RBHybridModuleAnalytics.m; path = ../platform/mobile/hybrid/platforms/ios/Modules/analytics/RBHybridModuleAnalytics.m; sourceTree = "<group>"; };
 		9F1A72B419CA7B50004818EE /* UIView+Position.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+Position.h"; sourceTree = "<group>"; };
 		9F1A72B519CA7B50004818EE /* UIView+Position.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+Position.m"; sourceTree = "<group>"; };
 		9F1C983E194A3004001B7A71 /* OFL.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = OFL.txt; sourceTree = "<group>"; };
@@ -1887,8 +1887,8 @@
 		9FB669FD19E49AB3004203BB /* RBBadgesViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = RBBadgesViewController.xib; sourceTree = "<group>"; };
 		9FBAA89319E38FE800771B58 /* RBFavoritesView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RBFavoritesView.h; sourceTree = "<group>"; };
 		9FBAA89419E38FE800771B58 /* RBFavoritesView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RBFavoritesView.m; sourceTree = "<group>"; };
-		9FC444601A953D5F005B61BA /* RBHybridWebView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RBHybridWebView.h; path = ../RobloxHybrid/platforms/ios/RBHybridWebView.h; sourceTree = "<group>"; };
-		9FC444611A953D5F005B61BA /* RBHybridWebView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RBHybridWebView.m; path = ../RobloxHybrid/platforms/ios/RBHybridWebView.m; sourceTree = "<group>"; };
+		9FC444601A953D5F005B61BA /* RBHybridWebView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RBHybridWebView.h; path = ../platform/mobile/hybrid/platforms/ios/RBHybridWebView.h; sourceTree = "<group>"; };
+		9FC444611A953D5F005B61BA /* RBHybridWebView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RBHybridWebView.m; path = ../platform/mobile/hybrid/platforms/ios/RBHybridWebView.m; sourceTree = "<group>"; };
 		9FC444AC1A969CF3005B61BA /* RBHybridModuleDialogs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RBHybridModuleDialogs.h; sourceTree = "<group>"; };
 		9FC444AD1A969CF3005B61BA /* RBHybridModuleDialogs.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RBHybridModuleDialogs.m; sourceTree = "<group>"; };
 		9FC444AF1A969CF3005B61BA /* RBHybridModuleSocial.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RBHybridModuleSocial.h; sourceTree = "<group>"; };
@@ -2022,8 +2022,8 @@
 		E2A6E8871A979102008AD795 /* RBHybridModuleSocial_GooglePlusActivity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RBHybridModuleSocial_GooglePlusActivity.m; sourceTree = "<group>"; };
 		E2A6E8881A979102008AD795 /* RBHybridModuleSocial_TwitterActivity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RBHybridModuleSocial_TwitterActivity.h; sourceTree = "<group>"; };
 		E2A6E8891A979102008AD795 /* RBHybridModuleSocial_TwitterActivity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RBHybridModuleSocial_TwitterActivity.m; sourceTree = "<group>"; };
-		E2A6E8D61A9AA5D9008AD795 /* RBHybridModuleGame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RBHybridModuleGame.h; path = ../RobloxHybrid/platforms/ios/Modules/game/RBHybridModuleGame.h; sourceTree = "<group>"; };
-		E2A6E8D71A9AA5D9008AD795 /* RBHybridModuleGame.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = RBHybridModuleGame.m; path = ../RobloxHybrid/platforms/ios/Modules/game/RBHybridModuleGame.m; sourceTree = "<group>"; };
+		E2A6E8D61A9AA5D9008AD795 /* RBHybridModuleGame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RBHybridModuleGame.h; path = ../platform/mobile/hybrid/platforms/ios/Modules/game/RBHybridModuleGame.h; sourceTree = "<group>"; };
+		E2A6E8D71A9AA5D9008AD795 /* RBHybridModuleGame.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = RBHybridModuleGame.m; path = ../platform/mobile/hybrid/platforms/ios/Modules/game/RBHybridModuleGame.m; sourceTree = "<group>"; };
 		E2A6E8D91A9B5409008AD795 /* AddressBook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AddressBook.framework; path = System/Library/Frameworks/AddressBook.framework; sourceTree = SDKROOT; };
 		E2A6E8DB1A9B5412008AD795 /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = System/Library/Frameworks/AssetsLibrary.framework; sourceTree = SDKROOT; };
 		E2A6E8DD1A9B5442008AD795 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
@@ -2032,12 +2032,12 @@
 		E2A6E8E21A9B5527008AD795 /* GooglePlus.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GooglePlus.framework; path = iOS/GooglePlus/1.7.1/GooglePlus.framework; sourceTree = CONTRIB_PATH; };
 		E2A6E8F21A9B6229008AD795 /* GooglePlus.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = GooglePlus.bundle; path = iOS/GooglePlus/1.7.1/GooglePlus.bundle; sourceTree = CONTRIB_PATH; };
 		E2A8C979194AD0C400F20AF3 /* SignUpDisclamer.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = SignUpDisclamer.html; sourceTree = "<group>"; };
-		E2AB76A81A92D3AD00050D0B /* RBHybridBridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RBHybridBridge.h; path = ../RobloxHybrid/platforms/ios/RBHybridBridge.h; sourceTree = "<group>"; };
-		E2AB76A91A92D3AD00050D0B /* RBHybridBridge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RBHybridBridge.m; path = ../RobloxHybrid/platforms/ios/RBHybridBridge.m; sourceTree = "<group>"; };
-		E2AB76CB1A92D84400050D0B /* RBHybridModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RBHybridModule.h; path = ../RobloxHybrid/platforms/ios/RBHybridModule.h; sourceTree = "<group>"; };
-		E2AB76CC1A92D84400050D0B /* RBHybridModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RBHybridModule.m; path = ../RobloxHybrid/platforms/ios/RBHybridModule.m; sourceTree = "<group>"; };
-		E2AB76D31A93738B00050D0B /* RBHybridCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RBHybridCommand.h; path = ../RobloxHybrid/platforms/ios/RBHybridCommand.h; sourceTree = "<group>"; };
-		E2AB76D41A93738B00050D0B /* RBHybridCommand.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RBHybridCommand.m; path = ../RobloxHybrid/platforms/ios/RBHybridCommand.m; sourceTree = "<group>"; };
+		E2AB76A81A92D3AD00050D0B /* RBHybridBridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RBHybridBridge.h; path = ../platform/mobile/hybrid/platforms/ios/RBHybridBridge.h; sourceTree = "<group>"; };
+		E2AB76A91A92D3AD00050D0B /* RBHybridBridge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RBHybridBridge.m; path = ../platform/mobile/hybrid/platforms/ios/RBHybridBridge.m; sourceTree = "<group>"; };
+		E2AB76CB1A92D84400050D0B /* RBHybridModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RBHybridModule.h; path = ../platform/mobile/hybrid/platforms/ios/RBHybridModule.h; sourceTree = "<group>"; };
+		E2AB76CC1A92D84400050D0B /* RBHybridModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RBHybridModule.m; path = ../platform/mobile/hybrid/platforms/ios/RBHybridModule.m; sourceTree = "<group>"; };
+		E2AB76D31A93738B00050D0B /* RBHybridCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RBHybridCommand.h; path = ../platform/mobile/hybrid/platforms/ios/RBHybridCommand.h; sourceTree = "<group>"; };
+		E2AB76D41A93738B00050D0B /* RBHybridCommand.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RBHybridCommand.m; path = ../platform/mobile/hybrid/platforms/ios/RBHybridCommand.m; sourceTree = "<group>"; };
 		E2DD575919D3049E006CA95C /* RBFullFriendListScreenController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RBFullFriendListScreenController.h; sourceTree = "<group>"; };
 		E2DD575A19D3049E006CA95C /* RBFullFriendListScreenController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RBFullFriendListScreenController.m; sourceTree = "<group>"; };
 		E2FCC2E119DBED7700175FEB /* LeaderboardsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LeaderboardsViewController.h; sourceTree = "<group>"; };
@@ -2048,9 +2048,9 @@
 		F52FD6491BD7001600F2CF05 /* RBXWebViewProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RBXWebViewProtocol.h; path = Protocols/RBXWebViewProtocol.h; sourceTree = "<group>"; };
 		F556D9FF1C177313001FFFFC /* RBTabBarController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RBTabBarController.h; sourceTree = "<group>"; };
 		F556DA001C177313001FFFFC /* RBTabBarController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RBTabBarController.m; sourceTree = "<group>"; };
-		F55A74EF1BD1B69200C7C532 /* RBHybridWKWebView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RBHybridWKWebView.h; path = ../RobloxHybrid/platforms/ios/RBHybridWKWebView.h; sourceTree = "<group>"; };
-		F55A74F01BD1B69200C7C532 /* RBHybridWKWebView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RBHybridWKWebView.m; path = ../RobloxHybrid/platforms/ios/RBHybridWKWebView.m; sourceTree = "<group>"; };
-		F55A75211BD56B8700C7C532 /* RBHybridWebViewProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RBHybridWebViewProtocol.h; path = ../RobloxHybrid/platforms/ios/Protocols/RBHybridWebViewProtocol.h; sourceTree = "<group>"; };
+		F55A74EF1BD1B69200C7C532 /* RBHybridWKWebView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RBHybridWKWebView.h; path = ../platform/mobile/hybrid/platforms/ios/RBHybridWKWebView.h; sourceTree = "<group>"; };
+		F55A74F01BD1B69200C7C532 /* RBHybridWKWebView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RBHybridWKWebView.m; path = ../platform/mobile/hybrid/platforms/ios/RBHybridWKWebView.m; sourceTree = "<group>"; };
+		F55A75211BD56B8700C7C532 /* RBHybridWebViewProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RBHybridWebViewProtocol.h; path = ../platform/mobile/hybrid/platforms/ios/Protocols/RBHybridWebViewProtocol.h; sourceTree = "<group>"; };
 		F55D2A331BE02A1200C0913B /* ROBLOXTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ROBLOXTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F55D2A351BE02A1200C0913B /* ROBLOXTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ROBLOXTests.m; sourceTree = "<group>"; };
 		F55D2A371BE02A1200C0913B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -3175,7 +3175,7 @@
 				9FC444AD1A969CF3005B61BA /* RBHybridModuleDialogs.m */,
 			);
 			name = dialogs;
-			path = ../RobloxHybrid/platforms/ios/Modules/dialogs;
+			path = ../platform/mobile/hybrid/platforms/ios/Modules/dialogs;
 			sourceTree = "<group>";
 		};
 		9FC444AE1A969CF3005B61BA /* social */ = {
@@ -3191,7 +3191,7 @@
 				9FC444B41A969DF7005B61BA /* RBHybridModuleSocial_FBActivity.m */,
 			);
 			name = social;
-			path = ../RobloxHybrid/platforms/ios/Modules/social;
+			path = ../platform/mobile/hybrid/platforms/ios/Modules/social;
 			sourceTree = "<group>";
 		};
 		9FC5EB3019CA429400DA313D /* Categories */ = {
@@ -4316,7 +4316,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "${SRCROOT}/../buildshaders.sh";
+			shellScript = "${SRCROOT}/../tools/shader_pipeline/legacy/buildshaders.sh";
 		};
 		939A497E1AB109FF0053CB03 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4343,7 +4343,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "${SRCROOT}/../buildshaders.sh";
+			shellScript = "${SRCROOT}/../tools/shader_pipeline/legacy/buildshaders.sh";
 		};
 		945B13CE1BDABA68008489E9 /* Run CoreScriptConverter */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4357,7 +4357,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
-			shellScript = "echo \"Running CoreScriptConverter\"\ncd \"${SRCROOT}/../CoreScriptConverter2/tool/osx/\"\n./CoreScriptConverter --rscloc \"../rsc.config\" --verbose\n\ncd \"${SRCROOT}/../App/script/\"\n\nif [[ -e \"LuaGenCS.inl\" ]];\nthen\nfile1=$(md5 -q LuaGenCSNew.inl)\nfile2=$(md5 -q LuaGenCS.inl)\n\necho $file1\necho $file2\n\nif [ $file1 == $file2 ]\nthen\necho \"No CoreScript changes detected\"\nrm \"LuaGenCSNew.inl\"\nelse\necho \"CoreScript changes detected, will require linking\"\nrm \"LuaGenCS.inl\"\nmv \"LuaGenCSNew.inl\" \"LuaGenCS.inl\"\nfi\nelse\necho \"CoreScript changes detected, will require linking\"\nmv \"LuaGenCSNew.inl\" \"LuaGenCS.inl\"\nfi";
+			shellScript = "echo \"Running CoreScriptConverter\"\ncd \"${SRCROOT}/../tools/core_script_converter/tool/osx/\"\n./CoreScriptConverter --rscloc \"../rsc.config\" --verbose\n\ncd \"${SRCROOT}/../App/script/\"\n\nif [[ -e \"LuaGenCS.inl\" ]];\nthen\nfile1=$(md5 -q LuaGenCSNew.inl)\nfile2=$(md5 -q LuaGenCS.inl)\n\necho $file1\necho $file2\n\nif [ $file1 == $file2 ]\nthen\necho \"No CoreScript changes detected\"\nrm \"LuaGenCSNew.inl\"\nelse\necho \"CoreScript changes detected, will require linking\"\nrm \"LuaGenCS.inl\"\nmv \"LuaGenCSNew.inl\" \"LuaGenCS.inl\"\nfi\nelse\necho \"CoreScript changes detected, will require linking\"\nmv \"LuaGenCSNew.inl\" \"LuaGenCS.inl\"\nfi";
 		};
 		945B13CF1BDABABA008489E9 /* Run CoreScriptConverter */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4371,7 +4371,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
-			shellScript = "echo \"Running CoreScriptConverter\"\ncd \"${SRCROOT}/../CoreScriptConverter2/tool/osx/\"\n./CoreScriptConverter --rscloc \"../rsc.config\" --verbose\n\ncd \"${SRCROOT}/../App/script/\"\n\nif [[ -e \"LuaGenCS.inl\" ]];\nthen\nfile1=$(md5 -q LuaGenCSNew.inl)\nfile2=$(md5 -q LuaGenCS.inl)\n\necho $file1\necho $file2\n\nif [ $file1 == $file2 ]\nthen\necho \"No CoreScript changes detected\"\nrm \"LuaGenCSNew.inl\"\nelse\necho \"CoreScript changes detected, will require linking\"\nrm \"LuaGenCS.inl\"\nmv \"LuaGenCSNew.inl\" \"LuaGenCS.inl\"\nfi\nelse\necho \"CoreScript changes detected, will require linking\"\nmv \"LuaGenCSNew.inl\" \"LuaGenCS.inl\"\nfi";
+			shellScript = "echo \"Running CoreScriptConverter\"\ncd \"${SRCROOT}/../tools/core_script_converter/tool/osx/\"\n./CoreScriptConverter --rscloc \"../rsc.config\" --verbose\n\ncd \"${SRCROOT}/../App/script/\"\n\nif [[ -e \"LuaGenCS.inl\" ]];\nthen\nfile1=$(md5 -q LuaGenCSNew.inl)\nfile2=$(md5 -q LuaGenCS.inl)\n\necho $file1\necho $file2\n\nif [ $file1 == $file2 ]\nthen\necho \"No CoreScript changes detected\"\nrm \"LuaGenCSNew.inl\"\nelse\necho \"CoreScript changes detected, will require linking\"\nrm \"LuaGenCS.inl\"\nmv \"LuaGenCSNew.inl\" \"LuaGenCS.inl\"\nfi\nelse\necho \"CoreScript changes detected, will require linking\"\nmv \"LuaGenCSNew.inl\" \"LuaGenCS.inl\"\nfi";
 		};
 		94D0F1E01BDAAA7E006A04C7 /* Run CoreScriptConverter */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4385,7 +4385,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
-			shellScript = "echo \"Running CoreScriptConverter\"\ncd \"${SRCROOT}/../CoreScriptConverter2/tool/osx/\"\n./CoreScriptConverter --rscloc \"../rsc.config\" --verbose\n\ncd \"${SRCROOT}/../App/script/\"\n\nif [[ -e \"LuaGenCS.inl\" ]];\nthen\nfile1=$(md5 -q LuaGenCSNew.inl)\nfile2=$(md5 -q LuaGenCS.inl)\n\necho $file1\necho $file2\n\nif [ $file1 == $file2 ]\nthen\necho \"No CoreScript changes detected\"\nrm \"LuaGenCSNew.inl\"\nelse\necho \"CoreScript changes detected, will require linking\"\nrm \"LuaGenCS.inl\"\nmv \"LuaGenCSNew.inl\" \"LuaGenCS.inl\"\nfi\nelse\necho \"CoreScript changes detected, will require linking\"\nmv \"LuaGenCSNew.inl\" \"LuaGenCS.inl\"\nfi";
+			shellScript = "echo \"Running CoreScriptConverter\"\ncd \"${SRCROOT}/../tools/core_script_converter/tool/osx/\"\n./CoreScriptConverter --rscloc \"../rsc.config\" --verbose\n\ncd \"${SRCROOT}/../App/script/\"\n\nif [[ -e \"LuaGenCS.inl\" ]];\nthen\nfile1=$(md5 -q LuaGenCSNew.inl)\nfile2=$(md5 -q LuaGenCS.inl)\n\necho $file1\necho $file2\n\nif [ $file1 == $file2 ]\nthen\necho \"No CoreScript changes detected\"\nrm \"LuaGenCSNew.inl\"\nelse\necho \"CoreScript changes detected, will require linking\"\nrm \"LuaGenCS.inl\"\nmv \"LuaGenCSNew.inl\" \"LuaGenCS.inl\"\nfi\nelse\necho \"CoreScript changes detected, will require linking\"\nmv \"LuaGenCSNew.inl\" \"LuaGenCS.inl\"\nfi";
 		};
 		9F3766A318AAF70F0099C2FD /* Build shaders */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4399,7 +4399,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "${SRCROOT}/../buildshaders.sh";
+			shellScript = "${SRCROOT}/../tools/shader_pipeline/legacy/buildshaders.sh";
 		};
 		9FD83D36193EB63400CAEC99 /* Build shaders */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4413,7 +4413,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "${SRCROOT}/../buildshaders.sh";
+			shellScript = "${SRCROOT}/../tools/shader_pipeline/legacy/buildshaders.sh";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -5266,7 +5266,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					../App.BulletPhysics,
+					../third_party/bullet_historical,
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
@@ -5301,7 +5301,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					../App.BulletPhysics,
+					../third_party/bullet_historical,
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
@@ -5352,28 +5352,28 @@
 				HEADER_SEARCH_PATHS = (
 					../Log/include,
 					../App/include,
-					../Base/include,
-					../fmod/include,
+					../engine/core/include,
+					../third_party/quarantined/fmod/include,
 					"./lua-5.1.4/src",
 					../Rendering/AppDraw/include,
 					../Rendering/g3d/include,
 					../Rendering/g3d/zlib,
-					../Rendering/GfxBase/include,
+					../Rendering/Gfxengine/core/include,
 					../Rendering/RbxG3D/include,
-					../Network/include,
+					../engine/networking/include,
 					"../google-breakpad/18MAR2011/src/client/mac/Framework",
 					../,
 					../ClientShared,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"$(CONTRIB_PATH)/iOS/GoogleAnalyticsSDK/GoogleAnalyticsServicesiOS_3.08/GoogleAnalytics/Library",
-					../App.BulletPhysics,
+					../third_party/bullet_historical,
 					"$(CONTRIB_PATH)/SDL2/include",
 				);
 				INFOPLIST_FILE = "RobloxUI/RobloxInternal-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					../fmod/iOS,
+					../third_party/quarantined/fmod/iOS,
 					"$(PROJECT_DIR)/RobloxUI/Source/Components/Flurry",
 					"\"$(CONTRIB_PATH)/iOS/GoogleAnalyticsSDK/GoogleAnalyticsServicesiOS_3.08/\"",
 					"$(CONTRIB_PATH)/iOS/universal/openssl/openssl-1.0.2c/lib",
@@ -5388,7 +5388,7 @@
 				PRODUCT_NAME = RobloxInternal;
 				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
-				USER_HEADER_SEARCH_PATHS = "../RobloxMac ../Log/include ../App/include ../Base/include $(CONTRIB_PATH)/boost_1_55_0/include ./lua-5.1.4/src ../Rendering/AppDraw/include ../Rendering/g3d/include ../Rendering/g3d/zlib ../Rendering/GfxBase/include ../Rendering/RbxG3D/include ../Network/include ../google-breakpad/18MAR2011/src/client/mac/Framework ..";
+				USER_HEADER_SEARCH_PATHS = "../RobloxMac ../Log/include ../App/include ../engine/core/include $(CONTRIB_PATH)/boost_1_55_0/include ./lua-5.1.4/src ../Rendering/AppDraw/include ../Rendering/g3d/include ../Rendering/g3d/zlib ../Rendering/Gfxengine/core/include ../Rendering/RbxG3D/include ../engine/networking/include ../google-breakpad/18MAR2011/src/client/mac/Framework ..";
 				VALID_ARCHS = "arm64 armv7";
 				WRAPPER_EXTENSION = app;
 			};
@@ -5430,28 +5430,28 @@
 				HEADER_SEARCH_PATHS = (
 					../Log/include,
 					../App/include,
-					../Base/include,
-					../fmod/include,
+					../engine/core/include,
+					../third_party/quarantined/fmod/include,
 					"./lua-5.1.4/src",
 					../Rendering/AppDraw/include,
 					../Rendering/g3d/include,
 					../Rendering/g3d/zlib,
-					../Rendering/GfxBase/include,
+					../Rendering/Gfxengine/core/include,
 					../Rendering/RbxG3D/include,
-					../Network/include,
+					../engine/networking/include,
 					"../google-breakpad/18MAR2011/src/client/mac/Framework",
 					../,
 					../ClientShared,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"$(CONTRIB_PATH)/iOS/GoogleAnalyticsSDK/GoogleAnalyticsServicesiOS_3.08/GoogleAnalytics/Library",
-					../App.BulletPhysics,
+					../third_party/bullet_historical,
 					"$(CONTRIB_PATH)/SDL2/include",
 				);
 				INFOPLIST_FILE = "RobloxUI/RobloxInternal-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					../fmod/iOS,
+					../third_party/quarantined/fmod/iOS,
 					"$(PROJECT_DIR)/RobloxUI/Source/Components/Flurry",
 					"\"$(CONTRIB_PATH)/iOS/GoogleAnalyticsSDK/GoogleAnalyticsServicesiOS_3.08/\"",
 					"$(CONTRIB_PATH)/iOS/universal/openssl/openssl-1.0.2c/lib",
@@ -5466,7 +5466,7 @@
 				PRODUCT_NAME = RobloxInternal;
 				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
-				USER_HEADER_SEARCH_PATHS = "../RobloxMac ../Log/include ../App/include ../Base/include $(CONTRIB_PATH)/boost_1_55_0/include ./lua-5.1.4/src ../Rendering/AppDraw/include ../Rendering/g3d/include ../Rendering/g3d/zlib ../Rendering/GfxBase/include ../Rendering/RbxG3D/include ../Network/include ../google-breakpad/18MAR2011/src/client/mac/Framework ..";
+				USER_HEADER_SEARCH_PATHS = "../RobloxMac ../Log/include ../App/include ../engine/core/include $(CONTRIB_PATH)/boost_1_55_0/include ./lua-5.1.4/src ../Rendering/AppDraw/include ../Rendering/g3d/include ../Rendering/g3d/zlib ../Rendering/Gfxengine/core/include ../Rendering/RbxG3D/include ../engine/networking/include ../google-breakpad/18MAR2011/src/client/mac/Framework ..";
 				VALID_ARCHS = "arm64 armv7";
 				WRAPPER_EXTENSION = app;
 			};
@@ -5508,28 +5508,28 @@
 				HEADER_SEARCH_PATHS = (
 					../Log/include,
 					../App/include,
-					../Base/include,
-					../fmod/include,
+					../engine/core/include,
+					../third_party/quarantined/fmod/include,
 					"./lua-5.1.4/src",
 					../Rendering/AppDraw/include,
 					../Rendering/g3d/include,
 					../Rendering/g3d/zlib,
-					../Rendering/GfxBase/include,
+					../Rendering/Gfxengine/core/include,
 					../Rendering/RbxG3D/include,
-					../Network/include,
+					../engine/networking/include,
 					"../google-breakpad/18MAR2011/src/client/mac/Framework",
 					../,
 					../ClientShared,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"$(CONTRIB_PATH)/iOS/GoogleAnalyticsSDK/GoogleAnalyticsServicesiOS_3.08/GoogleAnalytics/Library",
-					../App.BulletPhysics,
+					../third_party/bullet_historical,
 					"$(CONTRIB_PATH)/SDL2/include",
 				);
 				INFOPLIST_FILE = "RobloxUI/RobloxInternal-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					../fmod/iOS,
+					../third_party/quarantined/fmod/iOS,
 					"$(PROJECT_DIR)/RobloxUI/Source/Components/Flurry",
 					"\"$(CONTRIB_PATH)/iOS/GoogleAnalyticsSDK/GoogleAnalyticsServicesiOS_3.08/\"",
 					"$(CONTRIB_PATH)/iOS/universal/openssl/openssl-1.0.2c/lib",
@@ -5544,7 +5544,7 @@
 				PRODUCT_NAME = RobloxInternal;
 				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
-				USER_HEADER_SEARCH_PATHS = "../RobloxMac ../Log/include ../App/include ../Base/include $(CONTRIB_PATH)/boost_1_55_0/include ./lua-5.1.4/src ../Rendering/AppDraw/include ../Rendering/g3d/include ../Rendering/g3d/zlib ../Rendering/GfxBase/include ../Rendering/RbxG3D/include ../Network/include ../google-breakpad/18MAR2011/src/client/mac/Framework ..";
+				USER_HEADER_SEARCH_PATHS = "../RobloxMac ../Log/include ../App/include ../engine/core/include $(CONTRIB_PATH)/boost_1_55_0/include ./lua-5.1.4/src ../Rendering/AppDraw/include ../Rendering/g3d/include ../Rendering/g3d/zlib ../Rendering/Gfxengine/core/include ../Rendering/RbxG3D/include ../engine/networking/include ../google-breakpad/18MAR2011/src/client/mac/Framework ..";
 				VALID_ARCHS = "arm64 armv7";
 				WRAPPER_EXTENSION = app;
 			};
@@ -5583,28 +5583,28 @@
 				HEADER_SEARCH_PATHS = (
 					../Log/include,
 					../App/include,
-					../Base/include,
-					../fmod/include,
+					../engine/core/include,
+					../third_party/quarantined/fmod/include,
 					"./lua-5.1.4/src",
 					../Rendering/AppDraw/include,
 					../Rendering/g3d/include,
 					../Rendering/g3d/zlib,
-					../Rendering/GfxBase/include,
+					../Rendering/Gfxengine/core/include,
 					../Rendering/RbxG3D/include,
-					../Network/include,
+					../engine/networking/include,
 					"../google-breakpad/18MAR2011/src/client/mac/Framework",
 					../,
 					../ClientShared,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"\"$(CONTRIB_PATH)/iOS/GoogleAnalyticsSDK/GoogleAnalyticsServicesiOS_3.08/GoogleAnalytics/Library\"",
-					../App.BulletPhysics,
+					../third_party/bullet_historical,
 					"$(CONTRIB_PATH)/SDL2/include",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/Roblox Developer/RobloxDeveloper.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					../fmod/iOS,
+					../third_party/quarantined/fmod/iOS,
 					"\"$(CONTRIB_PATH)/iOS/Flurry/Flurry-iOS-4.2.3/Flurry\"",
 					"\"$(CONTRIB_PATH)/iOS/GoogleAnalyticsSDK/GoogleAnalyticsServicesiOS_3.08\"",
 					"\"$(CONTRIB_PATH)/iOS/universal/curl/curl-7.43.0/lib\"",
@@ -5621,7 +5621,7 @@
 				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
-				USER_HEADER_SEARCH_PATHS = "../RobloxMac ../Log/include ../App/include ../Base/include $(CONTRIB_PATH)/boost_1_55_0/include ./lua-5.1.4/src ../Rendering/AppDraw/include ../Rendering/g3d/include ../Rendering/g3d/zlib ../Rendering/GfxBase/include ../Rendering/RbxG3D/include ../Network/include ../google-breakpad/18MAR2011/src/client/mac/Framework ..";
+				USER_HEADER_SEARCH_PATHS = "../RobloxMac ../Log/include ../App/include ../engine/core/include $(CONTRIB_PATH)/boost_1_55_0/include ./lua-5.1.4/src ../Rendering/AppDraw/include ../Rendering/g3d/include ../Rendering/g3d/zlib ../Rendering/Gfxengine/core/include ../Rendering/RbxG3D/include ../engine/networking/include ../google-breakpad/18MAR2011/src/client/mac/Framework ..";
 				VALID_ARCHS = "armv7 arm64";
 				WRAPPER_EXTENSION = app;
 			};
@@ -5660,28 +5660,28 @@
 				HEADER_SEARCH_PATHS = (
 					../Log/include,
 					../App/include,
-					../Base/include,
-					../fmod/include,
+					../engine/core/include,
+					../third_party/quarantined/fmod/include,
 					"./lua-5.1.4/src",
 					../Rendering/AppDraw/include,
 					../Rendering/g3d/include,
 					../Rendering/g3d/zlib,
-					../Rendering/GfxBase/include,
+					../Rendering/Gfxengine/core/include,
 					../Rendering/RbxG3D/include,
-					../Network/include,
+					../engine/networking/include,
 					"../google-breakpad/18MAR2011/src/client/mac/Framework",
 					../,
 					../ClientShared,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"\"$(CONTRIB_PATH)/iOS/GoogleAnalyticsSDK/GoogleAnalyticsServicesiOS_3.08/GoogleAnalytics/Library\"",
-					../App.BulletPhysics,
+					../third_party/bullet_historical,
 					"$(CONTRIB_PATH)/SDL2/include",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/Roblox Developer/RobloxDeveloper.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					../fmod/iOS,
+					../third_party/quarantined/fmod/iOS,
 					"\"$(CONTRIB_PATH)/iOS/Flurry/Flurry-iOS-4.2.3/Flurry\"",
 					"\"$(CONTRIB_PATH)/iOS/GoogleAnalyticsSDK/GoogleAnalyticsServicesiOS_3.08\"",
 					"\"$(CONTRIB_PATH)/iOS/universal/curl/curl-7.43.0/lib\"",
@@ -5698,7 +5698,7 @@
 				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
-				USER_HEADER_SEARCH_PATHS = "../RobloxMac ../Log/include ../App/include ../Base/include $(CONTRIB_PATH)/boost_1_55_0/include ./lua-5.1.4/src ../Rendering/AppDraw/include ../Rendering/g3d/include ../Rendering/g3d/zlib ../Rendering/GfxBase/include ../Rendering/RbxG3D/include ../Network/include ../google-breakpad/18MAR2011/src/client/mac/Framework ..";
+				USER_HEADER_SEARCH_PATHS = "../RobloxMac ../Log/include ../App/include ../engine/core/include $(CONTRIB_PATH)/boost_1_55_0/include ./lua-5.1.4/src ../Rendering/AppDraw/include ../Rendering/g3d/include ../Rendering/g3d/zlib ../Rendering/Gfxengine/core/include ../Rendering/RbxG3D/include ../engine/networking/include ../google-breakpad/18MAR2011/src/client/mac/Framework ..";
 				VALID_ARCHS = "armv7 arm64";
 				WRAPPER_EXTENSION = app;
 			};
@@ -5734,27 +5734,27 @@
 				HEADER_SEARCH_PATHS = (
 					../Log/include,
 					../App/include,
-					../Base/include,
+					../engine/core/include,
 					"./lua-5.1.4/src",
 					../Rendering/AppDraw/include,
 					../Rendering/g3d/include,
 					../Rendering/g3d/zlib,
-					../Rendering/GfxBase/include,
+					../Rendering/Gfxengine/core/include,
 					../Rendering/RbxG3D/include,
-					../Network/include,
+					../engine/networking/include,
 					"../google-breakpad/18MAR2011/src/client/mac/Framework",
 					../,
 					../ClientShared,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"\"$(CONTRIB_PATH)/iOS/GoogleAnalyticsSDK/GoogleAnalyticsServicesiOS_3.08/GoogleAnalytics/Library\"",
 					"$(CONTRIB_PATH)/GoogleConversionTrackingSDK",
-					../App.BulletPhysics,
+					../third_party/bullet_historical,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/GridWars/GridWars.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					../fmod/include,
+					../third_party/quarantined/fmod/include,
 					"\"$(CONTRIB_PATH)/iOS/Flurry/Flurry-iOS-4.2.3/Flurry\"",
 					"\"$(CONTRIB_PATH)/iOS/GoogleAnalyticsSDK/GoogleAnalyticsServicesiOS_3.08\"",
 					"\"$(CONTRIB_PATH)/iOS/universal/curl/curl-7.43.0/lib\"",
@@ -5770,7 +5770,7 @@
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 2;
-				USER_HEADER_SEARCH_PATHS = "../RobloxMac ../Log/include ../App/include ../Base/include $(CONTRIB_PATH)/boost_1_55_0/include ./lua-5.1.4/src ../Rendering/AppDraw/include ../Rendering/g3d/include ../Rendering/g3d/zlib ../Rendering/GfxBase/include ../Rendering/RbxG3D/include ../Network/include ../google-breakpad/18MAR2011/src/client/mac/Framework ..";
+				USER_HEADER_SEARCH_PATHS = "../RobloxMac ../Log/include ../App/include ../engine/core/include $(CONTRIB_PATH)/boost_1_55_0/include ./lua-5.1.4/src ../Rendering/AppDraw/include ../Rendering/g3d/include ../Rendering/g3d/zlib ../Rendering/Gfxengine/core/include ../Rendering/RbxG3D/include ../engine/networking/include ../google-breakpad/18MAR2011/src/client/mac/Framework ..";
 				VALID_ARCHS = "armv7 arm64";
 				WRAPPER_EXTENSION = app;
 			};
@@ -5806,27 +5806,27 @@
 				HEADER_SEARCH_PATHS = (
 					../Log/include,
 					../App/include,
-					../Base/include,
+					../engine/core/include,
 					"./lua-5.1.4/src",
 					../Rendering/AppDraw/include,
 					../Rendering/g3d/include,
 					../Rendering/g3d/zlib,
-					../Rendering/GfxBase/include,
+					../Rendering/Gfxengine/core/include,
 					../Rendering/RbxG3D/include,
-					../Network/include,
+					../engine/networking/include,
 					"../google-breakpad/18MAR2011/src/client/mac/Framework",
 					../,
 					../ClientShared,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"\"$(CONTRIB_PATH)/iOS/GoogleAnalyticsSDK/GoogleAnalyticsServicesiOS_3.08/GoogleAnalytics/Library\"",
 					"$(CONTRIB_PATH)/GoogleConversionTrackingSDK",
-					../App.BulletPhysics,
+					../third_party/bullet_historical,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/GridWars/GridWars.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					../fmod/include,
+					../third_party/quarantined/fmod/include,
 					"\"$(CONTRIB_PATH)/iOS/Flurry/Flurry-iOS-4.2.3/Flurry\"",
 					"\"$(CONTRIB_PATH)/iOS/GoogleAnalyticsSDK/GoogleAnalyticsServicesiOS_3.08\"",
 					"\"$(CONTRIB_PATH)/iOS/universal/curl/curl-7.43.0/lib\"",
@@ -5842,7 +5842,7 @@
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 2;
-				USER_HEADER_SEARCH_PATHS = "../RobloxMac ../Log/include ../App/include ../Base/include $(CONTRIB_PATH)/boost_1_55_0/include ./lua-5.1.4/src ../Rendering/AppDraw/include ../Rendering/g3d/include ../Rendering/g3d/zlib ../Rendering/GfxBase/include ../Rendering/RbxG3D/include ../Network/include ../google-breakpad/18MAR2011/src/client/mac/Framework ..";
+				USER_HEADER_SEARCH_PATHS = "../RobloxMac ../Log/include ../App/include ../engine/core/include $(CONTRIB_PATH)/boost_1_55_0/include ./lua-5.1.4/src ../Rendering/AppDraw/include ../Rendering/g3d/include ../Rendering/g3d/zlib ../Rendering/Gfxengine/core/include ../Rendering/RbxG3D/include ../engine/networking/include ../google-breakpad/18MAR2011/src/client/mac/Framework ..";
 				VALID_ARCHS = "armv7 arm64";
 				WRAPPER_EXTENSION = app;
 			};
@@ -5883,28 +5883,28 @@
 				HEADER_SEARCH_PATHS = (
 					../Log/include,
 					../App/include,
-					../Base/include,
-					../fmod/include,
+					../engine/core/include,
+					../third_party/quarantined/fmod/include,
 					"./lua-5.1.4/src",
 					../Rendering/AppDraw/include,
 					../Rendering/g3d/include,
 					../Rendering/g3d/zlib,
-					../Rendering/GfxBase/include,
+					../Rendering/Gfxengine/core/include,
 					../Rendering/RbxG3D/include,
-					../Network/include,
+					../engine/networking/include,
 					"../google-breakpad/18MAR2011/src/client/mac/Framework",
 					../,
 					../ClientShared,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"$(CONTRIB_PATH)/iOS/GoogleAnalyticsSDK/GoogleAnalyticsServicesiOS_3.08/GoogleAnalytics/Library",
-					../App.BulletPhysics,
+					../third_party/bullet_historical,
 					"$(CONTRIB_PATH)/SDL2/include",
 				);
 				INFOPLIST_FILE = "RobloxUI/Roblox-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"../fmod//iOS",
+					"../third_party/quarantined/fmod//iOS",
 					"$(PROJECT_DIR)/RobloxUI/Source/Components/Flurry",
 					"\"$(CONTRIB_PATH)/iOS/GoogleAnalyticsSDK/GoogleAnalyticsServicesiOS_3.08/\"",
 					"$(CONTRIB_PATH)/iOS/universal/openssl/openssl-1.0.2c/lib",
@@ -5919,7 +5919,7 @@
 				PRODUCT_NAME = Roblox;
 				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
-				USER_HEADER_SEARCH_PATHS = "../RobloxMac ../Log/include ../App/include ../Base/include $(CONTRIB_PATH)/boost_1_55_0/include ./lua-5.1.4/src ../Rendering/AppDraw/include ../Rendering/g3d/include ../Rendering/g3d/zlib ../Rendering/GfxBase/include ../Rendering/RbxG3D/include ../Network/include ../google-breakpad/18MAR2011/src/client/mac/Framework ..";
+				USER_HEADER_SEARCH_PATHS = "../RobloxMac ../Log/include ../App/include ../engine/core/include $(CONTRIB_PATH)/boost_1_55_0/include ./lua-5.1.4/src ../Rendering/AppDraw/include ../Rendering/g3d/include ../Rendering/g3d/zlib ../Rendering/Gfxengine/core/include ../Rendering/RbxG3D/include ../engine/networking/include ../google-breakpad/18MAR2011/src/client/mac/Framework ..";
 				VALID_ARCHS = "arm64 armv7";
 				WRAPPER_EXTENSION = app;
 			};
@@ -5960,28 +5960,28 @@
 				HEADER_SEARCH_PATHS = (
 					../Log/include,
 					../App/include,
-					../Base/include,
-					../fmod/include,
+					../engine/core/include,
+					../third_party/quarantined/fmod/include,
 					"./lua-5.1.4/src",
 					../Rendering/AppDraw/include,
 					../Rendering/g3d/include,
 					../Rendering/g3d/zlib,
-					../Rendering/GfxBase/include,
+					../Rendering/Gfxengine/core/include,
 					../Rendering/RbxG3D/include,
-					../Network/include,
+					../engine/networking/include,
 					"../google-breakpad/18MAR2011/src/client/mac/Framework",
 					../,
 					../ClientShared,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"$(CONTRIB_PATH)/iOS/GoogleAnalyticsSDK/GoogleAnalyticsServicesiOS_3.08/GoogleAnalytics/Library",
-					../App.BulletPhysics,
+					../third_party/bullet_historical,
 					"$(CONTRIB_PATH)/SDL2/include",
 				);
 				INFOPLIST_FILE = "RobloxUI/Roblox-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"../fmod//iOS",
+					"../third_party/quarantined/fmod//iOS",
 					"$(PROJECT_DIR)/RobloxUI/Source/Components/Flurry",
 					"\"$(CONTRIB_PATH)/iOS/GoogleAnalyticsSDK/GoogleAnalyticsServicesiOS_3.08/\"",
 					"$(CONTRIB_PATH)/iOS/universal/openssl/openssl-1.0.2c/lib",
@@ -5996,7 +5996,7 @@
 				PRODUCT_NAME = Roblox;
 				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
-				USER_HEADER_SEARCH_PATHS = "../RobloxMac ../Log/include ../App/include ../Base/include $(CONTRIB_PATH)/boost_1_55_0/include ./lua-5.1.4/src ../Rendering/AppDraw/include ../Rendering/g3d/include ../Rendering/g3d/zlib ../Rendering/GfxBase/include ../Rendering/RbxG3D/include ../Network/include ../google-breakpad/18MAR2011/src/client/mac/Framework ..";
+				USER_HEADER_SEARCH_PATHS = "../RobloxMac ../Log/include ../App/include ../engine/core/include $(CONTRIB_PATH)/boost_1_55_0/include ./lua-5.1.4/src ../Rendering/AppDraw/include ../Rendering/g3d/include ../Rendering/g3d/zlib ../Rendering/Gfxengine/core/include ../Rendering/RbxG3D/include ../engine/networking/include ../google-breakpad/18MAR2011/src/client/mac/Framework ..";
 				VALID_ARCHS = "arm64 armv7";
 				WRAPPER_EXTENSION = app;
 			};
@@ -6024,7 +6024,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					../App.BulletPhysics,
+					../third_party/bullet_historical,
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
@@ -6074,28 +6074,28 @@
 				HEADER_SEARCH_PATHS = (
 					../Log/include,
 					../App/include,
-					../Base/include,
-					../fmod/include,
+					../engine/core/include,
+					../third_party/quarantined/fmod/include,
 					"./lua-5.1.4/src",
 					../Rendering/AppDraw/include,
 					../Rendering/g3d/include,
 					../Rendering/g3d/zlib,
-					../Rendering/GfxBase/include,
+					../Rendering/Gfxengine/core/include,
 					../Rendering/RbxG3D/include,
-					../Network/include,
+					../engine/networking/include,
 					"../google-breakpad/18MAR2011/src/client/mac/Framework",
 					../,
 					../ClientShared,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"$(CONTRIB_PATH)/iOS/GoogleAnalyticsSDK/GoogleAnalyticsServicesiOS_3.08/GoogleAnalytics/Library",
-					../App.BulletPhysics,
+					../third_party/bullet_historical,
 					"$(CONTRIB_PATH)/SDL2/include",
 				);
 				INFOPLIST_FILE = "RobloxUI/Roblox-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"../fmod//iOS",
+					"../third_party/quarantined/fmod//iOS",
 					"$(PROJECT_DIR)/RobloxUI/Source/Components/Flurry",
 					"\"$(CONTRIB_PATH)/iOS/GoogleAnalyticsSDK/GoogleAnalyticsServicesiOS_3.08/\"",
 					"$(CONTRIB_PATH)/iOS/universal/openssl/openssl-1.0.2c/lib",
@@ -6110,7 +6110,7 @@
 				PRODUCT_NAME = Roblox;
 				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
-				USER_HEADER_SEARCH_PATHS = "../RobloxMac ../Log/include ../App/include ../Base/include $(CONTRIB_PATH)/boost_1_55_0/include ./lua-5.1.4/src ../Rendering/AppDraw/include ../Rendering/g3d/include ../Rendering/g3d/zlib ../Rendering/GfxBase/include ../Rendering/RbxG3D/include ../Network/include ../google-breakpad/18MAR2011/src/client/mac/Framework ..";
+				USER_HEADER_SEARCH_PATHS = "../RobloxMac ../Log/include ../App/include ../engine/core/include $(CONTRIB_PATH)/boost_1_55_0/include ./lua-5.1.4/src ../Rendering/AppDraw/include ../Rendering/g3d/include ../Rendering/g3d/zlib ../Rendering/Gfxengine/core/include ../Rendering/RbxG3D/include ../engine/networking/include ../google-breakpad/18MAR2011/src/client/mac/Framework ..";
 				VALID_ARCHS = "arm64 armv7";
 				WRAPPER_EXTENSION = app;
 			};
@@ -6146,27 +6146,27 @@
 				HEADER_SEARCH_PATHS = (
 					../Log/include,
 					../App/include,
-					../Base/include,
+					../engine/core/include,
 					"./lua-5.1.4/src",
 					../Rendering/AppDraw/include,
 					../Rendering/g3d/include,
 					../Rendering/g3d/zlib,
-					../Rendering/GfxBase/include,
+					../Rendering/Gfxengine/core/include,
 					../Rendering/RbxG3D/include,
-					../Network/include,
+					../engine/networking/include,
 					"../google-breakpad/18MAR2011/src/client/mac/Framework",
 					../,
 					../ClientShared,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"\"$(CONTRIB_PATH)/iOS/GoogleAnalyticsSDK/GoogleAnalyticsServicesiOS_3.08/GoogleAnalytics/Library\"",
 					"$(CONTRIB_PATH)/GoogleConversionTrackingSDK",
-					../App.BulletPhysics,
+					../third_party/bullet_historical,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/GridWars/GridWars.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					../fmod/include,
+					../third_party/quarantined/fmod/include,
 					"\"$(CONTRIB_PATH)/iOS/Flurry/Flurry-iOS-4.2.3/Flurry\"",
 					"\"$(CONTRIB_PATH)/iOS/GoogleAnalyticsSDK/GoogleAnalyticsServicesiOS_3.08\"",
 					"\"$(CONTRIB_PATH)/iOS/universal/curl/curl-7.43.0/lib\"",
@@ -6182,7 +6182,7 @@
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 2;
-				USER_HEADER_SEARCH_PATHS = "../RobloxMac ../Log/include ../App/include ../Base/include $(CONTRIB_PATH)/boost_1_55_0/include ./lua-5.1.4/src ../Rendering/AppDraw/include ../Rendering/g3d/include ../Rendering/g3d/zlib ../Rendering/GfxBase/include ../Rendering/RbxG3D/include ../Network/include ../google-breakpad/18MAR2011/src/client/mac/Framework ..";
+				USER_HEADER_SEARCH_PATHS = "../RobloxMac ../Log/include ../App/include ../engine/core/include $(CONTRIB_PATH)/boost_1_55_0/include ./lua-5.1.4/src ../Rendering/AppDraw/include ../Rendering/g3d/include ../Rendering/g3d/zlib ../Rendering/Gfxengine/core/include ../Rendering/RbxG3D/include ../engine/networking/include ../google-breakpad/18MAR2011/src/client/mac/Framework ..";
 				VALID_ARCHS = "armv7 arm64";
 				WRAPPER_EXTENSION = app;
 			};
@@ -6221,28 +6221,28 @@
 				HEADER_SEARCH_PATHS = (
 					../Log/include,
 					../App/include,
-					../Base/include,
-					../fmod/include,
+					../engine/core/include,
+					../third_party/quarantined/fmod/include,
 					"./lua-5.1.4/src",
 					../Rendering/AppDraw/include,
 					../Rendering/g3d/include,
 					../Rendering/g3d/zlib,
-					../Rendering/GfxBase/include,
+					../Rendering/Gfxengine/core/include,
 					../Rendering/RbxG3D/include,
-					../Network/include,
+					../engine/networking/include,
 					"../google-breakpad/18MAR2011/src/client/mac/Framework",
 					../,
 					../ClientShared,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					"\"$(CONTRIB_PATH)/iOS/GoogleAnalyticsSDK/GoogleAnalyticsServicesiOS_3.08/GoogleAnalytics/Library\"",
-					../App.BulletPhysics,
+					../third_party/bullet_historical,
 					"$(CONTRIB_PATH)/SDL2/include",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/Roblox Developer/RobloxDeveloper.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					../fmod/iOS,
+					../third_party/quarantined/fmod/iOS,
 					"\"$(CONTRIB_PATH)/iOS/Flurry/Flurry-iOS-4.2.3/Flurry\"",
 					"\"$(CONTRIB_PATH)/iOS/GoogleAnalyticsSDK/GoogleAnalyticsServicesiOS_3.08\"",
 					"\"$(CONTRIB_PATH)/iOS/universal/curl/curl-7.43.0/lib\"",
@@ -6259,7 +6259,7 @@
 				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
-				USER_HEADER_SEARCH_PATHS = "../RobloxMac ../Log/include ../App/include ../Base/include $(CONTRIB_PATH)/boost_1_55_0/include ./lua-5.1.4/src ../Rendering/AppDraw/include ../Rendering/g3d/include ../Rendering/g3d/zlib ../Rendering/GfxBase/include ../Rendering/RbxG3D/include ../Network/include ../google-breakpad/18MAR2011/src/client/mac/Framework ..";
+				USER_HEADER_SEARCH_PATHS = "../RobloxMac ../Log/include ../App/include ../engine/core/include $(CONTRIB_PATH)/boost_1_55_0/include ./lua-5.1.4/src ../Rendering/AppDraw/include ../Rendering/g3d/include ../Rendering/g3d/zlib ../Rendering/Gfxengine/core/include ../Rendering/RbxG3D/include ../engine/networking/include ../google-breakpad/18MAR2011/src/client/mac/Framework ..";
 				VALID_ARCHS = "armv7 arm64";
 				WRAPPER_EXTENSION = app;
 			};
@@ -6305,21 +6305,21 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					../App/include,
-					../Base/include,
+					../engine/core/include,
 					../Log/include,
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					../Rendering/AppDraw/include,
 					../Rendering/g3d/include,
 					../Rendering/g3d/zlib,
-					../Rendering/GfxBase/include,
+					../Rendering/Gfxengine/core/include,
 					../Rendering/RbxG3D/include,
-					../Network/include,
+					../engine/networking/include,
 					../,
-					../App.BulletPhysics,
+					../third_party/bullet_historical,
 					../ClientShared,
 					"./lua-5.1.4/src",
-					../fmod/include,
+					../third_party/quarantined/fmod/include,
 					../RobloxMac,
 					"$(CONTRIB_PATH)/iOS/GoogleAnalyticsSDK/GoogleAnalyticsServicesiOS_3.08/GoogleAnalytics/Library",
 					"$(CONTRIB_PATH)/iOS/universal/curl/curl-7.43.0/include",
@@ -6385,21 +6385,21 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					../App/include,
-					../Base/include,
+					../engine/core/include,
 					../Log/include,
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					../Rendering/AppDraw/include,
 					../Rendering/g3d/include,
 					../Rendering/g3d/zlib,
-					../Rendering/GfxBase/include,
+					../Rendering/Gfxengine/core/include,
 					../Rendering/RbxG3D/include,
-					../Network/include,
+					../engine/networking/include,
 					../,
-					../App.BulletPhysics,
+					../third_party/bullet_historical,
 					../ClientShared,
 					"./lua-5.1.4/src",
-					../fmod/include,
+					../third_party/quarantined/fmod/include,
 					../RobloxMac,
 					"$(CONTRIB_PATH)/iOS/GoogleAnalyticsSDK/GoogleAnalyticsServicesiOS_3.08/GoogleAnalytics/Library",
 					"$(CONTRIB_PATH)/iOS/universal/curl/curl-7.43.0/include",
@@ -6464,21 +6464,21 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					../App/include,
-					../Base/include,
+					../engine/core/include,
 					../Log/include,
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"$(CONTRIB_PATH)/boost_1_55_0/include",
 					../Rendering/AppDraw/include,
 					../Rendering/g3d/include,
 					../Rendering/g3d/zlib,
-					../Rendering/GfxBase/include,
+					../Rendering/Gfxengine/core/include,
 					../Rendering/RbxG3D/include,
-					../Network/include,
+					../engine/networking/include,
 					../,
-					../App.BulletPhysics,
+					../third_party/bullet_historical,
 					../ClientShared,
 					"./lua-5.1.4/src",
-					../fmod/include,
+					../third_party/quarantined/fmod/include,
 					../RobloxMac,
 					"$(CONTRIB_PATH)/iOS/GoogleAnalyticsSDK/GoogleAnalyticsServicesiOS_3.08/GoogleAnalytics/Library",
 					"$(CONTRIB_PATH)/iOS/universal/curl/curl-7.43.0/include",

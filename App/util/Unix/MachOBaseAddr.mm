@@ -7,14 +7,42 @@
 //
 
 #import <Foundation/Foundation.h>
-#include <mach-o/getsect.h>
 #include <mach-o/dyld.h>
 
-uint32_t staticBaseAddress(void)
+#include <cstring>
+
+namespace {
+
+const segment_command_64* textSegment()
 {
-    const struct segment_command* command = getsegbyname("__TEXT");
-    uint32_t addr = command->vmaddr;
-    return addr;
+    const uint32_t imageCount = _dyld_image_count();
+    for (uint32_t index = 0; index < imageCount; ++index) {
+        const mach_header* header = _dyld_get_image_header(index);
+        if (!header || header->filetype != MH_EXECUTE || header->magic != MH_MAGIC_64)
+            continue;
+
+        const auto* header64 = reinterpret_cast<const mach_header_64*>(header);
+        const auto* command = reinterpret_cast<const load_command*>(header64 + 1);
+        for (uint32_t commandIndex = 0; commandIndex < header64->ncmds; ++commandIndex) {
+            if (command->cmd == LC_SEGMENT_64) {
+                const auto* segment = reinterpret_cast<const segment_command_64*>(command);
+                if (std::strncmp(segment->segname, SEG_TEXT,
+                        sizeof(segment->segname)) == 0)
+                    return segment;
+            }
+            command = reinterpret_cast<const load_command*>(
+                reinterpret_cast<const char*>(command) + command->cmdsize);
+        }
+    }
+    return nullptr;
+}
+
+} // namespace
+
+uintptr_t staticBaseAddress(void)
+{
+    const segment_command_64* segment = textSegment();
+    return segment ? static_cast<uintptr_t>(segment->vmaddr) : 0;
 }
 
 intptr_t imageSlide(void)
@@ -33,13 +61,13 @@ intptr_t imageSlide(void)
     return 0;
 }
 
-uint32_t machODynamicBaseAddress(void)
+uintptr_t machODynamicBaseAddress(void)
 {
     return staticBaseAddress() + imageSlide();
 }
 
-uint32_t machOTextSize(void)
+size_t machOTextSize(void)
 {
-    const struct segment_command* command = getsegbyname("__TEXT");
-    return command->vmsize;
+    const segment_command_64* segment = textSegment();
+    return segment ? static_cast<size_t>(segment->vmsize) : 0;
 }

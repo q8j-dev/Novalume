@@ -198,6 +198,7 @@ struct HttpOptions
 }; // struct HttpOptions
 
 void init(Http::CookieSharingPolicy cookieSharingPolicy); // NOTE: This call is not thread-safe.
+void shutdown(); // Waits for curl work before releasing process-wide TLS state.
 void setCookiesForDomain(const std::string& domain, const std::string& cookies);
 void getCookiesForDomain(const std::string& domain, std::string& cookies);
 boost::filesystem::path getRobloxCookieJarPath();

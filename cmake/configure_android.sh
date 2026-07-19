@@ -59,7 +59,7 @@ for ((i = 0; i < ${#BUILD_DIRECTORIES[@]}; i = i+1)) ; do
         exit $cmake_ret_code
     else
         echo "Hack in CoreScriptConverter to the build"
-        core_script_converter_path="$(pwd)/../CoreScriptConverter2/tool/osx/"
+        core_script_converter_path="$(pwd)/../tools/core_script_converter/tool/osx/"
         replace_build_dir="${core_script_converter_path//\//\\/}"
         perl -pi -e "s/all: cmake_check_build_system/all: cmake_check_build_system\n\t${replace_build_dir}ConverterScript.sh \"${replace_build_dir}\"/g" "$(pwd)/$build_dir/Makefile" 
     fi

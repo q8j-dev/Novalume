@@ -14,7 +14,7 @@ using namespace RBX;
 
 namespace { 
 
-struct StrHash : std::unary_function<const char*, std::size_t>
+struct StrHash
 {
 	size_t operator()(const char*s) const
 	{
@@ -23,7 +23,7 @@ struct StrHash : std::unary_function<const char*, std::size_t>
 	}
 };
 
-struct StrEqualTo : public std::binary_function<const char*, const char*, bool>
+struct StrEqualTo
 {
 	bool operator()(const char* a, const char* b) const
 	{

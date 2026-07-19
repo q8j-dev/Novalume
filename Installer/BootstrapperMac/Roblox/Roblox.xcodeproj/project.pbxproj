@@ -289,14 +289,14 @@
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
 		1DDD58150DA1D0A300B32029 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
-		1F9E5A4F18C167F300EFE020 /* CookiesEngine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CookiesEngine.cpp; path = ../../../ClientShared/Mac/CookiesEngine.cpp; sourceTree = "<group>"; };
+		1F9E5A4F18C167F300EFE020 /* CookiesEngine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CookiesEngine.cpp; path = ../../../apps/player/shared/client/Mac/CookiesEngine.cpp; sourceTree = "<group>"; };
 		256AC3F00F4B6AF500CF3369 /* Roblox_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Roblox_Prefix.pch; sourceTree = "<group>"; };
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		65170A4013F9C4C300192EC1 /* Controller.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Controller.mm; sourceTree = "<group>"; };
-		65170A4D13F9C54F00192EC1 /* CookiesEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CookiesEngine.h; path = ../../../ClientShared/CookiesEngine.h; sourceTree = SOURCE_ROOT; };
-		651D34501476E44500D61E5B /* format_string.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = format_string.cpp; path = ../../../ClientShared/format_string.cpp; sourceTree = SOURCE_ROOT; };
+		65170A4D13F9C54F00192EC1 /* CookiesEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CookiesEngine.h; path = ../../../apps/player/shared/client/CookiesEngine.h; sourceTree = SOURCE_ROOT; };
+		651D34501476E44500D61E5B /* format_string.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = format_string.cpp; path = ../../../apps/player/shared/client/format_string.cpp; sourceTree = SOURCE_ROOT; };
 		8D1107310486CEB800E47090 /* Roblox-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Roblox-Info.plist"; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* Roblox.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Roblox.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CFD298D6145A05F000FCA74A /* RobloxStudio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RobloxStudio.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -314,13 +314,13 @@
 		E941B5E11A9CADFD00B88114 /* CustomUIObjects.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CustomUIObjects.m; sourceTree = "<group>"; };
 		E941B5E41A9CAE2500B88114 /* CustomUIObjects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomUIObjects.h; sourceTree = "<group>"; };
 		E941B5EC1A9CBBA600B88114 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/InstallSuccessController.xib; sourceTree = "<group>"; };
-		E9571EB81A25F086008AD463 /* document.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = document.h; path = ../../../ClientShared/rapidjson/document.h; sourceTree = "<group>"; };
-		E9571EB91A25F092008AD463 /* writer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = writer.h; path = ../../../ClientShared/rapidjson/writer.h; sourceTree = "<group>"; };
-		E9571EBA1A25F09B008AD463 /* stringbuffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = stringbuffer.h; path = ../../../ClientShared/rapidjson/stringbuffer.h; sourceTree = "<group>"; };
+		E9571EB81A25F086008AD463 /* document.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = document.h; path = ../../../apps/player/shared/client/rapidjson/document.h; sourceTree = "<group>"; };
+		E9571EB91A25F092008AD463 /* writer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = writer.h; path = ../../../apps/player/shared/client/rapidjson/writer.h; sourceTree = "<group>"; };
+		E9571EBA1A25F09B008AD463 /* stringbuffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = stringbuffer.h; path = ../../../apps/player/shared/client/rapidjson/stringbuffer.h; sourceTree = "<group>"; };
 		E9617FEA1AA827B40074DC53 /* BootstrapperSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BootstrapperSettings.h; sourceTree = "<group>"; };
 		E9617FEB1AA827D80074DC53 /* BootstrapperSettings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BootstrapperSettings.cpp; sourceTree = "<group>"; };
-		E9617FEF1AA836590074DC53 /* RobloxServicesTools.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RobloxServicesTools.cpp; path = ../../../ClientShared/RobloxServicesTools.cpp; sourceTree = "<group>"; };
-		E9617FF01AA836590074DC53 /* RobloxServicesTools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RobloxServicesTools.h; path = ../../../ClientShared/RobloxServicesTools.h; sourceTree = "<group>"; };
+		E9617FEF1AA836590074DC53 /* RobloxServicesTools.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RobloxServicesTools.cpp; path = ../../../apps/player/shared/client/RobloxServicesTools.cpp; sourceTree = "<group>"; };
+		E9617FF01AA836590074DC53 /* RobloxServicesTools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RobloxServicesTools.h; path = ../../../apps/player/shared/client/RobloxServicesTools.h; sourceTree = "<group>"; };
 		E9617FF31AA837110074DC53 /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
 		E969FEC11AA03C7900592D91 /* logo_meatball.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = logo_meatball.bmp; path = Images/logo_meatball.bmp; sourceTree = "<group>"; };
 		E97E3AFE1365ACBB00993582 /* NPRobloxMac.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = NPRobloxMac.xcodeproj; path = NPRobloxMac/NPRobloxMac.xcodeproj; sourceTree = "<group>"; };
@@ -334,8 +334,8 @@
 		E995ACC11A974A1700E5AD4E /* btn_ok@2x.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = "btn_ok@2x.bmp"; path = "Images/btn_ok@2x.bmp"; sourceTree = "<group>"; };
 		E995ACC31A974A1700E5AD4E /* logo_meatball@2x.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = "logo_meatball@2x.bmp"; path = "Images/logo_meatball@2x.bmp"; sourceTree = "<group>"; };
 		E99C0C2812E0308F00E77518 /* Controller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Controller.h; sourceTree = "<group>"; };
-		E9BC6BCA1AA90D3800B66E95 /* SimpleJSON.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SimpleJSON.cpp; path = ../../../ClientShared/SimpleJSON.cpp; sourceTree = "<group>"; };
-		E9BC6BCB1AA90D3800B66E95 /* SimpleJSON.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SimpleJSON.h; path = ../../../ClientShared/SimpleJSON.h; sourceTree = "<group>"; };
+		E9BC6BCA1AA90D3800B66E95 /* SimpleJSON.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SimpleJSON.cpp; path = ../../../apps/player/shared/client/SimpleJSON.cpp; sourceTree = "<group>"; };
+		E9BC6BCB1AA90D3800B66E95 /* SimpleJSON.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SimpleJSON.h; path = ../../../apps/player/shared/client/SimpleJSON.h; sourceTree = "<group>"; };
 		E9D1F69E13002D1000FCA1A8 /* Roblox.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Roblox.icns; sourceTree = "<group>"; };
 		E9DBAF301AB92CA600D68E98 /* txt_success-player.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = "txt_success-player.bmp"; path = "Images/txt_success-player.bmp"; sourceTree = "<group>"; };
 		E9DBAF311AB92CA600D68E98 /* txt_success-player@2x.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = "txt_success-player@2x.bmp"; path = "Images/txt_success-player@2x.bmp"; sourceTree = "<group>"; };
@@ -347,8 +347,8 @@
 		E9DBAF3B1AB93CEB00D68E98 /* txt_backto@2x.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = "txt_backto@2x.bmp"; path = "Images/txt_backto@2x.bmp"; sourceTree = "<group>"; };
 		E9F06AF2131938BE0089A674 /* ReLaunchApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ReLaunchApplication.m; sourceTree = "<group>"; };
 		E9F06B0C131939C90089A674 /* ReLaunchApplication */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ReLaunchApplication; sourceTree = BUILT_PRODUCTS_DIR; };
-		F21B24671B97B5E900914A81 /* InfluxDbHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = InfluxDbHelper.cpp; path = ../../../ClientShared/InfluxDbHelper.cpp; sourceTree = "<group>"; };
-		F21B24681B97B5E900914A81 /* InfluxDbHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InfluxDbHelper.h; path = ../../../ClientShared/InfluxDbHelper.h; sourceTree = "<group>"; };
+		F21B24671B97B5E900914A81 /* InfluxDbHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = InfluxDbHelper.cpp; path = ../../../apps/player/shared/client/InfluxDbHelper.cpp; sourceTree = "<group>"; };
+		F21B24681B97B5E900914A81 /* InfluxDbHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InfluxDbHelper.h; path = ../../../apps/player/shared/client/InfluxDbHelper.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1099,7 +1099,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					../../../ClientShared/rapidjson,
+					../../../apps/player/shared/client/rapidjson,
 				);
 				INFOPLIST_FILE = "Roblox-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
@@ -1123,7 +1123,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					../../../ClientShared/rapidjson,
+					../../../apps/player/shared/client/rapidjson,
 				);
 				INFOPLIST_FILE = "Roblox-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
@@ -1261,7 +1261,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					../../../ClientShared/rapidjson,
+					../../../apps/player/shared/client/rapidjson,
 				);
 				INFOPLIST_FILE = "Roblox-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";

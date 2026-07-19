@@ -1,47 +1,50 @@
 include(App)
 
-include_directories(include)
+set(RBX_GFXBASE_ROOT "${CMAKE_SOURCE_DIR}/engine/rendering/foundation")
+include_directories("${RBX_GFXBASE_ROOT}/include")
 include_directories(../g3d/include)
 include_directories(../RbxG3d/include)
 include_directories(../AppDraw/include)
 
-list(APPEND HEADERS include/GfxBase/FrameRateManager.h)
-list(APPEND HEADERS include/GfxBase/MeshGen.h)
-list(APPEND HEADERS include/GfxBase/Adorn.h)
-list(APPEND HEADERS include/GfxBase/Type.h)
-list(APPEND HEADERS include/GfxBase/AdornSurface.h)
-list(APPEND HEADERS include/GfxBase/RenderStats.h)
-list(APPEND HEADERS include/GfxBase/MeshFileStructs.h)
-list(APPEND HEADERS include/GfxBase/FileMeshData.h)
-list(APPEND HEADERS include/GfxBase/RenderCaps.h)
-list(APPEND HEADERS include/GfxBase/Part.h)
-list(APPEND HEADERS include/GfxBase/IAdornable.h)
-list(APPEND HEADERS include/GfxBase/GfxPart.h)
-list(APPEND HEADERS include/GfxBase/ViewBase.h)
-list(APPEND HEADERS include/GfxBase/RenderSettings.h)
-list(APPEND HEADERS include/GfxBase/IAdornableCollector.h)
-list(APPEND HEADERS include/GfxBase/Typesetter.h)
-list(APPEND HEADERS include/GfxBase/TextureProxyBase.h)
-list(APPEND HEADERS include/GfxBase/Image.h)
-list(APPEND HEADERS include/GfxBase/AdornBillboarder.h)
-list(APPEND HEADERS include/GfxBase/AdornBillboarder2D.h)
-list(APPEND HEADERS include/GfxBase/ViewportBillboarder.h)
-list(APPEND HEADERS include/GfxBase/PartIdentifier.h)
-list(APPEND HEADERS include/GfxBase/AsyncResult.h)
+set(HEADERS
+    ${RBX_GFXBASE_ROOT}/include/GfxBase/Adorn.h
+    ${RBX_GFXBASE_ROOT}/include/GfxBase/AdornBillboarder.h
+    ${RBX_GFXBASE_ROOT}/include/GfxBase/AdornBillboarder2D.h
+    ${RBX_GFXBASE_ROOT}/include/GfxBase/AdornSurface.h
+    ${RBX_GFXBASE_ROOT}/include/GfxBase/AsyncResult.h
+    ${RBX_GFXBASE_ROOT}/include/GfxBase/FileMeshData.h
+    ${RBX_GFXBASE_ROOT}/include/GfxBase/FrameRateManager.h
+    ${RBX_GFXBASE_ROOT}/include/GfxBase/GfxPart.h
+    ${RBX_GFXBASE_ROOT}/include/GfxBase/IAdornable.h
+    ${RBX_GFXBASE_ROOT}/include/GfxBase/IAdornableCollector.h
+    ${RBX_GFXBASE_ROOT}/include/GfxBase/Image.h
+    ${RBX_GFXBASE_ROOT}/include/GfxBase/MeshFileStructs.h
+    ${RBX_GFXBASE_ROOT}/include/GfxBase/MeshGen.h
+    ${RBX_GFXBASE_ROOT}/include/GfxBase/Part.h
+    ${RBX_GFXBASE_ROOT}/include/GfxBase/PartIdentifier.h
+    ${RBX_GFXBASE_ROOT}/include/GfxBase/RenderCaps.h
+    ${RBX_GFXBASE_ROOT}/include/GfxBase/RenderSettings.h
+    ${RBX_GFXBASE_ROOT}/include/GfxBase/RenderStats.h
+    ${RBX_GFXBASE_ROOT}/include/GfxBase/TextureProxyBase.h
+    ${RBX_GFXBASE_ROOT}/include/GfxBase/Type.h
+    ${RBX_GFXBASE_ROOT}/include/GfxBase/Typesetter.h
+    ${RBX_GFXBASE_ROOT}/include/GfxBase/ViewBase.h
+    ${RBX_GFXBASE_ROOT}/include/GfxBase/ViewportBillboarder.h)
 
-list(APPEND SOURCES IAdornableCollector.cpp)
-list(APPEND SOURCES RenderSettings.cpp)
-list(APPEND SOURCES Adorn.cpp)
-list(APPEND SOURCES RenderCaps.cpp)
-list(APPEND SOURCES GfxPart.cpp)
-list(APPEND SOURCES RenderStats.cpp)
-list(APPEND SOURCES FileMeshData.cpp)
-list(APPEND SOURCES PartIdentifier.cpp)
-list(APPEND SOURCES AdornSurface.cpp)
-list(APPEND SOURCES FrameRateManager.cpp)
-list(APPEND SOURCES ViewBase.cpp)
-list(APPEND SOURCES AdornBillboarder.cpp)
-list(APPEND SOURCES AdornBillboarder2D.cpp)
-list(APPEND SOURCES ViewportBillboarder.cpp)
+set(SOURCES
+    ${RBX_GFXBASE_ROOT}/src/Adorn.cpp
+    ${RBX_GFXBASE_ROOT}/src/AdornBillboarder.cpp
+    ${RBX_GFXBASE_ROOT}/src/AdornBillboarder2D.cpp
+    ${RBX_GFXBASE_ROOT}/src/AdornSurface.cpp
+    ${RBX_GFXBASE_ROOT}/src/FileMeshData.cpp
+    ${RBX_GFXBASE_ROOT}/src/FrameRateManager.cpp
+    ${RBX_GFXBASE_ROOT}/src/GfxPart.cpp
+    ${RBX_GFXBASE_ROOT}/src/IAdornableCollector.cpp
+    ${RBX_GFXBASE_ROOT}/src/PartIdentifier.cpp
+    ${RBX_GFXBASE_ROOT}/src/RenderCaps.cpp
+    ${RBX_GFXBASE_ROOT}/src/RenderSettings.cpp
+    ${RBX_GFXBASE_ROOT}/src/RenderStats.cpp
+    ${RBX_GFXBASE_ROOT}/src/ViewBase.cpp
+    ${RBX_GFXBASE_ROOT}/src/ViewportBillboarder.cpp)
 
 add_library(GfxBase OBJECT ${SOURCES} ${HEADERS})

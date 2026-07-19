@@ -33,6 +33,21 @@ struct VertexOutput
 
 WORLD_MATRIX(WorldMatrix);
 
+struct TerrainShadowOutput
+{
+    float4 HPosition: POSITION;
+    float Depth: TEXCOORD0;
+};
+
+TerrainShadowOutput MegaClusterShadowVS(Appdata IN)
+{
+    TerrainShadowOutput OUT = (TerrainShadowOutput)0;
+    float3 posWorld = mul(WorldMatrix, IN.Position).xyz;
+    OUT.HPosition = mul(G(ViewProjection), float4(posWorld, 1));
+    OUT.Depth = OUT.HPosition.z / OUT.HPosition.w;
+    return OUT;
+}
+
 VertexOutput MegaClusterVS(Appdata IN)
 {
     VertexOutput OUT = (VertexOutput)0;
@@ -97,7 +112,12 @@ void MegaClusterPS(VertexOutput IN,
     float4 low = tex2D(DiffuseLowMap, IN.UvLow_EdgeDistance2.xy);
 
     float4 light = lgridSample(TEXTURE(LightMap), TEXTURE(LightMapLookup), IN.LightPosition_Fog.xyz);
+#ifdef PIN_HQ
+    float shadow = shadowSample(TEXTURE(ShadowMap),
+        shadowPrepareSample(G(CameraPosition).xyz - IN.View_Depth.xyz), light.a);
+#else
     float shadow = shadowSample(TEXTURE(ShadowMap), IN.PosLightSpace, light.a);
+#endif
 
 #ifdef PIN_HQ
     float3 albedo = lerp(high.rgb, low.rgb, saturate1(IN.Normal_Blend.a));

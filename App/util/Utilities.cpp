@@ -146,7 +146,7 @@ namespace RBX {
 	std::string StringConverter<int>::convertToString(const int& value)
 	{
 		char szText[16];
-		_snprintf(szText, 16, "%d", value);
+		snprintf(szText, 16, "%d", value);
 		return szText;
 	}
 
@@ -154,8 +154,14 @@ namespace RBX {
 	std::string StringConverter<long>::convertToString(const long& value)
 	{
 		char szText[16];
-		_snprintf(szText, 16, "%ld", value);
+		snprintf(szText, 16, "%ld", value);
 		return szText;
+	}
+
+	template<>
+	std::string StringConverter<long long>::convertToString(const long long& value)
+	{
+		return boost::lexical_cast<std::string>(value);
 	}
 
 	template<>
@@ -213,7 +219,7 @@ namespace RBX {
 	std::string StringConverter<unsigned int>::convertToString(const unsigned int& value)
 	{
 		char szText[16];
-		_snprintf(szText, 16, "%u", value);
+		snprintf(szText, 16, "%u", value);
 		return szText;
 	}
 
@@ -243,6 +249,22 @@ namespace RBX {
 			value = boost::lexical_cast<long>(text);
 		}
 		catch(boost::bad_lexical_cast &)
+		{
+			return false;
+		}
+		return true;
+	}
+
+	template<>
+	bool StringConverter<long long>::convertToValue(const std::string& text, long long& value)
+	{
+		if (text.empty())
+			return false;
+		try
+		{
+			value = boost::lexical_cast<long long>(text);
+		}
+		catch (boost::bad_lexical_cast&)
 		{
 			return false;
 		}
@@ -299,7 +321,7 @@ namespace RBX {
 			return "NAN";
 
 		char szText[64];
-		_snprintf(szText, 64, "%.20g", value);
+		snprintf(szText, 64, "%.20g", value);
 #ifdef _DEBUG
 		double temp;
 		RBXASSERT(StringConverter<double>::convertToValue(szText, temp));
@@ -345,7 +367,7 @@ namespace RBX {
 			return "NAN";
 
 		char szText[32];
-		_snprintf(szText, 32, "%.9g", value);
+		snprintf(szText, 32, "%.9g", value);
 #ifdef _DEBUG
 		float temp;
 		RBXASSERT(StringConverter<float>::convertToValue(szText, temp));

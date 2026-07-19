@@ -447,6 +447,7 @@ namespace RBX
 namespace RBX{ namespace HttpPlatformImpl {
 
 void init(Http::CookieSharingPolicy cookieSharingPolicy) { RBXASSERT(0); }
+void shutdown() {}
 void setCookiesForDomain(const std::string& domain, const std::string& cookies) { RBXASSERT(0); }
 void getCookiesForDomain(const std::string& domain, std::string& cookies) { RBXASSERT(0); }
 boost::filesystem::path getRobloxCookieJarPath() { RBXASSERT(0); return ""; }

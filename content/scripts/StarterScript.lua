@@ -14,7 +14,11 @@ soundFolder.Parent = RobloxGui
 -- TopBar
 local topbarSuccess, topbarFlagValue = pcall(function() return settings():GetFFlag("UseInGameTopBar") end)
 local useTopBar = (topbarSuccess and topbarFlagValue == true)
-if useTopBar then
+local inExperienceSuccess, inExperienceFlagValue = pcall(function() return settings():GetFFlag("UseInExperienceUI") end)
+local useInExperienceUI = (inExperienceSuccess and inExperienceFlagValue == true)
+if useInExperienceUI then
+	scriptContext:AddCoreScriptLocal("CoreScripts/InExperienceUI", RobloxGui)
+elseif useTopBar then
 	scriptContext:AddCoreScriptLocal("CoreScripts/Topbar", RobloxGui)
 end
 
@@ -31,7 +35,7 @@ scriptContext:AddCoreScriptLocal("CoreScripts/DeveloperConsole", RobloxGui)
 scriptContext:AddCoreScriptLocal("CoreScripts/NotificationScript2", RobloxGui)
 
 -- Chat script
-if useTopBar then
+if useTopBar and not useInExperienceUI then
 	spawn(function() require(RobloxGui.Modules.Chat) end)
 	spawn(function() require(RobloxGui.Modules.PlayerlistModule) end)
 end

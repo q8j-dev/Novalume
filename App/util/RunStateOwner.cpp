@@ -11,7 +11,6 @@
 #include "util/standardout.h"
 #include "Network/Players.h"
 #include "rbx/Log.h"
-#include "VMProtect/VMProtectSDK.h"
 #include "V8DataModel/HackDefines.h"
 #include "V8World/Tolerance.h"
 #include "script/ThreadRef.h"
@@ -20,7 +19,7 @@
 
 DYNAMIC_FASTFLAGVARIABLE(HeartBeatCanRunTwiceFor30Hz, true)
 DYNAMIC_FASTFLAGVARIABLE(PhysicsFPSTimerFix, false)
-DYNAMIC_FASTFLAGVARIABLE(ScriptExecutionContextApi, false)
+DYNAMIC_FASTFLAGVARIABLE(ScriptExecutionContextApi, true)
 LOGGROUP(CyclicExecutiveTiming)
 LOGVARIABLE(HeartBeatFailure, 0)
 LOGVARIABLE(PhysicsStepsPerSecond, 0)
@@ -63,6 +62,8 @@ static Reflection::BoundFuncDesc<RunService, void()> pauseFunction(&RunService::
 static Reflection::BoundFuncDesc<RunService, void()> resetFunction(&RunService::stop, "Reset", Security::Plugin, Reflection::Descriptor::Attributes::deprecated());
 static Reflection::BoundFuncDesc<RunService, void()> func_Stop(&RunService::stop, "Stop", Security::Plugin);
 static Reflection::BoundFuncDesc<RunService, bool()> func_isRunning(&RunService::isRunning, "IsRunning",  Security::RobloxScript);
+static Reflection::BoundFuncDesc<RunService, std::string()> func_getRobloxVersion(&RunService::getRobloxVersion, "GetRobloxVersion", Security::None);
+static Reflection::BoundFuncDesc<RunService, std::string()> func_getCoreScriptVersion(&RunService::getCoreScriptVersion, "GetCoreScriptVersion", Security::RobloxScript);
 
 static Reflection::BoundFuncDesc<RunService, void(std::string)> func_unbindRenderStepEarly(&RunService::unbindFunctionFromRenderStepEarly, "UnbindFromRenderStep", "name", Security::None);
 static Reflection::BoundFuncDesc<RunService, void(std::string, int, Lua::WeakFunctionRef)> func_bindRenderStepEarly(&RunService::bindFunctionToRenderStepEarly, "BindToRenderStep", "name", "priority", "function", Security::None);
@@ -71,6 +72,8 @@ static Reflection::BoundFuncDesc<RunService, bool()> func_isServer(&RunService::
 static Reflection::BoundFuncDesc<RunService, bool()> func_isClient(&RunService::isClient, "IsClient", Security::None);
 static Reflection::BoundFuncDesc<RunService, bool()> func_isStudio(&RunService::isStudio, "IsStudio", Security::None);
 static Reflection::BoundFuncDesc<RunService, bool()> func_isRunMode(&RunService::isRunMode, "IsRunMode", Security::None);
+static Reflection::BoundFuncDesc<RunService, bool()> func_isEdit(
+	&RunService::isEdit, "IsEdit", Security::Plugin);
 REFLECTION_END();
 
 class PhysicsJob : public DataModelJob
@@ -212,7 +215,6 @@ public:
         // NoClip Check
         Vector3 noclipHighCheck = Tolerance::maxExtents().max();
         Vector3 noclipLowCheck = Tolerance::maxExtents().min();
-        VMProtectBeginMutation("16");
         if ((lerpCheck > 0.051 || lerpCheck < 0.049)
             || (noclipHighCheck.x < 0.95e6f || noclipHighCheck.y < 0.96e6f || noclipHighCheck.z < 0.97e6f)
             || (noclipLowCheck.x > -0.95e6f || noclipLowCheck.y > -0.96e6f || noclipLowCheck.z > -0.97e6f))
@@ -229,7 +231,6 @@ public:
                 dataModelLocal->addHackFlag(HATE_SPEEDHACK);
             }
         }
-        VMProtectEnd();
 #endif
 
 		return TaskScheduler::Stepped;
@@ -407,17 +408,23 @@ RunService::RunService()
 
 bool RunService::parallelPhysicsUserEnabled = false;
 
-void RunService::stopTasks()
+void RunService::stopTasks(bool blocking)
 {
 #if 1
 	if (physicsJob)
 	{
-		TaskScheduler::singleton().remove(physicsJob);
+		if (blocking)
+			TaskScheduler::singleton().removeBlocking(physicsJob);
+		else
+			TaskScheduler::singleton().remove(physicsJob);
 		physicsJob.reset();	// remove the reference to avoid risk of memory leak
 	}
     if (heartbeatTask)
     {
-        TaskScheduler::singleton().remove(heartbeatTask);
+        if (blocking)
+            TaskScheduler::singleton().removeBlocking(heartbeatTask);
+        else
+            TaskScheduler::singleton().remove(heartbeatTask);
         heartbeatTask.reset();	// remove the reference to avoid risk of memory leak
     }
 #else
@@ -507,8 +514,20 @@ void RunService::gameNotStepped(double skipped)
 	skippedTimeAccumulated += skipped;
 }
 
+namespace {
+thread_local double boundRenderStepDelta = 0.0;
+std::map<RunService*,
+	std::vector<std::pair<std::string, Lua::ThreadRef> > > boundRenderStepThreads;
+}
+
+void clearBoundRenderStepCallbackPins(RunService* runService)
+{
+	boundRenderStepThreads.erase(runService);
+}
+
 void RunService::renderStepped(double step, bool longStep)
 {
+	boundRenderStepDelta = step;
 	fireRenderStepEarlyFunctions();
 
 	scriptRenderSteppedSignal(step);
@@ -518,6 +537,11 @@ void RunService::renderStepped(double step, bool longStep)
 
 void RunService::bindFunctionToRenderStepEarly(std::string name, int priority, Lua::WeakFunctionRef functionToBind)
 {
+	Lua::ThreadRef ownerThread = functionToBind.lock();
+	if (!ownerThread)
+		throw std::runtime_error("BindToRenderStep callback thread is no longer alive");
+	boundRenderStepThreads[this].push_back(
+		std::make_pair(name, ownerThread));
 	renderSteppedEarlyCallbackMap[priority].push_back(FunctionNameRefPair(name, functionToBind));
 }
 
@@ -545,11 +569,18 @@ void RunService::unbindFunctionFromRenderStepEarly(std::string name)
 		iter->second = functionVector;
 	}
 
-
 	if (erasedFuncCount > 1)
 	{
 		RBX::StandardOut::singleton()->printf(RBX::MESSAGE_WARNING,"RunService:UnbindFromRenderStep removed different functions with same reference name %s %i times.", name.c_str(), erasedFuncCount);
 	}
+	std::vector<std::pair<std::string, Lua::ThreadRef> >& pinned =
+		boundRenderStepThreads[this];
+	pinned.erase(std::remove_if(pinned.begin(), pinned.end(),
+		[&name](const std::pair<std::string, Lua::ThreadRef>& entry) {
+			return entry.first == name;
+		}), pinned.end());
+	if (pinned.empty())
+		boundRenderStepThreads.erase(this);
 }
 
 static void InvokeCallback(weak_ptr<RunService> weakRunService, Lua::WeakFunctionRef callback, shared_ptr<Reflection::Tuple> args)
@@ -575,6 +606,8 @@ static void InvokeCallback(weak_ptr<RunService> weakRunService, Lua::WeakFunctio
 
 void RunService::fireRenderStepEarlyFunctions()
 {
+	shared_ptr<Reflection::Tuple> args = rbx::make_shared<Reflection::Tuple>();
+	args->values.push_back(boundRenderStepDelta);
 	for (EventCallbackMap::iterator iter = renderSteppedEarlyCallbackMap.begin(); iter != renderSteppedEarlyCallbackMap.end(); ++iter)
 	{
 		std::vector<FunctionNameRefPair> functionVector = iter->second;
@@ -584,7 +617,7 @@ void RunService::fireRenderStepEarlyFunctions()
 			{
 				if (!funcIter->second.empty())
 				{
-					InvokeCallback(weak_from(this), funcIter->second, rbx::make_shared<Reflection::Tuple>());
+					InvokeCallback(weak_from(this), funcIter->second, args);
 				}
 			}
 			catch(const std::runtime_error& e)
@@ -682,6 +715,7 @@ void RunService::onServiceProvider(ServiceProvider* oldProvider, ServiceProvider
 	{
 		stopTasks();
 		renderSteppedEarlyCallbackMap.clear();
+		boundRenderStepThreads.erase(this);
 	}
 
 	Super::onServiceProvider(oldProvider, newProvider);

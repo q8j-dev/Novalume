@@ -51,8 +51,8 @@ ProgramMemoryChecker::ProgramMemoryChecker()
     , lastCompletedTime(Time::nowFast())
 {
 #if !defined(RBX_STUDIO_BUILD) && !defined(__ANDROID__) && !defined(RBX_PLATFORM_IOS)
-    uint32_t baseAddr = machODynamicBaseAddress();
-    uint32_t baseSize = machOTextSize();
+    uintptr_t baseAddr = machODynamicBaseAddress();
+    size_t baseSize = machOTextSize();
     scanningRegions.resize(kNumberOfSectionHashes);
     
     // Set up the main hash.
