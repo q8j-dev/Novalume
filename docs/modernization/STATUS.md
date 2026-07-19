@@ -1258,3 +1258,11 @@ verification is complete and the user separately gives explicit permission.
   allocation. Impulse-response tests prove both wet paths, the binary contract
   round-trips their authored graph and parameters, and the signed Player audio
   chain includes both nodes between tremolo and the channel mixer.
+- Added the current `AudioCompressor` contract, including the exact public
+  bounded controls, bypass, standard graph pins/events, and the protected
+  load-only/non-replicated `Editor` state from the supplied API dump. Its
+  per-voice realtime stage maintains independent channel envelopes, applies
+  sample-rate-correct attack/release and ratio/threshold/makeup gain, and
+  remains allocation-free in the callback. Sustained-signal and dry-bypass
+  tests prove the DSP path, binary coverage proves `Editor` is not saved, and
+  the actual Player chain runs the compressor before the channel mixer.

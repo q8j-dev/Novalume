@@ -33,6 +33,7 @@ struct Engine::Impl
         std::array<std::array<std::atomic<float>, 7>, 32> parameters{};
         std::array<float, 32> phases{};
         std::array<std::vector<float>, 32> delays;
+        std::array<std::vector<float>, 32> states;
         std::array<std::uint32_t, 32> delayPositions{};
         std::uint32_t sampleRate = 48000;
         std::uint32_t channels = 2;
@@ -194,6 +195,49 @@ struct Engine::Impl
                     }
                     effects->delayPositions[effect] = writeFrame;
                     effects->phases[effect] = phase;
+                }
+                else if (type == VoiceEffectType::Compressor)
+                {
+                    const float attack = std::clamp(
+                        effects->parameters[effect][0].load(
+                            std::memory_order_relaxed), 0.0001f, 0.5f);
+                    const float makeupGain = std::clamp(
+                        effects->parameters[effect][1].load(
+                            std::memory_order_relaxed), -30.0f, 30.0f);
+                    const float ratio = std::clamp(
+                        effects->parameters[effect][2].load(
+                            std::memory_order_relaxed), 1.0f, 50.0f);
+                    const float release = std::clamp(
+                        effects->parameters[effect][3].load(
+                            std::memory_order_relaxed), 0.01f, 5.0f);
+                    const float threshold = std::clamp(
+                        effects->parameters[effect][4].load(
+                            std::memory_order_relaxed), -60.0f, 0.0f);
+                    std::vector<float>& envelopes = effects->states[effect];
+                    if (envelopes.size() < channels)
+                        continue;
+                    const float attackCoefficient = std::exp(-1.0f /
+                        (attack * effects->sampleRate));
+                    const float releaseCoefficient = std::exp(-1.0f /
+                        (release * effects->sampleRate));
+                    for (ma_uint32 frame = 0; frame < frames; ++frame)
+                        for (ma_uint32 channel = 0; channel < channels; ++channel)
+                        {
+                            const std::size_t index =
+                                static_cast<std::size_t>(frame) * channels + channel;
+                            const float level = std::abs(output[0][index]);
+                            const float coefficient = level > envelopes[channel]
+                                ? attackCoefficient : releaseCoefficient;
+                            envelopes[channel] = coefficient * envelopes[channel] +
+                                (1.0f - coefficient) * level;
+                            const float levelDb = 20.0f * std::log10(
+                                std::max(envelopes[channel], 0.0000001f));
+                            float gainDb = makeupGain;
+                            if (levelDb > threshold)
+                                gainDb += threshold + (levelDb - threshold) /
+                                    ratio - levelDb;
+                            output[0][index] *= std::pow(10.0f, gainDb / 20.0f);
+                        }
                 }
             }
         }
@@ -999,11 +1043,13 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
             if (effect.type != VoiceEffectType::Distortion &&
                 effect.type != VoiceEffectType::Tremolo &&
                 effect.type != VoiceEffectType::Chorus &&
-                effect.type != VoiceEffectType::Flanger)
+                effect.type != VoiceEffectType::Flanger &&
+                effect.type != VoiceEffectType::Compressor)
                 return {};
             const std::size_t parameterCount = effect.type ==
                 VoiceEffectType::Distortion ? 1 :
-                effect.type == VoiceEffectType::Tremolo ? 6 : 3;
+                effect.type == VoiceEffectType::Tremolo ? 6 :
+                effect.type == VoiceEffectType::Compressor ? 5 : 3;
             for (std::size_t parameter = 0; parameter < parameterCount; ++parameter)
                 if (!std::isfinite(effect.parameters[parameter]))
                     return {};
@@ -1163,6 +1209,8 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
             impl->config.channels;
         for (std::vector<float>& delay : voice->effects.delays)
             delay.resize(modulationDelaySamples);
+        for (std::vector<float>& state : voice->effects.states)
+            state.resize(impl->config.channels);
         const std::uint32_t effectCount = std::min<std::uint32_t>(
             parameters.effectCount ? parameters.effectCount :
                 parameters.distortionCount,
@@ -1423,11 +1471,13 @@ bool Engine::setVoiceEffects(VoiceHandle handle,
         if (effect.type != VoiceEffectType::Distortion &&
             effect.type != VoiceEffectType::Tremolo &&
             effect.type != VoiceEffectType::Chorus &&
-            effect.type != VoiceEffectType::Flanger)
+            effect.type != VoiceEffectType::Flanger &&
+            effect.type != VoiceEffectType::Compressor)
             return false;
         const std::size_t parameterCount = effect.type ==
             VoiceEffectType::Distortion ? 1 :
-            effect.type == VoiceEffectType::Tremolo ? 6 : 3;
+            effect.type == VoiceEffectType::Tremolo ? 6 :
+            effect.type == VoiceEffectType::Compressor ? 5 : 3;
         for (std::size_t parameter = 0; parameter < parameterCount; ++parameter)
             if (!std::isfinite(effect.parameters[parameter]))
                 return false;

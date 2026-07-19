@@ -232,6 +232,16 @@ int main(int argc, char** argv)
     audioFlanger->setMix(0.2f);
     audioFlanger->setRate(3.0f);
     audioFlanger->setParent(audioRoot.get());
+    boost::shared_ptr<RBX::Soundscape::AudioCompressor> audioCompressor =
+        RBX::Creatable<RBX::Instance>::create<
+            RBX::Soundscape::AudioCompressor>();
+    audioCompressor->setAttack(0.02f);
+    audioCompressor->setMakeupGain(2.0f);
+    audioCompressor->setRatio(6.0f);
+    audioCompressor->setRelease(0.4f);
+    audioCompressor->setThreshold(-18.0f);
+    audioCompressor->setEditor(true);
+    audioCompressor->setParent(audioRoot.get());
     boost::shared_ptr<RBX::Soundscape::AudioChannelMixer> audioMixer =
         RBX::Creatable<RBX::Instance>::create<
             RBX::Soundscape::AudioChannelMixer>();
@@ -276,8 +286,14 @@ int main(int argc, char** argv)
         RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
     flangerWire->setName("FlangerWire");
     flangerWire->setSourceInstance(audioFlanger.get());
-    flangerWire->setTargetInstance(audioMixer.get());
+    flangerWire->setTargetInstance(audioCompressor.get());
     flangerWire->setParent(audioFlanger.get());
+    boost::shared_ptr<RBX::Soundscape::Wire> compressorWire =
+        RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
+    compressorWire->setName("CompressorWire");
+    compressorWire->setSourceInstance(audioCompressor.get());
+    compressorWire->setTargetInstance(audioMixer.get());
+    compressorWire->setParent(audioCompressor.get());
     boost::shared_ptr<RBX::Soundscape::Wire> mixerWire =
         RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
     mixerWire->setName("MixerWire");
@@ -441,6 +457,9 @@ int main(int argc, char** argv)
         decodedAudioRoot->findFirstChildOfType<RBX::Soundscape::AudioChorus>();
     RBX::Soundscape::AudioFlanger* decodedAudioFlanger =
         decodedAudioRoot->findFirstChildOfType<RBX::Soundscape::AudioFlanger>();
+    RBX::Soundscape::AudioCompressor* decodedAudioCompressor =
+        decodedAudioRoot->findFirstChildOfType<
+            RBX::Soundscape::AudioCompressor>();
     RBX::Soundscape::AudioChannelMixer* decodedAudioMixer =
         decodedAudioRoot->findFirstChildOfType<
             RBX::Soundscape::AudioChannelMixer>();
@@ -455,6 +474,7 @@ int main(int argc, char** argv)
         !decodedAudioEmitter || !decodedAudioListener || !decodedAudioFader ||
         !decodedAudioDistortion || !decodedAudioTremolo ||
         !decodedAudioChorus || !decodedAudioFlanger ||
+        !decodedAudioCompressor ||
         !decodedAudioMixer || !decodedAudioSplitter ||
         decodedAudioMixer->getLayout() != RBX::Soundscape::AUDIO_CHANNEL_QUAD ||
         decodedAudioSplitter->getLayout() != RBX::Soundscape::AUDIO_CHANNEL_QUAD ||
@@ -491,6 +511,15 @@ int main(int argc, char** argv)
         decodedAudioFlanger->getBypass() ||
         decodedAudioFlanger->getConnectedWiresReflection("Input")->size() != 1 ||
         decodedAudioFlanger->getConnectedWiresReflection("Output")->size() != 1 ||
+        decodedAudioCompressor->getAttack() != 0.02f ||
+        decodedAudioCompressor->getMakeupGain() != 2.0f ||
+        decodedAudioCompressor->getRatio() != 6.0f ||
+        decodedAudioCompressor->getRelease() != 0.4f ||
+        decodedAudioCompressor->getThreshold() != -18.0f ||
+        decodedAudioCompressor->getEditor() ||
+        decodedAudioCompressor->getBypass() ||
+        decodedAudioCompressor->getConnectedWiresReflection("Input")->size() != 1 ||
+        decodedAudioCompressor->getConnectedWiresReflection("Output")->size() != 1 ||
         !decodedAudioPlayer || decodedAudioPlayer->getAssetId() !=
             "rbxasset://sounds/uuhhh.mp3" ||
         decodedAudioPlayer->getAudioContent().getSourceType() !=

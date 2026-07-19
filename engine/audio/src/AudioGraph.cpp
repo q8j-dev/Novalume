@@ -305,6 +305,7 @@ const char* const sAudioDistortion = "AudioDistortion";
 const char* const sAudioTremolo = "AudioTremolo";
 const char* const sAudioChorus = "AudioChorus";
 const char* const sAudioFlanger = "AudioFlanger";
+const char* const sAudioCompressor = "AudioCompressor";
 const char* const sAudioChannelMixer = "AudioChannelMixer";
 const char* const sAudioChannelSplitter = "AudioChannelSplitter";
 const char* const sAudioEmitter = "AudioEmitter";
@@ -460,6 +461,47 @@ static Reflection::EventDesc<ClassName, void(bool, std::string, \
 RBX_DEFINE_AUDIO_MODULATION_REFLECTION(AudioChorus, propAudioChorus);
 RBX_DEFINE_AUDIO_MODULATION_REFLECTION(AudioFlanger, propAudioFlanger);
 #undef RBX_DEFINE_AUDIO_MODULATION_REFLECTION
+
+static Reflection::PropDescriptor<AudioCompressor, float>
+    propAudioCompressorAttack("Attack", category_Data,
+        &AudioCompressor::getAttack, &AudioCompressor::setAttack);
+static Reflection::PropDescriptor<AudioCompressor, bool>
+    propAudioCompressorBypass("Bypass", category_Behavior,
+        &AudioCompressor::getBypass, &AudioCompressor::setBypass);
+static Reflection::PropDescriptor<AudioCompressor, bool>
+    propAudioCompressorEditor("Editor", category_Data,
+        &AudioCompressor::getEditor, &AudioCompressor::setEditor,
+        Reflection::PropertyDescriptor::UI, Security::Roblox);
+static Reflection::PropDescriptor<AudioCompressor, float>
+    propAudioCompressorMakeupGain("MakeupGain", category_Data,
+        &AudioCompressor::getMakeupGain, &AudioCompressor::setMakeupGain);
+static Reflection::PropDescriptor<AudioCompressor, float>
+    propAudioCompressorRatio("Ratio", category_Data,
+        &AudioCompressor::getRatio, &AudioCompressor::setRatio);
+static Reflection::PropDescriptor<AudioCompressor, float>
+    propAudioCompressorRelease("Release", category_Data,
+        &AudioCompressor::getRelease, &AudioCompressor::setRelease);
+static Reflection::PropDescriptor<AudioCompressor, float>
+    propAudioCompressorThreshold("Threshold", category_Data,
+        &AudioCompressor::getThreshold, &AudioCompressor::setThreshold);
+static Reflection::BoundFuncDesc<AudioCompressor,
+    boost::shared_ptr<const Instances>(std::string)>
+    funcAudioCompressorConnectedWires(
+        &AudioCompressor::getConnectedWiresReflection,
+        "GetConnectedWires", "pin", Security::None);
+static Reflection::BoundFuncDesc<AudioCompressor,
+    boost::shared_ptr<const Reflection::ValueArray>()>
+    funcAudioCompressorInputPins(&AudioCompressor::getInputPinsReflection,
+        "GetInputPins", Security::None);
+static Reflection::BoundFuncDesc<AudioCompressor,
+    boost::shared_ptr<const Reflection::ValueArray>()>
+    funcAudioCompressorOutputPins(&AudioCompressor::getOutputPinsReflection,
+        "GetOutputPins", Security::None);
+static Reflection::EventDesc<AudioCompressor,
+    void(bool, std::string, boost::shared_ptr<Instance>,
+        boost::shared_ptr<Instance>)> eventAudioCompressorWiringChanged(
+    &AudioCompressor::wiringChangedSignal, "WiringChanged", "connected", "pin",
+    "wire", "instance", Security::None);
 
 static Reflection::EnumPropDescriptor<AudioChannelMixer, AudioChannelLayout>
     propAudioChannelMixerLayout("Layout", category_Data,
@@ -1136,6 +1178,97 @@ void setModulationValue(Effect* effect, float& field, float value,
 RBX_DEFINE_AUDIO_MODULATION_CLASS(AudioChorus, sAudioChorus, propAudioChorus)
 RBX_DEFINE_AUDIO_MODULATION_CLASS(AudioFlanger, sAudioFlanger, propAudioFlanger)
 #undef RBX_DEFINE_AUDIO_MODULATION_CLASS
+
+AudioCompressor::AudioCompressor()
+    : DescribedCreatable<AudioCompressor, Instance, sAudioCompressor>(
+        sAudioCompressor)
+    , attack(0.01f)
+    , bypass(false)
+    , editor(false)
+    , makeupGain(0.0f)
+    , ratio(4.0f)
+    , release(0.1f)
+    , threshold(-12.0f)
+{
+}
+
+float AudioCompressor::getAttack() const { return attack; }
+bool AudioCompressor::getBypass() const { return bypass; }
+bool AudioCompressor::getEditor() const { return editor; }
+float AudioCompressor::getMakeupGain() const { return makeupGain; }
+float AudioCompressor::getRatio() const { return ratio; }
+float AudioCompressor::getRelease() const { return release; }
+float AudioCompressor::getThreshold() const { return threshold; }
+
+void AudioCompressor::setBypass(bool value)
+{
+    if (bypass == value)
+        return;
+    bypass = value;
+    raisePropertyChanged(propAudioCompressorBypass);
+}
+
+void AudioCompressor::setEditor(bool value)
+{
+    if (editor == value)
+        return;
+    editor = value;
+    raisePropertyChanged(propAudioCompressorEditor);
+}
+
+namespace {
+void setCompressorValue(AudioCompressor* compressor, float& field, float value,
+    float minimum, float maximum,
+    const Reflection::PropertyDescriptor& descriptor, const char* name)
+{
+    if (!std::isfinite(value))
+        throw std::runtime_error(std::string("AudioCompressor.") + name +
+            " must be finite");
+    value = std::clamp(value, minimum, maximum);
+    if (field == value)
+        return;
+    field = value;
+    compressor->raisePropertyChanged(descriptor);
+}
+}
+
+void AudioCompressor::setAttack(float value)
+{
+    setCompressorValue(this, attack, value, 0.0001f, 0.5f,
+        propAudioCompressorAttack, "Attack");
+}
+void AudioCompressor::setMakeupGain(float value)
+{
+    setCompressorValue(this, makeupGain, value, -30.0f, 30.0f,
+        propAudioCompressorMakeupGain, "MakeupGain");
+}
+void AudioCompressor::setRatio(float value)
+{
+    setCompressorValue(this, ratio, value, 1.0f, 50.0f,
+        propAudioCompressorRatio, "Ratio");
+}
+void AudioCompressor::setRelease(float value)
+{
+    setCompressorValue(this, release, value, 0.01f, 5.0f,
+        propAudioCompressorRelease, "Release");
+}
+void AudioCompressor::setThreshold(float value)
+{
+    setCompressorValue(this, threshold, value, -60.0f, 0.0f,
+        propAudioCompressorThreshold, "Threshold");
+}
+
+boost::shared_ptr<const Instances>
+AudioCompressor::getConnectedWiresReflection(std::string pin)
+{
+    return getConnectedWires(pin);
+}
+boost::shared_ptr<const Reflection::ValueArray>
+AudioCompressor::getInputPinsReflection() { return getInputPins(); }
+boost::shared_ptr<const Reflection::ValueArray>
+AudioCompressor::getOutputPinsReflection() { return getOutputPins(); }
+std::vector<std::string> AudioCompressor::inputPins() const { return {"Input"}; }
+std::vector<std::string> AudioCompressor::outputPins() const { return {"Output"}; }
 
 namespace {
 const std::vector<std::string>& channelPins()

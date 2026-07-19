@@ -527,6 +527,7 @@ struct PlayerRuntime::State final {
     boost::shared_ptr<RBX::Soundscape::AudioTremolo> verificationAudioTremolo;
     boost::shared_ptr<RBX::Soundscape::AudioChorus> verificationAudioChorus;
     boost::shared_ptr<RBX::Soundscape::AudioFlanger> verificationAudioFlanger;
+    boost::shared_ptr<RBX::Soundscape::AudioCompressor> verificationAudioCompressor;
     boost::shared_ptr<RBX::Soundscape::AudioChannelMixer> verificationAudioMixer;
     boost::shared_ptr<RBX::Soundscape::AudioChannelSplitter> verificationAudioSplitter;
     boost::shared_ptr<RBX::Soundscape::AudioPlayer> verificationAudioPlayer;
@@ -538,6 +539,7 @@ struct PlayerRuntime::State final {
     boost::shared_ptr<RBX::Soundscape::Wire> verificationAudioTremoloWire;
     boost::shared_ptr<RBX::Soundscape::Wire> verificationAudioChorusWire;
     boost::shared_ptr<RBX::Soundscape::Wire> verificationAudioFlangerWire;
+    boost::shared_ptr<RBX::Soundscape::Wire> verificationAudioCompressorWire;
     boost::shared_ptr<RBX::Soundscape::Wire> verificationAudioMixerWire;
     boost::shared_ptr<RBX::Soundscape::Wire> verificationAudioSplitterWire;
     boost::shared_ptr<RBX::Soundscape::Wire> verificationAudioListenerWire;
@@ -1227,6 +1229,17 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
             state->verificationAudioFlanger->setRate(1.0f);
             state->verificationAudioFlanger->setParent(
                 state->verificationAudioEmitter.get());
+            state->verificationAudioCompressor =
+                RBX::Creatable<RBX::Instance>::create<
+                    RBX::Soundscape::AudioCompressor>();
+            state->verificationAudioCompressor->setName(
+                "PlayerAudioVerificationCompressor");
+            state->verificationAudioCompressor->setAttack(0.01f);
+            state->verificationAudioCompressor->setRatio(2.0f);
+            state->verificationAudioCompressor->setRelease(0.1f);
+            state->verificationAudioCompressor->setThreshold(-6.0f);
+            state->verificationAudioCompressor->setParent(
+                state->verificationAudioEmitter.get());
             state->verificationAudioMixer =
                 RBX::Creatable<RBX::Instance>::create<
                     RBX::Soundscape::AudioChannelMixer>();
@@ -1302,9 +1315,19 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
             state->verificationAudioFlangerWire->setSourceInstance(
                 state->verificationAudioFlanger.get());
             state->verificationAudioFlangerWire->setTargetInstance(
-                state->verificationAudioMixer.get());
+                state->verificationAudioCompressor.get());
             state->verificationAudioFlangerWire->setParent(
                 state->verificationAudioFlanger.get());
+            state->verificationAudioCompressorWire =
+                RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
+            state->verificationAudioCompressorWire->setName(
+                "PlayerAudioVerificationCompressorWire");
+            state->verificationAudioCompressorWire->setSourceInstance(
+                state->verificationAudioCompressor.get());
+            state->verificationAudioCompressorWire->setTargetInstance(
+                state->verificationAudioMixer.get());
+            state->verificationAudioCompressorWire->setParent(
+                state->verificationAudioCompressor.get());
             state->verificationAudioMixerWire =
                 RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
             state->verificationAudioMixerWire->setName(
@@ -1332,6 +1355,7 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
                 !state->verificationAudioTremoloWire->getConnected() ||
                 !state->verificationAudioChorusWire->getConnected() ||
                 !state->verificationAudioFlangerWire->getConnected() ||
+                !state->verificationAudioCompressorWire->getConnected() ||
                 !state->verificationAudioMixerWire->getConnected() ||
                 !state->verificationAudioSplitterWire->getConnected())
                 throw std::runtime_error(
@@ -3834,6 +3858,8 @@ void PlayerRuntime::finishVerification()
             !state->verificationAudioChorusWire->getConnected() ||
             !state->verificationAudioFlangerWire ||
             !state->verificationAudioFlangerWire->getConnected() ||
+            !state->verificationAudioCompressorWire ||
+            !state->verificationAudioCompressorWire->getConnected() ||
             !state->verificationAudioMixerWire ||
             !state->verificationAudioMixerWire->getConnected() ||
             !state->verificationAudioSplitterWire ||
@@ -3855,6 +3881,8 @@ void PlayerRuntime::finishVerification()
             state->verificationAudioChorus->getMix() != 0.1f ||
             !state->verificationAudioFlanger ||
             state->verificationAudioFlanger->getMix() != 0.1f ||
+            !state->verificationAudioCompressor ||
+            state->verificationAudioCompressor->getRatio() != 2.0f ||
             !state->verificationAudioListenerWire ||
             !state->verificationAudioListenerWire->getConnected() ||
             !state->verificationAudioListener ||
@@ -3894,6 +3922,8 @@ void PlayerRuntime::finishVerification()
         state->verificationAudioChorusWire.reset();
         state->verificationAudioFlangerWire->setParent(nullptr);
         state->verificationAudioFlangerWire.reset();
+        state->verificationAudioCompressorWire->setParent(nullptr);
+        state->verificationAudioCompressorWire.reset();
         state->verificationAudioMixerWire->setParent(nullptr);
         state->verificationAudioMixerWire.reset();
         state->verificationAudioSplitterWire->setParent(nullptr);
@@ -3912,6 +3942,8 @@ void PlayerRuntime::finishVerification()
         state->verificationAudioChorus.reset();
         state->verificationAudioFlanger->setParent(nullptr);
         state->verificationAudioFlanger.reset();
+        state->verificationAudioCompressor->setParent(nullptr);
+        state->verificationAudioCompressor.reset();
         state->verificationAudioPlayer->setParent(nullptr);
         state->verificationAudioPlayer.reset();
         if (RBX::Soundscape::SoundService* automaticListenerService =

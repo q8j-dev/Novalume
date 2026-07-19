@@ -655,6 +655,28 @@ int main()
             "chorus and flanger must produce their bounded delayed wet signal");
     }
 
+    Engine graphCompressorEngine({.sampleRate = 48000, .channels = 2});
+    const ClipHandle graphCompressorClip = graphCompressorEngine.createClip({
+        .sampleRate = 48000, .channels = 1,
+        .samples = std::vector<float>(8192, 1.0f)});
+    VoiceParameters graphCompressorParameters;
+    graphCompressorParameters.effects[0].type = VoiceEffectType::Compressor;
+    graphCompressorParameters.effects[0].parameters = {
+        0.0001f, 0.0f, 10.0f, 0.1f, -20.0f, 0.0f, 0.0f};
+    graphCompressorParameters.effectCount = 1;
+    const VoiceHandle graphCompressorVoice = graphCompressorEngine.play(
+        graphCompressorClip, graphCompressorParameters);
+    require(static_cast<bool>(graphCompressorVoice),
+        "a voice with a graph compressor must start");
+    std::vector<float> graphCompressorMix(4096 * 2);
+    require(graphCompressorEngine.mix(graphCompressorMix) &&
+            channelEnergy(graphCompressorMix, 0) < 1500.0f,
+        "the per-voice graph compressor must reduce an over-threshold signal");
+    require(graphCompressorEngine.setVoiceEffects(graphCompressorVoice, {}) &&
+            graphCompressorEngine.mix(graphCompressorMix) &&
+            channelEnergy(graphCompressorMix, 0) > 4000.0f,
+        "bypassing the graph compressor must restore the dry voice");
+
     Engine queuedEngine({.sampleRate = 48000, .channels = 2});
     require(queuedEngine.mixerTimeSeconds() == 0.0,
         "a fresh mixer clock must begin at zero");

@@ -145,6 +145,25 @@ AudioRoute findRoute(const AudioNode* node, float gain,
                 if (route.connected)
                     return route;
             }
+            else if (AudioCompressor* compressor =
+                         Instance::fastDynamicCast<AudioCompressor>(target))
+            {
+                if (!compressor->getBypass())
+                {
+                    if (effectCount >= effects.size())
+                        continue;
+                    Audio::VoiceEffect& effect = effects[effectCount++];
+                    effect.type = Audio::VoiceEffectType::Compressor;
+                    effect.parameters = {compressor->getAttack(),
+                        compressor->getMakeupGain(), compressor->getRatio(),
+                        compressor->getRelease(), compressor->getThreshold(),
+                        0.0f, 0.0f};
+                }
+                AudioRoute route = findRoute(compressor, gain, effects,
+                    effectCount, visited);
+                if (route.connected)
+                    return route;
+            }
             else if (AudioChannelMixer* mixer =
                          Instance::fastDynamicCast<AudioChannelMixer>(target))
             {

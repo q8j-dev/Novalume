@@ -298,6 +298,50 @@ RBX_DECLARE_AUDIO_MODULATION_CLASS(AudioChorus, sAudioChorus)
 RBX_DECLARE_AUDIO_MODULATION_CLASS(AudioFlanger, sAudioFlanger)
 #undef RBX_DECLARE_AUDIO_MODULATION_CLASS
 
+extern const char* const sAudioCompressor;
+class AudioCompressor final
+    : public DescribedCreatable<AudioCompressor, Instance, sAudioCompressor>
+    , public AudioNode
+{
+public:
+    AudioCompressor();
+    float getAttack() const;
+    void setAttack(float value);
+    bool getBypass() const;
+    void setBypass(bool value);
+    bool getEditor() const;
+    void setEditor(bool value);
+    float getMakeupGain() const;
+    void setMakeupGain(float value);
+    float getRatio() const;
+    void setRatio(float value);
+    float getRelease() const;
+    void setRelease(float value);
+    float getThreshold() const;
+    void setThreshold(float value);
+    boost::shared_ptr<const Instances> getConnectedWiresReflection(std::string pin);
+    boost::shared_ptr<const Reflection::ValueArray> getInputPinsReflection();
+    boost::shared_ptr<const Reflection::ValueArray> getOutputPinsReflection();
+    std::vector<std::string> inputPins() const override;
+    std::vector<std::string> outputPins() const override;
+    Instance* audioNodeInstance() override { return this; }
+    const Instance* audioNodeInstance() const override { return this; }
+    void fireWiringChanged(bool connected, const std::string& pin,
+        const boost::shared_ptr<Instance>& wire,
+        const boost::shared_ptr<Instance>& instance) override
+    { wiringChangedSignal(connected, pin, wire, instance); }
+    rbx::signal<void(bool, std::string, boost::shared_ptr<Instance>,
+        boost::shared_ptr<Instance>)> wiringChangedSignal;
+private:
+    float attack;
+    bool bypass;
+    bool editor;
+    float makeupGain;
+    float ratio;
+    float release;
+    float threshold;
+};
+
 extern const char* const sAudioChannelMixer;
 class AudioChannelMixer final
     : public DescribedCreatable<AudioChannelMixer, Instance, sAudioChannelMixer>
