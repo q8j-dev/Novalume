@@ -16,6 +16,8 @@
 #include FT_MODULE_H
 #include FT_TRUETYPE_DRIVER_H
 #include FT_LCD_FILTER_H
+#include <hb-ft.h>
+#include <utf8proc.h>
 
 
 LOGGROUP(Graphics)
@@ -26,6 +28,7 @@ FASTINTVARIABLE(FontSizePadding, 1)
 
 #define FONT_PADDING 1.0f
 #define NAMED_GLYPH_MASK 0x80000000u
+#define SHAPED_GLYPH_MASK 0x40000000u
 
 	namespace RBX
 {
@@ -70,6 +73,21 @@ FASTINTVARIABLE(FontSizePadding, 1)
 		class GlyphProvider
 		{
 		public:
+            struct ShapedMetric
+            {
+                unsigned glyphIndex;
+				unsigned faceIndex;
+                unsigned sourceCharacter;
+                unsigned cluster;
+                int xadvance;
+                int xoffset;
+                int yoffset;
+            };
+			typedef boost::unordered_map<unsigned, ShapedMetric> ShapedMetricMap;
+			typedef std::pair<unsigned, unsigned> GlyphKey;
+			typedef boost::unordered_map<GlyphKey, TypesetterDynamic::Glyph> GlyphMap;
+			typedef boost::unordered_map<GlyphKey, int> KerningMap;
+
             struct SizeSpecificData
             {
                 unsigned ascender;
@@ -77,11 +95,14 @@ FASTINTVARIABLE(FontSizePadding, 1)
                 unsigned height;
             };
 
-			GlyphProvider(const std::string& fontPath, TextureAtlas* textureAtlas, unsigned fontId)
+			GlyphProvider(const std::string& fontPath, TextureAtlas* textureAtlas, unsigned fontId,
+				const std::vector<std::string>& fallbackPaths)
 				: textureAtlas(textureAtlas)
                 , fontId(fontId)
                 , library(NULL)
                 , face(NULL)
+				, hbFont(NULL)
+				, nextShapedGlyph(1)
 			{
                 memset(&errorGlyph, 0, sizeof(errorGlyph));
                 memset(&errorSizeData, 0, sizeof(errorSizeData));
@@ -115,11 +136,116 @@ FASTINTVARIABLE(FontSizePadding, 1)
 
                 FT_UInt     interpreter_version = TT_INTERPRETER_VERSION_38;
                 FT_Property_Set(library, "truetype", "interpreter-version", &interpreter_version );
+
+				hbFont = hb_ft_font_create_referenced(face);
+
+				fallbackFaces.reserve(fallbackPaths.size());
+				for (size_t i = 0; i < fallbackPaths.size(); ++i)
+					fallbackFaces.push_back(FallbackFace(fallbackPaths[i]));
             }
+
+			~GlyphProvider()
+			{
+				for (size_t i = 0; i < fallbackFaces.size(); ++i)
+				{
+					if (fallbackFaces[i].hbFont)
+						hb_font_destroy(fallbackFaces[i].hbFont);
+					if (fallbackFaces[i].face)
+						FT_Done_Face(fallbackFaces[i].face);
+				}
+				if (hbFont)
+					hb_font_destroy(hbFont);
+				if (face)
+					FT_Done_Face(face);
+				if (library)
+					FT_Done_FreeType(library);
+			}
+
+			void shape(const std::vector<unsigned>& input, unsigned size, std::vector<unsigned>* output)
+			{
+				output->clear();
+				output->reserve(input.size());
+				shapedMetricCache.clear();
+				nextShapedGlyph = 1;
+				for (GlyphMap::iterator it = glyphMap.begin(); it != glyphMap.end();)
+				{
+					if (isShaped(it->first.first))
+						it = glyphMap.erase(it);
+					else
+						++it;
+				}
+				if (!hbFont || input.empty())
+				{
+					*output = input;
+					return;
+				}
+
+				for (size_t runStart = 0; runStart < input.size();)
+				{
+					if (input[runStart] == '\n' || input[runStart] == '\1' || (input[runStart] & NAMED_GLYPH_MASK))
+					{
+						output->push_back(input[runStart++]);
+						continue;
+					}
+
+					size_t runEnd = runStart;
+					const unsigned faceIndex = getFaceIndex(input[runStart]);
+					while (runEnd < input.size() && input[runEnd] != '\n' && input[runEnd] != '\1' &&
+						!(input[runEnd] & NAMED_GLYPH_MASK) && getFaceIndex(input[runEnd]) == faceIndex)
+						++runEnd;
+					FT_Face runFace = getFace(faceIndex);
+					hb_font_t* runFont = getHbFont(faceIndex);
+					FT_Size_RequestRec_ request = {FT_SIZE_REQUEST_TYPE_REAL_DIM, 0, (size + FInt::FontSizePadding) * 64, 0, 0};
+					if (!runFace || !runFont || FT_Request_Size(runFace, &request) != FT_Err_Ok)
+					{
+						output->insert(output->end(), input.begin() + runStart, input.begin() + runEnd);
+						runStart = runEnd;
+						continue;
+					}
+					hb_ft_font_changed(runFont);
+
+					hb_buffer_t* buffer = hb_buffer_create();
+					hb_buffer_add_codepoints(buffer, reinterpret_cast<const hb_codepoint_t*>(input.data()),
+						static_cast<int>(input.size()), static_cast<unsigned>(runStart), static_cast<int>(runEnd - runStart));
+					hb_buffer_guess_segment_properties(buffer);
+					hb_shape(runFont, buffer, NULL, 0);
+
+					unsigned count = 0;
+					const hb_glyph_info_t* infos = hb_buffer_get_glyph_infos(buffer, &count);
+					const hb_glyph_position_t* positions = hb_buffer_get_glyph_positions(buffer, &count);
+					for (unsigned i = 0; i < count; ++i)
+					{
+						const unsigned cluster = infos[i].cluster;
+						const unsigned source = cluster < input.size() ? input[cluster] : 0xfffdu;
+						unsigned token = SHAPED_GLYPH_MASK | (nextShapedGlyph++ & 0x3fffffffu);
+						if ((token & 0x3fffffffu) == 0)
+							token = SHAPED_GLYPH_MASK | (nextShapedGlyph++ & 0x3fffffffu);
+						ShapedMetric metric = {infos[i].codepoint, faceIndex, source, cluster,
+							roundToPixelsSigned(positions[i].x_advance), roundToPixelsSigned(positions[i].x_offset),
+							roundToPixelsSigned(positions[i].y_offset)};
+						shapedMetricCache[token] = metric;
+						output->push_back(token);
+					}
+					hb_buffer_destroy(buffer);
+					runStart = runEnd;
+				}
+			}
+
+			bool isShaped(unsigned character) const { return (character & SHAPED_GLYPH_MASK) && !(character & NAMED_GLYPH_MASK); }
+			unsigned getSourceCharacter(unsigned character) const
+			{
+				ShapedMetricMap::const_iterator it = shapedMetricCache.find(character);
+				return it == shapedMetricCache.end() ? character : it->second.sourceCharacter;
+			}
+			unsigned getSourceCluster(unsigned character, unsigned fallback) const
+			{
+				ShapedMetricMap::const_iterator it = shapedMetricCache.find(character);
+				return it == shapedMetricCache.end() ? fallback : it->second.cluster;
+			}
 
             const shared_ptr<Texture>& getTexture() const { return textureAtlas ? textureAtlas->getTexture() : errorTex; }
 
-            unsigned roundToPixelsSigned(int size)
+            int roundToPixelsSigned(int size)
             {
                 return (size > 0 ? (size + 32) : (size - 32)) / 64;
             }
@@ -172,10 +298,11 @@ FASTINTVARIABLE(FontSizePadding, 1)
 
             boost::uint64_t getAtlasId(unsigned character, unsigned size)
             {
-                boost::uint64_t atlasId = fontId * (boost::uint64_t)0xffffffff;
-                atlasId += size * 0x10FFFF; // max UTF8 value
-                atlasId += character;
-                return atlasId;
+				const boost::uint64_t faceIndex = getFaceIndex(character);
+				return (static_cast<boost::uint64_t>(fontId & 0xffu) << 56) |
+					(faceIndex << 48) |
+					(static_cast<boost::uint64_t>(size & 0xffffu) << 32) |
+					getGlyphIndex(character);
             }
 
             void releaseAtlas()
@@ -190,15 +317,18 @@ FASTINTVARIABLE(FontSizePadding, 1)
 
 			bool setGlyphToSlot(unsigned character, unsigned size)
             {
-                FT_Size_RequestRec_ request = {FT_SIZE_REQUEST_TYPE_REAL_DIM, 0,  (size + FInt::FontSizePadding) * 64, 0, 0};
-                FT_Error error = FT_Request_Size(face, &request);
+				FT_Face glyphFace = getFace(getFaceIndex(character));
+				if (!glyphFace)
+					return false;
+				FT_Size_RequestRec_ request = {FT_SIZE_REQUEST_TYPE_REAL_DIM, 0,  (size + FInt::FontSizePadding) * 64, 0, 0};
+				FT_Error error = FT_Request_Size(glyphFace, &request);
                 RBXASSERT(error == FT_Err_Ok);
                 if (error)
                     return false;        
 
 				unsigned glyph_index = getGlyphIndex(character);
 
-                error = FT_Load_Glyph(face, glyph_index, FT_LOAD_DEFAULT);
+                error = FT_Load_Glyph(glyphFace, glyph_index, FT_LOAD_DEFAULT);
                 RBXASSERT(error == FT_Err_Ok);
                 if (error)
                     return false;
@@ -228,7 +358,10 @@ FASTINTVARIABLE(FontSizePadding, 1)
                 if (!setGlyphToSlot(character, size))
                     return errorGlyph;
 
-                const FT_GlyphSlot& slot = face->glyph;
+				FT_Face glyphFace = getFace(getFaceIndex(character));
+				if (!glyphFace)
+					return errorGlyph;
+                const FT_GlyphSlot& slot = glyphFace->glyph;
                 TypesetterDynamic::Glyph& glyph = glyphMap[key] = TypesetterDynamic::Glyph();
 
                 glyph.height = roundToPixelsSigned(slot->metrics.height);
@@ -236,6 +369,14 @@ FASTINTVARIABLE(FontSizePadding, 1)
                 glyph.xadvance = roundToPixelsSigned(slot->advance.x);
                 glyph.xoffset = roundToPixelsSigned(slot->metrics.horiBearingX); 
                 glyph.yoffset = roundToPixelsSigned(slot->metrics.horiBearingY);
+
+				ShapedMetricMap::const_iterator shaped = shapedMetricCache.find(character);
+				if (shaped != shapedMetricCache.end())
+				{
+					glyph.xadvance = shaped->second.xadvance;
+					glyph.xoffset += shaped->second.xoffset;
+					glyph.yoffset += shaped->second.yoffset;
+				}
 
                 return glyph;
             }
@@ -264,15 +405,18 @@ FASTINTVARIABLE(FontSizePadding, 1)
                     if (!setGlyphToSlot(character, size))
                         return errorTexRegion;
 
-                    if (face->glyph->format != FT_GLYPH_FORMAT_BITMAP)
+					FT_Face glyphFace = getFace(getFaceIndex(character));
+					if (!glyphFace)
+						return errorTexRegion;
+					if (glyphFace->glyph->format != FT_GLYPH_FORMAT_BITMAP)
                     {
-                        FT_Error error = FT_Render_Glyph( face->glyph, FT_RENDER_MODE_NORMAL );
+						FT_Error error = FT_Render_Glyph(glyphFace->glyph, FT_RENDER_MODE_NORMAL);
                         RBXASSERT(error == FT_Err_Ok);
                         if (error)
                             return errorTexRegion;
                     }
 
-                    FT_Bitmap& bitmap = face->glyph->bitmap;
+					FT_Bitmap& bitmap = glyphFace->glyph->bitmap;
                     if (textureAtlas->insert(atlasId, Vector2int16(bitmap.width, bitmap.rows), bitmap.pitch, bitmap.buffer, texRegion))
                         return *texRegion;
                 }
@@ -280,8 +424,81 @@ FASTINTVARIABLE(FontSizePadding, 1)
             }
 
 		private:
+			struct FallbackFace
+			{
+				explicit FallbackFace(const std::string& path)
+					: path(path), face(NULL), hbFont(NULL), attempted(false) {}
+				std::string path;
+				std::string data;
+				FT_Face face;
+				hb_font_t* hbFont;
+				bool attempted;
+			};
+
+			void ensureFallbackLoaded(size_t index) const
+			{
+				FallbackFace& fallback = fallbackFaces[index];
+				if (fallback.attempted)
+					return;
+				fallback.attempted = true;
+				std::ifstream fallbackFile(utf8_decode(fallback.path).c_str(), std::ios::in | std::ios::binary);
+				if (!fallbackFile)
+					return;
+				std::ostringstream fallbackData;
+				fallbackData << fallbackFile.rdbuf();
+				fallback.data = fallbackData.str();
+				if (FT_New_Memory_Face(library,
+						reinterpret_cast<const unsigned char*>(fallback.data.data()),
+						static_cast<FT_Long>(fallback.data.size()), 0, &fallback.face) != FT_Err_Ok)
+				{
+					fallback.face = NULL;
+					fallback.data.clear();
+					return;
+				}
+				fallback.hbFont = hb_ft_font_create_referenced(fallback.face);
+			}
+
+			unsigned getFaceIndex(unsigned character) const
+			{
+				ShapedMetricMap::const_iterator shaped = shapedMetricCache.find(character);
+				if (shaped != shapedMetricCache.end())
+					return shaped->second.faceIndex;
+				if (!face || FT_Get_Char_Index(face, character))
+					return 0;
+				for (size_t i = 0; i < fallbackFaces.size(); ++i)
+				{
+					ensureFallbackLoaded(i);
+					if (fallbackFaces[i].face && FT_Get_Char_Index(fallbackFaces[i].face, character))
+						return static_cast<unsigned>(i + 1);
+				}
+				return 0;
+			}
+
+			FT_Face getFace(unsigned faceIndex) const
+			{
+				if (faceIndex == 0)
+					return face;
+				if (faceIndex > fallbackFaces.size())
+					return NULL;
+				ensureFallbackLoaded(faceIndex - 1);
+				return fallbackFaces[faceIndex - 1].face;
+			}
+
+			hb_font_t* getHbFont(unsigned faceIndex) const
+			{
+				if (faceIndex == 0)
+					return hbFont;
+				if (faceIndex > fallbackFaces.size())
+					return NULL;
+				ensureFallbackLoaded(faceIndex - 1);
+				return fallbackFaces[faceIndex - 1].hbFont;
+			}
+
 			unsigned getGlyphIndex(unsigned character) const
 			{
+				ShapedMetricMap::const_iterator shaped = shapedMetricCache.find(character);
+				if (shaped != shapedMetricCache.end())
+					return shaped->second.glyphIndex;
 				return character & NAMED_GLYPH_MASK
 					? character & ~NAMED_GLYPH_MASK
 					: FT_Get_Char_Index(face, character);
@@ -290,13 +507,14 @@ FASTINTVARIABLE(FontSizePadding, 1)
 
 			FT_Library library;
 			FT_Face face;  
+			hb_font_t* hbFont;
+			mutable std::vector<FallbackFace> fallbackFaces;
 
-			typedef std::pair<unsigned, unsigned> GlyphKey;
-			typedef boost::unordered_map<GlyphKey, TypesetterDynamic::Glyph> GlyphMap;
-            typedef boost::unordered_map<GlyphKey, int> KerningMap;
 
             GlyphMap glyphMap;
             KerningMap kerningMap;
+			ShapedMetricMap shapedMetricCache;
+			unsigned nextShapedGlyph;
 
 			boost::unordered_map<unsigned, SizeSpecificData> sizeData;
 
@@ -311,12 +529,13 @@ FASTINTVARIABLE(FontSizePadding, 1)
             TextureAtlas* textureAtlas;
 		};
 
-		TypesetterDynamic::TypesetterDynamic(TextureAtlas* textureAtlas, RBX::Graphics::TextureManager* textureManager, const std::string& fontPath, float legacyHeightScale, unsigned fontId, bool retina)
+		TypesetterDynamic::TypesetterDynamic(TextureAtlas* textureAtlas, RBX::Graphics::TextureManager* textureManager, const std::string& fontPath, float legacyHeightScale, unsigned fontId, bool retina,
+			const std::vector<std::string>& fallbackPaths)
 			: legacyHeightScale(legacyHeightScale)
 			, retinaScale(retina ? 2 : 1)
 			, namedGlyphs(fontId == Text::FONT_BUILDER_ICONS_REGULAR || fontId == Text::FONT_BUILDER_ICONS_FILLED)
         {
-            glyphProvider = new GlyphProvider(fontPath, textureAtlas, fontId);
+            glyphProvider = new GlyphProvider(fontPath, textureAtlas, fontId, fallbackPaths);
 		}
 
         TypesetterDynamic::~TypesetterDynamic()
@@ -380,7 +599,7 @@ FASTINTVARIABLE(FontSizePadding, 1)
 			return ch == ' ' || ch == '\t';
 		}
 
-		static inline bool isCharacterZeroWidth(char ch)
+        static inline bool isCharacterZeroWidth(unsigned ch)
 		{
 			return ch == '\1';
 		}
@@ -428,7 +647,6 @@ FASTINTVARIABLE(FontSizePadding, 1)
             bool useClipping = (clippingRect != RBX::Rect2D::xyxy(-1,-1,-1,-1));
             Vector2 uvOffset = Vector2(FONT_PADDING / texture->getWidth(), FONT_PADDING / texture->getHeight());
 
-            unsigned previousChar = 0;
             for (int offsetIndex = (outline.a > 0.05f ? 0 : 4); offsetIndex < 5; ++offsetIndex)
             {
                 float dx = kBorderOffsets[offsetIndex].x, dy = kBorderOffsets[offsetIndex].y;
@@ -443,13 +661,15 @@ FASTINTVARIABLE(FontSizePadding, 1)
                     float liney = starty + line.yoffset * scale;
 
                     float x = 0;
+					unsigned previousChar = 0;
 
                     for (size_t i = 0; i < line.length; ++i)
                     {
                         unsigned unicodeChar = line.data[i];
+						unsigned sourceCharacter = glyphProvider->getSourceCharacter(unicodeChar);
 
                         // Cursor character
-                        if (unicodeChar == '\1')
+                        if (sourceCharacter == '\1')
                         {
                             drawCursor(adorn, useClipping, clippingRect, rotation,
                                 Rect2D::xywh(linex + dx + x , liney + dy, 1, height),
@@ -459,9 +679,10 @@ FASTINTVARIABLE(FontSizePadding, 1)
                         }
 
                         Glyph glyph = glyphProvider->getGlyphMetrics(unicodeChar, measureSize);
-                        x += glyphProvider->getKerning(previousChar, unicodeChar, measureSize);
+						if (!glyphProvider->isShaped(unicodeChar))
+							x += glyphProvider->getKerning(previousChar, unicodeChar, measureSize);
 
-                        if (!isCharacterWhitespace(unicodeChar))
+                        if (!isCharacterWhitespace(sourceCharacter))
                         {
                             Rect2D rect = Rect2D::xywh(linex + dx + (x + glyph.xoffset) * scale, liney + dy + (ascender - glyph.yoffset) * scale, glyph.width * scale, glyph.height * scale);
 
@@ -497,10 +718,12 @@ FASTINTVARIABLE(FontSizePadding, 1)
             float scale = 1.0f / retinaScale;
 
             std::vector<GlyphLine> lines;
+			std::vector<unsigned> shapedUnicode;
+			glyphProvider->shape(stringUnicode, height, &shapedUnicode);
 
             Vector2int16 intAvailableSpace = Vector2int16(availableSpace / scale);
 
-            Vector2int16 intSize = layout(stringUnicode, &lines, height, intAvailableSpace, useAvailableSpace, false, NULL);
+            Vector2int16 intSize = layout(shapedUnicode, &lines, height, intAvailableSpace, useAvailableSpace, false, NULL);
             unsigned ascender = glyphProvider->getSizeData(height).ascender;
 
             float startx, starty;
@@ -532,7 +755,9 @@ FASTINTVARIABLE(FontSizePadding, 1)
 			float height = 48;        // 48 is our highest font scale right now
 
 			std::vector<GlyphLine> lines;
-			Vector2int16 intSize = layoutRatio(stringUnicode, &lines, height, availableSpace);
+			std::vector<unsigned> shapedUnicode;
+			glyphProvider->shape(stringUnicode, height, &shapedUnicode);
+			Vector2int16 intSize = layoutRatio(shapedUnicode, &lines, height, availableSpace);
 
 			// ratio is the smaller one from XY ratios to make text fit
 			float floatIntSizeRatio = std::min((float)availableSpace.x / (float)intSize.x, (float)availableSpace.y / (float)intSize.y);
@@ -604,16 +829,17 @@ FASTINTVARIABLE(FontSizePadding, 1)
 			float scale = 1.0f / retinaScale;
 
 			std::vector<GlyphLine> lines;
+			std::vector<unsigned> shapedUnicode;
+			glyphProvider->shape(stringUnicode, height, &shapedUnicode);
 
 			Vector2int16 intAvailableSpace = Vector2int16(availableSpace / scale);
-			Vector2int16 intSize = layout(stringUnicode, &lines, height, intAvailableSpace, useAvailableSpace, false, NULL);
+			Vector2int16 intSize = layout(shapedUnicode, &lines, height, intAvailableSpace, useAvailableSpace, false, NULL);
 
 			float startx = round_int(position.x);
 			float starty = fontAdjustY(round_int(position.y), intSize.y, scale, yalign);
 
 			Vector2 localCursor = rotation.inverse().rotate(cursorPos);
 
-            unsigned previousChar = 0;
 			for (size_t li = 0; li < lines.size(); ++li)
 			{
 				const GlyphLine& line = lines[li];
@@ -623,33 +849,36 @@ FASTINTVARIABLE(FontSizePadding, 1)
 
 				if (liney + height > localCursor.y || li + 1 == lines.size())
 				{
-					int lineOffset = line.data - stringUnicode.data();
-
 					int x = 0;
+					unsigned previousChar = 0;
 
 					for (size_t i = 0; i < line.length; ++i)
 					{
 						unsigned unicodeChar = line.data[i];
+						unsigned sourceCharacter = glyphProvider->getSourceCharacter(unicodeChar);
 
-                        if (isCharacterZeroWidth(unicodeChar))
+                        if (isCharacterZeroWidth(sourceCharacter))
                             continue;
 
-						Glyph glyph = glyphProvider->getGlyphMetrics(unicodeChar, size);
-                        x += glyphProvider->getKerning(previousChar, unicodeChar, height);
+						Glyph glyph = glyphProvider->getGlyphMetrics(unicodeChar, height);
+						if (!glyphProvider->isShaped(unicodeChar))
+							x += glyphProvider->getKerning(previousChar, unicodeChar, height);
 						x += glyph.xadvance;
 
 						if (linex + x * scale > localCursor.x)
 						{
 							// Select current glyph if we're within 2/3 of the advance
 							if (linex + x * scale - glyph.xadvance * scale * 0.33f > localCursor.x)
-								return lineOffset + i;
+								return glyphProvider->getSourceCluster(unicodeChar, static_cast<unsigned>(i));
 							else
-								return lineOffset + i + 1;
+								return glyphProvider->getSourceCluster(unicodeChar, static_cast<unsigned>(i)) + 1;
 						}
                         previousChar = unicodeChar;
 					}
 
-					return lineOffset + line.length;
+					if (line.length)
+						return glyphProvider->getSourceCluster(line.data[line.length - 1], static_cast<unsigned>(line.length - 1)) + 1;
+					return 0;
 				}
 			}
 
@@ -665,12 +894,14 @@ FASTINTVARIABLE(FontSizePadding, 1)
 
 			float height = size * legacyHeightScale * retinaScale;
 			float scale = 1.0 / retinaScale;
+			std::vector<unsigned> shapedUnicode;
+			glyphProvider->shape(stringUnicode, height, &shapedUnicode);
 
 			Vector2int16 intAvailableSpace = Vector2int16(availableSpace / scale);
-			Vector2int16 intSize = layout(stringUnicode, NULL, height, intAvailableSpace, useAvailableSpace, DFFlag::TextScaleDontWrapInWords, textFits);
+			Vector2int16 intSize = layout(shapedUnicode, NULL, height, intAvailableSpace, useAvailableSpace, DFFlag::TextScaleDontWrapInWords, textFits);
 
 				if (DFFlag::TextScaleDontWrapInWords && textFits && !*textFits) {
-				intSize = layout(stringUnicode, NULL, height, intAvailableSpace, useAvailableSpace, false, textFits);
+				intSize = layout(shapedUnicode, NULL, height, intAvailableSpace, useAvailableSpace, false, textFits);
 			}
 
 			return Vector2(intSize) * scale;
@@ -772,15 +1003,17 @@ FASTINTVARIABLE(FontSizePadding, 1)
 				y += height;
 
                 unsigned previousChar = 0;
-				for (size_t i = 0; i < line.length; ++i)
+                for (size_t i = 0; i < line.length; ++i)
 				{
                     unsigned unicodeChar = line.data[i];
+					unsigned sourceCharacter = glyphProvider->getSourceCharacter(unicodeChar);
 
                     Glyph glyph = glyphProvider->getGlyphMetrics(unicodeChar, size);
-					x += glyphProvider->getKerning(previousChar, unicodeChar, size);
+					if (!glyphProvider->isShaped(unicodeChar))
+						x += glyphProvider->getKerning(previousChar, unicodeChar, size);
 					x += glyph.xadvance;
                  
-                    previousChar = unicodeChar;
+					previousChar = sourceCharacter;
 				}
 
 				if (ret.x < x)
@@ -803,12 +1036,25 @@ FASTINTVARIABLE(FontSizePadding, 1)
 			}
             out->reserve(string.size());
 
-            uint32_t codepoint;
-            uint32_t state = 0;
-
-            for (unsigned i = 0; i < string.size(); ++i)
-                if (utf8DecodeInternal(&state, &codepoint, (unsigned char)string.c_str()[i]) == UTF8_ACCEPT)
-                    out->push_back(codepoint);
+			const utf8proc_uint8_t* data = reinterpret_cast<const utf8proc_uint8_t*>(string.data());
+			utf8proc_ssize_t remaining = static_cast<utf8proc_ssize_t>(string.size());
+			while (remaining > 0)
+			{
+				utf8proc_int32_t codepoint = 0;
+				utf8proc_ssize_t consumed = utf8proc_iterate(data, remaining, &codepoint);
+				if (consumed < 0)
+				{
+					out->push_back(0xfffdu);
+					++data;
+					--remaining;
+				}
+				else
+				{
+					out->push_back(static_cast<unsigned>(codepoint));
+					data += consumed;
+					remaining -= consumed;
+				}
+			}
         }
 
 		Vector2int16 TypesetterDynamic::layout(const std::vector<unsigned>& stringUnicode, std::vector<GlyphLine>* lines, int size, const Vector2int16& availableSpace, bool useAvailableSpace, bool onlyProperFit, bool* textFits) const
@@ -831,14 +1077,15 @@ FASTINTVARIABLE(FontSizePadding, 1)
             for (size_t i = 0; i < stringUnicode.size(); ++i)
             {
                 unsigned currentUnicode = stringUnicode[i];
+				unsigned sourceCharacter = glyphProvider->getSourceCharacter(currentUnicode);
 
-                if (isCharacterZeroWidth(currentUnicode))
+                if (isCharacterZeroWidth(sourceCharacter))
                 {
                 	lastKerningOffset = 0;
                     continue;
                 }
 
-                if (currentUnicode == '\n')
+                if (sourceCharacter == '\n')
                 {
                 	// hard line break
                 	pushLine(lines, stringUnicode, lineStart, i, y, x);
@@ -850,16 +1097,19 @@ FASTINTVARIABLE(FontSizePadding, 1)
                 	wordWidth = 0;
                 	whitespaceWidth = 0;
 
-                	x = 0;
-                	y += height;
+					x = 0;
+					y += height;
+					previousChar = 0;
 
                     continue;
                 }
 
                 Glyph glyph = glyphProvider->getGlyphMetrics(currentUnicode, size);
-                int xoffset = glyphProvider->getKerning(previousChar, currentUnicode, size) + glyph.xadvance;
+				int xoffset = glyph.xadvance;
+				if (!glyphProvider->isShaped(currentUnicode))
+					xoffset += glyphProvider->getKerning(previousChar, currentUnicode, size);
 
-                if (isCharacterWhitespace(currentUnicode))
+                if (isCharacterWhitespace(sourceCharacter))
                 {
                     if (wordWidth != 0)
                         whitespaceWidth = 0;
@@ -912,11 +1162,12 @@ FASTINTVARIABLE(FontSizePadding, 1)
                     }
 
                     wordWidth = x;
-                    whitespaceWidth = 0;
-                    y += height;
-                }
+					whitespaceWidth = 0;
+					y += height;
+					previousChar = 0;
+				}
 
-                previousChar = currentUnicode;
+				previousChar = sourceCharacter;
             }
 
 			// last line

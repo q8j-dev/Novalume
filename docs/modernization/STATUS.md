@@ -490,8 +490,17 @@ the final return; it is not replaced or treated as accepted while deferred.
   FreeType 2.14.3 and HarfBuzz 14.2.1 targets and linked the renderer to the
   existing utf8proc 2.11.3 Unicode 17 target. The actual signed Player now
   contains these maintained libraries without new dynamic dependencies.
-  Integrating HarfBuzz shaping, bidi segmentation, and font fallback into the
-  legacy layout path remains required for text acceptance.
+  The dynamic typesetter now drives HarfBuzz glyph IDs, clusters, advances,
+  offsets, ligatures, and combining marks through measurement, wrapping,
+  rendering, and caret lookup; malformed UTF-8 produces U+FFFD instead of
+  disappearing. It lazily selects the exact packaged 2026 Noto script fonts
+  and Roblox/Twemoji faces when the selected face lacks a glyph, while keeping
+  the glyph atlas key bounded by face/glyph/size rather than transient shaped
+  tokens. A native contract proves Latin ligatures, canonical combining-mark
+  metrics, malformed input, deterministic repeated shaping, Arabic contextual
+  shaping, and a Devanagari conjunct. Full UAX #9 mixed-direction line
+  reordering and line-edge contextual reshaping remain required for text
+  acceptance.
 - Isolated macOS clipboard access in `platform/macos` behind the shared platform
   contract instead of compiling AppKit syntax into DataModel C++.
 - Added a real main-framebuffer contract to the bgfx backend using native pixel

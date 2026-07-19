@@ -17,7 +17,8 @@ namespace RBX
 		class TypesetterDynamic: public Typesetter
 		{
 		public:
-			TypesetterDynamic(TextureAtlas* textureAtlas, RBX::Graphics::TextureManager* textureManager, const std::string& fontPath, float legacyHeightScale, unsigned fontId, bool retina);
+			TypesetterDynamic(TextureAtlas* textureAtlas, RBX::Graphics::TextureManager* textureManager, const std::string& fontPath, float legacyHeightScale, unsigned fontId, bool retina,
+				const std::vector<std::string>& fallbackPaths = std::vector<std::string>());
             
             ~TypesetterDynamic();
 

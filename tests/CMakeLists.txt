@@ -13,6 +13,33 @@ target_compile_options(rbx-thumbnail-texture-provider-tests PRIVATE
 add_test(NAME thumbnail-texture-provider-contract
     COMMAND rbx-thumbnail-texture-provider-tests)
 
+add_executable(rbx-text-shaping-tests unit/TextShapingTests.cpp)
+target_include_directories(rbx-text-shaping-tests PRIVATE
+    "${CMAKE_SOURCE_DIR}/engine/rendering/materials/include/GfxRender")
+target_link_libraries(rbx-text-shaping-tests PRIVATE
+    Roblox::RenderText Roblox::RenderMaterials
+    Roblox::LuauScripting Roblox::RuntimeUI Roblox::InteractionTools
+    Roblox::AudioDataModel Roblox::DataModelRuntime Roblox::RuntimeSupport
+    Roblox::AvatarHumanoid Roblox::NetworkingRuntime Roblox::TerrainRuntime
+    Roblox::PlayerShared Roblox::PlatformRuntime Roblox::PlatformHost
+    Roblox::RenderScene)
+rbx_enable_warnings(rbx-text-shaping-tests)
+target_compile_options(rbx-text-shaping-tests PRIVATE
+    $<$<COMPILE_LANG_AND_ID:CXX,AppleClang>:-Wno-enum-constexpr-conversion>)
+set(RBX_TEXT_SHAPING_FALLBACK_ARGS)
+if(RBX_PLAYER_REFERENCE_ROOT AND EXISTS
+    "${RBX_PLAYER_REFERENCE_ROOT}/content/fonts/NotoNaskhArabicUI-Regular.ttf" AND EXISTS
+    "${RBX_PLAYER_REFERENCE_ROOT}/content/fonts/NotoSansDevanagariUI-Regular.ttf")
+    list(APPEND RBX_TEXT_SHAPING_FALLBACK_ARGS
+        "${RBX_PLAYER_REFERENCE_ROOT}/content/fonts/NotoNaskhArabicUI-Regular.ttf"
+        "${RBX_PLAYER_REFERENCE_ROOT}/content/fonts/NotoSansDevanagariUI-Regular.ttf")
+endif()
+add_test(NAME text-shaping-contract
+    COMMAND rbx-text-shaping-tests
+        "${CMAKE_SOURCE_DIR}/content/fonts/SourceSansPro-Regular.ttf"
+        ${RBX_TEXT_SHAPING_FALLBACK_ARGS})
+set_tests_properties(text-shaping-contract PROPERTIES LABELS "rendering;text;unicode")
+
 add_executable(rbx-file-mesh-data-tests unit/FileMeshDataTests.cpp)
 target_include_directories(rbx-file-mesh-data-tests PRIVATE
     "${CMAKE_SOURCE_DIR}/engine/datamodel/runtime/include")

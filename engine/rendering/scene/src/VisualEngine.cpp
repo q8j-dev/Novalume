@@ -139,6 +139,26 @@ VisualEngine::VisualEngine(Device* device, CRenderSettings* settings)
     if (FFlag::UseDynamicTypesetterUTF8)
     {
         glyphAtlas.reset(new TextureAtlas(this, 2048, 2048));
+		std::vector<std::string> fallbackFontPaths;
+		static const char* const fallbackFonts[] = {
+			"fonts/NotoNaskhArabicUI-Regular.ttf",
+			"fonts/NotoSansBengaliUI-Regular.ttf",
+			"fonts/NotoSansDevanagariUI-Regular.ttf",
+			"fonts/NotoSansGeorgian-Regular.ttf",
+			"fonts/NotoSansKhmerUI-Regular.ttf",
+			"fonts/NotoSansMyanmarUI-Regular.ttf",
+			"fonts/NotoSansSinhalaUI-Regular.ttf",
+			"fonts/NotoSansThaiUI-Regular.ttf",
+			"fonts/RobloxEmoji.ttf",
+			"fonts/TwemojiMozilla.ttf"
+		};
+		for (size_t i = 0; i < sizeof(fallbackFonts) / sizeof(fallbackFonts[0]); ++i)
+		{
+			const std::string path = ContentProvider::findAsset(
+				ContentId(std::string("rbxasset://") + fallbackFonts[i]));
+			if (!path.empty())
+				fallbackFontPaths.push_back(path);
+		}
         for (Text::Font font = Text::FONT_LEGACY; font != Text::FONT_LAST; font=Text::Font(font+1))
         {
             if (!Text::isValidFont(font))
@@ -146,7 +166,7 @@ VisualEngine::VisualEngine(Device* device, CRenderSettings* settings)
 
             float legacyHeightScale = (font == Text::FONT_LEGACY) ? 1.5f : 1.f;
             std::string fontPath = ContentProvider::findAsset(ContentId(std::string("rbxasset://") + dynamicFontPath(font)));
-            typesetters[font].reset(new TypesetterDynamic(glyphAtlas.get(), textureManager.get(), fontPath, legacyHeightScale, (unsigned)font, device->getCaps().retina));
+            typesetters[font].reset(new TypesetterDynamic(glyphAtlas.get(), textureManager.get(), fontPath, legacyHeightScale, (unsigned)font, device->getCaps().retina, fallbackFontPaths));
         }
     }
     else
