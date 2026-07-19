@@ -363,6 +363,142 @@ struct Engine::Impl
                                 high * highGain;
                         }
                 }
+                else if (type == VoiceEffectType::Filter)
+                {
+                    const int filterType = std::clamp(static_cast<int>(
+                        effects->parameters[effect][0].load(
+                            std::memory_order_relaxed)), 0, 11);
+                    const float sampleRate = static_cast<float>(
+                        std::max(effects->sampleRate, 1u));
+                    const float frequency = std::clamp(
+                        effects->parameters[effect][1].load(
+                            std::memory_order_relaxed), 20.0f,
+                        sampleRate * 0.49f);
+                    const float gain = std::clamp(
+                        effects->parameters[effect][2].load(
+                            std::memory_order_relaxed), -30.0f, 30.0f);
+                    const float q = std::clamp(
+                        effects->parameters[effect][3].load(
+                            std::memory_order_relaxed), 0.1f, 10.0f);
+                    if (filterType == 11)
+                    {
+                        std::vector<float>& filterStates =
+                            effects->states[effect];
+                        if (filterStates.size() < channels)
+                            continue;
+                        const float alpha = 1.0f - std::exp(
+                            -6.2831853071795864769f * frequency / sampleRate);
+                        for (ma_uint32 frame = 0; frame < frames; ++frame)
+                            for (ma_uint32 channel = 0; channel < channels; ++channel)
+                            {
+                                const std::size_t index =
+                                    static_cast<std::size_t>(frame) * channels + channel;
+                                filterStates[channel] += alpha *
+                                    (output[0][index] - filterStates[channel]);
+                                output[0][index] = filterStates[channel];
+                            }
+                        continue;
+                    }
+                    const float omega = 6.2831853071795864769f * frequency /
+                        sampleRate;
+                    const float cosine = std::cos(omega);
+                    const float sine = std::sin(omega);
+                    const float alpha = sine / (2.0f * q);
+                    const float amplitude = std::pow(10.0f, gain / 40.0f);
+                    float b0 = 1.0f, b1 = 0.0f, b2 = 0.0f;
+                    float a0 = 1.0f, a1 = 0.0f, a2 = 0.0f;
+                    if (filterType == 0)
+                    {
+                        b0 = 1.0f + alpha * amplitude; b1 = -2.0f * cosine;
+                        b2 = 1.0f - alpha * amplitude;
+                        a0 = 1.0f + alpha / amplitude; a1 = -2.0f * cosine;
+                        a2 = 1.0f - alpha / amplitude;
+                    }
+                    else if (filterType == 1 || filterType == 2)
+                    {
+                        const float root = 2.0f * std::sqrt(amplitude) * alpha;
+                        if (filterType == 1)
+                        {
+                            b0 = amplitude * ((amplitude + 1.0f) -
+                                (amplitude - 1.0f) * cosine + root);
+                            b1 = 2.0f * amplitude * ((amplitude - 1.0f) -
+                                (amplitude + 1.0f) * cosine);
+                            b2 = amplitude * ((amplitude + 1.0f) -
+                                (amplitude - 1.0f) * cosine - root);
+                            a0 = (amplitude + 1.0f) +
+                                (amplitude - 1.0f) * cosine + root;
+                            a1 = -2.0f * ((amplitude - 1.0f) +
+                                (amplitude + 1.0f) * cosine);
+                            a2 = (amplitude + 1.0f) +
+                                (amplitude - 1.0f) * cosine - root;
+                        }
+                        else
+                        {
+                            b0 = amplitude * ((amplitude + 1.0f) +
+                                (amplitude - 1.0f) * cosine + root);
+                            b1 = -2.0f * amplitude * ((amplitude - 1.0f) +
+                                (amplitude + 1.0f) * cosine);
+                            b2 = amplitude * ((amplitude + 1.0f) +
+                                (amplitude - 1.0f) * cosine - root);
+                            a0 = (amplitude + 1.0f) -
+                                (amplitude - 1.0f) * cosine + root;
+                            a1 = 2.0f * ((amplitude - 1.0f) -
+                                (amplitude + 1.0f) * cosine);
+                            a2 = (amplitude + 1.0f) -
+                                (amplitude - 1.0f) * cosine - root;
+                        }
+                    }
+                    else if (filterType >= 6 && filterType <= 8)
+                    {
+                        b0 = (1.0f + cosine) * 0.5f; b1 = -(1.0f + cosine);
+                        b2 = b0; a0 = 1.0f + alpha; a1 = -2.0f * cosine;
+                        a2 = 1.0f - alpha;
+                    }
+                    else if (filterType == 9)
+                    {
+                        b0 = alpha; b1 = 0.0f; b2 = -alpha;
+                        a0 = 1.0f + alpha; a1 = -2.0f * cosine;
+                        a2 = 1.0f - alpha;
+                    }
+                    else if (filterType == 10)
+                    {
+                        b0 = 1.0f; b1 = -2.0f * cosine; b2 = 1.0f;
+                        a0 = 1.0f + alpha; a1 = -2.0f * cosine;
+                        a2 = 1.0f - alpha;
+                    }
+                    else
+                    {
+                        b0 = (1.0f - cosine) * 0.5f; b1 = 1.0f - cosine;
+                        b2 = b0; a0 = 1.0f + alpha; a1 = -2.0f * cosine;
+                        a2 = 1.0f - alpha;
+                    }
+                    b0 /= a0; b1 /= a0; b2 /= a0; a1 /= a0; a2 /= a0;
+                    const int stages = (filterType == 4 || filterType == 7) ? 2 :
+                        (filterType == 5 || filterType == 8) ? 4 : 1;
+                    std::vector<float>& filterStates = effects->delays[effect];
+                    if (filterStates.size() < static_cast<std::size_t>(
+                            stages * 2) * channels)
+                        continue;
+                    for (ma_uint32 frame = 0; frame < frames; ++frame)
+                        for (ma_uint32 channel = 0; channel < channels; ++channel)
+                        {
+                            const std::size_t index =
+                                static_cast<std::size_t>(frame) * channels + channel;
+                            float sample = output[0][index];
+                            for (int stage = 0; stage < stages; ++stage)
+                            {
+                                const std::size_t stateOffset =
+                                    static_cast<std::size_t>(stage * 2) * channels;
+                                float& z1 = filterStates[stateOffset + channel];
+                                float& z2 = filterStates[stateOffset + channels + channel];
+                                const float result = b0 * sample + z1;
+                                z1 = b1 * sample - a1 * result + z2;
+                                z2 = b2 * sample - a2 * result;
+                                sample = result;
+                            }
+                            output[0][index] = sample;
+                        }
+                }
             }
         }
         *inputFrames = frames;
@@ -1171,7 +1307,8 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
                 effect.type != VoiceEffectType::Compressor &&
                 effect.type != VoiceEffectType::Gate &&
                 effect.type != VoiceEffectType::Limiter &&
-                effect.type != VoiceEffectType::Equalizer)
+                effect.type != VoiceEffectType::Equalizer &&
+                effect.type != VoiceEffectType::Filter)
                 return {};
             const std::size_t parameterCount = effect.type ==
                 VoiceEffectType::Distortion ? 1 :
@@ -1179,7 +1316,8 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
                 effect.type == VoiceEffectType::Compressor ? 5 :
                 effect.type == VoiceEffectType::Gate ? 4 :
                 effect.type == VoiceEffectType::Limiter ? 2 :
-                effect.type == VoiceEffectType::Equalizer ? 5 : 3;
+                effect.type == VoiceEffectType::Equalizer ? 5 :
+                effect.type == VoiceEffectType::Filter ? 4 : 3;
             for (std::size_t parameter = 0; parameter < parameterCount; ++parameter)
                 if (!std::isfinite(effect.parameters[parameter]))
                     return {};
@@ -1607,7 +1745,8 @@ bool Engine::setVoiceEffects(VoiceHandle handle,
             effect.type != VoiceEffectType::Compressor &&
             effect.type != VoiceEffectType::Gate &&
             effect.type != VoiceEffectType::Limiter &&
-            effect.type != VoiceEffectType::Equalizer)
+            effect.type != VoiceEffectType::Equalizer &&
+            effect.type != VoiceEffectType::Filter)
             return false;
         const std::size_t parameterCount = effect.type ==
             VoiceEffectType::Distortion ? 1 :
@@ -1615,7 +1754,8 @@ bool Engine::setVoiceEffects(VoiceHandle handle,
             effect.type == VoiceEffectType::Compressor ? 5 :
             effect.type == VoiceEffectType::Gate ? 4 :
             effect.type == VoiceEffectType::Limiter ? 2 :
-            effect.type == VoiceEffectType::Equalizer ? 5 : 3;
+            effect.type == VoiceEffectType::Equalizer ? 5 :
+            effect.type == VoiceEffectType::Filter ? 4 : 3;
         for (std::size_t parameter = 0; parameter < parameterCount; ++parameter)
             if (!std::isfinite(effect.parameters[parameter]))
                 return false;

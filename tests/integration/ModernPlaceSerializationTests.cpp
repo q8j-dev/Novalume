@@ -262,6 +262,14 @@ int main(int argc, char** argv)
     audioEqualizer->setMidRange(RBX::NumberRange(500.0f, 5000.0f));
     audioEqualizer->setEditor(true);
     audioEqualizer->setParent(audioRoot.get());
+    boost::shared_ptr<RBX::Soundscape::AudioFilter> audioFilter =
+        RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::AudioFilter>();
+    audioFilter->setFilterType(RBX::Soundscape::AUDIO_FILTER_LOWPASS_24DB);
+    audioFilter->setFrequency(3200.0f);
+    audioFilter->setGain(-3.0f);
+    audioFilter->setQ(0.8f);
+    audioFilter->setEditor(true);
+    audioFilter->setParent(audioRoot.get());
     boost::shared_ptr<RBX::Soundscape::AudioChannelMixer> audioMixer =
         RBX::Creatable<RBX::Instance>::create<
             RBX::Soundscape::AudioChannelMixer>();
@@ -330,8 +338,14 @@ int main(int argc, char** argv)
         RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
     equalizerWire->setName("EqualizerWire");
     equalizerWire->setSourceInstance(audioEqualizer.get());
-    equalizerWire->setTargetInstance(audioMixer.get());
+    equalizerWire->setTargetInstance(audioFilter.get());
     equalizerWire->setParent(audioEqualizer.get());
+    boost::shared_ptr<RBX::Soundscape::Wire> filterWire =
+        RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
+    filterWire->setName("FilterWire");
+    filterWire->setSourceInstance(audioFilter.get());
+    filterWire->setTargetInstance(audioMixer.get());
+    filterWire->setParent(audioFilter.get());
     boost::shared_ptr<RBX::Soundscape::Wire> mixerWire =
         RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
     mixerWire->setName("MixerWire");
@@ -505,6 +519,8 @@ int main(int argc, char** argv)
     RBX::Soundscape::AudioEqualizer* decodedAudioEqualizer =
         decodedAudioRoot->findFirstChildOfType<
             RBX::Soundscape::AudioEqualizer>();
+    RBX::Soundscape::AudioFilter* decodedAudioFilter =
+        decodedAudioRoot->findFirstChildOfType<RBX::Soundscape::AudioFilter>();
     RBX::Soundscape::AudioChannelMixer* decodedAudioMixer =
         decodedAudioRoot->findFirstChildOfType<
             RBX::Soundscape::AudioChannelMixer>();
@@ -520,7 +536,7 @@ int main(int argc, char** argv)
         !decodedAudioDistortion || !decodedAudioTremolo ||
         !decodedAudioChorus || !decodedAudioFlanger ||
         !decodedAudioCompressor || !decodedAudioGate || !decodedAudioLimiter ||
-        !decodedAudioEqualizer ||
+        !decodedAudioEqualizer || !decodedAudioFilter ||
         !decodedAudioMixer || !decodedAudioSplitter ||
         decodedAudioMixer->getLayout() != RBX::Soundscape::AUDIO_CHANNEL_QUAD ||
         decodedAudioSplitter->getLayout() != RBX::Soundscape::AUDIO_CHANNEL_QUAD ||
@@ -587,6 +603,14 @@ int main(int argc, char** argv)
         decodedAudioEqualizer->getBypass() ||
         decodedAudioEqualizer->getConnectedWiresReflection("Input")->size() != 1 ||
         decodedAudioEqualizer->getConnectedWiresReflection("Output")->size() != 1 ||
+        decodedAudioFilter->getFilterType() !=
+            RBX::Soundscape::AUDIO_FILTER_LOWPASS_24DB ||
+        decodedAudioFilter->getFrequency() != 3200.0f ||
+        decodedAudioFilter->getGain() != -3.0f ||
+        decodedAudioFilter->getQ() != 0.8f ||
+        decodedAudioFilter->getEditor() || decodedAudioFilter->getBypass() ||
+        decodedAudioFilter->getConnectedWiresReflection("Input")->size() != 1 ||
+        decodedAudioFilter->getConnectedWiresReflection("Output")->size() != 1 ||
         !decodedAudioPlayer || decodedAudioPlayer->getAssetId() !=
             "rbxasset://sounds/uuhhh.mp3" ||
         decodedAudioPlayer->getAudioContent().getSourceType() !=

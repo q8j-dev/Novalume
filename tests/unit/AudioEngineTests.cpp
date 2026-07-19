@@ -726,6 +726,25 @@ int main()
             channelEnergy(equalizerMix, 0) < 1200.0f,
         "the graph equalizer must attenuate its authored low band");
 
+    Engine graphFilterEngine({.sampleRate = 48000, .channels = 2});
+    std::vector<float> filterImpulse(16384);
+    for (std::size_t index = 0; index < filterImpulse.size(); ++index)
+        filterImpulse[index] = index % 2 ? -1.0f : 1.0f;
+    const ClipHandle graphFilterClip = graphFilterEngine.createClip({
+        .sampleRate = 48000, .channels = 1, .samples = filterImpulse});
+    VoiceParameters graphFilterParameters;
+    graphFilterParameters.effects[0].type = VoiceEffectType::Filter;
+    graphFilterParameters.effects[0].parameters = {
+        4.0f, 1000.0f, 0.0f, 0.70710678f, 0.0f, 0.0f, 0.0f};
+    graphFilterParameters.effectCount = 1;
+    require(static_cast<bool>(graphFilterEngine.play(graphFilterClip,
+                graphFilterParameters)),
+        "a voice with a graph filter must start");
+    std::vector<float> filterMix(8192 * 2);
+    require(graphFilterEngine.mix(filterMix) &&
+            channelEnergy(filterMix, 0) < 10.0f,
+        "the graph low-pass filter must apply its authored cascade");
+
     Engine queuedEngine({.sampleRate = 48000, .channels = 2});
     require(queuedEngine.mixerTimeSeconds() == 0.0,
         "a fresh mixer clock must begin at zero");

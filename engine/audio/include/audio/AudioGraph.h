@@ -54,6 +54,22 @@ enum AudioChannelLayout
     AUDIO_CHANNEL_SURROUND_7_1_4 = 6,
 };
 
+enum AudioFilterType
+{
+    AUDIO_FILTER_PEAK = 0,
+    AUDIO_FILTER_LOW_SHELF = 1,
+    AUDIO_FILTER_HIGH_SHELF = 2,
+    AUDIO_FILTER_LOWPASS_12DB = 3,
+    AUDIO_FILTER_LOWPASS_24DB = 4,
+    AUDIO_FILTER_LOWPASS_48DB = 5,
+    AUDIO_FILTER_HIGHPASS_12DB = 6,
+    AUDIO_FILTER_HIGHPASS_24DB = 7,
+    AUDIO_FILTER_HIGHPASS_48DB = 8,
+    AUDIO_FILTER_BANDPASS = 9,
+    AUDIO_FILTER_NOTCH = 10,
+    AUDIO_FILTER_LOWPASS_6DB = 11,
+};
+
 class AudioNode
 {
 public:
@@ -451,6 +467,48 @@ private:
     float lowGain;
     float midGain;
     NumberRange midRange;
+};
+
+extern const char* const sAudioFilter;
+class AudioFilter final
+    : public DescribedCreatable<AudioFilter, Instance, sAudioFilter>
+    , public AudioNode
+{
+public:
+    AudioFilter();
+    bool getBypass() const;
+    void setBypass(bool value);
+    bool getEditor() const;
+    void setEditor(bool value);
+    AudioFilterType getFilterType() const;
+    void setFilterType(AudioFilterType value);
+    float getFrequency() const;
+    void setFrequency(float value);
+    float getGain() const;
+    void setGain(float value);
+    float getQ() const;
+    void setQ(float value);
+    float getGainAt(float frequency);
+    boost::shared_ptr<const Instances> getConnectedWiresReflection(std::string pin);
+    boost::shared_ptr<const Reflection::ValueArray> getInputPinsReflection();
+    boost::shared_ptr<const Reflection::ValueArray> getOutputPinsReflection();
+    std::vector<std::string> inputPins() const override;
+    std::vector<std::string> outputPins() const override;
+    Instance* audioNodeInstance() override { return this; }
+    const Instance* audioNodeInstance() const override { return this; }
+    void fireWiringChanged(bool connected, const std::string& pin,
+        const boost::shared_ptr<Instance>& wire,
+        const boost::shared_ptr<Instance>& instance) override
+    { wiringChangedSignal(connected, pin, wire, instance); }
+    rbx::signal<void(bool, std::string, boost::shared_ptr<Instance>,
+        boost::shared_ptr<Instance>)> wiringChangedSignal;
+private:
+    bool bypass;
+    bool editor;
+    AudioFilterType filterType;
+    float frequency;
+    float gain;
+    float q;
 };
 
 extern const char* const sAudioChannelMixer;

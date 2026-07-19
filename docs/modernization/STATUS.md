@@ -1281,3 +1281,11 @@ verification is complete and the user separately gives explicit permission.
   state splits the signal into three live bands without callback allocation;
   deterministic low-band attenuation, binary save exclusion, and the actual
   signed Player graph all pass.
+- Added the current `AudioFilter` contract with the exact twelve-value
+  `AudioFilterType` enum, bounded `Frequency`, `Gain`, and `Q`, bypass,
+  protected load-only/non-replicated `Editor`, standard graph wiring, and
+  `GetGainAt`. Its allocation-free per-voice implementation covers peak,
+  shelving, band-pass, notch, first-order low-pass, and cascaded 12/24/48 dB
+  low/high-pass responses with persistent channel state. High-frequency
+  rejection, binary round-trip and Editor exclusion, and the actual signed
+  Player graph are covered end to end.

@@ -218,6 +218,25 @@ AudioRoute findRoute(const AudioNode* node, float gain,
                 if (route.connected)
                     return route;
             }
+            else if (AudioFilter* filter =
+                         Instance::fastDynamicCast<AudioFilter>(target))
+            {
+                if (!filter->getBypass())
+                {
+                    if (effectCount >= effects.size())
+                        continue;
+                    Audio::VoiceEffect& effect = effects[effectCount++];
+                    effect.type = Audio::VoiceEffectType::Filter;
+                    effect.parameters = {
+                        static_cast<float>(filter->getFilterType()),
+                        filter->getFrequency(), filter->getGain(),
+                        filter->getQ(), 0.0f, 0.0f, 0.0f};
+                }
+                AudioRoute route = findRoute(filter, gain, effects,
+                    effectCount, visited);
+                if (route.connected)
+                    return route;
+            }
             else if (AudioChannelMixer* mixer =
                          Instance::fastDynamicCast<AudioChannelMixer>(target))
             {

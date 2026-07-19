@@ -245,6 +245,23 @@ template<> EnumDesc<RBX::Soundscape::AudioChannelLayout>::EnumDesc()
     addPair(RBX::Soundscape::AUDIO_CHANNEL_SURROUND_7_1_4, "Surround_7_1_4");
 }
 
+template<> EnumDesc<RBX::Soundscape::AudioFilterType>::EnumDesc()
+    : EnumDescriptor("AudioFilterType")
+{
+    addPair(RBX::Soundscape::AUDIO_FILTER_PEAK, "Peak");
+    addPair(RBX::Soundscape::AUDIO_FILTER_LOW_SHELF, "LowShelf");
+    addPair(RBX::Soundscape::AUDIO_FILTER_HIGH_SHELF, "HighShelf");
+    addPair(RBX::Soundscape::AUDIO_FILTER_LOWPASS_12DB, "Lowpass12dB");
+    addPair(RBX::Soundscape::AUDIO_FILTER_LOWPASS_24DB, "Lowpass24dB");
+    addPair(RBX::Soundscape::AUDIO_FILTER_LOWPASS_48DB, "Lowpass48dB");
+    addPair(RBX::Soundscape::AUDIO_FILTER_HIGHPASS_12DB, "Highpass12dB");
+    addPair(RBX::Soundscape::AUDIO_FILTER_HIGHPASS_24DB, "Highpass24dB");
+    addPair(RBX::Soundscape::AUDIO_FILTER_HIGHPASS_48DB, "Highpass48dB");
+    addPair(RBX::Soundscape::AUDIO_FILTER_BANDPASS, "Bandpass");
+    addPair(RBX::Soundscape::AUDIO_FILTER_NOTCH, "Notch");
+    addPair(RBX::Soundscape::AUDIO_FILTER_LOWPASS_6DB, "Lowpass6dB");
+}
+
 template<> RBX::Soundscape::EmitterPositionType&
 Variant::convert<RBX::Soundscape::EmitterPositionType>()
 {
@@ -266,6 +283,10 @@ Variant::convert<RBX::Soundscape::SimulationMode>()
 template<> RBX::Soundscape::AudioChannelLayout&
 Variant::convert<RBX::Soundscape::AudioChannelLayout>()
 { return genericConvert<RBX::Soundscape::AudioChannelLayout>(); }
+
+template<> RBX::Soundscape::AudioFilterType&
+Variant::convert<RBX::Soundscape::AudioFilterType>()
+{ return genericConvert<RBX::Soundscape::AudioFilterType>(); }
 
 } // namespace RBX::Reflection
 
@@ -294,6 +315,10 @@ template<> bool StringConverter<Soundscape::AudioChannelLayout>::convertToValue(
     const std::string& text, Soundscape::AudioChannelLayout& value)
 { return Reflection::EnumDesc<Soundscape::AudioChannelLayout>::singleton().convertToValue(text.c_str(), value); }
 
+template<> bool StringConverter<Soundscape::AudioFilterType>::convertToValue(
+    const std::string& text, Soundscape::AudioFilterType& value)
+{ return Reflection::EnumDesc<Soundscape::AudioFilterType>::singleton().convertToValue(text.c_str(), value); }
+
 } // namespace RBX
 
 namespace RBX::Soundscape {
@@ -309,6 +334,7 @@ const char* const sAudioCompressor = "AudioCompressor";
 const char* const sAudioGate = "AudioGate";
 const char* const sAudioLimiter = "AudioLimiter";
 const char* const sAudioEqualizer = "AudioEqualizer";
+const char* const sAudioFilter = "AudioFilter";
 const char* const sAudioChannelMixer = "AudioChannelMixer";
 const char* const sAudioChannelSplitter = "AudioChannelSplitter";
 const char* const sAudioEmitter = "AudioEmitter";
@@ -597,6 +623,44 @@ static Reflection::BoundFuncDesc<AudioEqualizer,
 static Reflection::EventDesc<AudioEqualizer, void(bool, std::string,
     boost::shared_ptr<Instance>, boost::shared_ptr<Instance>)>
     eventAudioEqualizerWiringChanged(&AudioEqualizer::wiringChangedSignal,
+        "WiringChanged", "connected", "pin", "wire", "instance",
+        Security::None);
+
+static Reflection::PropDescriptor<AudioFilter, bool> propAudioFilterBypass(
+    "Bypass", category_Behavior, &AudioFilter::getBypass,
+    &AudioFilter::setBypass);
+static Reflection::PropDescriptor<AudioFilter, bool> propAudioFilterEditor(
+    "Editor", category_Data, &AudioFilter::getEditor,
+    &AudioFilter::setEditor, Reflection::PropertyDescriptor::UI,
+    Security::Roblox);
+static Reflection::EnumPropDescriptor<AudioFilter, AudioFilterType>
+    propAudioFilterType("FilterType", category_Data,
+        &AudioFilter::getFilterType, &AudioFilter::setFilterType);
+static Reflection::PropDescriptor<AudioFilter, float> propAudioFilterFrequency(
+    "Frequency", category_Data, &AudioFilter::getFrequency,
+    &AudioFilter::setFrequency);
+static Reflection::PropDescriptor<AudioFilter, float> propAudioFilterGain(
+    "Gain", category_Data, &AudioFilter::getGain, &AudioFilter::setGain);
+static Reflection::PropDescriptor<AudioFilter, float> propAudioFilterQ(
+    "Q", category_Data, &AudioFilter::getQ, &AudioFilter::setQ);
+static Reflection::BoundFuncDesc<AudioFilter, float(float)>
+    funcAudioFilterGainAt(&AudioFilter::getGainAt, "GetGainAt", "frequency",
+        Security::None);
+static Reflection::BoundFuncDesc<AudioFilter,
+    boost::shared_ptr<const Instances>(std::string)>
+    funcAudioFilterConnectedWires(&AudioFilter::getConnectedWiresReflection,
+        "GetConnectedWires", "pin", Security::None);
+static Reflection::BoundFuncDesc<AudioFilter,
+    boost::shared_ptr<const Reflection::ValueArray>()>
+    funcAudioFilterInputPins(&AudioFilter::getInputPinsReflection,
+        "GetInputPins", Security::None);
+static Reflection::BoundFuncDesc<AudioFilter,
+    boost::shared_ptr<const Reflection::ValueArray>()>
+    funcAudioFilterOutputPins(&AudioFilter::getOutputPinsReflection,
+        "GetOutputPins", Security::None);
+static Reflection::EventDesc<AudioFilter, void(bool, std::string,
+    boost::shared_ptr<Instance>, boost::shared_ptr<Instance>)>
+    eventAudioFilterWiringChanged(&AudioFilter::wiringChangedSignal,
         "WiringChanged", "connected", "pin", "wire", "instance",
         Security::None);
 
@@ -1542,6 +1606,163 @@ boost::shared_ptr<const Reflection::ValueArray>
 AudioEqualizer::getOutputPinsReflection() { return getOutputPins(); }
 std::vector<std::string> AudioEqualizer::inputPins() const { return {"Input"}; }
 std::vector<std::string> AudioEqualizer::outputPins() const { return {"Output"}; }
+
+AudioFilter::AudioFilter()
+    : DescribedCreatable<AudioFilter, Instance, sAudioFilter>(sAudioFilter)
+    , bypass(false)
+    , editor(false)
+    , filterType(AUDIO_FILTER_PEAK)
+    , frequency(1000.0f)
+    , gain(0.0f)
+    , q(0.70710678f)
+{
+}
+bool AudioFilter::getBypass() const { return bypass; }
+bool AudioFilter::getEditor() const { return editor; }
+AudioFilterType AudioFilter::getFilterType() const { return filterType; }
+float AudioFilter::getFrequency() const { return frequency; }
+float AudioFilter::getGain() const { return gain; }
+float AudioFilter::getQ() const { return q; }
+void AudioFilter::setBypass(bool value)
+{
+    if (bypass == value) return;
+    bypass = value;
+    raisePropertyChanged(propAudioFilterBypass);
+}
+void AudioFilter::setEditor(bool value)
+{
+    if (editor == value) return;
+    editor = value;
+    raisePropertyChanged(propAudioFilterEditor);
+}
+void AudioFilter::setFilterType(AudioFilterType value)
+{
+    if (value < AUDIO_FILTER_PEAK || value > AUDIO_FILTER_LOWPASS_6DB)
+        throw std::runtime_error("AudioFilter.FilterType is invalid");
+    if (filterType == value) return;
+    filterType = value;
+    raisePropertyChanged(propAudioFilterType);
+}
+namespace {
+void setFiniteFilterValue(AudioFilter* filter, float& field, float value,
+    float minimum, float maximum,
+    const Reflection::PropertyDescriptor& descriptor, const char* name)
+{
+    if (!std::isfinite(value))
+        throw std::runtime_error(std::string("AudioFilter.") + name +
+            " must be finite");
+    value = std::clamp(value, minimum, maximum);
+    if (field == value) return;
+    field = value;
+    filter->raisePropertyChanged(descriptor);
+}
+struct FilterResponseCoefficients
+{
+    double b0, b1, b2, a1, a2;
+};
+FilterResponseCoefficients filterResponseCoefficients(AudioFilterType type,
+    double frequency, double gain, double q, double sampleRate)
+{
+    const double omega = 6.2831853071795864769 * frequency / sampleRate;
+    const double cosine = std::cos(omega);
+    const double sine = std::sin(omega);
+    const double alpha = sine / (2.0 * q);
+    const double amplitude = std::pow(10.0, gain / 40.0);
+    double b0 = 1.0, b1 = 0.0, b2 = 0.0, a0 = 1.0, a1 = 0.0, a2 = 0.0;
+    switch (type)
+    {
+    case AUDIO_FILTER_PEAK:
+        b0 = 1.0 + alpha * amplitude; b1 = -2.0 * cosine;
+        b2 = 1.0 - alpha * amplitude; a0 = 1.0 + alpha / amplitude;
+        a1 = -2.0 * cosine; a2 = 1.0 - alpha / amplitude; break;
+    case AUDIO_FILTER_LOW_SHELF: {
+        const double root = 2.0 * std::sqrt(amplitude) * alpha;
+        b0 = amplitude * ((amplitude + 1.0) - (amplitude - 1.0) * cosine + root);
+        b1 = 2.0 * amplitude * ((amplitude - 1.0) - (amplitude + 1.0) * cosine);
+        b2 = amplitude * ((amplitude + 1.0) - (amplitude - 1.0) * cosine - root);
+        a0 = (amplitude + 1.0) + (amplitude - 1.0) * cosine + root;
+        a1 = -2.0 * ((amplitude - 1.0) + (amplitude + 1.0) * cosine);
+        a2 = (amplitude + 1.0) + (amplitude - 1.0) * cosine - root; break; }
+    case AUDIO_FILTER_HIGH_SHELF: {
+        const double root = 2.0 * std::sqrt(amplitude) * alpha;
+        b0 = amplitude * ((amplitude + 1.0) + (amplitude - 1.0) * cosine + root);
+        b1 = -2.0 * amplitude * ((amplitude - 1.0) + (amplitude + 1.0) * cosine);
+        b2 = amplitude * ((amplitude + 1.0) + (amplitude - 1.0) * cosine - root);
+        a0 = (amplitude + 1.0) - (amplitude - 1.0) * cosine + root;
+        a1 = 2.0 * ((amplitude - 1.0) - (amplitude + 1.0) * cosine);
+        a2 = (amplitude + 1.0) - (amplitude - 1.0) * cosine - root; break; }
+    case AUDIO_FILTER_HIGHPASS_12DB:
+    case AUDIO_FILTER_HIGHPASS_24DB:
+    case AUDIO_FILTER_HIGHPASS_48DB:
+        b0 = (1.0 + cosine) * 0.5; b1 = -(1.0 + cosine);
+        b2 = b0; a0 = 1.0 + alpha; a1 = -2.0 * cosine;
+        a2 = 1.0 - alpha; break;
+    case AUDIO_FILTER_BANDPASS:
+        b0 = alpha; b1 = 0.0; b2 = -alpha; a0 = 1.0 + alpha;
+        a1 = -2.0 * cosine; a2 = 1.0 - alpha; break;
+    case AUDIO_FILTER_NOTCH:
+        b0 = 1.0; b1 = -2.0 * cosine; b2 = 1.0; a0 = 1.0 + alpha;
+        a1 = -2.0 * cosine; a2 = 1.0 - alpha; break;
+    default:
+        b0 = (1.0 - cosine) * 0.5; b1 = 1.0 - cosine; b2 = b0;
+        a0 = 1.0 + alpha; a1 = -2.0 * cosine; a2 = 1.0 - alpha; break;
+    }
+    return {b0 / a0, b1 / a0, b2 / a0, a1 / a0, a2 / a0};
+}
+}
+void AudioFilter::setFrequency(float value)
+{ setFiniteFilterValue(this, frequency, value, 20.0f, 22000.0f,
+    propAudioFilterFrequency, "Frequency"); }
+void AudioFilter::setGain(float value)
+{ setFiniteFilterValue(this, gain, value, -30.0f, 30.0f,
+    propAudioFilterGain, "Gain"); }
+void AudioFilter::setQ(float value)
+{ setFiniteFilterValue(this, q, value, 0.1f, 10.0f,
+    propAudioFilterQ, "Q"); }
+float AudioFilter::getGainAt(float queriedFrequency)
+{
+    if (!std::isfinite(queriedFrequency) || queriedFrequency < 0.0f)
+        throw std::runtime_error("AudioFilter.GetGainAt frequency must be finite and nonnegative");
+    if (bypass)
+        return 0.0f;
+    constexpr double sampleRate = 48000.0;
+    const double query = std::clamp<double>(queriedFrequency, 0.0,
+        sampleRate * 0.5);
+    if (filterType == AUDIO_FILTER_LOWPASS_6DB)
+    {
+        const double alpha = 1.0 - std::exp(-6.2831853071795864769 *
+            frequency / sampleRate);
+        const double omega = 6.2831853071795864769 * query / sampleRate;
+        const double denominator = std::sqrt(1.0 + (1.0 - alpha) *
+            (1.0 - alpha) - 2.0 * (1.0 - alpha) * std::cos(omega));
+        return static_cast<float>(20.0 * std::log10(std::max(alpha /
+            denominator, 1.0e-12)));
+    }
+    const FilterResponseCoefficients c = filterResponseCoefficients(filterType,
+        std::min<double>(frequency, sampleRate * 0.49), gain, q, sampleRate);
+    const double omega = 6.2831853071795864769 * query / sampleRate;
+    const double c1 = std::cos(omega), s1 = std::sin(omega);
+    const double c2 = std::cos(2.0 * omega), s2 = std::sin(2.0 * omega);
+    const double numerator = std::hypot(c.b0 + c.b1 * c1 + c.b2 * c2,
+        -c.b1 * s1 - c.b2 * s2);
+    const double denominator = std::hypot(1.0 + c.a1 * c1 + c.a2 * c2,
+        -c.a1 * s1 - c.a2 * s2);
+    int stages = (filterType == AUDIO_FILTER_LOWPASS_24DB ||
+        filterType == AUDIO_FILTER_HIGHPASS_24DB) ? 2 :
+        (filterType == AUDIO_FILTER_LOWPASS_48DB ||
+        filterType == AUDIO_FILTER_HIGHPASS_48DB) ? 4 : 1;
+    return static_cast<float>(20.0 * stages * std::log10(std::max(
+        numerator / std::max(denominator, 1.0e-12), 1.0e-12)));
+}
+boost::shared_ptr<const Instances>
+AudioFilter::getConnectedWiresReflection(std::string pin)
+{ return getConnectedWires(pin); }
+boost::shared_ptr<const Reflection::ValueArray>
+AudioFilter::getInputPinsReflection() { return getInputPins(); }
+boost::shared_ptr<const Reflection::ValueArray>
+AudioFilter::getOutputPinsReflection() { return getOutputPins(); }
+std::vector<std::string> AudioFilter::inputPins() const { return {"Input"}; }
+std::vector<std::string> AudioFilter::outputPins() const { return {"Output"}; }
 
 namespace {
 const std::vector<std::string>& channelPins()
