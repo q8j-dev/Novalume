@@ -18,6 +18,9 @@
 #include FT_LCD_FILTER_H
 #include <hb-ft.h>
 #include <utf8proc.h>
+#include <SheenBidi/SheenBidi.h>
+#include <algorithm>
+#include <limits>
 
 
 LOGGROUP(Graphics)
@@ -79,6 +82,8 @@ FASTINTVARIABLE(FontSizePadding, 1)
 				unsigned faceIndex;
                 unsigned sourceCharacter;
                 unsigned cluster;
+				unsigned clusterEnd;
+				bool rightToLeft;
                 int xadvance;
                 int xoffset;
                 int yoffset;
@@ -180,18 +185,59 @@ FASTINTVARIABLE(FontSizePadding, 1)
 					return;
 				}
 
+				std::vector<unsigned> bidiInput(input);
+				for (size_t i = 0; i < bidiInput.size(); ++i)
+					if ((bidiInput[i] & NAMED_GLYPH_MASK) || bidiInput[i] == '\1')
+						bidiInput[i] = 0xfffcu;
+				std::vector<SBLevel> levels(input.size(), 0);
+				SBCodepointSequence sequence = {
+					SBStringEncodingUTF32, bidiInput.data(), bidiInput.size()};
+				SBAlgorithmRef algorithm = SBAlgorithmCreate(&sequence);
+				if (algorithm)
+				{
+					SBUInteger paragraphOffset = 0;
+					while (paragraphOffset < input.size())
+					{
+						SBParagraphRef paragraph = SBAlgorithmCreateParagraph(algorithm,
+							paragraphOffset, input.size() - paragraphOffset, SBLevelDefaultLTR);
+						if (!paragraph)
+							break;
+						const SBUInteger paragraphLength = SBParagraphGetLength(paragraph);
+						const SBLevel* paragraphLevels = SBParagraphGetLevelsPtr(paragraph);
+						for (SBUInteger i = 0; i < paragraphLength; ++i)
+							levels[paragraphOffset + i] = paragraphLevels[i];
+						SBParagraphRelease(paragraph);
+						if (paragraphLength == 0)
+							break;
+						paragraphOffset += paragraphLength;
+					}
+					SBAlgorithmRelease(algorithm);
+				}
+
 				for (size_t runStart = 0; runStart < input.size();)
 				{
 					if (input[runStart] == '\n' || input[runStart] == '\1' || (input[runStart] & NAMED_GLYPH_MASK))
 					{
-						output->push_back(input[runStart++]);
+						if (input[runStart] & NAMED_GLYPH_MASK)
+							output->push_back(input[runStart]);
+						else
+						{
+							unsigned token = SHAPED_GLYPH_MASK | (nextShapedGlyph++ & 0x3fffffffu);
+							ShapedMetric metric = {0, 0, input[runStart], static_cast<unsigned>(runStart),
+								static_cast<unsigned>(runStart + 1), false, 0, 0, 0};
+							shapedMetricCache[token] = metric;
+							output->push_back(token);
+						}
+						++runStart;
 						continue;
 					}
 
 					size_t runEnd = runStart;
 					const unsigned faceIndex = getFaceIndex(input[runStart]);
+					const bool rightToLeft = (levels[runStart] & 1u) != 0;
 					while (runEnd < input.size() && input[runEnd] != '\n' && input[runEnd] != '\1' &&
-						!(input[runEnd] & NAMED_GLYPH_MASK) && getFaceIndex(input[runEnd]) == faceIndex)
+						!(input[runEnd] & NAMED_GLYPH_MASK) && getFaceIndex(input[runEnd]) == faceIndex &&
+						((levels[runEnd] & 1u) != 0) == rightToLeft)
 						++runEnd;
 					FT_Face runFace = getFace(faceIndex);
 					hb_font_t* runFont = getHbFont(faceIndex);
@@ -207,20 +253,32 @@ FASTINTVARIABLE(FontSizePadding, 1)
 					hb_buffer_t* buffer = hb_buffer_create();
 					hb_buffer_add_codepoints(buffer, reinterpret_cast<const hb_codepoint_t*>(input.data()),
 						static_cast<int>(input.size()), static_cast<unsigned>(runStart), static_cast<int>(runEnd - runStart));
+					hb_buffer_set_direction(buffer, rightToLeft ? HB_DIRECTION_RTL : HB_DIRECTION_LTR);
 					hb_buffer_guess_segment_properties(buffer);
 					hb_shape(runFont, buffer, NULL, 0);
 
 					unsigned count = 0;
 					const hb_glyph_info_t* infos = hb_buffer_get_glyph_infos(buffer, &count);
 					const hb_glyph_position_t* positions = hb_buffer_get_glyph_positions(buffer, &count);
+					std::vector<unsigned> clusters;
+					clusters.reserve(count);
 					for (unsigned i = 0; i < count; ++i)
+						clusters.push_back(infos[i].cluster);
+					std::sort(clusters.begin(), clusters.end());
+					clusters.erase(std::unique(clusters.begin(), clusters.end()), clusters.end());
+					for (unsigned logicalIndex = 0; logicalIndex < count; ++logicalIndex)
 					{
+						const unsigned i = rightToLeft ? count - logicalIndex - 1 : logicalIndex;
 						const unsigned cluster = infos[i].cluster;
+						std::vector<unsigned>::const_iterator nextCluster =
+							std::upper_bound(clusters.begin(), clusters.end(), cluster);
+						const unsigned clusterEnd = nextCluster == clusters.end() ?
+							static_cast<unsigned>(runEnd) : *nextCluster;
 						const unsigned source = cluster < input.size() ? input[cluster] : 0xfffdu;
 						unsigned token = SHAPED_GLYPH_MASK | (nextShapedGlyph++ & 0x3fffffffu);
 						if ((token & 0x3fffffffu) == 0)
 							token = SHAPED_GLYPH_MASK | (nextShapedGlyph++ & 0x3fffffffu);
-						ShapedMetric metric = {infos[i].codepoint, faceIndex, source, cluster,
+						ShapedMetric metric = {infos[i].codepoint, faceIndex, source, cluster, clusterEnd, rightToLeft,
 							roundToPixelsSigned(positions[i].x_advance), roundToPixelsSigned(positions[i].x_offset),
 							roundToPixelsSigned(positions[i].y_offset)};
 						shapedMetricCache[token] = metric;
@@ -241,6 +299,16 @@ FASTINTVARIABLE(FontSizePadding, 1)
 			{
 				ShapedMetricMap::const_iterator it = shapedMetricCache.find(character);
 				return it == shapedMetricCache.end() ? fallback : it->second.cluster;
+			}
+			unsigned getSourceEnd(unsigned character, unsigned fallback) const
+			{
+				ShapedMetricMap::const_iterator it = shapedMetricCache.find(character);
+				return it == shapedMetricCache.end() ? fallback + 1 : it->second.clusterEnd;
+			}
+			bool isRightToLeft(unsigned character) const
+			{
+				ShapedMetricMap::const_iterator it = shapedMetricCache.find(character);
+				return it != shapedMetricCache.end() && it->second.rightToLeft;
 			}
 
             const shared_ptr<Texture>& getTexture() const { return textureAtlas ? textureAtlas->getTexture() : errorTex; }
@@ -724,6 +792,7 @@ FASTINTVARIABLE(FontSizePadding, 1)
             Vector2int16 intAvailableSpace = Vector2int16(availableSpace / scale);
 
             Vector2int16 intSize = layout(shapedUnicode, &lines, height, intAvailableSpace, useAvailableSpace, false, NULL);
+			reorderLines(stringUnicode, &lines);
             unsigned ascender = glyphProvider->getSizeData(height).ascender;
 
             float startx, starty;
@@ -758,6 +827,7 @@ FASTINTVARIABLE(FontSizePadding, 1)
 			std::vector<unsigned> shapedUnicode;
 			glyphProvider->shape(stringUnicode, height, &shapedUnicode);
 			Vector2int16 intSize = layoutRatio(shapedUnicode, &lines, height, availableSpace);
+			reorderLines(stringUnicode, &lines);
 
 			// ratio is the smaller one from XY ratios to make text fit
 			float floatIntSizeRatio = std::min((float)availableSpace.x / (float)intSize.x, (float)availableSpace.y / (float)intSize.y);
@@ -834,6 +904,7 @@ FASTINTVARIABLE(FontSizePadding, 1)
 
 			Vector2int16 intAvailableSpace = Vector2int16(availableSpace / scale);
 			Vector2int16 intSize = layout(shapedUnicode, &lines, height, intAvailableSpace, useAvailableSpace, false, NULL);
+			reorderLines(stringUnicode, &lines);
 
 			float startx = round_int(position.x);
 			float starty = fontAdjustY(round_int(position.y), intSize.y, scale, yalign);
@@ -869,15 +940,21 @@ FASTINTVARIABLE(FontSizePadding, 1)
 						{
 							// Select current glyph if we're within 2/3 of the advance
 							if (linex + x * scale - glyph.xadvance * scale * 0.33f > localCursor.x)
-								return glyphProvider->getSourceCluster(unicodeChar, static_cast<unsigned>(i));
+								return glyphProvider->isRightToLeft(unicodeChar) ?
+									glyphProvider->getSourceEnd(unicodeChar, static_cast<unsigned>(i)) :
+									glyphProvider->getSourceCluster(unicodeChar, static_cast<unsigned>(i));
 							else
-								return glyphProvider->getSourceCluster(unicodeChar, static_cast<unsigned>(i)) + 1;
+								return glyphProvider->isRightToLeft(unicodeChar) ?
+									glyphProvider->getSourceCluster(unicodeChar, static_cast<unsigned>(i)) :
+									glyphProvider->getSourceEnd(unicodeChar, static_cast<unsigned>(i));
 						}
                         previousChar = unicodeChar;
 					}
 
 					if (line.length)
-						return glyphProvider->getSourceCluster(line.data[line.length - 1], static_cast<unsigned>(line.length - 1)) + 1;
+						return glyphProvider->isRightToLeft(line.data[line.length - 1]) ?
+							glyphProvider->getSourceCluster(line.data[line.length - 1], static_cast<unsigned>(line.length - 1)) :
+							glyphProvider->getSourceEnd(line.data[line.length - 1], static_cast<unsigned>(line.length - 1));
 					return 0;
 				}
 			}
@@ -907,12 +984,28 @@ FASTINTVARIABLE(FontSizePadding, 1)
 			return Vector2(intSize) * scale;
 		}
 
-		template <typename GlyphLine> static inline void pushLine(std::vector<GlyphLine>* lines, const std::vector<unsigned>& stringUnicode, int lineStart, int lineEnd, int yoffset, int width)
+		template <typename GlyphLine> static inline void pushLine(std::vector<GlyphLine>* lines,
+			const std::vector<unsigned>& stringUnicode, int lineStart, int lineEnd,
+			int yoffset, int width, const GlyphProvider* glyphProvider)
 		{
 			if (lines)
 			{
-					GlyphLine line = {stringUnicode.data() + lineStart,
-                        static_cast<size_t>(lineEnd - lineStart), yoffset, width};
+				GlyphLine line;
+				line.data.assign(stringUnicode.begin() + lineStart, stringUnicode.begin() + lineEnd);
+				line.length = line.data.size();
+				line.yoffset = yoffset;
+				line.width = width;
+				line.sourceStart = std::numeric_limits<unsigned>::max();
+				line.sourceEnd = 0;
+				for (size_t i = 0; i < line.data.size(); ++i)
+				{
+					line.sourceStart = std::min(line.sourceStart,
+						glyphProvider->getSourceCluster(line.data[i], static_cast<unsigned>(lineStart + i)));
+					line.sourceEnd = std::max(line.sourceEnd,
+						glyphProvider->getSourceEnd(line.data[i], static_cast<unsigned>(lineStart + i)));
+				}
+				if (line.data.empty())
+					line.sourceStart = line.sourceEnd = static_cast<unsigned>(lineStart);
 
 				lines->push_back(line);
 			}
@@ -1057,6 +1150,77 @@ FASTINTVARIABLE(FontSizePadding, 1)
 			}
         }
 
+		void TypesetterDynamic::reorderLines(const std::vector<unsigned>& stringUnicode,
+			std::vector<GlyphLine>* lines) const
+		{
+			if (!lines || lines->empty() || stringUnicode.empty())
+				return;
+
+			std::vector<unsigned> bidiInput(stringUnicode);
+			for (size_t i = 0; i < bidiInput.size(); ++i)
+				if ((bidiInput[i] & NAMED_GLYPH_MASK) || bidiInput[i] == '\1')
+					bidiInput[i] = 0xfffcu;
+			SBCodepointSequence sequence = {
+				SBStringEncodingUTF32, bidiInput.data(), bidiInput.size()};
+			SBAlgorithmRef algorithm = SBAlgorithmCreate(&sequence);
+			if (!algorithm)
+				return;
+
+			for (size_t lineIndex = 0; lineIndex < lines->size(); ++lineIndex)
+			{
+				GlyphLine& line = (*lines)[lineIndex];
+				if (line.data.size() < 2 || line.sourceStart >= line.sourceEnd)
+					continue;
+				unsigned paragraphStart = line.sourceStart;
+				while (paragraphStart > 0 && stringUnicode[paragraphStart - 1] != '\n')
+					--paragraphStart;
+				unsigned paragraphEnd = line.sourceEnd;
+				while (paragraphEnd < stringUnicode.size() && stringUnicode[paragraphEnd] != '\n')
+					++paragraphEnd;
+				if (paragraphEnd < stringUnicode.size())
+					++paragraphEnd;
+
+				SBParagraphRef paragraph = SBAlgorithmCreateParagraph(algorithm, paragraphStart,
+					paragraphEnd - paragraphStart, SBLevelDefaultLTR);
+				if (!paragraph)
+					continue;
+				SBLineRef bidiLine = SBParagraphCreateLine(paragraph, line.sourceStart,
+					line.sourceEnd - line.sourceStart);
+				if (!bidiLine)
+				{
+					SBParagraphRelease(paragraph);
+					continue;
+				}
+
+				std::vector<unsigned> visual;
+				visual.reserve(line.data.size());
+				const SBRun* runs = SBLineGetRunsPtr(bidiLine);
+				const SBUInteger runCount = SBLineGetRunCount(bidiLine);
+				for (SBUInteger runIndex = 0; runIndex < runCount; ++runIndex)
+				{
+					std::vector<unsigned> runTokens;
+					const unsigned runStart = static_cast<unsigned>(runs[runIndex].offset);
+					const unsigned runEnd = runStart + static_cast<unsigned>(runs[runIndex].length);
+					for (size_t tokenIndex = 0; tokenIndex < line.data.size(); ++tokenIndex)
+					{
+						const unsigned cluster = glyphProvider->getSourceCluster(
+							line.data[tokenIndex], line.sourceStart + static_cast<unsigned>(tokenIndex));
+						if (cluster >= runStart && cluster < runEnd)
+							runTokens.push_back(line.data[tokenIndex]);
+					}
+					if ((runs[runIndex].level & 1u) != 0)
+						std::reverse(runTokens.begin(), runTokens.end());
+					visual.insert(visual.end(), runTokens.begin(), runTokens.end());
+				}
+				if (visual.size() == line.data.size())
+					line.data.swap(visual);
+
+				SBLineRelease(bidiLine);
+				SBParagraphRelease(paragraph);
+			}
+			SBAlgorithmRelease(algorithm);
+		}
+
 		Vector2int16 TypesetterDynamic::layout(const std::vector<unsigned>& stringUnicode, std::vector<GlyphLine>* lines, int size, const Vector2int16& availableSpace, bool useAvailableSpace, bool onlyProperFit, bool* textFits) const
 		{
 			int x = 0, y = 0;
@@ -1088,7 +1252,7 @@ FASTINTVARIABLE(FontSizePadding, 1)
                 if (sourceCharacter == '\n')
                 {
                 	// hard line break
-                	pushLine(lines, stringUnicode, lineStart, i, y, x);
+					pushLine(lines, stringUnicode, lineStart, i, y, x, glyphProvider);
 
                 	lineStart = i + 1;
                 	lineMaxWidth = std::max(lineMaxWidth, x);
@@ -1134,7 +1298,7 @@ FASTINTVARIABLE(FontSizePadding, 1)
                     if (wordWidth <= availableSpace.x)
                     {
                         // word fits on next line; move it there, discard whitespace
-                        pushLine(lines, stringUnicode, lineStart, wordStart, y, x - wordWidth - whitespaceWidth);
+                        pushLine(lines, stringUnicode, lineStart, wordStart, y, x - wordWidth - whitespaceWidth, glyphProvider);
 
                         lineStart = wordStart;
                         lineMaxWidth = std::max(lineMaxWidth, x - wordWidth - whitespaceWidth);
@@ -1153,7 +1317,7 @@ FASTINTVARIABLE(FontSizePadding, 1)
                         }
 
                         // word does not fit, cut
-                        pushLine(lines, stringUnicode, lineStart, i, y, x - xoffset);
+                        pushLine(lines, stringUnicode, lineStart, i, y, x - xoffset, glyphProvider);
 
                         lineStart = i;
                         lineMaxWidth = std::max(lineMaxWidth, x - xoffset);
@@ -1171,7 +1335,7 @@ FASTINTVARIABLE(FontSizePadding, 1)
             }
 
 			// last line
-			pushLine(lines, stringUnicode, lineStart, stringUnicode.size(), y, x);
+			pushLine(lines, stringUnicode, lineStart, stringUnicode.size(), y, x, glyphProvider);
 
 			lineMaxWidth = std::max(lineMaxWidth, x);
 

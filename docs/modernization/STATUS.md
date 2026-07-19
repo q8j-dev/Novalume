@@ -498,9 +498,15 @@ the final return; it is not replaced or treated as accepted while deferred.
   the glyph atlas key bounded by face/glyph/size rather than transient shaped
   tokens. A native contract proves Latin ligatures, canonical combining-mark
   metrics, malformed input, deterministic repeated shaping, Arabic contextual
-  shaping, and a Devanagari conjunct. Full UAX #9 mixed-direction line
-  reordering and line-edge contextual reshaping remain required for text
-  acceptance.
+  shaping, and a Devanagari conjunct. Pinned static SheenBidi 3.0.0 now applies
+  the full Unicode Bidirectional Algorithm to each paragraph and the L1/L2
+  visual run order to each bounded line; HarfBuzz receives each resolved run's
+  direction, and caret traversal maps visual RTL edges back to logical source
+  clusters. The contract additionally proves mixed Latin/Hebrew/number caret
+  reordering and bounded mixed-direction wrapping, and the signed packaged
+  Player passes its live Metal baseplate render with the new text stack.
+  Contextual reshaping at automatically inserted line edges remains required
+  for final text acceptance.
 - Isolated macOS clipboard access in `platform/macos` behind the shared platform
   contract instead of compiling AppKit syntax into DataModel C++.
 - Added a real main-framebuffer contract to the bgfx backend using native pixel

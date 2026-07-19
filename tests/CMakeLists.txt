@@ -29,10 +29,12 @@ target_compile_options(rbx-text-shaping-tests PRIVATE
 set(RBX_TEXT_SHAPING_FALLBACK_ARGS)
 if(RBX_PLAYER_REFERENCE_ROOT AND EXISTS
     "${RBX_PLAYER_REFERENCE_ROOT}/content/fonts/NotoNaskhArabicUI-Regular.ttf" AND EXISTS
-    "${RBX_PLAYER_REFERENCE_ROOT}/content/fonts/NotoSansDevanagariUI-Regular.ttf")
+    "${RBX_PLAYER_REFERENCE_ROOT}/content/fonts/NotoSansDevanagariUI-Regular.ttf" AND EXISTS
+    "${RBX_PLAYER_REFERENCE_ROOT}/content/fonts/Arimo-Regular.ttf")
     list(APPEND RBX_TEXT_SHAPING_FALLBACK_ARGS
         "${RBX_PLAYER_REFERENCE_ROOT}/content/fonts/NotoNaskhArabicUI-Regular.ttf"
-        "${RBX_PLAYER_REFERENCE_ROOT}/content/fonts/NotoSansDevanagariUI-Regular.ttf")
+        "${RBX_PLAYER_REFERENCE_ROOT}/content/fonts/NotoSansDevanagariUI-Regular.ttf"
+        "${RBX_PLAYER_REFERENCE_ROOT}/content/fonts/Arimo-Regular.ttf")
 endif()
 add_test(NAME text-shaping-contract
     COMMAND rbx-text-shaping-tests

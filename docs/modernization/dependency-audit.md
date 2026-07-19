@@ -1,7 +1,7 @@
 # Dependency modernization audit
 
 The named engine graph now includes bgfx/bx/bimg, miniaudio, FreeType,
-HarfBuzz, utf8proc, GameNetworkingSockets, protobuf, Abseil, and the platform crypto provider. It
+HarfBuzz, utf8proc, SheenBidi, GameNetworkingSockets, protobuf, Abseil, and the platform crypto provider. It
 does not link the historical FMOD, RakNet, VMProtect, Qt, XULRunner, libwww,
 CAB/DirectX SDK, Mesa, old VR SDK, or Breakpad trees. The foundation Player
 executable still does not link every named engine archive, so this statement is
@@ -15,7 +15,7 @@ about the active engine build graph, not completed Player integration.
 | VMProtect | Excluded | No replacement; not appropriate for portable default runtime |
 | Qt/WebKit/XULRunner | Excluded with Studio/browser tooling | Native/portable host and existing CoreScript UI path |
 | libwww/old curl/TLS | Excluded | Current curl/TLS only when networking module migrates; offline default |
-| historical FreeType | Not in new graph | Replaced by immutable FreeType 2.14.3 and HarfBuzz 14.2.1 static targets plus utf8proc 2.11.3/Unicode 17; full shaping, bidi, and fallback acceptance remains |
+| historical FreeType | Not in new graph | Replaced by immutable FreeType 2.14.3, HarfBuzz 14.2.1, utf8proc 2.11.3/Unicode 17, and SheenBidi 3.0.0 static targets; full text acceptance remains |
 | historical Bullet | Not in new graph | Current Bullet adapter planned after simulation target split |
 | Breakpad | Excluded | Crashpad or native crash handling later, opt-in and no endpoint by default |
 | bgfx/bx/bimg | Included from official immutable commits | BSD-2-Clause; exact pins in `RbxDependencies.cmake` |

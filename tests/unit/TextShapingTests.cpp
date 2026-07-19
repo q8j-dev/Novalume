@@ -60,6 +60,32 @@ int main(int argc, char** argv)
             return fail("Indic fallback face did not apply conjunct shaping");
     }
 
+    if (fallbackPaths.size() >= 3)
+    {
+        const std::string mixed = "abc \xd7\x90\xd7\x91\xd7\x92 123";
+        const RBX::Vector2 mixedSize = typesetter.measure(mixed, 32.0f, unconstrained, nullptr);
+        bool observedVisualReordering = false;
+        int previousCaret = -1;
+        for (int x = 0; x <= static_cast<int>(std::ceil(mixedSize.x)); ++x)
+        {
+            const int caret = typesetter.getCursorPositionInText(mixed, RBX::Vector2::zero(), 32.0f,
+                RBX::Text::XALIGN_LEFT, RBX::Text::YALIGN_TOP, unconstrained,
+                RBX::Rotation2D(), RBX::Vector2(static_cast<float>(x), 1.0f));
+            if (caret < 0 || caret > 11)
+                return fail("mixed-direction caret escaped the logical source range");
+            if (previousCaret >= 0 && caret < previousCaret)
+                observedVisualReordering = true;
+            previousCaret = caret;
+        }
+        if (!observedVisualReordering)
+            return fail("mixed LTR/RTL line did not expose visual-order caret traversal");
+
+        const RBX::Vector2 wrapped = typesetter.measure(mixed, 32.0f,
+            RBX::Vector2(mixedSize.x * 0.55f, 256.0f), nullptr);
+        if (!(wrapped.y >= 64.0f))
+            return fail("mixed-direction text did not retain bounded line wrapping");
+    }
+
     const RBX::Vector2 first = typesetter.measure("office e\xcc\x81", 32.0f, unconstrained, nullptr);
     for (int i = 0; i < 1000; ++i)
     {

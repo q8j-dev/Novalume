@@ -73,11 +73,13 @@ namespace RBX
 
 			struct GlyphLine
 			{
-				const unsigned* data;
+				std::vector<unsigned> data;
 				size_t length;
 
 				int yoffset;
 				int width;
+				unsigned sourceStart;
+				unsigned sourceEnd;
 			};
 
 			float legacyHeightScale;
@@ -91,6 +93,8 @@ namespace RBX
 			Vector2 measureLining(std::vector<GlyphLine>& lines, unsigned size) const;
 
             void decodeUTF8(const std::string& string, std::vector<unsigned>* out) const;
+			void reorderLines(const std::vector<unsigned>& stringUnicode,
+				std::vector<GlyphLine>* lines) const;
 
 			Vector2 drawScaledImpl(
 				Adorn*				adorn,

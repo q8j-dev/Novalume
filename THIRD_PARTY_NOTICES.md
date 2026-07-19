@@ -17,6 +17,7 @@ expanded as audio, text, serialization, and other replacements are integrated.
 | FreeType 2.14.3 | `0a0221a1347e2f1e07c395263540026e9a0aa7c7` | FTL OR GPL-2.0-or-later | font loading and glyph rasterization |
 | HarfBuzz 14.2.1 | `56feae4035bdd48f62ba2b8d8c16232d4d89b3a4` | MIT | OpenType text shaping |
 | utf8proc 2.11.3 | `e5e799221b45bbb90f5fdc5c69b6b8dfbf017e78` | MIT | Unicode 17 normalization and properties |
+| SheenBidi 3.0.0 | `cfe430e7375a7845b679adae9d51dac6deaa8858` | Apache-2.0 | Unicode Bidirectional Algorithm and visual run ordering |
 | Windows BCrypt | Windows SDK | LicenseRef-Microsoft-Windows-SDK | Windows GameNetworkingSockets cryptography |
 
 License texts are supplied by their fetched upstream source trees and will be

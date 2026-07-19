@@ -16,6 +16,7 @@ set(RBX_UTF8PROC_REVISION "e5e799221b45bbb90f5fdc5c69b6b8dfbf017e78") # v2.11.3,
 set(RBX_DRACO_REVISION "8786740086a9f4d83f44aa83badfbea4dce7a1b5") # 1.5.7
 set(RBX_FREETYPE_REVISION "0a0221a1347e2f1e07c395263540026e9a0aa7c7") # 2.14.3
 set(RBX_HARFBUZZ_REVISION "56feae4035bdd48f62ba2b8d8c16232d4d89b3a4") # 14.2.1
+set(RBX_SHEENBIDI_REVISION "cfe430e7375a7845b679adae9d51dac6deaa8858") # 3.0.0
 
 # VideoFrame uses the LGPL libav demux/decode/conversion libraries.  Keep GPL
 # and nonfree codec add-ons out of the dependency contract; distributable
@@ -37,6 +38,8 @@ if(NOT RBX_FETCH_DEPENDENCIES)
     add_library(Roblox::Freetype ALIAS Freetype::Freetype)
     pkg_check_modules(RBX_HARFBUZZ REQUIRED IMPORTED_TARGET harfbuzz>=14.2.1)
     add_library(Roblox::HarfBuzz ALIAS PkgConfig::RBX_HARFBUZZ)
+    find_package(SheenBidi 3.0.0 CONFIG REQUIRED)
+    add_library(Roblox::SheenBidi ALIAS SheenBidi::SheenBidi)
     find_package(draco CONFIG REQUIRED)
     return()
 endif()
@@ -121,6 +124,16 @@ FetchContent_Declare(rbx_harfbuzz
     GIT_SHALLOW FALSE)
 FetchContent_MakeAvailable(rbx_harfbuzz)
 add_library(Roblox::HarfBuzz ALIAS harfbuzz)
+
+set(SB_CONFIG_EXPERIMENTAL_TEXT_API OFF CACHE BOOL "" FORCE)
+set(SB_CONFIG_UNITY ON CACHE BOOL "" FORCE)
+set(BUILD_GENERATOR OFF CACHE BOOL "" FORCE)
+FetchContent_Declare(rbx_sheenbidi
+    GIT_REPOSITORY https://github.com/Tehreer/SheenBidi.git
+    GIT_TAG ${RBX_SHEENBIDI_REVISION}
+    GIT_SHALLOW FALSE)
+FetchContent_MakeAvailable(rbx_sheenbidi)
+add_library(Roblox::SheenBidi ALIAS SheenBidi)
 set(BUILD_SHARED_LIBS ${_RBX_TEXT_BUILD_SHARED_LIBS})
 unset(_RBX_TEXT_BUILD_SHARED_LIBS)
 

@@ -36,7 +36,7 @@ target_include_directories(rbx-render-text
 )
 target_link_libraries(rbx-render-text PUBLIC
     Roblox::GfxCoreContract Roblox::RenderFoundation Roblox::Freetype
-    Roblox::HarfBuzz Roblox::Utf8proc)
+    Roblox::HarfBuzz Roblox::Utf8proc Roblox::SheenBidi)
 target_compile_features(rbx-render-text PUBLIC cxx_std_20)
 target_compile_definitions(rbx-render-text PRIVATE
     BOOST_NO_CXX98_FUNCTION_BASE=1

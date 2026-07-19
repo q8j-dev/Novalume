@@ -139,6 +139,16 @@
       "licenseConcluded": "MIT",
       "licenseDeclared": "MIT",
       "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "SheenBidi",
+      "SPDXID": "SPDXRef-SheenBidi",
+      "versionInfo": "3.0.0+cfe430e7375a7845b679adae9d51dac6deaa8858",
+      "downloadLocation": "https://github.com/Tehreer/SheenBidi.git",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "Copyright 2014-2026 Muhammad Tayyab Akram"
     }
   ],
   "relationships": [
@@ -154,6 +164,7 @@
     {"spdxElementId": "SPDXRef-GameNetworkingSockets", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-OpenSSL"},
     {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-FreeType"},
     {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-HarfBuzz"},
-    {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-utf8proc"}
+    {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-utf8proc"},
+    {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-SheenBidi"}
   ]
 }
