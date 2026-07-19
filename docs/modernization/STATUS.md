@@ -743,6 +743,12 @@ the final return; it is not replaced or treated as accepted while deferred.
   and math-facing engine values. The owned `rbx-value-types` archive now builds
   entirely from its subsystem directory, and the actual signed Player relinks
   against the moved implementation without a compatibility source path.
+- Moved the complete 44-source implementation set already owned by
+  `Roblox::RuntimeSupport` out of the mixed `App/util` tree into
+  `engine/runtime_support/src`, preserving the HTTP subdirectory and the
+  platform-specific sources that still require separate classification. The
+  named archive now compiles solely from its subsystem directory instead of
+  reaching back into the legacy utility dump.
 - Moved the complete 355-file CSG family under `engine/geometry/csg` and
   updated its Player, Studio, Xbox, model-analyzer, converter, solution,
   Visual Studio, and Xcode consumers. Added the named
