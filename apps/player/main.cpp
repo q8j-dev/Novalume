@@ -2,7 +2,7 @@
 #include "rbx/core/BuildInfo.h"
 #include "rbx/assets/AssetMountTable.h"
 #include "rbx/assets/PlacePackage.h"
-#include "rbx/platform/MacHost.h"
+#include "rbx/platform/Host.h"
 #include "GfxCore/Device.h"
 #include "V8DataModel/LocalStorageService.h"
 #include "util/Http.h"
@@ -113,7 +113,7 @@ int main(int argc, char** argv) {
         if (verifyPlaceAudio && !placePath)
             throw std::runtime_error("--verify-place-audio requires --place");
 
-        auto host = rbx::platform::createMacHost(1280, 720, !headlessVerify);
+        auto host = rbx::platform::createHost(1280, 720, !headlessVerify);
         RBX::LocalStorageService::setStorageRoot(
             host->writableDataRoot() / "RobloxPlayer");
         std::optional<RBX::Assets::MaterializedPlacePackage> materializedPlace;

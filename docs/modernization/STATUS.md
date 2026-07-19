@@ -757,6 +757,11 @@ the final return; it is not replaced or treated as accepted while deferred.
   implementations out of `App/util` and transferred their build ownership
   from `Roblox::RuntimeSupport` to `Roblox::PlatformRuntime`. This removes the
   final Apple-native source dependency from the shared runtime-support target.
+- Removed the shared Player entry point's direct dependency on `MacHost`.
+  Product platform adapters now provide the single `createHost` factory through
+  the platform-neutral Host contract; the macOS adapter implements that factory
+  with the existing AppKit/Metal host. Platform-specific host selection no
+  longer leaks into `apps/player/main.cpp`.
 - Moved the complete 355-file CSG family under `engine/geometry/csg` and
   updated its Player, Studio, Xbox, model-analyzer, converter, solution,
   Visual Studio, and Xcode consumers. Added the named

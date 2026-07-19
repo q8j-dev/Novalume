@@ -170,4 +170,10 @@ public:
     virtual void setPointerLock(bool locked) = 0;
 };
 
+// Each product platform provides exactly one production host factory through
+// its adapter target. Shared Player code must not select an OS-specific host.
+[[nodiscard]] std::unique_ptr<Host> createHost(std::uint32_t width,
+                                               std::uint32_t height,
+                                               bool visible);
+
 } // namespace rbx::platform

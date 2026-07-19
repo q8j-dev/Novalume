@@ -413,4 +413,9 @@ std::unique_ptr<Host> createMacHost(std::uint32_t width, std::uint32_t height,
     return std::make_unique<MacHost>(width, height, visible);
 }
 
+std::unique_ptr<Host> createHost(std::uint32_t width, std::uint32_t height,
+                                 bool visible) {
+    return createMacHost(width, height, visible);
+}
+
 } // namespace rbx::platform
