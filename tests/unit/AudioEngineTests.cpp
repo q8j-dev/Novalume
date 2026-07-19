@@ -677,6 +677,38 @@ int main()
             channelEnergy(graphCompressorMix, 0) > 4000.0f,
         "bypassing the graph compressor must restore the dry voice");
 
+    Engine gateEngine({.sampleRate = 48000, .channels = 2});
+    const ClipHandle gateClip = gateEngine.createClip({
+        .sampleRate = 48000, .channels = 1,
+        .samples = std::vector<float>(4096, 0.01f)});
+    VoiceParameters gateParameters;
+    gateParameters.effects[0].type = VoiceEffectType::Gate;
+    gateParameters.effects[0].parameters = {
+        0.001f, 0.001f, -30.0f, -20.0f, 0.0f, 0.0f, 0.0f};
+    gateParameters.effectCount = 1;
+    require(static_cast<bool>(gateEngine.play(gateClip, gateParameters)),
+        "a voice with a graph gate must start");
+    std::vector<float> dynamicsMix(1024 * 2);
+    require(gateEngine.mix(dynamicsMix) &&
+            channelEnergy(dynamicsMix, 0) < 0.01f,
+        "the graph gate must close below its hysteresis range");
+
+    Engine limiterEngine({.sampleRate = 48000, .channels = 2});
+    const ClipHandle limiterClip = limiterEngine.createClip({
+        .sampleRate = 48000, .channels = 1,
+        .samples = std::vector<float>(4096, 2.0f)});
+    VoiceParameters limiterParameters;
+    limiterParameters.effects[0].type = VoiceEffectType::Limiter;
+    limiterParameters.effects[0].parameters = {
+        -6.0f, 0.1f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+    limiterParameters.effectCount = 1;
+    require(static_cast<bool>(limiterEngine.play(limiterClip,
+                limiterParameters)),
+        "a voice with a graph limiter must start");
+    require(limiterEngine.mix(dynamicsMix) &&
+            *std::max_element(dynamicsMix.begin(), dynamicsMix.end()) < 0.51f,
+        "the graph limiter must enforce its authored ceiling");
+
     Engine queuedEngine({.sampleRate = 48000, .channels = 2});
     require(queuedEngine.mixerTimeSeconds() == 0.0,
         "a fresh mixer clock must begin at zero");

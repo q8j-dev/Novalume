@@ -164,6 +164,41 @@ AudioRoute findRoute(const AudioNode* node, float gain,
                 if (route.connected)
                     return route;
             }
+            else if (AudioGate* gate =
+                         Instance::fastDynamicCast<AudioGate>(target))
+            {
+                if (!gate->getBypass())
+                {
+                    if (effectCount >= effects.size())
+                        continue;
+                    Audio::VoiceEffect& effect = effects[effectCount++];
+                    effect.type = Audio::VoiceEffectType::Gate;
+                    const NumberRange threshold = gate->getThreshold();
+                    effect.parameters = {gate->getAttack(), gate->getRelease(),
+                        threshold.min, threshold.max, 0.0f, 0.0f, 0.0f};
+                }
+                AudioRoute route = findRoute(gate, gain, effects,
+                    effectCount, visited);
+                if (route.connected)
+                    return route;
+            }
+            else if (AudioLimiter* limiter =
+                         Instance::fastDynamicCast<AudioLimiter>(target))
+            {
+                if (!limiter->getBypass())
+                {
+                    if (effectCount >= effects.size())
+                        continue;
+                    Audio::VoiceEffect& effect = effects[effectCount++];
+                    effect.type = Audio::VoiceEffectType::Limiter;
+                    effect.parameters = {limiter->getMaxLevel(),
+                        limiter->getRelease(), 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+                }
+                AudioRoute route = findRoute(limiter, gain, effects,
+                    effectCount, visited);
+                if (route.connected)
+                    return route;
+            }
             else if (AudioChannelMixer* mixer =
                          Instance::fastDynamicCast<AudioChannelMixer>(target))
             {

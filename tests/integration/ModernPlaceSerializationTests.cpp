@@ -242,6 +242,18 @@ int main(int argc, char** argv)
     audioCompressor->setThreshold(-18.0f);
     audioCompressor->setEditor(true);
     audioCompressor->setParent(audioRoot.get());
+    boost::shared_ptr<RBX::Soundscape::AudioGate> audioGate =
+        RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::AudioGate>();
+    audioGate->setAttack(0.03f);
+    audioGate->setRelease(0.2f);
+    audioGate->setThreshold(RBX::NumberRange(-45.0f, -35.0f));
+    audioGate->setParent(audioRoot.get());
+    boost::shared_ptr<RBX::Soundscape::AudioLimiter> audioLimiter =
+        RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::AudioLimiter>();
+    audioLimiter->setMaxLevel(-3.0f);
+    audioLimiter->setRelease(0.15f);
+    audioLimiter->setEditor(true);
+    audioLimiter->setParent(audioRoot.get());
     boost::shared_ptr<RBX::Soundscape::AudioChannelMixer> audioMixer =
         RBX::Creatable<RBX::Instance>::create<
             RBX::Soundscape::AudioChannelMixer>();
@@ -292,8 +304,20 @@ int main(int argc, char** argv)
         RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
     compressorWire->setName("CompressorWire");
     compressorWire->setSourceInstance(audioCompressor.get());
-    compressorWire->setTargetInstance(audioMixer.get());
+    compressorWire->setTargetInstance(audioGate.get());
     compressorWire->setParent(audioCompressor.get());
+    boost::shared_ptr<RBX::Soundscape::Wire> gateWire =
+        RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
+    gateWire->setName("GateWire");
+    gateWire->setSourceInstance(audioGate.get());
+    gateWire->setTargetInstance(audioLimiter.get());
+    gateWire->setParent(audioGate.get());
+    boost::shared_ptr<RBX::Soundscape::Wire> limiterWire =
+        RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
+    limiterWire->setName("LimiterWire");
+    limiterWire->setSourceInstance(audioLimiter.get());
+    limiterWire->setTargetInstance(audioMixer.get());
+    limiterWire->setParent(audioLimiter.get());
     boost::shared_ptr<RBX::Soundscape::Wire> mixerWire =
         RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
     mixerWire->setName("MixerWire");
@@ -460,6 +484,10 @@ int main(int argc, char** argv)
     RBX::Soundscape::AudioCompressor* decodedAudioCompressor =
         decodedAudioRoot->findFirstChildOfType<
             RBX::Soundscape::AudioCompressor>();
+    RBX::Soundscape::AudioGate* decodedAudioGate =
+        decodedAudioRoot->findFirstChildOfType<RBX::Soundscape::AudioGate>();
+    RBX::Soundscape::AudioLimiter* decodedAudioLimiter =
+        decodedAudioRoot->findFirstChildOfType<RBX::Soundscape::AudioLimiter>();
     RBX::Soundscape::AudioChannelMixer* decodedAudioMixer =
         decodedAudioRoot->findFirstChildOfType<
             RBX::Soundscape::AudioChannelMixer>();
@@ -474,7 +502,7 @@ int main(int argc, char** argv)
         !decodedAudioEmitter || !decodedAudioListener || !decodedAudioFader ||
         !decodedAudioDistortion || !decodedAudioTremolo ||
         !decodedAudioChorus || !decodedAudioFlanger ||
-        !decodedAudioCompressor ||
+        !decodedAudioCompressor || !decodedAudioGate || !decodedAudioLimiter ||
         !decodedAudioMixer || !decodedAudioSplitter ||
         decodedAudioMixer->getLayout() != RBX::Soundscape::AUDIO_CHANNEL_QUAD ||
         decodedAudioSplitter->getLayout() != RBX::Soundscape::AUDIO_CHANNEL_QUAD ||
@@ -520,6 +548,18 @@ int main(int argc, char** argv)
         decodedAudioCompressor->getBypass() ||
         decodedAudioCompressor->getConnectedWiresReflection("Input")->size() != 1 ||
         decodedAudioCompressor->getConnectedWiresReflection("Output")->size() != 1 ||
+        decodedAudioGate->getAttack() != 0.03f ||
+        decodedAudioGate->getRelease() != 0.2f ||
+        decodedAudioGate->getThreshold() != RBX::NumberRange(-45.0f, -35.0f) ||
+        decodedAudioGate->getBypass() ||
+        decodedAudioGate->getConnectedWiresReflection("Input")->size() != 1 ||
+        decodedAudioGate->getConnectedWiresReflection("Output")->size() != 1 ||
+        decodedAudioLimiter->getMaxLevel() != -3.0f ||
+        decodedAudioLimiter->getRelease() != 0.15f ||
+        decodedAudioLimiter->getEditor() ||
+        decodedAudioLimiter->getBypass() ||
+        decodedAudioLimiter->getConnectedWiresReflection("Input")->size() != 1 ||
+        decodedAudioLimiter->getConnectedWiresReflection("Output")->size() != 1 ||
         !decodedAudioPlayer || decodedAudioPlayer->getAssetId() !=
             "rbxasset://sounds/uuhhh.mp3" ||
         decodedAudioPlayer->getAudioContent().getSourceType() !=

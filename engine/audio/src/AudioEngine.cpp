@@ -34,6 +34,7 @@ struct Engine::Impl
         std::array<float, 32> phases{};
         std::array<std::vector<float>, 32> delays;
         std::array<std::vector<float>, 32> states;
+        std::array<std::vector<float>, 32> secondaryStates;
         std::array<std::uint32_t, 32> delayPositions{};
         std::uint32_t sampleRate = 48000;
         std::uint32_t channels = 2;
@@ -237,6 +238,81 @@ struct Engine::Impl
                                 gainDb += threshold + (levelDb - threshold) /
                                     ratio - levelDb;
                             output[0][index] *= std::pow(10.0f, gainDb / 20.0f);
+                        }
+                }
+                else if (type == VoiceEffectType::Gate)
+                {
+                    const float attack = std::clamp(
+                        effects->parameters[effect][0].load(
+                            std::memory_order_relaxed), 0.001f, 5.0f);
+                    const float release = std::clamp(
+                        effects->parameters[effect][1].load(
+                            std::memory_order_relaxed), 0.001f, 5.0f);
+                    const float closeThreshold = std::clamp(
+                        effects->parameters[effect][2].load(
+                            std::memory_order_relaxed), -80.0f, 30.0f);
+                    const float openThreshold = std::clamp(
+                        effects->parameters[effect][3].load(
+                            std::memory_order_relaxed), closeThreshold, 30.0f);
+                    std::vector<float>& gains = effects->states[effect];
+                    std::vector<float>& openStates =
+                        effects->secondaryStates[effect];
+                    if (gains.size() < channels || openStates.size() < channels)
+                        continue;
+                    const float attackCoefficient = std::exp(-1.0f /
+                        (attack * effects->sampleRate));
+                    const float releaseCoefficient = std::exp(-1.0f /
+                        (release * effects->sampleRate));
+                    for (ma_uint32 frame = 0; frame < frames; ++frame)
+                        for (ma_uint32 channel = 0; channel < channels; ++channel)
+                        {
+                            const std::size_t index =
+                                static_cast<std::size_t>(frame) * channels + channel;
+                            const float levelDb = 20.0f * std::log10(std::max(
+                                std::abs(output[0][index]), 0.0000001f));
+                            bool open = openStates[channel] > 0.5f;
+                            if (open && levelDb < closeThreshold)
+                                open = false;
+                            else if (!open && levelDb > openThreshold)
+                                open = true;
+                            openStates[channel] = open ? 1.0f : 0.0f;
+                            const float target = open ? 1.0f : 0.0f;
+                            const float coefficient = open
+                                ? attackCoefficient : releaseCoefficient;
+                            gains[channel] = coefficient * gains[channel] +
+                                (1.0f - coefficient) * target;
+                            output[0][index] *= gains[channel];
+                        }
+                }
+                else if (type == VoiceEffectType::Limiter)
+                {
+                    const float ceiling = std::pow(10.0f, std::clamp(
+                        effects->parameters[effect][0].load(
+                            std::memory_order_relaxed), -12.0f, 0.0f) / 20.0f);
+                    const float release = std::clamp(
+                        effects->parameters[effect][1].load(
+                            std::memory_order_relaxed), 0.001f, 1.0f);
+                    std::vector<float>& gains =
+                        effects->secondaryStates[effect];
+                    if (gains.size() < channels)
+                        continue;
+                    const float releaseCoefficient = std::exp(-1.0f /
+                        (release * effects->sampleRate));
+                    for (ma_uint32 frame = 0; frame < frames; ++frame)
+                        for (ma_uint32 channel = 0; channel < channels; ++channel)
+                        {
+                            const std::size_t index =
+                                static_cast<std::size_t>(frame) * channels + channel;
+                            const float level = std::abs(output[0][index]);
+                            const float desired = level > ceiling
+                                ? ceiling / level : 1.0f;
+                            if (desired < gains[channel])
+                                gains[channel] = desired;
+                            else
+                                gains[channel] = releaseCoefficient *
+                                    gains[channel] +
+                                    (1.0f - releaseCoefficient);
+                            output[0][index] *= gains[channel];
                         }
                 }
             }
@@ -1044,12 +1120,16 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
                 effect.type != VoiceEffectType::Tremolo &&
                 effect.type != VoiceEffectType::Chorus &&
                 effect.type != VoiceEffectType::Flanger &&
-                effect.type != VoiceEffectType::Compressor)
+                effect.type != VoiceEffectType::Compressor &&
+                effect.type != VoiceEffectType::Gate &&
+                effect.type != VoiceEffectType::Limiter)
                 return {};
             const std::size_t parameterCount = effect.type ==
                 VoiceEffectType::Distortion ? 1 :
                 effect.type == VoiceEffectType::Tremolo ? 6 :
-                effect.type == VoiceEffectType::Compressor ? 5 : 3;
+                effect.type == VoiceEffectType::Compressor ? 5 :
+                effect.type == VoiceEffectType::Gate ? 4 :
+                effect.type == VoiceEffectType::Limiter ? 2 : 3;
             for (std::size_t parameter = 0; parameter < parameterCount; ++parameter)
                 if (!std::isfinite(effect.parameters[parameter]))
                     return {};
@@ -1211,6 +1291,8 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
             delay.resize(modulationDelaySamples);
         for (std::vector<float>& state : voice->effects.states)
             state.resize(impl->config.channels);
+        for (std::vector<float>& state : voice->effects.secondaryStates)
+            state.resize(impl->config.channels, 1.0f);
         const std::uint32_t effectCount = std::min<std::uint32_t>(
             parameters.effectCount ? parameters.effectCount :
                 parameters.distortionCount,
@@ -1472,12 +1554,16 @@ bool Engine::setVoiceEffects(VoiceHandle handle,
             effect.type != VoiceEffectType::Tremolo &&
             effect.type != VoiceEffectType::Chorus &&
             effect.type != VoiceEffectType::Flanger &&
-            effect.type != VoiceEffectType::Compressor)
+            effect.type != VoiceEffectType::Compressor &&
+            effect.type != VoiceEffectType::Gate &&
+            effect.type != VoiceEffectType::Limiter)
             return false;
         const std::size_t parameterCount = effect.type ==
             VoiceEffectType::Distortion ? 1 :
             effect.type == VoiceEffectType::Tremolo ? 6 :
-            effect.type == VoiceEffectType::Compressor ? 5 : 3;
+            effect.type == VoiceEffectType::Compressor ? 5 :
+            effect.type == VoiceEffectType::Gate ? 4 :
+            effect.type == VoiceEffectType::Limiter ? 2 : 3;
         for (std::size_t parameter = 0; parameter < parameterCount; ++parameter)
             if (!std::isfinite(effect.parameters[parameter]))
                 return false;

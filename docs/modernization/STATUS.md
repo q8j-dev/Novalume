@@ -1266,3 +1266,11 @@ verification is complete and the user separately gives explicit permission.
   remains allocation-free in the callback. Sustained-signal and dry-bypass
   tests prove the DSP path, binary coverage proves `Editor` is not saved, and
   the actual Player chain runs the compressor before the channel mixer.
+- Added the current `AudioGate` and `AudioLimiter` contracts from the exact API
+  dump and Studio bounds, including the gate's `NumberRange` hysteresis and the
+  limiter's protected load-only/non-replicated `Editor` state. Their ordered
+  per-voice realtime stages provide sample-rate-correct gate attack/release and
+  instant ceiling reduction with smoothed limiter recovery. Focused tests prove
+  below-threshold closure and ceiling enforcement; binary and actual-Player
+  chains cover both nodes, their wires, authored properties, and Editor save
+  exclusion.

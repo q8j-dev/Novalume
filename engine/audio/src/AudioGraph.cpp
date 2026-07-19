@@ -306,6 +306,8 @@ const char* const sAudioTremolo = "AudioTremolo";
 const char* const sAudioChorus = "AudioChorus";
 const char* const sAudioFlanger = "AudioFlanger";
 const char* const sAudioCompressor = "AudioCompressor";
+const char* const sAudioGate = "AudioGate";
+const char* const sAudioLimiter = "AudioLimiter";
 const char* const sAudioChannelMixer = "AudioChannelMixer";
 const char* const sAudioChannelSplitter = "AudioChannelSplitter";
 const char* const sAudioEmitter = "AudioEmitter";
@@ -502,6 +504,63 @@ static Reflection::EventDesc<AudioCompressor,
         boost::shared_ptr<Instance>)> eventAudioCompressorWiringChanged(
     &AudioCompressor::wiringChangedSignal, "WiringChanged", "connected", "pin",
     "wire", "instance", Security::None);
+
+static Reflection::PropDescriptor<AudioGate, float> propAudioGateAttack(
+    "Attack", category_Data, &AudioGate::getAttack, &AudioGate::setAttack);
+static Reflection::PropDescriptor<AudioGate, bool> propAudioGateBypass(
+    "Bypass", category_Behavior, &AudioGate::getBypass, &AudioGate::setBypass);
+static Reflection::PropDescriptor<AudioGate, float> propAudioGateRelease(
+    "Release", category_Data, &AudioGate::getRelease, &AudioGate::setRelease);
+static Reflection::PropDescriptor<AudioGate, NumberRange> propAudioGateThreshold(
+    "Threshold", category_Data, &AudioGate::getThreshold, &AudioGate::setThreshold);
+static Reflection::BoundFuncDesc<AudioGate,
+    boost::shared_ptr<const Instances>(std::string)>
+    funcAudioGateConnectedWires(&AudioGate::getConnectedWiresReflection,
+        "GetConnectedWires", "pin", Security::None);
+static Reflection::BoundFuncDesc<AudioGate,
+    boost::shared_ptr<const Reflection::ValueArray>()>
+    funcAudioGateInputPins(&AudioGate::getInputPinsReflection,
+        "GetInputPins", Security::None);
+static Reflection::BoundFuncDesc<AudioGate,
+    boost::shared_ptr<const Reflection::ValueArray>()>
+    funcAudioGateOutputPins(&AudioGate::getOutputPinsReflection,
+        "GetOutputPins", Security::None);
+static Reflection::EventDesc<AudioGate, void(bool, std::string,
+    boost::shared_ptr<Instance>, boost::shared_ptr<Instance>)>
+    eventAudioGateWiringChanged(&AudioGate::wiringChangedSignal,
+        "WiringChanged", "connected", "pin", "wire", "instance",
+        Security::None);
+
+static Reflection::PropDescriptor<AudioLimiter, bool> propAudioLimiterBypass(
+    "Bypass", category_Behavior, &AudioLimiter::getBypass,
+    &AudioLimiter::setBypass);
+static Reflection::PropDescriptor<AudioLimiter, bool> propAudioLimiterEditor(
+    "Editor", category_Data, &AudioLimiter::getEditor,
+    &AudioLimiter::setEditor, Reflection::PropertyDescriptor::UI,
+    Security::Roblox);
+static Reflection::PropDescriptor<AudioLimiter, float> propAudioLimiterMaxLevel(
+    "MaxLevel", category_Data, &AudioLimiter::getMaxLevel,
+    &AudioLimiter::setMaxLevel);
+static Reflection::PropDescriptor<AudioLimiter, float> propAudioLimiterRelease(
+    "Release", category_Data, &AudioLimiter::getRelease,
+    &AudioLimiter::setRelease);
+static Reflection::BoundFuncDesc<AudioLimiter,
+    boost::shared_ptr<const Instances>(std::string)>
+    funcAudioLimiterConnectedWires(&AudioLimiter::getConnectedWiresReflection,
+        "GetConnectedWires", "pin", Security::None);
+static Reflection::BoundFuncDesc<AudioLimiter,
+    boost::shared_ptr<const Reflection::ValueArray>()>
+    funcAudioLimiterInputPins(&AudioLimiter::getInputPinsReflection,
+        "GetInputPins", Security::None);
+static Reflection::BoundFuncDesc<AudioLimiter,
+    boost::shared_ptr<const Reflection::ValueArray>()>
+    funcAudioLimiterOutputPins(&AudioLimiter::getOutputPinsReflection,
+        "GetOutputPins", Security::None);
+static Reflection::EventDesc<AudioLimiter, void(bool, std::string,
+    boost::shared_ptr<Instance>, boost::shared_ptr<Instance>)>
+    eventAudioLimiterWiringChanged(&AudioLimiter::wiringChangedSignal,
+        "WiringChanged", "connected", "pin", "wire", "instance",
+        Security::None);
 
 static Reflection::EnumPropDescriptor<AudioChannelMixer, AudioChannelLayout>
     propAudioChannelMixerLayout("Layout", category_Data,
@@ -1269,6 +1328,114 @@ boost::shared_ptr<const Reflection::ValueArray>
 AudioCompressor::getOutputPinsReflection() { return getOutputPins(); }
 std::vector<std::string> AudioCompressor::inputPins() const { return {"Input"}; }
 std::vector<std::string> AudioCompressor::outputPins() const { return {"Output"}; }
+
+AudioGate::AudioGate()
+    : DescribedCreatable<AudioGate, Instance, sAudioGate>(sAudioGate)
+    , attack(0.01f)
+    , bypass(false)
+    , release(0.1f)
+    , threshold(-40.0f, -30.0f)
+{
+}
+float AudioGate::getAttack() const { return attack; }
+bool AudioGate::getBypass() const { return bypass; }
+float AudioGate::getRelease() const { return release; }
+NumberRange AudioGate::getThreshold() const { return threshold; }
+void AudioGate::setAttack(float value)
+{
+    if (!std::isfinite(value))
+        throw std::runtime_error("AudioGate.Attack must be finite");
+    value = std::clamp(value, 0.001f, 5.0f);
+    if (attack == value) return;
+    attack = value;
+    raisePropertyChanged(propAudioGateAttack);
+}
+void AudioGate::setBypass(bool value)
+{
+    if (bypass == value) return;
+    bypass = value;
+    raisePropertyChanged(propAudioGateBypass);
+}
+void AudioGate::setRelease(float value)
+{
+    if (!std::isfinite(value))
+        throw std::runtime_error("AudioGate.Release must be finite");
+    value = std::clamp(value, 0.001f, 5.0f);
+    if (release == value) return;
+    release = value;
+    raisePropertyChanged(propAudioGateRelease);
+}
+void AudioGate::setThreshold(NumberRange value)
+{
+    if (!std::isfinite(value.min) || !std::isfinite(value.max))
+        throw std::runtime_error("AudioGate.Threshold must be finite");
+    value = NumberRange(std::clamp(value.min, -80.0f, 30.0f),
+        std::clamp(value.max, -80.0f, 30.0f));
+    if (threshold == value) return;
+    threshold = value;
+    raisePropertyChanged(propAudioGateThreshold);
+}
+boost::shared_ptr<const Instances>
+AudioGate::getConnectedWiresReflection(std::string pin)
+{ return getConnectedWires(pin); }
+boost::shared_ptr<const Reflection::ValueArray>
+AudioGate::getInputPinsReflection() { return getInputPins(); }
+boost::shared_ptr<const Reflection::ValueArray>
+AudioGate::getOutputPinsReflection() { return getOutputPins(); }
+std::vector<std::string> AudioGate::inputPins() const { return {"Input"}; }
+std::vector<std::string> AudioGate::outputPins() const { return {"Output"}; }
+
+AudioLimiter::AudioLimiter()
+    : DescribedCreatable<AudioLimiter, Instance, sAudioLimiter>(sAudioLimiter)
+    , bypass(false)
+    , editor(false)
+    , maxLevel(-1.0f)
+    , release(0.1f)
+{
+}
+bool AudioLimiter::getBypass() const { return bypass; }
+bool AudioLimiter::getEditor() const { return editor; }
+float AudioLimiter::getMaxLevel() const { return maxLevel; }
+float AudioLimiter::getRelease() const { return release; }
+void AudioLimiter::setBypass(bool value)
+{
+    if (bypass == value) return;
+    bypass = value;
+    raisePropertyChanged(propAudioLimiterBypass);
+}
+void AudioLimiter::setEditor(bool value)
+{
+    if (editor == value) return;
+    editor = value;
+    raisePropertyChanged(propAudioLimiterEditor);
+}
+void AudioLimiter::setMaxLevel(float value)
+{
+    if (!std::isfinite(value))
+        throw std::runtime_error("AudioLimiter.MaxLevel must be finite");
+    value = std::clamp(value, -12.0f, 0.0f);
+    if (maxLevel == value) return;
+    maxLevel = value;
+    raisePropertyChanged(propAudioLimiterMaxLevel);
+}
+void AudioLimiter::setRelease(float value)
+{
+    if (!std::isfinite(value))
+        throw std::runtime_error("AudioLimiter.Release must be finite");
+    value = std::clamp(value, 0.001f, 1.0f);
+    if (release == value) return;
+    release = value;
+    raisePropertyChanged(propAudioLimiterRelease);
+}
+boost::shared_ptr<const Instances>
+AudioLimiter::getConnectedWiresReflection(std::string pin)
+{ return getConnectedWires(pin); }
+boost::shared_ptr<const Reflection::ValueArray>
+AudioLimiter::getInputPinsReflection() { return getInputPins(); }
+boost::shared_ptr<const Reflection::ValueArray>
+AudioLimiter::getOutputPinsReflection() { return getOutputPins(); }
+std::vector<std::string> AudioLimiter::inputPins() const { return {"Input"}; }
+std::vector<std::string> AudioLimiter::outputPins() const { return {"Output"}; }
 
 namespace {
 const std::vector<std::string>& channelPins()
