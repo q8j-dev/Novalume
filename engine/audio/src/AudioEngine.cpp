@@ -296,6 +296,9 @@ struct Engine::Impl
                         effects->secondaryStates[effect];
                     if (gains.size() < channels)
                         continue;
+                    for (ma_uint32 channel = 0; channel < channels; ++channel)
+                        if (gains[channel] <= 0.0f)
+                            gains[channel] = 1.0f;
                     const float releaseCoefficient = std::exp(-1.0f /
                         (release * effects->sampleRate));
                     for (ma_uint32 frame = 0; frame < frames; ++frame)
@@ -313,6 +316,51 @@ struct Engine::Impl
                                     gains[channel] +
                                     (1.0f - releaseCoefficient);
                             output[0][index] *= gains[channel];
+                        }
+                }
+                else if (type == VoiceEffectType::Equalizer)
+                {
+                    const float lowGain = std::pow(10.0f, std::clamp(
+                        effects->parameters[effect][0].load(
+                            std::memory_order_relaxed), -80.0f, 10.0f) / 20.0f);
+                    const float midGain = std::pow(10.0f, std::clamp(
+                        effects->parameters[effect][1].load(
+                            std::memory_order_relaxed), -80.0f, 10.0f) / 20.0f);
+                    const float highGain = std::pow(10.0f, std::clamp(
+                        effects->parameters[effect][2].load(
+                            std::memory_order_relaxed), -80.0f, 10.0f) / 20.0f);
+                    const float lowFrequency = std::clamp(
+                        effects->parameters[effect][3].load(
+                            std::memory_order_relaxed), 200.0f, 20000.0f);
+                    const float highFrequency = std::clamp(
+                        effects->parameters[effect][4].load(
+                            std::memory_order_relaxed), lowFrequency, 20000.0f);
+                    std::vector<float>& lowStates = effects->states[effect];
+                    std::vector<float>& highStates =
+                        effects->secondaryStates[effect];
+                    if (lowStates.size() < channels || highStates.size() < channels)
+                        continue;
+                    const float lowAlpha = 1.0f - std::exp(
+                        -6.2831853071795864769f * lowFrequency /
+                        effects->sampleRate);
+                    const float highAlpha = 1.0f - std::exp(
+                        -6.2831853071795864769f * highFrequency /
+                        effects->sampleRate);
+                    for (ma_uint32 frame = 0; frame < frames; ++frame)
+                        for (ma_uint32 channel = 0; channel < channels; ++channel)
+                        {
+                            const std::size_t index =
+                                static_cast<std::size_t>(frame) * channels + channel;
+                            const float inputSample = output[0][index];
+                            lowStates[channel] += lowAlpha *
+                                (inputSample - lowStates[channel]);
+                            highStates[channel] += highAlpha *
+                                (inputSample - highStates[channel]);
+                            const float low = lowStates[channel];
+                            const float mid = highStates[channel] - low;
+                            const float high = inputSample - highStates[channel];
+                            output[0][index] = low * lowGain + mid * midGain +
+                                high * highGain;
                         }
                 }
             }
@@ -1122,14 +1170,16 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
                 effect.type != VoiceEffectType::Flanger &&
                 effect.type != VoiceEffectType::Compressor &&
                 effect.type != VoiceEffectType::Gate &&
-                effect.type != VoiceEffectType::Limiter)
+                effect.type != VoiceEffectType::Limiter &&
+                effect.type != VoiceEffectType::Equalizer)
                 return {};
             const std::size_t parameterCount = effect.type ==
                 VoiceEffectType::Distortion ? 1 :
                 effect.type == VoiceEffectType::Tremolo ? 6 :
                 effect.type == VoiceEffectType::Compressor ? 5 :
                 effect.type == VoiceEffectType::Gate ? 4 :
-                effect.type == VoiceEffectType::Limiter ? 2 : 3;
+                effect.type == VoiceEffectType::Limiter ? 2 :
+                effect.type == VoiceEffectType::Equalizer ? 5 : 3;
             for (std::size_t parameter = 0; parameter < parameterCount; ++parameter)
                 if (!std::isfinite(effect.parameters[parameter]))
                     return {};
@@ -1292,7 +1342,7 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
         for (std::vector<float>& state : voice->effects.states)
             state.resize(impl->config.channels);
         for (std::vector<float>& state : voice->effects.secondaryStates)
-            state.resize(impl->config.channels, 1.0f);
+            state.resize(impl->config.channels);
         const std::uint32_t effectCount = std::min<std::uint32_t>(
             parameters.effectCount ? parameters.effectCount :
                 parameters.distortionCount,
@@ -1556,14 +1606,16 @@ bool Engine::setVoiceEffects(VoiceHandle handle,
             effect.type != VoiceEffectType::Flanger &&
             effect.type != VoiceEffectType::Compressor &&
             effect.type != VoiceEffectType::Gate &&
-            effect.type != VoiceEffectType::Limiter)
+            effect.type != VoiceEffectType::Limiter &&
+            effect.type != VoiceEffectType::Equalizer)
             return false;
         const std::size_t parameterCount = effect.type ==
             VoiceEffectType::Distortion ? 1 :
             effect.type == VoiceEffectType::Tremolo ? 6 :
             effect.type == VoiceEffectType::Compressor ? 5 :
             effect.type == VoiceEffectType::Gate ? 4 :
-            effect.type == VoiceEffectType::Limiter ? 2 : 3;
+            effect.type == VoiceEffectType::Limiter ? 2 :
+            effect.type == VoiceEffectType::Equalizer ? 5 : 3;
         for (std::size_t parameter = 0; parameter < parameterCount; ++parameter)
             if (!std::isfinite(effect.parameters[parameter]))
                 return false;

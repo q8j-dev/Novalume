@@ -75,6 +75,7 @@ enum class VoiceEffectType : std::uint8_t
     Compressor,
     Gate,
     Limiter,
+    Equalizer,
 };
 
 // Fixed-size effect descriptors keep graph updates and the real-time callback

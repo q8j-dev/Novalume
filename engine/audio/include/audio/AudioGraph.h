@@ -412,6 +412,47 @@ private:
     float release;
 };
 
+extern const char* const sAudioEqualizer;
+class AudioEqualizer final
+    : public DescribedCreatable<AudioEqualizer, Instance, sAudioEqualizer>
+    , public AudioNode
+{
+public:
+    AudioEqualizer();
+    bool getBypass() const;
+    void setBypass(bool value);
+    bool getEditor() const;
+    void setEditor(bool value);
+    float getHighGain() const;
+    void setHighGain(float value);
+    float getLowGain() const;
+    void setLowGain(float value);
+    float getMidGain() const;
+    void setMidGain(float value);
+    NumberRange getMidRange() const;
+    void setMidRange(NumberRange value);
+    boost::shared_ptr<const Instances> getConnectedWiresReflection(std::string pin);
+    boost::shared_ptr<const Reflection::ValueArray> getInputPinsReflection();
+    boost::shared_ptr<const Reflection::ValueArray> getOutputPinsReflection();
+    std::vector<std::string> inputPins() const override;
+    std::vector<std::string> outputPins() const override;
+    Instance* audioNodeInstance() override { return this; }
+    const Instance* audioNodeInstance() const override { return this; }
+    void fireWiringChanged(bool connected, const std::string& pin,
+        const boost::shared_ptr<Instance>& wire,
+        const boost::shared_ptr<Instance>& instance) override
+    { wiringChangedSignal(connected, pin, wire, instance); }
+    rbx::signal<void(bool, std::string, boost::shared_ptr<Instance>,
+        boost::shared_ptr<Instance>)> wiringChangedSignal;
+private:
+    bool bypass;
+    bool editor;
+    float highGain;
+    float lowGain;
+    float midGain;
+    NumberRange midRange;
+};
+
 extern const char* const sAudioChannelMixer;
 class AudioChannelMixer final
     : public DescribedCreatable<AudioChannelMixer, Instance, sAudioChannelMixer>

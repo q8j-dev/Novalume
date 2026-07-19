@@ -199,6 +199,25 @@ AudioRoute findRoute(const AudioNode* node, float gain,
                 if (route.connected)
                     return route;
             }
+            else if (AudioEqualizer* equalizer =
+                         Instance::fastDynamicCast<AudioEqualizer>(target))
+            {
+                if (!equalizer->getBypass())
+                {
+                    if (effectCount >= effects.size())
+                        continue;
+                    Audio::VoiceEffect& effect = effects[effectCount++];
+                    effect.type = Audio::VoiceEffectType::Equalizer;
+                    const NumberRange midRange = equalizer->getMidRange();
+                    effect.parameters = {equalizer->getLowGain(),
+                        equalizer->getMidGain(), equalizer->getHighGain(),
+                        midRange.min, midRange.max, 0.0f, 0.0f};
+                }
+                AudioRoute route = findRoute(equalizer, gain, effects,
+                    effectCount, visited);
+                if (route.connected)
+                    return route;
+            }
             else if (AudioChannelMixer* mixer =
                          Instance::fastDynamicCast<AudioChannelMixer>(target))
             {

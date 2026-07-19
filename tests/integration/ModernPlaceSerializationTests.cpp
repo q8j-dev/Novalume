@@ -254,6 +254,14 @@ int main(int argc, char** argv)
     audioLimiter->setRelease(0.15f);
     audioLimiter->setEditor(true);
     audioLimiter->setParent(audioRoot.get());
+    boost::shared_ptr<RBX::Soundscape::AudioEqualizer> audioEqualizer =
+        RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::AudioEqualizer>();
+    audioEqualizer->setLowGain(-4.0f);
+    audioEqualizer->setMidGain(2.0f);
+    audioEqualizer->setHighGain(1.0f);
+    audioEqualizer->setMidRange(RBX::NumberRange(500.0f, 5000.0f));
+    audioEqualizer->setEditor(true);
+    audioEqualizer->setParent(audioRoot.get());
     boost::shared_ptr<RBX::Soundscape::AudioChannelMixer> audioMixer =
         RBX::Creatable<RBX::Instance>::create<
             RBX::Soundscape::AudioChannelMixer>();
@@ -316,8 +324,14 @@ int main(int argc, char** argv)
         RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
     limiterWire->setName("LimiterWire");
     limiterWire->setSourceInstance(audioLimiter.get());
-    limiterWire->setTargetInstance(audioMixer.get());
+    limiterWire->setTargetInstance(audioEqualizer.get());
     limiterWire->setParent(audioLimiter.get());
+    boost::shared_ptr<RBX::Soundscape::Wire> equalizerWire =
+        RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
+    equalizerWire->setName("EqualizerWire");
+    equalizerWire->setSourceInstance(audioEqualizer.get());
+    equalizerWire->setTargetInstance(audioMixer.get());
+    equalizerWire->setParent(audioEqualizer.get());
     boost::shared_ptr<RBX::Soundscape::Wire> mixerWire =
         RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
     mixerWire->setName("MixerWire");
@@ -488,6 +502,9 @@ int main(int argc, char** argv)
         decodedAudioRoot->findFirstChildOfType<RBX::Soundscape::AudioGate>();
     RBX::Soundscape::AudioLimiter* decodedAudioLimiter =
         decodedAudioRoot->findFirstChildOfType<RBX::Soundscape::AudioLimiter>();
+    RBX::Soundscape::AudioEqualizer* decodedAudioEqualizer =
+        decodedAudioRoot->findFirstChildOfType<
+            RBX::Soundscape::AudioEqualizer>();
     RBX::Soundscape::AudioChannelMixer* decodedAudioMixer =
         decodedAudioRoot->findFirstChildOfType<
             RBX::Soundscape::AudioChannelMixer>();
@@ -503,6 +520,7 @@ int main(int argc, char** argv)
         !decodedAudioDistortion || !decodedAudioTremolo ||
         !decodedAudioChorus || !decodedAudioFlanger ||
         !decodedAudioCompressor || !decodedAudioGate || !decodedAudioLimiter ||
+        !decodedAudioEqualizer ||
         !decodedAudioMixer || !decodedAudioSplitter ||
         decodedAudioMixer->getLayout() != RBX::Soundscape::AUDIO_CHANNEL_QUAD ||
         decodedAudioSplitter->getLayout() != RBX::Soundscape::AUDIO_CHANNEL_QUAD ||
@@ -560,6 +578,15 @@ int main(int argc, char** argv)
         decodedAudioLimiter->getBypass() ||
         decodedAudioLimiter->getConnectedWiresReflection("Input")->size() != 1 ||
         decodedAudioLimiter->getConnectedWiresReflection("Output")->size() != 1 ||
+        decodedAudioEqualizer->getLowGain() != -4.0f ||
+        decodedAudioEqualizer->getMidGain() != 2.0f ||
+        decodedAudioEqualizer->getHighGain() != 1.0f ||
+        decodedAudioEqualizer->getMidRange() !=
+            RBX::NumberRange(500.0f, 5000.0f) ||
+        decodedAudioEqualizer->getEditor() ||
+        decodedAudioEqualizer->getBypass() ||
+        decodedAudioEqualizer->getConnectedWiresReflection("Input")->size() != 1 ||
+        decodedAudioEqualizer->getConnectedWiresReflection("Output")->size() != 1 ||
         !decodedAudioPlayer || decodedAudioPlayer->getAssetId() !=
             "rbxasset://sounds/uuhhh.mp3" ||
         decodedAudioPlayer->getAudioContent().getSourceType() !=

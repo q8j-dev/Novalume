@@ -308,6 +308,7 @@ const char* const sAudioFlanger = "AudioFlanger";
 const char* const sAudioCompressor = "AudioCompressor";
 const char* const sAudioGate = "AudioGate";
 const char* const sAudioLimiter = "AudioLimiter";
+const char* const sAudioEqualizer = "AudioEqualizer";
 const char* const sAudioChannelMixer = "AudioChannelMixer";
 const char* const sAudioChannelSplitter = "AudioChannelSplitter";
 const char* const sAudioEmitter = "AudioEmitter";
@@ -559,6 +560,43 @@ static Reflection::BoundFuncDesc<AudioLimiter,
 static Reflection::EventDesc<AudioLimiter, void(bool, std::string,
     boost::shared_ptr<Instance>, boost::shared_ptr<Instance>)>
     eventAudioLimiterWiringChanged(&AudioLimiter::wiringChangedSignal,
+        "WiringChanged", "connected", "pin", "wire", "instance",
+        Security::None);
+
+static Reflection::PropDescriptor<AudioEqualizer, bool> propAudioEqualizerBypass(
+    "Bypass", category_Behavior, &AudioEqualizer::getBypass,
+    &AudioEqualizer::setBypass);
+static Reflection::PropDescriptor<AudioEqualizer, bool> propAudioEqualizerEditor(
+    "Editor", category_Data, &AudioEqualizer::getEditor,
+    &AudioEqualizer::setEditor, Reflection::PropertyDescriptor::UI,
+    Security::Roblox);
+static Reflection::PropDescriptor<AudioEqualizer, float>
+    propAudioEqualizerHighGain("HighGain", category_Data,
+        &AudioEqualizer::getHighGain, &AudioEqualizer::setHighGain);
+static Reflection::PropDescriptor<AudioEqualizer, float>
+    propAudioEqualizerLowGain("LowGain", category_Data,
+        &AudioEqualizer::getLowGain, &AudioEqualizer::setLowGain);
+static Reflection::PropDescriptor<AudioEqualizer, float>
+    propAudioEqualizerMidGain("MidGain", category_Data,
+        &AudioEqualizer::getMidGain, &AudioEqualizer::setMidGain);
+static Reflection::PropDescriptor<AudioEqualizer, NumberRange>
+    propAudioEqualizerMidRange("MidRange", category_Data,
+        &AudioEqualizer::getMidRange, &AudioEqualizer::setMidRange);
+static Reflection::BoundFuncDesc<AudioEqualizer,
+    boost::shared_ptr<const Instances>(std::string)>
+    funcAudioEqualizerConnectedWires(&AudioEqualizer::getConnectedWiresReflection,
+        "GetConnectedWires", "pin", Security::None);
+static Reflection::BoundFuncDesc<AudioEqualizer,
+    boost::shared_ptr<const Reflection::ValueArray>()>
+    funcAudioEqualizerInputPins(&AudioEqualizer::getInputPinsReflection,
+        "GetInputPins", Security::None);
+static Reflection::BoundFuncDesc<AudioEqualizer,
+    boost::shared_ptr<const Reflection::ValueArray>()>
+    funcAudioEqualizerOutputPins(&AudioEqualizer::getOutputPinsReflection,
+        "GetOutputPins", Security::None);
+static Reflection::EventDesc<AudioEqualizer, void(bool, std::string,
+    boost::shared_ptr<Instance>, boost::shared_ptr<Instance>)>
+    eventAudioEqualizerWiringChanged(&AudioEqualizer::wiringChangedSignal,
         "WiringChanged", "connected", "pin", "wire", "instance",
         Security::None);
 
@@ -1436,6 +1474,74 @@ boost::shared_ptr<const Reflection::ValueArray>
 AudioLimiter::getOutputPinsReflection() { return getOutputPins(); }
 std::vector<std::string> AudioLimiter::inputPins() const { return {"Input"}; }
 std::vector<std::string> AudioLimiter::outputPins() const { return {"Output"}; }
+
+AudioEqualizer::AudioEqualizer()
+    : DescribedCreatable<AudioEqualizer, Instance, sAudioEqualizer>(
+        sAudioEqualizer)
+    , bypass(false)
+    , editor(false)
+    , highGain(0.0f)
+    , lowGain(0.0f)
+    , midGain(0.0f)
+    , midRange(400.0f, 4000.0f)
+{
+}
+bool AudioEqualizer::getBypass() const { return bypass; }
+bool AudioEqualizer::getEditor() const { return editor; }
+float AudioEqualizer::getHighGain() const { return highGain; }
+float AudioEqualizer::getLowGain() const { return lowGain; }
+float AudioEqualizer::getMidGain() const { return midGain; }
+NumberRange AudioEqualizer::getMidRange() const { return midRange; }
+void AudioEqualizer::setBypass(bool value)
+{
+    if (bypass == value) return;
+    bypass = value;
+    raisePropertyChanged(propAudioEqualizerBypass);
+}
+void AudioEqualizer::setEditor(bool value)
+{
+    if (editor == value) return;
+    editor = value;
+    raisePropertyChanged(propAudioEqualizerEditor);
+}
+namespace {
+void setEqualizerGain(AudioEqualizer* equalizer, float& field, float value,
+    const Reflection::PropertyDescriptor& descriptor, const char* name)
+{
+    if (!std::isfinite(value))
+        throw std::runtime_error(std::string("AudioEqualizer.") + name +
+            " must be finite");
+    value = std::clamp(value, -80.0f, 10.0f);
+    if (field == value) return;
+    field = value;
+    equalizer->raisePropertyChanged(descriptor);
+}
+}
+void AudioEqualizer::setHighGain(float value)
+{ setEqualizerGain(this, highGain, value, propAudioEqualizerHighGain, "HighGain"); }
+void AudioEqualizer::setLowGain(float value)
+{ setEqualizerGain(this, lowGain, value, propAudioEqualizerLowGain, "LowGain"); }
+void AudioEqualizer::setMidGain(float value)
+{ setEqualizerGain(this, midGain, value, propAudioEqualizerMidGain, "MidGain"); }
+void AudioEqualizer::setMidRange(NumberRange value)
+{
+    if (!std::isfinite(value.min) || !std::isfinite(value.max))
+        throw std::runtime_error("AudioEqualizer.MidRange must be finite");
+    value = NumberRange(std::clamp(value.min, 200.0f, 20000.0f),
+        std::clamp(value.max, 200.0f, 20000.0f));
+    if (midRange == value) return;
+    midRange = value;
+    raisePropertyChanged(propAudioEqualizerMidRange);
+}
+boost::shared_ptr<const Instances>
+AudioEqualizer::getConnectedWiresReflection(std::string pin)
+{ return getConnectedWires(pin); }
+boost::shared_ptr<const Reflection::ValueArray>
+AudioEqualizer::getInputPinsReflection() { return getInputPins(); }
+boost::shared_ptr<const Reflection::ValueArray>
+AudioEqualizer::getOutputPinsReflection() { return getOutputPins(); }
+std::vector<std::string> AudioEqualizer::inputPins() const { return {"Input"}; }
+std::vector<std::string> AudioEqualizer::outputPins() const { return {"Output"}; }
 
 namespace {
 const std::vector<std::string>& channelPins()

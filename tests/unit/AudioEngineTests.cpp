@@ -709,6 +709,23 @@ int main()
             *std::max_element(dynamicsMix.begin(), dynamicsMix.end()) < 0.51f,
         "the graph limiter must enforce its authored ceiling");
 
+    Engine graphEqualizerEngine({.sampleRate = 48000, .channels = 2});
+    const ClipHandle graphEqualizerClip = graphEqualizerEngine.createClip({
+        .sampleRate = 48000, .channels = 1,
+        .samples = std::vector<float>(16384, 1.0f)});
+    VoiceParameters graphEqualizerParameters;
+    graphEqualizerParameters.effects[0].type = VoiceEffectType::Equalizer;
+    graphEqualizerParameters.effects[0].parameters = {
+        -20.0f, 0.0f, 0.0f, 400.0f, 4000.0f, 0.0f, 0.0f};
+    graphEqualizerParameters.effectCount = 1;
+    require(static_cast<bool>(graphEqualizerEngine.play(graphEqualizerClip,
+                graphEqualizerParameters)),
+        "a voice with a graph equalizer must start");
+    std::vector<float> equalizerMix(8192 * 2);
+    require(graphEqualizerEngine.mix(equalizerMix) &&
+            channelEnergy(equalizerMix, 0) < 1200.0f,
+        "the graph equalizer must attenuate its authored low band");
+
     Engine queuedEngine({.sampleRate = 48000, .channels = 2});
     require(queuedEngine.mixerTimeSeconds() == 0.0,
         "a fresh mixer clock must begin at zero");

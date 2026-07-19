@@ -749,6 +749,7 @@ RBX_REGISTER_CLASS(Soundscape::AudioFlanger);
 RBX_REGISTER_CLASS(Soundscape::AudioCompressor);
 RBX_REGISTER_CLASS(Soundscape::AudioGate);
 RBX_REGISTER_CLASS(Soundscape::AudioLimiter);
+RBX_REGISTER_CLASS(Soundscape::AudioEqualizer);
 RBX_REGISTER_CLASS(Soundscape::AudioChannelMixer);
 RBX_REGISTER_CLASS(Soundscape::AudioChannelSplitter);
 RBX_REGISTER_CLASS(Soundscape::AudioEmitter);

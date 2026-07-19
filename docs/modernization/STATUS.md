@@ -1274,3 +1274,10 @@ verification is complete and the user separately gives explicit permission.
   below-threshold closure and ceiling enforcement; binary and actual-Player
   chains cover both nodes, their wires, authored properties, and Editor save
   exclusion.
+- Added the current `AudioEqualizer` surface and ordered per-voice DSP stage.
+  The exact bounded low/mid/high gain and `MidRange` controls, bypass, graph
+  pins/events, and protected load-only/non-replicated `Editor` state come from
+  the supplied current API/Studio metadata. Independent per-channel crossover
+  state splits the signal into three live bands without callback allocation;
+  deterministic low-band attenuation, binary save exclusion, and the actual
+  signed Player graph all pass.
