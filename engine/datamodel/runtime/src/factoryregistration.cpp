@@ -744,6 +744,8 @@ RBX_REGISTER_CLASS(Soundscape::AudioDeviceOutput);
 RBX_REGISTER_CLASS(Soundscape::AudioFader);
 RBX_REGISTER_CLASS(Soundscape::AudioDistortion);
 RBX_REGISTER_CLASS(Soundscape::AudioTremolo);
+RBX_REGISTER_CLASS(Soundscape::AudioChorus);
+RBX_REGISTER_CLASS(Soundscape::AudioFlanger);
 RBX_REGISTER_CLASS(Soundscape::AudioChannelMixer);
 RBX_REGISTER_CLASS(Soundscape::AudioChannelSplitter);
 RBX_REGISTER_CLASS(Soundscape::AudioEmitter);

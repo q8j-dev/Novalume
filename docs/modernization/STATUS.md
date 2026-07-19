@@ -1250,3 +1250,11 @@ verification is complete and the user separately gives explicit permission.
   with distortion, and is covered by deterministic dry/wet, finite-value,
   bounds, and binary round-trip tests. The actual Player proof chain now adds
   `AudioTremolo` between `AudioDistortion` and `AudioChannelMixer`.
+- Added the exact current `AudioChorus` and `AudioFlanger` reflection,
+  serialization, bounds, pin/wire, bypass, `Depth`, `Mix`, and `Rate` surfaces
+  from the supplied Studio API/metadata. Both are ordered per-voice modulation
+  delay stages with persistent fractional-delay and LFO state, stereo chorus
+  phase separation, bounded preallocated control-time storage, and no realtime
+  allocation. Impulse-response tests prove both wet paths, the binary contract
+  round-trips their authored graph and parameters, and the signed Player audio
+  chain includes both nodes between tremolo and the channel mixer.

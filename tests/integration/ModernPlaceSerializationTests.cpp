@@ -220,6 +220,18 @@ int main(int argc, char** argv)
     audioTremolo->setSkew(-0.2f);
     audioTremolo->setSquare(0.4f);
     audioTremolo->setParent(audioRoot.get());
+    boost::shared_ptr<RBX::Soundscape::AudioChorus> audioChorus =
+        RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::AudioChorus>();
+    audioChorus->setDepth(0.6f);
+    audioChorus->setMix(0.3f);
+    audioChorus->setRate(4.0f);
+    audioChorus->setParent(audioRoot.get());
+    boost::shared_ptr<RBX::Soundscape::AudioFlanger> audioFlanger =
+        RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::AudioFlanger>();
+    audioFlanger->setDepth(0.4f);
+    audioFlanger->setMix(0.2f);
+    audioFlanger->setRate(3.0f);
+    audioFlanger->setParent(audioRoot.get());
     boost::shared_ptr<RBX::Soundscape::AudioChannelMixer> audioMixer =
         RBX::Creatable<RBX::Instance>::create<
             RBX::Soundscape::AudioChannelMixer>();
@@ -252,8 +264,20 @@ int main(int argc, char** argv)
         RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
     tremoloWire->setName("TremoloWire");
     tremoloWire->setSourceInstance(audioTremolo.get());
-    tremoloWire->setTargetInstance(audioMixer.get());
+    tremoloWire->setTargetInstance(audioChorus.get());
     tremoloWire->setParent(audioTremolo.get());
+    boost::shared_ptr<RBX::Soundscape::Wire> chorusWire =
+        RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
+    chorusWire->setName("ChorusWire");
+    chorusWire->setSourceInstance(audioChorus.get());
+    chorusWire->setTargetInstance(audioFlanger.get());
+    chorusWire->setParent(audioChorus.get());
+    boost::shared_ptr<RBX::Soundscape::Wire> flangerWire =
+        RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
+    flangerWire->setName("FlangerWire");
+    flangerWire->setSourceInstance(audioFlanger.get());
+    flangerWire->setTargetInstance(audioMixer.get());
+    flangerWire->setParent(audioFlanger.get());
     boost::shared_ptr<RBX::Soundscape::Wire> mixerWire =
         RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
     mixerWire->setName("MixerWire");
@@ -413,6 +437,10 @@ int main(int argc, char** argv)
     RBX::Soundscape::AudioTremolo* decodedAudioTremolo =
         decodedAudioRoot->findFirstChildOfType<
             RBX::Soundscape::AudioTremolo>();
+    RBX::Soundscape::AudioChorus* decodedAudioChorus =
+        decodedAudioRoot->findFirstChildOfType<RBX::Soundscape::AudioChorus>();
+    RBX::Soundscape::AudioFlanger* decodedAudioFlanger =
+        decodedAudioRoot->findFirstChildOfType<RBX::Soundscape::AudioFlanger>();
     RBX::Soundscape::AudioChannelMixer* decodedAudioMixer =
         decodedAudioRoot->findFirstChildOfType<
             RBX::Soundscape::AudioChannelMixer>();
@@ -426,6 +454,7 @@ int main(int argc, char** argv)
     if (!decodedAudioOutput || !decodedAudioWire ||
         !decodedAudioEmitter || !decodedAudioListener || !decodedAudioFader ||
         !decodedAudioDistortion || !decodedAudioTremolo ||
+        !decodedAudioChorus || !decodedAudioFlanger ||
         !decodedAudioMixer || !decodedAudioSplitter ||
         decodedAudioMixer->getLayout() != RBX::Soundscape::AUDIO_CHANNEL_QUAD ||
         decodedAudioSplitter->getLayout() != RBX::Soundscape::AUDIO_CHANNEL_QUAD ||
@@ -450,6 +479,18 @@ int main(int argc, char** argv)
         decodedAudioTremolo->getBypass() ||
         decodedAudioTremolo->getConnectedWiresReflection("Input")->size() != 1 ||
         decodedAudioTremolo->getConnectedWiresReflection("Output")->size() != 1 ||
+        decodedAudioChorus->getDepth() != 0.6f ||
+        decodedAudioChorus->getMix() != 0.3f ||
+        decodedAudioChorus->getRate() != 4.0f ||
+        decodedAudioChorus->getBypass() ||
+        decodedAudioChorus->getConnectedWiresReflection("Input")->size() != 1 ||
+        decodedAudioChorus->getConnectedWiresReflection("Output")->size() != 1 ||
+        decodedAudioFlanger->getDepth() != 0.4f ||
+        decodedAudioFlanger->getMix() != 0.2f ||
+        decodedAudioFlanger->getRate() != 3.0f ||
+        decodedAudioFlanger->getBypass() ||
+        decodedAudioFlanger->getConnectedWiresReflection("Input")->size() != 1 ||
+        decodedAudioFlanger->getConnectedWiresReflection("Output")->size() != 1 ||
         !decodedAudioPlayer || decodedAudioPlayer->getAssetId() !=
             "rbxasset://sounds/uuhhh.mp3" ||
         decodedAudioPlayer->getAudioContent().getSourceType() !=

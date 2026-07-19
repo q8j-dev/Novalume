@@ -32,7 +32,10 @@ struct Engine::Impl
         std::array<std::atomic<std::uint8_t>, 32> types{};
         std::array<std::array<std::atomic<float>, 7>, 32> parameters{};
         std::array<float, 32> phases{};
+        std::array<std::vector<float>, 32> delays;
+        std::array<std::uint32_t, 32> delayPositions{};
         std::uint32_t sampleRate = 48000;
+        std::uint32_t channels = 2;
         std::atomic<std::uint32_t> count{0};
     };
 
@@ -124,6 +127,72 @@ struct Engine::Impl
                         phase += phaseStep;
                         phase -= std::floor(phase);
                     }
+                    effects->phases[effect] = phase;
+                }
+                else if (type == VoiceEffectType::Chorus ||
+                         type == VoiceEffectType::Flanger)
+                {
+                    const float depth = std::clamp(
+                        effects->parameters[effect][0].load(
+                            std::memory_order_relaxed), 0.0f, 1.0f);
+                    const float mix = std::clamp(
+                        effects->parameters[effect][1].load(
+                            std::memory_order_relaxed), 0.0f, 1.0f);
+                    const float rate = std::clamp(
+                        effects->parameters[effect][2].load(
+                            std::memory_order_relaxed), 0.0f, 20.0f);
+                    std::vector<float>& delay = effects->delays[effect];
+                    const std::uint32_t delayFrames = channels && !delay.empty()
+                        ? static_cast<std::uint32_t>(delay.size() / channels) : 0;
+                    if (delayFrames < 2 || mix == 0.0f)
+                        continue;
+                    std::uint32_t writeFrame = effects->delayPositions[effect] %
+                        delayFrames;
+                    float phase = effects->phases[effect];
+                    const float phaseStep = rate /
+                        static_cast<float>(std::max(effects->sampleRate, 1u));
+                    const float baseDelaySeconds = type == VoiceEffectType::Chorus
+                        ? 0.018f : 0.0015f;
+                    const float depthSeconds = type == VoiceEffectType::Chorus
+                        ? 0.012f : 0.00125f;
+                    for (ma_uint32 frame = 0; frame < frames; ++frame)
+                    {
+                        for (ma_uint32 channel = 0; channel < channels; ++channel)
+                        {
+                            const std::size_t outputIndex =
+                                static_cast<std::size_t>(frame) * channels + channel;
+                            const float dry = output[0][outputIndex];
+                            delay[static_cast<std::size_t>(writeFrame) * channels +
+                                channel] = dry;
+                            const float channelPhase = phase +
+                                (type == VoiceEffectType::Chorus && channels > 1
+                                    ? 0.25f * static_cast<float>(channel) /
+                                        static_cast<float>(channels - 1)
+                                    : 0.0f);
+                            const float lfo = 0.5f + 0.5f * std::sin(
+                                6.2831853071795864769f * channelPhase);
+                            const float delayInFrames = (baseDelaySeconds +
+                                depthSeconds * depth * lfo) * effects->sampleRate;
+                            float readFrame = static_cast<float>(writeFrame) -
+                                delayInFrames;
+                            while (readFrame < 0.0f)
+                                readFrame += static_cast<float>(delayFrames);
+                            const std::uint32_t first =
+                                static_cast<std::uint32_t>(readFrame) % delayFrames;
+                            const std::uint32_t second = (first + 1) % delayFrames;
+                            const float fraction = readFrame - std::floor(readFrame);
+                            const float a = delay[static_cast<std::size_t>(first) *
+                                channels + channel];
+                            const float b = delay[static_cast<std::size_t>(second) *
+                                channels + channel];
+                            const float wet = a + (b - a) * fraction;
+                            output[0][outputIndex] = dry + (wet - dry) * mix;
+                        }
+                        writeFrame = (writeFrame + 1) % delayFrames;
+                        phase += phaseStep;
+                        phase -= std::floor(phase);
+                    }
+                    effects->delayPositions[effect] = writeFrame;
                     effects->phases[effect] = phase;
                 }
             }
@@ -928,10 +997,13 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
         {
             const VoiceEffect& effect = parameters.effects[index];
             if (effect.type != VoiceEffectType::Distortion &&
-                effect.type != VoiceEffectType::Tremolo)
+                effect.type != VoiceEffectType::Tremolo &&
+                effect.type != VoiceEffectType::Chorus &&
+                effect.type != VoiceEffectType::Flanger)
                 return {};
             const std::size_t parameterCount = effect.type ==
-                VoiceEffectType::Distortion ? 1 : 6;
+                VoiceEffectType::Distortion ? 1 :
+                effect.type == VoiceEffectType::Tremolo ? 6 : 3;
             for (std::size_t parameter = 0; parameter < parameterCount; ++parameter)
                 if (!std::isfinite(effect.parameters[parameter]))
                     return {};
@@ -1085,6 +1157,12 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
             "voice effect node initialization failed");
         voice->effectsInitialized = true;
         voice->effects.sampleRate = impl->config.sampleRate;
+        voice->effects.channels = impl->config.channels;
+        const std::size_t modulationDelaySamples =
+            (static_cast<std::size_t>(impl->config.sampleRate) / 20 + 2) *
+            impl->config.channels;
+        for (std::vector<float>& delay : voice->effects.delays)
+            delay.resize(modulationDelaySamples);
         const std::uint32_t effectCount = std::min<std::uint32_t>(
             parameters.effectCount ? parameters.effectCount :
                 parameters.distortionCount,
@@ -1343,10 +1421,13 @@ bool Engine::setVoiceEffects(VoiceHandle handle,
     for (const VoiceEffect& effect : effects)
     {
         if (effect.type != VoiceEffectType::Distortion &&
-            effect.type != VoiceEffectType::Tremolo)
+            effect.type != VoiceEffectType::Tremolo &&
+            effect.type != VoiceEffectType::Chorus &&
+            effect.type != VoiceEffectType::Flanger)
             return false;
         const std::size_t parameterCount = effect.type ==
-            VoiceEffectType::Distortion ? 1 : 6;
+            VoiceEffectType::Distortion ? 1 :
+            effect.type == VoiceEffectType::Tremolo ? 6 : 3;
         for (std::size_t parameter = 0; parameter < parameterCount; ++parameter)
             if (!std::isfinite(effect.parameters[parameter]))
                 return false;

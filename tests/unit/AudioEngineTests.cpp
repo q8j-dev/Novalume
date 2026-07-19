@@ -631,6 +631,30 @@ int main()
                 std::span<const VoiceEffect>(&dryTremolo, 1)),
         "voice effects must reject non-finite realtime parameters");
 
+    for (const VoiceEffectType type : {
+             VoiceEffectType::Chorus, VoiceEffectType::Flanger})
+    {
+        Engine modulationEngine({.sampleRate = 48000, .channels = 2});
+        std::vector<float> modulationImpulse(4096, 0.0f);
+        modulationImpulse[0] = 1.0f;
+        const ClipHandle modulationClip = modulationEngine.createClip({
+            .sampleRate = 48000, .channels = 1,
+            .samples = std::move(modulationImpulse)});
+        VoiceParameters modulationParameters;
+        modulationParameters.effects[0].type = type;
+        modulationParameters.effects[0].parameters = {
+            0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+        modulationParameters.effectCount = 1;
+        require(static_cast<bool>(modulationEngine.play(
+                    modulationClip, modulationParameters)),
+            "a voice with a modulation delay must start");
+        std::vector<float> modulationMix(2048 * 2);
+        require(modulationEngine.mix(modulationMix) &&
+                std::abs(modulationMix[0]) < 0.001f &&
+                channelEnergy(modulationMix, 0) > 0.5f,
+            "chorus and flanger must produce their bounded delayed wet signal");
+    }
+
     Engine queuedEngine({.sampleRate = 48000, .channels = 2});
     require(queuedEngine.mixerTimeSeconds() == 0.0,
         "a fresh mixer clock must begin at zero");

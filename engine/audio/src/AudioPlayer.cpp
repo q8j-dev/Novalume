@@ -111,6 +111,40 @@ AudioRoute findRoute(const AudioNode* node, float gain,
                 if (route.connected)
                     return route;
             }
+            else if (AudioChorus* chorus =
+                         Instance::fastDynamicCast<AudioChorus>(target))
+            {
+                if (!chorus->getBypass())
+                {
+                    if (effectCount >= effects.size())
+                        continue;
+                    Audio::VoiceEffect& effect = effects[effectCount++];
+                    effect.type = Audio::VoiceEffectType::Chorus;
+                    effect.parameters = {chorus->getDepth(), chorus->getMix(),
+                        chorus->getRate(), 0.0f, 0.0f, 0.0f, 0.0f};
+                }
+                AudioRoute route = findRoute(chorus, gain, effects,
+                    effectCount, visited);
+                if (route.connected)
+                    return route;
+            }
+            else if (AudioFlanger* flanger =
+                         Instance::fastDynamicCast<AudioFlanger>(target))
+            {
+                if (!flanger->getBypass())
+                {
+                    if (effectCount >= effects.size())
+                        continue;
+                    Audio::VoiceEffect& effect = effects[effectCount++];
+                    effect.type = Audio::VoiceEffectType::Flanger;
+                    effect.parameters = {flanger->getDepth(), flanger->getMix(),
+                        flanger->getRate(), 0.0f, 0.0f, 0.0f, 0.0f};
+                }
+                AudioRoute route = findRoute(flanger, gain, effects,
+                    effectCount, visited);
+                if (route.connected)
+                    return route;
+            }
             else if (AudioChannelMixer* mixer =
                          Instance::fastDynamicCast<AudioChannelMixer>(target))
             {

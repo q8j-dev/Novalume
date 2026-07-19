@@ -70,6 +70,8 @@ enum class VoiceEffectType : std::uint8_t
 {
     Distortion,
     Tremolo,
+    Chorus,
+    Flanger,
 };
 
 // Fixed-size effect descriptors keep graph updates and the real-time callback

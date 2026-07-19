@@ -303,6 +303,8 @@ const char* const sAudioDeviceOutput = "AudioDeviceOutput";
 const char* const sAudioFader = "AudioFader";
 const char* const sAudioDistortion = "AudioDistortion";
 const char* const sAudioTremolo = "AudioTremolo";
+const char* const sAudioChorus = "AudioChorus";
+const char* const sAudioFlanger = "AudioFlanger";
 const char* const sAudioChannelMixer = "AudioChannelMixer";
 const char* const sAudioChannelSplitter = "AudioChannelSplitter";
 const char* const sAudioEmitter = "AudioEmitter";
@@ -430,6 +432,34 @@ static Reflection::EventDesc<AudioTremolo,
         boost::shared_ptr<Instance>)> eventAudioTremoloWiringChanged(
     &AudioTremolo::wiringChangedSignal, "WiringChanged", "connected", "pin",
     "wire", "instance", Security::None);
+
+#define RBX_DEFINE_AUDIO_MODULATION_REFLECTION(ClassName, Prefix) \
+static Reflection::PropDescriptor<ClassName, bool> Prefix##Bypass( \
+    "Bypass", category_Behavior, &ClassName::getBypass, &ClassName::setBypass); \
+static Reflection::PropDescriptor<ClassName, float> Prefix##Depth( \
+    "Depth", category_Data, &ClassName::getDepth, &ClassName::setDepth); \
+static Reflection::PropDescriptor<ClassName, float> Prefix##Mix( \
+    "Mix", category_Data, &ClassName::getMix, &ClassName::setMix); \
+static Reflection::PropDescriptor<ClassName, float> Prefix##Rate( \
+    "Rate", category_Data, &ClassName::getRate, &ClassName::setRate); \
+static Reflection::BoundFuncDesc<ClassName, \
+    boost::shared_ptr<const Instances>(std::string)> Prefix##ConnectedWires( \
+    &ClassName::getConnectedWiresReflection, "GetConnectedWires", "pin", \
+    Security::None); \
+static Reflection::BoundFuncDesc<ClassName, \
+    boost::shared_ptr<const Reflection::ValueArray>()> Prefix##InputPins( \
+    &ClassName::getInputPinsReflection, "GetInputPins", Security::None); \
+static Reflection::BoundFuncDesc<ClassName, \
+    boost::shared_ptr<const Reflection::ValueArray>()> Prefix##OutputPins( \
+    &ClassName::getOutputPinsReflection, "GetOutputPins", Security::None); \
+static Reflection::EventDesc<ClassName, void(bool, std::string, \
+    boost::shared_ptr<Instance>, boost::shared_ptr<Instance>)> \
+    Prefix##WiringChanged(&ClassName::wiringChangedSignal, "WiringChanged", \
+        "connected", "pin", "wire", "instance", Security::None)
+
+RBX_DEFINE_AUDIO_MODULATION_REFLECTION(AudioChorus, propAudioChorus);
+RBX_DEFINE_AUDIO_MODULATION_REFLECTION(AudioFlanger, propAudioFlanger);
+#undef RBX_DEFINE_AUDIO_MODULATION_REFLECTION
 
 static Reflection::EnumPropDescriptor<AudioChannelMixer, AudioChannelLayout>
     propAudioChannelMixerLayout("Layout", category_Data,
@@ -1047,6 +1077,65 @@ AudioTremolo::getOutputPinsReflection()
 }
 std::vector<std::string> AudioTremolo::inputPins() const { return {"Input"}; }
 std::vector<std::string> AudioTremolo::outputPins() const { return {"Output"}; }
+
+#define RBX_DEFINE_AUDIO_MODULATION_CLASS(ClassName, ClassString, Prefix) \
+ClassName::ClassName() \
+    : DescribedCreatable<ClassName, Instance, ClassString>(ClassString) \
+    , bypass(false), depth(0.5f), mix(0.5f), rate(1.0f) {} \
+bool ClassName::getBypass() const { return bypass; } \
+float ClassName::getDepth() const { return depth; } \
+float ClassName::getMix() const { return mix; } \
+float ClassName::getRate() const { return rate; } \
+void ClassName::setBypass(bool value) \
+{ \
+    if (bypass == value) return; \
+    bypass = value; \
+    raisePropertyChanged(Prefix##Bypass); \
+} \
+void ClassName::setDepth(float value) \
+{ \
+    setModulationValue(this, depth, value, 0.0f, 1.0f, \
+        Prefix##Depth, #ClassName ".Depth"); \
+} \
+void ClassName::setMix(float value) \
+{ \
+    setModulationValue(this, mix, value, 0.0f, 1.0f, \
+        Prefix##Mix, #ClassName ".Mix"); \
+} \
+void ClassName::setRate(float value) \
+{ \
+    setModulationValue(this, rate, value, 0.0f, 20.0f, \
+        Prefix##Rate, #ClassName ".Rate"); \
+} \
+boost::shared_ptr<const Instances> \
+ClassName::getConnectedWiresReflection(std::string pin) \
+{ return getConnectedWires(pin); } \
+boost::shared_ptr<const Reflection::ValueArray> \
+ClassName::getInputPinsReflection() { return getInputPins(); } \
+boost::shared_ptr<const Reflection::ValueArray> \
+ClassName::getOutputPinsReflection() { return getOutputPins(); } \
+std::vector<std::string> ClassName::inputPins() const { return {"Input"}; } \
+std::vector<std::string> ClassName::outputPins() const { return {"Output"}; }
+
+namespace {
+template<class Effect>
+void setModulationValue(Effect* effect, float& field, float value,
+    float minimum, float maximum,
+    const Reflection::PropertyDescriptor& descriptor, const char* name)
+{
+    if (!std::isfinite(value))
+        throw std::runtime_error(std::string(name) + " must be finite");
+    value = std::clamp(value, minimum, maximum);
+    if (field == value)
+        return;
+    field = value;
+    effect->raisePropertyChanged(descriptor);
+}
+}
+
+RBX_DEFINE_AUDIO_MODULATION_CLASS(AudioChorus, sAudioChorus, propAudioChorus)
+RBX_DEFINE_AUDIO_MODULATION_CLASS(AudioFlanger, sAudioFlanger, propAudioFlanger)
+#undef RBX_DEFINE_AUDIO_MODULATION_CLASS
 
 namespace {
 const std::vector<std::string>& channelPins()
