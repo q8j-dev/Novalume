@@ -16,11 +16,11 @@ target_compile_features(rbx-platform-clipboard-macos PUBLIC cxx_std_20)
 rbx_enable_warnings(rbx-platform-clipboard-macos)
 
 add_library(rbx-platform-runtime-macos STATIC EXCLUDE_FROM_ALL
-    "${CMAKE_SOURCE_DIR}/App/util/FileSystemIndependent.cpp"
-    "${CMAKE_SOURCE_DIR}/App/util/MemoryStatsCommon.cpp"
-    "${CMAKE_SOURCE_DIR}/App/util/Darwin/FileSystem.mm"
-    "${CMAKE_SOURCE_DIR}/App/util/Darwin/MemoryStats.cpp"
-    "${CMAKE_SOURCE_DIR}/App/util/Darwin/StringConv.cpp")
+    "${CMAKE_SOURCE_DIR}/platform/common/src/FileSystemIndependent.cpp"
+    "${CMAKE_SOURCE_DIR}/platform/common/src/MemoryStatsCommon.cpp"
+    src/FileSystem.mm
+    src/MemoryStats.cpp
+    src/StringConv.cpp)
 add_library(Roblox::PlatformRuntime ALIAS rbx-platform-runtime-macos)
 target_include_directories(rbx-platform-runtime-macos PRIVATE
     "${CMAKE_SOURCE_DIR}/App/include"

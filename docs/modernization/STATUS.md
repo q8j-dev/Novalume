@@ -749,6 +749,10 @@ the final return; it is not replaced or treated as accepted while deferred.
   platform-specific sources that still require separate classification. The
   named archive now compiles solely from its subsystem directory instead of
   reaching back into the legacy utility dump.
+- Moved the five common and Darwin implementations already owned by
+  `Roblox::PlatformRuntime` into `platform/common/src` and
+  `platform/macos/src`. The macOS runtime archive no longer compiles active
+  filesystem, memory-statistics, or string-conversion code from `App/util`.
 - Moved the complete 355-file CSG family under `engine/geometry/csg` and
   updated its Player, Studio, Xbox, model-analyzer, converter, solution,
   Visual Studio, and Xcode consumers. Added the named
