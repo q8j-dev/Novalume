@@ -1202,7 +1202,7 @@ cmd /c "exit /b 0"</Command>
     <ClCompile Include="solver\SolverBody.cpp" />
     <ClCompile Include="solver\SolverConfig.cpp" />
     <ClCompile Include="solver\SolverKernel.cpp" />
-    <ClCompile Include="util\Durango\FileSystemDurango.cpp">
+    <ClCompile Include="..\platform\xbox\src\FileSystemDurango.cpp">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NoOpt|Durango'">true</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NoOptRcc|Durango'">true</CompileAsWinRT>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NoOpt|Durango'">NotUsing</PrecompiledHeader>
@@ -1228,7 +1228,7 @@ cmd /c "exit /b 0"</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Durango'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseRcc|Durango'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="util\Durango\ProgramMemoryChecker.cpp">
+    <ClCompile Include="..\engine\security\src\platform\xbox\ProgramMemoryChecker.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseStudio|Durango'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugStudio|Durango'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Durango'">false</ExcludedFromBuild>
@@ -1264,8 +1264,8 @@ cmd /c "exit /b 0"</Command>
     </ClCompile>
     <ClCompile Include="util\HttpAsync.cpp" />
     <ClCompile Include="util\KeyCode.cpp" />
-    <ClCompile Include="util\MachineIdUploader.cpp" />
-    <ClCompile Include="util\MachineIdUploader_Windows.cpp">
+    <ClCompile Include="..\engine\security\src\MachineIdUploader.cpp" />
+    <ClCompile Include="..\engine\security\src\platform\windows\MachineIdUploader_Windows.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Durango'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseRcc|Durango'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseStudio|Durango'">true</ExcludedFromBuild>
@@ -1299,7 +1299,7 @@ cmd /c "exit /b 0"</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseStudio|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseStudio|Durango'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="util\MemoryStats.cpp">
+    <ClCompile Include="..\platform\windows\src\MemoryStats.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Durango'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NoOpt|Win32'">NotUsing</PrecompiledHeader>
@@ -1333,10 +1333,10 @@ cmd /c "exit /b 0"</Command>
     </ClCompile>
     <ClCompile Include="util\MemoryStatsCommon.cpp" />
     <ClCompile Include="util\MovementHistory.cpp" />
-    <ClCompile Include="util\NamedMutex.cpp" />
+    <ClCompile Include="..\platform\windows\src\NamedMutex.cpp" />
     <ClCompile Include="util\PathInterpolatedCFrame.cpp" />
     <ClCompile Include="util\PhysicalProperties.cpp" />
-    <ClCompile Include="util\ProgramMemoryChecker.cpp">
+    <ClCompile Include="..\engine\security\src\platform\windows\ProgramMemoryChecker.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseStudio|Durango'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugStudio|Durango'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Durango'">true</ExcludedFromBuild>
@@ -1442,7 +1442,7 @@ cmd /c "exit /b 0"</Command>
     <ClCompile Include="..\engine\audio\src\Sound.cpp" />
     <ClCompile Include="..\engine\audio\src\SoundService.cpp" />
     <ClCompile Include="util\SpatialRegion.cpp" />
-    <ClCompile Include="util\stdafx.cpp">
+    <ClCompile Include="..\engine\runtime_support\src\legacy\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Durango'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NoOpt|Win32'">Create</PrecompiledHeader>
@@ -1465,7 +1465,7 @@ cmd /c "exit /b 0"</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseStudio|Durango'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="util\StreamRegion.cpp" />
-    <ClCompile Include="util\Win\CheatEngine.cpp">
+    <ClCompile Include="..\engine\security\src\platform\windows\CheatEngine.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseStudio|Durango'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugStudio|Durango'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Durango'">true</ExcludedFromBuild>
@@ -1477,7 +1477,7 @@ cmd /c "exit /b 0"</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseRcc|Durango'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='NoOptStudio|Durango'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="util\Win\FileSystem.cpp">
+    <ClCompile Include="..\platform\windows\src\FileSystem.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseStudio|Durango'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugStudio|Durango'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Durango'">true</ExcludedFromBuild>
@@ -1489,7 +1489,7 @@ cmd /c "exit /b 0"</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseRcc|Durango'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='NoOptStudio|Durango'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="util\XboxHttp2.cpp">
+    <ClCompile Include="..\engine\runtime_support\src\platform\xbox\XboxHttp2.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='NoOptStudio|Win32'">true</ExcludedFromBuild>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Durango'">
       </CompileAsWinRT>
@@ -2008,8 +2008,8 @@ cmd /c "exit /b 0"</Command>
     <ClCompile Include="util\AnimationId.cpp" />
     <ClCompile Include="util\AsyncHttpQueue.cpp" />
     <ClCompile Include="util\Axes.cpp" />
-    <ClCompile Include="util\Base64BinaryInputStream.cpp" />
-    <ClCompile Include="util\Base64BinaryOutputStream.cpp" />
+    <ClCompile Include="..\engine\serialization\src\Base64BinaryInputStream.cpp" />
+    <ClCompile Include="..\engine\serialization\src\Base64BinaryOutputStream.cpp" />
     <ClCompile Include="util\BrickColor.cpp" />
     <ClCompile Include="util\CacheableContentProvider.cpp" />
     <ClCompile Include="util\CameraSubject.cpp" />
@@ -2138,7 +2138,7 @@ cmd /c "exit /b 0"</Command>
     <ClCompile Include="Util\NormalId.cpp" />
     <ClCompile Include="util\Profiling.cpp" />
     <ClCompile Include="util\ProtectedString.cpp" />
-    <ClCompile Include="util\quadedge.cpp" />
+    <ClCompile Include="..\engine\geometry\src\quadedge.cpp" />
     <ClCompile Include="Util\Quaternion.cpp" />
     <ClCompile Include="Util\RbxStringTable.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Win32'">NotUsing</PrecompiledHeader>
@@ -2167,7 +2167,7 @@ cmd /c "exit /b 0"</Command>
     <ClCompile Include="util\Region3.cpp" />
     <ClCompile Include="util\Region3int16.cpp" />
     <ClCompile Include="$(SolutionDir)apps\player\shared\client\RobloxServicesTools.cpp" />
-    <ClCompile Include="util\RunningAverage.cpp" />
+    <ClCompile Include="..\engine\value_types\src\RunningAverage.cpp" />
     <ClCompile Include="Util\RunStateOwner.cpp" />
     <ClCompile Include="util\ScriptInformationProvider.cpp" />
     <ClCompile Include="..\engine\audio\src\SoundChannel.cpp" />
@@ -2187,8 +2187,8 @@ cmd /c "exit /b 0"</Command>
     <ClCompile Include="Util\UserInputBase.cpp" />
     <ClCompile Include="Util\Utilities.cpp" />
     <ClCompile Include="util\Vector3int32.cpp" />
-    <ClCompile Include="util\WinHeap.cpp" />
-    <ClCompile Include="util\WinHttp.cpp">
+    <ClCompile Include="..\platform\windows\src\WinHeap.cpp" />
+    <ClCompile Include="..\engine\runtime_support\src\platform\windows\WinHttp.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseStudio|Durango'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugStudio|Durango'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Durango'">true</ExcludedFromBuild>
@@ -2200,7 +2200,7 @@ cmd /c "exit /b 0"</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseRcc|Durango'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='NoOptStudio|Durango'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="util\WinInet.cpp">
+    <ClCompile Include="..\engine\runtime_support\src\platform\windows\WinInet.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Durango'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseRcc|Durango'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseStudio|Durango'">true</ExcludedFromBuild>

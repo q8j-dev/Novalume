@@ -890,10 +890,10 @@
     <ClCompile Include="util\Axes.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
-    <ClCompile Include="util\Base64BinaryInputStream.cpp">
+    <ClCompile Include="..\engine\serialization\src\Base64BinaryInputStream.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
-    <ClCompile Include="util\Base64BinaryOutputStream.cpp">
+    <ClCompile Include="..\engine\serialization\src\Base64BinaryOutputStream.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
     <ClCompile Include="util\BrickColor.cpp">
@@ -998,7 +998,7 @@
     <ClCompile Include="util\ProtectedString.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
-    <ClCompile Include="util\quadedge.cpp">
+    <ClCompile Include="..\engine\geometry\src\quadedge.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
     <ClCompile Include="Util\Quaternion.cpp">
@@ -1022,7 +1022,7 @@
     <ClCompile Include="$(SolutionDir)apps\player\shared\client\RobloxServicesTools.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
-    <ClCompile Include="util\RunningAverage.cpp">
+    <ClCompile Include="..\engine\value_types\src\RunningAverage.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
     <ClCompile Include="Util\RunStateOwner.cpp">
@@ -1079,13 +1079,13 @@
     <ClCompile Include="util\Vector3int32.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
-    <ClCompile Include="util\WinHeap.cpp">
+    <ClCompile Include="..\platform\windows\src\WinHeap.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
-    <ClCompile Include="util\WinHttp.cpp">
+    <ClCompile Include="..\engine\runtime_support\src\platform\windows\WinHttp.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
-    <ClCompile Include="util\WinInet.cpp">
+    <ClCompile Include="..\engine\runtime_support\src\platform\windows\WinInet.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
     <ClCompile Include="script\CoreScript.cpp">
@@ -1418,7 +1418,7 @@
     <ClCompile Include="v8datamodel\ScriptService.cpp">
       <Filter>Source Files\V8DataModel Source</Filter>
     </ClCompile>
-    <ClCompile Include="util\ProgramMemoryChecker.cpp">
+    <ClCompile Include="..\engine\security\src\platform\windows\ProgramMemoryChecker.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
     <ClCompile Include="util\xxhash.c">
@@ -1472,10 +1472,10 @@
     <ClCompile Include="v8datamodel\SleepingJob.cpp">
       <Filter>Source Files\V8DataModel Source</Filter>
     </ClCompile>
-    <ClCompile Include="util\MachineIdUploader.cpp">
+    <ClCompile Include="..\engine\security\src\MachineIdUploader.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
-    <ClCompile Include="util\MachineIdUploader_Windows.cpp">
+    <ClCompile Include="..\engine\security\src\platform\windows\MachineIdUploader_Windows.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
     <ClCompile Include="util\md5.c">
@@ -1493,7 +1493,7 @@
     <ClCompile Include="v8datamodel\Remote.cpp">
       <Filter>Source Files\V8DataModel Source</Filter>
     </ClCompile>
-    <ClCompile Include="util\MemoryStats.cpp">
+    <ClCompile Include="..\platform\windows\src\MemoryStats.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
     <ClCompile Include="util\MemoryStatsCommon.cpp">
@@ -1532,7 +1532,7 @@
     <ClCompile Include="util\StreamRegion.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="util\stdafx.cpp">
+    <ClCompile Include="..\engine\runtime_support\src\legacy\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="util\MovementHistory.cpp">
@@ -1574,7 +1574,7 @@
     <ClCompile Include="v8datamodel\ReplicatedFirst.cpp">
       <Filter>Source Files\V8DataModel Source</Filter>
     </ClCompile>
-    <ClCompile Include="util\Win\FileSystem.cpp">
+    <ClCompile Include="..\platform\windows\src\FileSystem.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
     <ClCompile Include="v8datamodel\PathfindingService.cpp">
@@ -1664,10 +1664,10 @@
     <ClCompile Include="..\engine\audio\src\Sound.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
-    <ClCompile Include="util\Win\CheatEngine.cpp">
+    <ClCompile Include="..\engine\security\src\platform\windows\CheatEngine.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
-    <ClCompile Include="util\NamedMutex.cpp">
+    <ClCompile Include="..\platform\windows\src\NamedMutex.cpp">
       <Filter>Source Files\Util Source</Filter>
     </ClCompile>
     <ClCompile Include="util\URL.cpp">
@@ -1733,7 +1733,7 @@
     <ClCompile Include="v8world\MaterialProperties.cpp">
       <Filter>Source Files\V8World Source</Filter>
     </ClCompile>
-    <ClCompile Include="util\Durango\ProgramMemoryChecker.cpp">
+    <ClCompile Include="..\engine\security\src\platform\xbox\ProgramMemoryChecker.cpp">
       <Filter>Source Files\Util Source\Durango</Filter>
     </ClCompile>
     <ClCompile Include="v8datamodel\PlatformService.cpp">
@@ -1754,10 +1754,10 @@
     <ClCompile Include="v8world\BulletContact.cpp">
       <Filter>Source Files\V8World Source</Filter>
     </ClCompile>
-    <ClCompile Include="util\XboxHttp2.cpp">
+    <ClCompile Include="..\engine\runtime_support\src\platform\xbox\XboxHttp2.cpp">
       <Filter>Source Files\Util Source\Durango</Filter>
     </ClCompile>
-    <ClCompile Include="util\Durango\FileSystemDurango.cpp">
+    <ClCompile Include="..\platform\xbox\src\FileSystemDurango.cpp">
       <Filter>Source Files\Util Source\Durango</Filter>
     </ClCompile>
     <ClCompile Include="util\FileSystemIndependent.cpp">

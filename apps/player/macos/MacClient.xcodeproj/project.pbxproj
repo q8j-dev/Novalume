@@ -971,7 +971,7 @@
 		52ECABA712EE96FE00FAF033 /* Test.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Test.html; sourceTree = "<group>"; };
 		564FE9FC19953E2300BEEAB8 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		567B4B9019F6FD5F002AEDF5 /* HttpCacheEntryTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = HttpCacheEntryTest.cpp; path = tests/unit/datamodel/HttpCacheEntryTest.cpp; sourceTree = "<group>"; };
-		56A2C56D17E78FA90026D19D /* StringConv.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StringConv.cpp; path = App/util/Darwin/StringConv.cpp; sourceTree = "<group>"; };
+		56A2C56D17E78FA90026D19D /* StringConv.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StringConv.cpp; path = platform/macos/src/StringConv.cpp; sourceTree = "<group>"; };
 		56AFE17E182D68EE00F64AFF /* ThreadPoolTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ThreadPoolTest.cpp; path = tests/unit/datamodel/ThreadPoolTest.cpp; sourceTree = "<group>"; };
 		56F916F4197DBA9B002AFFF8 /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = "darwin/x86/openssl/openssl-1.0.2c/lib/libcrypto.a"; sourceTree = CONTRIB_PATH; };
 		56F916F5197DBA9B002AFFF8 /* libssl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libssl.a; path = "darwin/x86/openssl/openssl-1.0.2c/lib/libssl.a"; sourceTree = CONTRIB_PATH; };

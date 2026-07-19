@@ -1,4 +1,6 @@
 add_library(rbx-serialization STATIC EXCLUDE_FROM_ALL
+    src/Base64BinaryInputStream.cpp
+    src/Base64BinaryOutputStream.cpp
     src/SerializerBinary.cpp
     src/SerializerV2.cpp
     src/WebParser.cpp

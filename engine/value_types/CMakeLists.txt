@@ -25,6 +25,7 @@ set(RBX_VALUE_TYPE_SOURCES
     "${CMAKE_SOURCE_DIR}/engine/value_types/src/Region3.cpp"
     "${CMAKE_SOURCE_DIR}/engine/value_types/src/Region3int16.cpp"
     "${CMAKE_SOURCE_DIR}/engine/value_types/src/Region3int32.cpp"
+    "${CMAKE_SOURCE_DIR}/engine/value_types/src/RunningAverage.cpp"
     "${CMAKE_SOURCE_DIR}/engine/value_types/src/UDim.cpp"
     "${CMAKE_SOURCE_DIR}/engine/value_types/src/Units.cpp"
     "${CMAKE_SOURCE_DIR}/engine/value_types/src/Vector3int32.cpp"
@@ -54,7 +55,7 @@ target_include_directories(rbx-value-types
         "${CMAKE_SOURCE_DIR}/third_party/bullet_historical"
         "${CMAKE_SOURCE_DIR}/Library/boost/include"
         "${CMAKE_SOURCE_DIR}/Library/SDL2/include")
-target_link_libraries(rbx-value-types PUBLIC Roblox::Core Roblox::Math Roblox::Security Roblox::Reflection)
+target_link_libraries(rbx-value-types PUBLIC Roblox::Core Roblox::Math Roblox::GeometryCore Roblox::Security Roblox::Reflection)
 target_compile_features(rbx-value-types PUBLIC cxx_std_20)
 target_compile_definitions(rbx-value-types PRIVATE
     BOOST_NO_CXX98_FUNCTION_BASE=1

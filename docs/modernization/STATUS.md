@@ -749,6 +749,15 @@ the final return; it is not replaced or treated as accepted while deferred.
   platform-specific sources that still require separate classification. The
   named archive now compiles solely from its subsystem directory instead of
   reaching back into the legacy utility dump.
+- Classified and moved the final 25 tracked implementations out of `App/util`;
+  the directory now contains no tracked source. Base64 bit streams are owned by
+  serialization, quad-edge topology by a new `Roblox::GeometryCore` archive,
+  transform averaging by value types, machine identity and integrity checks by
+  security, HTTP backends by runtime support, and OS implementations by their
+  Android, macOS, Windows, and Xbox platform trees. Modern CMake and preserved
+  Visual Studio/Xcode references now point at the owned paths. The geometry,
+  value-types, serialization, actual signed Player, layout/dependency, place,
+  and audio checkpoints all pass after the move.
 - Moved the five common and Darwin implementations already owned by
   `Roblox::PlatformRuntime` into `platform/common/src` and
   `platform/macos/src`. The macOS runtime archive no longer compiles active
@@ -911,16 +920,13 @@ remains the genuine Player package plus its native engine dependency closure;
 screenshot recreations and compatibility mocks are not acceptable. Its paused
 checkpoint is recorded in `docs/reverse-engineering/in-experience-ui.md`.
 
-1. Continue classifying and migrating the remaining mixed `App/util` sources
-   into subsystem-owned modules without recreating a global utility dump or
-   breaking preserved projects. The Lua public surface is now scripting-owned.
-2. Continue text/fonts, streaming/current-graph audio parity, launcher, and interactive
+1. Continue text/fonts, streaming/current-graph audio parity, launcher, and interactive
    Metal acceptance in buildable checkpoints.
-3. Integrate and verify the production networking certificate issuance/rotation
+2. Integrate and verify the production networking certificate issuance/rotation
    path, and build the native Windows/Linux/iOS/Android matrices. Implement the Web
    transport with WebRTC behind the same engine contract; browser builds cannot
    use the native UDP GNS adapter.
-4. Return to Chrome, PlayerList, ESC pages, ExperienceChat, Backpack, and the
+3. Return to Chrome, PlayerList, ESC pages, ExperienceChat, Backpack, and the
    remaining genuine package-backed UI closure only after the non-UI work is
    complete. Add the requested `Enable legacy UI` setting only after the 2026
    UI is complete, then perform semantic, perceptual, and interactive
