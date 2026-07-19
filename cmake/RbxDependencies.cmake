@@ -14,6 +14,8 @@ set(RBX_ZSTD_REVISION "v1.5.7")
 set(RBX_LUAU_REVISION "5e76a0a162d82cbe13a09a4beacd09d7e53cc856")
 set(RBX_UTF8PROC_REVISION "e5e799221b45bbb90f5fdc5c69b6b8dfbf017e78") # v2.11.3, Unicode 17
 set(RBX_DRACO_REVISION "8786740086a9f4d83f44aa83badfbea4dce7a1b5") # 1.5.7
+set(RBX_FREETYPE_REVISION "0a0221a1347e2f1e07c395263540026e9a0aa7c7") # 2.14.3
+set(RBX_HARFBUZZ_REVISION "56feae4035bdd48f62ba2b8d8c16232d4d89b3a4") # 14.2.1
 
 # VideoFrame uses the LGPL libav demux/decode/conversion libraries.  Keep GPL
 # and nonfree codec add-ons out of the dependency contract; distributable
@@ -31,6 +33,10 @@ if(NOT RBX_FETCH_DEPENDENCIES)
     find_package(Luau CONFIG REQUIRED)
     find_package(utf8proc CONFIG REQUIRED)
     add_library(Roblox::Utf8proc ALIAS utf8proc::utf8proc)
+    find_package(Freetype 2.14.3 REQUIRED)
+    add_library(Roblox::Freetype ALIAS Freetype::Freetype)
+    pkg_check_modules(RBX_HARFBUZZ REQUIRED IMPORTED_TARGET harfbuzz>=14.2.1)
+    add_library(Roblox::HarfBuzz ALIAS PkgConfig::RBX_HARFBUZZ)
     find_package(draco CONFIG REQUIRED)
     return()
 endif()
@@ -80,6 +86,43 @@ FetchContent_MakeAvailable(rbx_utf8proc)
 set(BUILD_SHARED_LIBS ${_RBX_BUILD_SHARED_LIBS})
 unset(_RBX_BUILD_SHARED_LIBS)
 add_library(Roblox::Utf8proc ALIAS utf8proc)
+
+# Shape and rasterize text with maintained, immutable upstream libraries on
+# every target. FreeType deliberately does not discover HarfBuzz itself; the
+# owned renderer drives HarfBuzz's FreeType bridge, avoiding a dependency
+# cycle while retaining OpenType shaping and a single glyph rasterizer.
+set(_RBX_TEXT_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
+set(BUILD_SHARED_LIBS OFF)
+set(FT_DISABLE_ZLIB TRUE CACHE BOOL "" FORCE)
+set(FT_DISABLE_BZIP2 TRUE CACHE BOOL "" FORCE)
+set(FT_DISABLE_PNG TRUE CACHE BOOL "" FORCE)
+set(FT_DISABLE_HARFBUZZ TRUE CACHE BOOL "" FORCE)
+set(FT_DISABLE_BROTLI TRUE CACHE BOOL "" FORCE)
+set(FT_ENABLE_ERROR_STRINGS OFF CACHE BOOL "" FORCE)
+FetchContent_Declare(rbx_freetype
+    GIT_REPOSITORY https://github.com/freetype/freetype.git
+    GIT_TAG ${RBX_FREETYPE_REVISION}
+    GIT_SHALLOW FALSE)
+FetchContent_MakeAvailable(rbx_freetype)
+add_library(Roblox::Freetype ALIAS freetype)
+
+set(HB_HAVE_FREETYPE ON CACHE BOOL "" FORCE)
+set(HB_HAVE_CORETEXT OFF CACHE BOOL "" FORCE)
+set(HB_HAVE_GLIB OFF CACHE BOOL "" FORCE)
+set(HB_HAVE_ICU OFF CACHE BOOL "" FORCE)
+set(HB_BUILD_UTILS OFF CACHE BOOL "" FORCE)
+set(HB_BUILD_SUBSET OFF CACHE BOOL "" FORCE)
+set(HB_BUILD_RASTER OFF CACHE BOOL "" FORCE)
+set(HB_BUILD_VECTOR OFF CACHE BOOL "" FORCE)
+set(HB_BUILD_GPU OFF CACHE BOOL "" FORCE)
+FetchContent_Declare(rbx_harfbuzz
+    GIT_REPOSITORY https://github.com/harfbuzz/harfbuzz.git
+    GIT_TAG ${RBX_HARFBUZZ_REVISION}
+    GIT_SHALLOW FALSE)
+FetchContent_MakeAvailable(rbx_harfbuzz)
+add_library(Roblox::HarfBuzz ALIAS harfbuzz)
+set(BUILD_SHARED_LIBS ${_RBX_TEXT_BUILD_SHARED_LIBS})
+unset(_RBX_TEXT_BUILD_SHARED_LIBS)
 
 # FileMesh v7 stores its COREMESH payload as a Google Draco bitstream.  Use
 # the official pinned decoder on every platform; encoder tools, JavaScript

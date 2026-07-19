@@ -11,7 +11,7 @@
 #include "FastLog.h"
 #include "RbxFormat.h"
 
-#include "freetype/include/ft2build.h"
+#include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_MODULE_H
 #include FT_TRUETYPE_DRIVER_H

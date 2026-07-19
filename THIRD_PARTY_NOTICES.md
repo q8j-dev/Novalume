@@ -14,6 +14,9 @@ expanded as audio, text, serialization, and other replacements are integrated.
 | protobuf 35.1 | `35cd01f9fe9afbeea38cc7b979a3b6bfcde82c03` | BSD-3-Clause | GameNetworkingSockets schema/runtime dependency |
 | Abseil 20250512.1 | `76bb24329e8bf5f39704eb10d21b9a80befa7c81` | Apache-2.0 | protobuf support library |
 | OpenSSL 3.5.7 LTS | `8cf17aaeb4599f8af87fefd810b5b5fee90fe69e` | Apache-2.0 | non-Windows GameNetworkingSockets cryptography |
+| FreeType 2.14.3 | `0a0221a1347e2f1e07c395263540026e9a0aa7c7` | FTL OR GPL-2.0-or-later | font loading and glyph rasterization |
+| HarfBuzz 14.2.1 | `56feae4035bdd48f62ba2b8d8c16232d4d89b3a4` | MIT | OpenType text shaping |
+| utf8proc 2.11.3 | `e5e799221b45bbb90f5fdc5c69b6b8dfbf017e78` | MIT | Unicode 17 normalization and properties |
 | Windows BCrypt | Windows SDK | LicenseRef-Microsoft-Windows-SDK | Windows GameNetworkingSockets cryptography |
 
 License texts are supplied by their fetched upstream source trees and will be

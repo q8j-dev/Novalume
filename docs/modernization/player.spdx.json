@@ -109,6 +109,36 @@
       "licenseConcluded": "Apache-2.0",
       "licenseDeclared": "Apache-2.0",
       "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "FreeType",
+      "SPDXID": "SPDXRef-FreeType",
+      "versionInfo": "2.14.3+0a0221a1347e2f1e07c395263540026e9a0aa7c7",
+      "downloadLocation": "https://github.com/freetype/freetype.git",
+      "filesAnalyzed": false,
+      "licenseConcluded": "FTL OR GPL-2.0-or-later",
+      "licenseDeclared": "FTL OR GPL-2.0-or-later",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "HarfBuzz",
+      "SPDXID": "SPDXRef-HarfBuzz",
+      "versionInfo": "14.2.1+56feae4035bdd48f62ba2b8d8c16232d4d89b3a4",
+      "downloadLocation": "https://github.com/harfbuzz/harfbuzz.git",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "utf8proc",
+      "SPDXID": "SPDXRef-utf8proc",
+      "versionInfo": "2.11.3+e5e799221b45bbb90f5fdc5c69b6b8dfbf017e78",
+      "downloadLocation": "https://github.com/JuliaStrings/utf8proc.git",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION"
     }
   ],
   "relationships": [
@@ -121,6 +151,9 @@
     {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-GameNetworkingSockets"},
     {"spdxElementId": "SPDXRef-GameNetworkingSockets", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-protobuf"},
     {"spdxElementId": "SPDXRef-protobuf", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-Abseil"},
-    {"spdxElementId": "SPDXRef-GameNetworkingSockets", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-OpenSSL"}
+    {"spdxElementId": "SPDXRef-GameNetworkingSockets", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-OpenSSL"},
+    {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-FreeType"},
+    {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-HarfBuzz"},
+    {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-utf8proc"}
   ]
 }

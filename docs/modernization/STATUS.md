@@ -486,9 +486,12 @@ the final return; it is not replaced or treated as accepted while deferred.
   into `engine/scripting`. The client VM variant and authentic CoreScript,
   ScriptContext, debugger, analyzer, bridge, module, event, and thread-reference
   implementations compile together as `Roblox::Scripting` on Apple Silicon.
-- Added the historical FreeType source as an explicit text dependency so the
-  moved renderer links against a named target. Maintained FreeType plus
-  HarfBuzz and Unicode support remain required for acceptance.
+- Replaced the active historical FreeType snapshot with immutable static
+  FreeType 2.14.3 and HarfBuzz 14.2.1 targets and linked the renderer to the
+  existing utf8proc 2.11.3 Unicode 17 target. The actual signed Player now
+  contains these maintained libraries without new dynamic dependencies.
+  Integrating HarfBuzz shaping, bidi segmentation, and font fallback into the
+  legacy layout path remains required for text acceptance.
 - Isolated macOS clipboard access in `platform/macos` behind the shared platform
   contract instead of compiling AppKit syntax into DataModel C++.
 - Added a real main-framebuffer contract to the bgfx backend using native pixel
