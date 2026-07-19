@@ -19,7 +19,9 @@ add_library(rbx-platform-runtime-macos STATIC EXCLUDE_FROM_ALL
     "${CMAKE_SOURCE_DIR}/platform/common/src/FileSystemIndependent.cpp"
     "${CMAKE_SOURCE_DIR}/platform/common/src/MemoryStatsCommon.cpp"
     src/FileSystem.mm
+    src/MachOBaseAddr.mm
     src/MemoryStats.cpp
+    src/ProgramMemoryChecker.cpp
     src/StringConv.cpp)
 add_library(Roblox::PlatformRuntime ALIAS rbx-platform-runtime-macos)
 target_include_directories(rbx-platform-runtime-macos PRIVATE

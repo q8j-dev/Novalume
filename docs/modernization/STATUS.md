@@ -753,6 +753,10 @@ the final return; it is not replaced or treated as accepted while deferred.
   `Roblox::PlatformRuntime` into `platform/common/src` and
   `platform/macos/src`. The macOS runtime archive no longer compiles active
   filesystem, memory-statistics, or string-conversion code from `App/util`.
+- Moved the remaining two active Unix/macOS memory-checking and Mach-O address
+  implementations out of `App/util` and transferred their build ownership
+  from `Roblox::RuntimeSupport` to `Roblox::PlatformRuntime`. This removes the
+  final Apple-native source dependency from the shared runtime-support target.
 - Moved the complete 355-file CSG family under `engine/geometry/csg` and
   updated its Player, Studio, Xbox, model-analyzer, converter, solution,
   Visual Studio, and Xcode consumers. Added the named

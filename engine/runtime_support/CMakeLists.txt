@@ -76,11 +76,6 @@ target_link_libraries(rbx-runtime-support PUBLIC
     Roblox::Core Roblox::Math Roblox::Security Roblox::Reflection Roblox::ValueTypes
     Roblox::DataModelRuntime Roblox::Simulation Roblox::BoostRuntime CURL::libcurl)
 
-if(APPLE)
-    target_sources(rbx-runtime-support PRIVATE
-        "${CMAKE_SOURCE_DIR}/App/util/Unix/ProgramMemoryChecker.cpp"
-        "${CMAKE_SOURCE_DIR}/App/util/Unix/MachOBaseAddr.mm")
-endif()
 target_compile_features(rbx-runtime-support PUBLIC cxx_std_20)
 target_compile_definitions(rbx-runtime-support PRIVATE
     BOOST_NO_CXX98_FUNCTION_BASE=1
