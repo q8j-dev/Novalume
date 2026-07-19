@@ -48,6 +48,10 @@ struct Engine::Impl
         std::array<std::uint32_t, 32> delayPositions{};
         std::array<std::atomic<LongDelay*>, 32> longDelays{};
         std::vector<std::unique_ptr<LongDelay>> retainedLongDelays;
+        std::array<std::atomic<MeterState*>, 32> meters{};
+        std::vector<std::shared_ptr<MeterState>> retainedMeters;
+        std::array<std::uint32_t, 32> analysisFilled{};
+        std::array<std::uint32_t, 32> analysisSinceSpectrum{};
         std::uint32_t sampleRate = 48000;
         std::uint32_t channels = 2;
         std::atomic<std::uint32_t> count{0};
@@ -766,6 +770,127 @@ struct Engine::Impl
                         writeFrame = (writeFrame + 1) % delayFrames;
                     }
                     effects->delayPositions[effect] = writeFrame;
+                }
+                else if (type == VoiceEffectType::Analyzer)
+                {
+                    MeterState* meter = effects->meters[effect].load(
+                        std::memory_order_acquire);
+                    if (!meter)
+                        continue;
+                    float peak = 0.0f;
+                    double squares = 0.0;
+                    for (std::size_t sample = 0; sample < samples; ++sample)
+                    {
+                        peak = std::max(peak, std::abs(output[0][sample]));
+                        squares += static_cast<double>(output[0][sample]) *
+                            output[0][sample];
+                    }
+                    meter->peak.store(peak, std::memory_order_relaxed);
+                    meter->rms.store(samples ? static_cast<float>(std::sqrt(
+                        squares / static_cast<double>(samples))) : 0.0f,
+                        std::memory_order_relaxed);
+                    const bool spectrumEnabled =
+                        effects->parameters[effect][0].load(
+                            std::memory_order_relaxed) >= 0.5f;
+                    if (!spectrumEnabled)
+                    {
+                        meter->spectrumSize.store(0, std::memory_order_release);
+                        continue;
+                    }
+                    const int windowSelection = std::clamp(static_cast<int>(
+                        effects->parameters[effect][1].load(
+                            std::memory_order_relaxed)), 0, 2);
+                    const std::uint32_t windowFrames = windowSelection == 0
+                        ? 512u : windowSelection == 1 ? 1024u : 2048u;
+                    EffectNode::LongDelay* storage =
+                        effects->longDelays[effect].load(std::memory_order_acquire);
+                    if (!storage || storage->samples.size() < 6144)
+                        continue;
+                    std::vector<float>& scratch = storage->samples;
+                    std::uint32_t write = effects->delayPositions[effect] %
+                        windowFrames;
+                    for (ma_uint32 frame = 0; frame < frames; ++frame)
+                    {
+                        float mono = 0.0f;
+                        for (ma_uint32 channel = 0; channel < channels; ++channel)
+                            mono += output[0][static_cast<std::size_t>(frame) *
+                                channels + channel];
+                        scratch[write] = mono / std::max(channels, 1u);
+                        write = (write + 1) % windowFrames;
+                    }
+                    effects->delayPositions[effect] = write;
+                    effects->analysisFilled[effect] = std::min<std::uint32_t>(
+                        windowFrames, effects->analysisFilled[effect] + frames);
+                    effects->analysisSinceSpectrum[effect] += frames;
+                    if (effects->analysisFilled[effect] < windowFrames ||
+                        effects->analysisSinceSpectrum[effect] < windowFrames)
+                        continue;
+                    effects->analysisSinceSpectrum[effect] = 0;
+                    float* real = scratch.data() + 2048;
+                    float* imaginary = scratch.data() + 4096;
+                    for (std::uint32_t index = 0; index < windowFrames; ++index)
+                    {
+                        const float window = 0.5f - 0.5f * std::cos(
+                            6.2831853071795864769f * index /
+                            static_cast<float>(windowFrames - 1));
+                        real[index] = scratch[(write + index) % windowFrames] *
+                            window;
+                        imaginary[index] = 0.0f;
+                    }
+                    for (std::uint32_t index = 1, reverse = 0;
+                         index < windowFrames; ++index)
+                    {
+                        std::uint32_t bit = windowFrames >> 1;
+                        while (reverse & bit) { reverse ^= bit; bit >>= 1; }
+                        reverse ^= bit;
+                        if (index < reverse)
+                        {
+                            std::swap(real[index], real[reverse]);
+                            std::swap(imaginary[index], imaginary[reverse]);
+                        }
+                    }
+                    for (std::uint32_t length = 2; length <= windowFrames;
+                         length <<= 1)
+                    {
+                        const float angle = -6.2831853071795864769f / length;
+                        const float stepReal = std::cos(angle);
+                        const float stepImaginary = std::sin(angle);
+                        for (std::uint32_t begin = 0; begin < windowFrames;
+                             begin += length)
+                        {
+                            float twiddleReal = 1.0f;
+                            float twiddleImaginary = 0.0f;
+                            for (std::uint32_t offset = 0;
+                                 offset < length / 2; ++offset)
+                            {
+                                const std::uint32_t even = begin + offset;
+                                const std::uint32_t odd = even + length / 2;
+                                const float oddReal = real[odd] * twiddleReal -
+                                    imaginary[odd] * twiddleImaginary;
+                                const float oddImaginary = real[odd] *
+                                    twiddleImaginary + imaginary[odd] * twiddleReal;
+                                real[odd] = real[even] - oddReal;
+                                imaginary[odd] = imaginary[even] - oddImaginary;
+                                real[even] += oddReal;
+                                imaginary[even] += oddImaginary;
+                                const float nextReal = twiddleReal * stepReal -
+                                    twiddleImaginary * stepImaginary;
+                                twiddleImaginary = twiddleReal * stepImaginary +
+                                    twiddleImaginary * stepReal;
+                                twiddleReal = nextReal;
+                            }
+                        }
+                    }
+                    const std::uint32_t bins = windowFrames / 2 + 1;
+                    for (std::uint32_t bin = 0; bin < bins; ++bin)
+                    {
+                        const float scale = bin == 0 || bin == windowFrames / 2
+                            ? 1.0f / windowFrames
+                            : 1.41421356237f / windowFrames;
+                        meter->spectrum[bin].store(std::hypot(real[bin],
+                            imaginary[bin]) * scale, std::memory_order_relaxed);
+                    }
+                    meter->spectrumSize.store(bins, std::memory_order_release);
                 }
             }
         }
@@ -1579,7 +1704,8 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
                 effect.type != VoiceEffectType::Filter &&
                 effect.type != VoiceEffectType::PitchShifter &&
                 effect.type != VoiceEffectType::Echo &&
-                effect.type != VoiceEffectType::Reverb)
+                effect.type != VoiceEffectType::Reverb &&
+                effect.type != VoiceEffectType::Analyzer)
                 return {};
             const std::size_t parameterCount = effect.type ==
                 VoiceEffectType::Distortion ? 1 :
@@ -1591,7 +1717,8 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
                 effect.type == VoiceEffectType::Filter ? 4 :
                 effect.type == VoiceEffectType::PitchShifter ? 2 :
                 effect.type == VoiceEffectType::Echo ? 7 :
-                effect.type == VoiceEffectType::Reverb ? 13 : 3;
+                effect.type == VoiceEffectType::Reverb ? 13 :
+                effect.type == VoiceEffectType::Analyzer ? 3 : 3;
             for (std::size_t parameter = 0; parameter < parameterCount; ++parameter)
                 if (!std::isfinite(effect.parameters[parameter]))
                     return {};
@@ -1766,7 +1893,7 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
             const VoiceEffect effect = parameters.effectCount
                 ? parameters.effects[index]
                 : VoiceEffect{VoiceEffectType::Distortion,
-                    {parameters.distortionLevels[index]}};
+                    {parameters.distortionLevels[index]}, {}};
             voice->effects.types[index].store(
                 static_cast<std::uint8_t>(effect.type),
                 std::memory_order_relaxed);
@@ -1775,21 +1902,30 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
                 voice->effects.parameters[index][parameter].store(
                     effect.parameters[parameter], std::memory_order_relaxed);
             if (effect.type == VoiceEffectType::Echo ||
-                effect.type == VoiceEffectType::Reverb)
+                effect.type == VoiceEffectType::Reverb ||
+                effect.type == VoiceEffectType::Analyzer)
             {
                 std::unique_ptr<Impl::EffectNode::LongDelay> longDelay(
                     new Impl::EffectNode::LongDelay());
-                longDelay->samples.resize((static_cast<std::size_t>(
-                    impl->config.sampleRate) * 5 + 2) * impl->config.channels);
+                longDelay->samples.resize(effect.type == VoiceEffectType::Analyzer
+                    ? 6144 : (static_cast<std::size_t>(impl->config.sampleRate) *
+                        5 + 2) * impl->config.channels);
                 longDelay->resetMarker = effect.type == VoiceEffectType::Echo
                     ? static_cast<std::uint32_t>(std::max(
                         effect.parameters[5], 0.0f)) : 0u;
                 longDelay->ownerKey = static_cast<std::uint32_t>(
                     std::max(effect.parameters[effect.type ==
-                        VoiceEffectType::Echo ? 6 : 12], 0.0f));
+                        VoiceEffectType::Echo ? 6 : effect.type ==
+                        VoiceEffectType::Reverb ? 12 : 2], 0.0f));
                 Impl::EffectNode::LongDelay* published = longDelay.get();
                 voice->effects.retainedLongDelays.push_back(std::move(longDelay));
                 voice->effects.longDelays[index].store(published,
+                    std::memory_order_release);
+            }
+            if (effect.type == VoiceEffectType::Analyzer && effect.meter)
+            {
+                voice->effects.retainedMeters.push_back(effect.meter);
+                voice->effects.meters[index].store(effect.meter.get(),
                     std::memory_order_release);
             }
         }
@@ -2043,7 +2179,8 @@ bool Engine::setVoiceEffects(VoiceHandle handle,
             effect.type != VoiceEffectType::Filter &&
             effect.type != VoiceEffectType::PitchShifter &&
             effect.type != VoiceEffectType::Echo &&
-            effect.type != VoiceEffectType::Reverb)
+            effect.type != VoiceEffectType::Reverb &&
+            effect.type != VoiceEffectType::Analyzer)
             return false;
         const std::size_t parameterCount = effect.type ==
             VoiceEffectType::Distortion ? 1 :
@@ -2063,14 +2200,17 @@ bool Engine::setVoiceEffects(VoiceHandle handle,
     for (std::size_t index = 0; index < effects.size(); ++index)
     {
         if (effects[index].type == VoiceEffectType::Echo ||
-            effects[index].type == VoiceEffectType::Reverb)
+            effects[index].type == VoiceEffectType::Reverb ||
+            effects[index].type == VoiceEffectType::Analyzer)
         {
             const bool echo = effects[index].type == VoiceEffectType::Echo;
+            const bool reverb = effects[index].type == VoiceEffectType::Reverb;
             const std::uint32_t resetMarker = echo
                 ? static_cast<std::uint32_t>(std::max(
                     effects[index].parameters[5], 0.0f)) : 0u;
             const std::uint32_t ownerKey = static_cast<std::uint32_t>(
-                std::max(effects[index].parameters[echo ? 6 : 12], 0.0f));
+                std::max(effects[index].parameters[echo ? 6 : reverb ? 12 : 2],
+                    0.0f));
             Impl::EffectNode::LongDelay* current =
                 voice->effects.longDelays[index].load(std::memory_order_acquire);
             const VoiceEffectType previousType = static_cast<VoiceEffectType>(
@@ -2081,13 +2221,27 @@ bool Engine::setVoiceEffects(VoiceHandle handle,
             {
                 std::unique_ptr<Impl::EffectNode::LongDelay> longDelay(
                     new Impl::EffectNode::LongDelay());
-                longDelay->samples.resize((static_cast<std::size_t>(
-                    impl->config.sampleRate) * 5 + 2) * impl->config.channels);
+                longDelay->samples.resize(effects[index].type ==
+                    VoiceEffectType::Analyzer ? 6144 :
+                    (static_cast<std::size_t>(impl->config.sampleRate) * 5 + 2) *
+                        impl->config.channels);
                 longDelay->resetMarker = resetMarker;
                 longDelay->ownerKey = ownerKey;
                 Impl::EffectNode::LongDelay* published = longDelay.get();
                 voice->effects.retainedLongDelays.push_back(std::move(longDelay));
                 voice->effects.longDelays[index].store(published,
+                    std::memory_order_release);
+            }
+        }
+        if (effects[index].type == VoiceEffectType::Analyzer &&
+            effects[index].meter)
+        {
+            MeterState* current = voice->effects.meters[index].load(
+                std::memory_order_acquire);
+            if (current != effects[index].meter.get())
+            {
+                voice->effects.retainedMeters.push_back(effects[index].meter);
+                voice->effects.meters[index].store(effects[index].meter.get(),
                     std::memory_order_release);
             }
         }

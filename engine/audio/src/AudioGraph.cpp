@@ -354,6 +354,7 @@ const char* const sAudioFilter = "AudioFilter";
 const char* const sAudioPitchShifter = "AudioPitchShifter";
 const char* const sAudioEcho = "AudioEcho";
 const char* const sAudioReverb = "AudioReverb";
+const char* const sAudioAnalyzer = "AudioAnalyzer";
 const char* const sAudioChannelMixer = "AudioChannelMixer";
 const char* const sAudioChannelSplitter = "AudioChannelSplitter";
 const char* const sAudioEmitter = "AudioEmitter";
@@ -776,6 +777,40 @@ static Reflection::BoundFuncDesc<AudioReverb,
 static Reflection::EventDesc<AudioReverb, void(bool, std::string,
     boost::shared_ptr<Instance>, boost::shared_ptr<Instance>)>
     eventAudioReverbWiringChanged(&AudioReverb::wiringChangedSignal,
+        "WiringChanged", "connected", "pin", "wire", "instance",
+        Security::None);
+
+static Reflection::PropDescriptor<AudioAnalyzer, float> propAudioAnalyzerPeakLevel(
+    "PeakLevel", category_Data, &AudioAnalyzer::getPeakLevel, NULL,
+    Reflection::PropertyDescriptor::UI);
+static Reflection::PropDescriptor<AudioAnalyzer, float> propAudioAnalyzerRmsLevel(
+    "RmsLevel", category_Data, &AudioAnalyzer::getRmsLevel, NULL,
+    Reflection::PropertyDescriptor::UI);
+static Reflection::PropDescriptor<AudioAnalyzer, bool>
+    propAudioAnalyzerSpectrumEnabled("SpectrumEnabled", category_Data,
+        &AudioAnalyzer::getSpectrumEnabled, &AudioAnalyzer::setSpectrumEnabled);
+static Reflection::EnumPropDescriptor<AudioAnalyzer, AudioWindowSize>
+    propAudioAnalyzerWindowSize("WindowSize", category_Data,
+        &AudioAnalyzer::getWindowSize, &AudioAnalyzer::setWindowSize);
+static Reflection::BoundFuncDesc<AudioAnalyzer,
+    boost::shared_ptr<const Reflection::ValueArray>()>
+    funcAudioAnalyzerSpectrum(&AudioAnalyzer::getSpectrum, "GetSpectrum",
+        Security::None);
+static Reflection::BoundFuncDesc<AudioAnalyzer,
+    boost::shared_ptr<const Instances>(std::string)>
+    funcAudioAnalyzerConnectedWires(&AudioAnalyzer::getConnectedWiresReflection,
+        "GetConnectedWires", "pin", Security::None);
+static Reflection::BoundFuncDesc<AudioAnalyzer,
+    boost::shared_ptr<const Reflection::ValueArray>()>
+    funcAudioAnalyzerInputPins(&AudioAnalyzer::getInputPinsReflection,
+        "GetInputPins", Security::None);
+static Reflection::BoundFuncDesc<AudioAnalyzer,
+    boost::shared_ptr<const Reflection::ValueArray>()>
+    funcAudioAnalyzerOutputPins(&AudioAnalyzer::getOutputPinsReflection,
+        "GetOutputPins", Security::None);
+static Reflection::EventDesc<AudioAnalyzer, void(bool, std::string,
+    boost::shared_ptr<Instance>, boost::shared_ptr<Instance>)>
+    eventAudioAnalyzerWiringChanged(&AudioAnalyzer::wiringChangedSignal,
         "WiringChanged", "connected", "pin", "wire", "instance",
         Security::None);
 
@@ -2056,6 +2091,60 @@ boost::shared_ptr<const Reflection::ValueArray>
 AudioReverb::getOutputPinsReflection() { return getOutputPins(); }
 std::vector<std::string> AudioReverb::inputPins() const { return {"Input"}; }
 std::vector<std::string> AudioReverb::outputPins() const { return {"Output"}; }
+
+AudioAnalyzer::AudioAnalyzer()
+    : DescribedCreatable<AudioAnalyzer, Instance, sAudioAnalyzer>(sAudioAnalyzer)
+    , spectrumEnabled(true)
+    , windowSize(AUDIO_WINDOW_MEDIUM)
+    , meterState(std::make_shared<Audio::MeterState>())
+{
+}
+float AudioAnalyzer::getPeakLevel() const
+{ return meterState->peak.load(std::memory_order_relaxed); }
+float AudioAnalyzer::getRmsLevel() const
+{ return meterState->rms.load(std::memory_order_relaxed); }
+bool AudioAnalyzer::getSpectrumEnabled() const { return spectrumEnabled; }
+AudioWindowSize AudioAnalyzer::getWindowSize() const { return windowSize; }
+void AudioAnalyzer::setSpectrumEnabled(bool value)
+{
+    if (spectrumEnabled == value) return;
+    spectrumEnabled = value;
+    if (!value)
+        meterState->spectrumSize.store(0, std::memory_order_release);
+    raisePropertyChanged(propAudioAnalyzerSpectrumEnabled);
+}
+void AudioAnalyzer::setWindowSize(AudioWindowSize value)
+{
+    if (value < AUDIO_WINDOW_SMALL || value > AUDIO_WINDOW_LARGE)
+        throw std::runtime_error("AudioAnalyzer.WindowSize is invalid");
+    if (windowSize == value) return;
+    windowSize = value;
+    meterState->spectrumSize.store(0, std::memory_order_release);
+    raisePropertyChanged(propAudioAnalyzerWindowSize);
+}
+boost::shared_ptr<const Reflection::ValueArray> AudioAnalyzer::getSpectrum()
+{
+    boost::shared_ptr<Reflection::ValueArray> values(new Reflection::ValueArray());
+    if (!spectrumEnabled)
+        return values;
+    const std::uint32_t size = std::min<std::uint32_t>(
+        meterState->spectrumSize.load(std::memory_order_acquire),
+        static_cast<std::uint32_t>(meterState->spectrum.size()));
+    values->reserve(size);
+    for (std::uint32_t index = 0; index < size; ++index)
+        values->push_back(Reflection::Variant(
+            meterState->spectrum[index].load(std::memory_order_relaxed)));
+    return values;
+}
+boost::shared_ptr<const Instances>
+AudioAnalyzer::getConnectedWiresReflection(std::string pin)
+{ return getConnectedWires(pin); }
+boost::shared_ptr<const Reflection::ValueArray>
+AudioAnalyzer::getInputPinsReflection() { return getInputPins(); }
+boost::shared_ptr<const Reflection::ValueArray>
+AudioAnalyzer::getOutputPinsReflection() { return getOutputPins(); }
+std::vector<std::string> AudioAnalyzer::inputPins() const { return {"Input"}; }
+std::vector<std::string> AudioAnalyzer::outputPins() const { return {}; }
 
 namespace {
 const std::vector<std::string>& channelPins()

@@ -634,6 +634,40 @@ private:
     float lowShelfFrequency, lowShelfGain, referenceFrequency, wetLevel;
 };
 
+extern const char* const sAudioAnalyzer;
+class AudioAnalyzer final
+    : public DescribedCreatable<AudioAnalyzer, Instance, sAudioAnalyzer>
+    , public AudioNode
+{
+public:
+    AudioAnalyzer();
+    float getPeakLevel() const;
+    float getRmsLevel() const;
+    bool getSpectrumEnabled() const;
+    void setSpectrumEnabled(bool value);
+    AudioWindowSize getWindowSize() const;
+    void setWindowSize(AudioWindowSize value);
+    boost::shared_ptr<const Reflection::ValueArray> getSpectrum();
+    std::shared_ptr<Audio::MeterState> getMeterState() const { return meterState; }
+    boost::shared_ptr<const Instances> getConnectedWiresReflection(std::string pin);
+    boost::shared_ptr<const Reflection::ValueArray> getInputPinsReflection();
+    boost::shared_ptr<const Reflection::ValueArray> getOutputPinsReflection();
+    std::vector<std::string> inputPins() const override;
+    std::vector<std::string> outputPins() const override;
+    Instance* audioNodeInstance() override { return this; }
+    const Instance* audioNodeInstance() const override { return this; }
+    void fireWiringChanged(bool connected, const std::string& pin,
+        const boost::shared_ptr<Instance>& wire,
+        const boost::shared_ptr<Instance>& instance) override
+    { wiringChangedSignal(connected, pin, wire, instance); }
+    rbx::signal<void(bool, std::string, boost::shared_ptr<Instance>,
+        boost::shared_ptr<Instance>)> wiringChangedSignal;
+private:
+    bool spectrumEnabled;
+    AudioWindowSize windowSize;
+    std::shared_ptr<Audio::MeterState> meterState;
+};
+
 extern const char* const sAudioChannelMixer;
 class AudioChannelMixer final
     : public DescribedCreatable<AudioChannelMixer, Instance, sAudioChannelMixer>

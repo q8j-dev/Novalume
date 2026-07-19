@@ -24,7 +24,7 @@ struct AudioRoute
 };
 
 AudioRoute findRoute(const AudioNode* node, float gain,
-    std::array<Audio::VoiceEffect, 32> effects, std::uint32_t effectCount,
+    std::array<Audio::VoiceEffect, 32>& effects, std::uint32_t effectCount,
     std::unordered_set<const Instance*>& visited)
 {
     if (!node)
@@ -41,6 +41,25 @@ AudioRoute findRoute(const AudioNode* node, float gain,
             node->getConnectedWires(outputPin);
         if (!wires)
             continue;
+        for (const boost::shared_ptr<Instance>& instance : *wires)
+        {
+            Wire* wire = Instance::fastDynamicCast<Wire>(instance.get());
+            if (!wire || wire->getSourceInstance() != nodeInstance ||
+                wire->getSourceName() != outputPin)
+                continue;
+            AudioAnalyzer* analyzer =
+                Instance::fastDynamicCast<AudioAnalyzer>(wire->getTargetInstance());
+            if (!analyzer || effectCount >= effects.size())
+                continue;
+            Audio::VoiceEffect& effect = effects[effectCount++];
+            effect.type = Audio::VoiceEffectType::Analyzer;
+            const std::uintptr_t address =
+                reinterpret_cast<std::uintptr_t>(analyzer);
+            effect.parameters = {analyzer->getSpectrumEnabled() ? 1.0f : 0.0f,
+                static_cast<float>(analyzer->getWindowSize()),
+                static_cast<float>(address & 0x00ffffffu)};
+            effect.meter = analyzer->getMeterState();
+        }
         for (const boost::shared_ptr<Instance>& instance : *wires)
         {
             Wire* wire = Instance::fastDynamicCast<Wire>(instance.get());
@@ -305,6 +324,12 @@ AudioRoute findRoute(const AudioNode* node, float gain,
                 if (route.connected)
                     return route;
             }
+            else if (AudioAnalyzer* analyzer =
+                         Instance::fastDynamicCast<AudioAnalyzer>(target))
+            {
+                (void)analyzer;
+                continue;
+            }
             else if (AudioChannelMixer* mixer =
                          Instance::fastDynamicCast<AudioChannelMixer>(target))
             {
@@ -333,7 +358,8 @@ AudioRoute findRoute(const AudioNode* node, float gain,
 AudioRoute findRoute(const AudioNode* node)
 {
     std::unordered_set<const Instance*> visited;
-    return findRoute(node, 1.0f, {}, 0, visited);
+    std::array<Audio::VoiceEffect, 32> effects{};
+    return findRoute(node, 1.0f, effects, 0, visited);
 }
 
 } // namespace

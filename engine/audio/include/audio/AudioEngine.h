@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <array>
+#include <atomic>
 #include <filesystem>
 #include <memory>
 #include <span>
@@ -66,6 +67,14 @@ struct AttenuationPoint
     float gain = 1.0f;
 };
 
+struct MeterState
+{
+    std::atomic<float> peak{0.0f};
+    std::atomic<float> rms{0.0f};
+    std::array<std::atomic<float>, 1025> spectrum{};
+    std::atomic<std::uint32_t> spectrumSize{0};
+};
+
 enum class VoiceEffectType : std::uint8_t
 {
     Distortion,
@@ -80,6 +89,7 @@ enum class VoiceEffectType : std::uint8_t
     PitchShifter,
     Echo,
     Reverb,
+    Analyzer,
 };
 
 // Fixed-size effect descriptors keep graph updates and the real-time callback
@@ -88,6 +98,7 @@ struct VoiceEffect
 {
     VoiceEffectType type = VoiceEffectType::Distortion;
     std::array<float, 16> parameters{};
+    std::shared_ptr<MeterState> meter;
 };
 
 struct VoiceParameters

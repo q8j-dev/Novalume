@@ -1313,3 +1313,11 @@ verification is complete and the user separately gives explicit permission.
   feedback, low-shelf shaping, high-cut damping, and frequency-dependent decay
   without callback allocation. Deterministic tail generation, full binary
   round-trip, and the actual signed Player chain are covered.
+- Added the current terminal `AudioAnalyzer` graph node with its input-only pin
+  contract, read-only live peak/RMS meters, serializable spectrum toggle and
+  exact `AudioWindowSize`, and `GetSpectrum`. Analyzer taps are gathered before
+  the audible output branch regardless of wire creation order. The realtime
+  stage meters every buffer and performs allocation-free Hann-windowed radix-2
+  FFTs in lazily retained per-tap scratch storage, publishing atomic RMS
+  frequency bins for safe main-thread reads. Unit, binary, and actual signed
+  Player proofs cover metering and all three window sizes' shared contract.

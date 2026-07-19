@@ -810,6 +810,26 @@ int main()
     require(graphReverbTail > 1.0f && std::abs(graphReverbMix[0]) < 0.001f,
         "the graph reverb must produce a delayed diffuse tail");
 
+    Engine graphAnalyzerEngine({.sampleRate = 48000, .channels = 2});
+    const ClipHandle graphAnalyzerClip = graphAnalyzerEngine.createClip({
+        .sampleRate = 48000, .channels = 1, .samples = pitchTone});
+    VoiceParameters graphAnalyzerParameters;
+    graphAnalyzerParameters.effects[0].type = VoiceEffectType::Analyzer;
+    graphAnalyzerParameters.effects[0].parameters[0] = 1.0f;
+    graphAnalyzerParameters.effects[0].parameters[1] = 0.0f;
+    graphAnalyzerParameters.effects[0].parameters[2] = 3.0f;
+    graphAnalyzerParameters.effects[0].meter = std::make_shared<MeterState>();
+    graphAnalyzerParameters.effectCount = 1;
+    require(static_cast<bool>(graphAnalyzerEngine.play(graphAnalyzerClip,
+                graphAnalyzerParameters)),
+        "a voice with a graph analyzer must start");
+    std::vector<float> analyzerMix(2048 * 2);
+    require(graphAnalyzerEngine.mix(analyzerMix) &&
+            graphAnalyzerParameters.effects[0].meter->peak.load() > 0.5f &&
+            graphAnalyzerParameters.effects[0].meter->rms.load() > 0.2f &&
+            graphAnalyzerParameters.effects[0].meter->spectrumSize.load() == 257,
+        "the graph analyzer must meter amplitude and publish its FFT window");
+
     Engine queuedEngine({.sampleRate = 48000, .channels = 2});
     require(queuedEngine.mixerTimeSeconds() == 0.0,
         "a fresh mixer clock must begin at zero");

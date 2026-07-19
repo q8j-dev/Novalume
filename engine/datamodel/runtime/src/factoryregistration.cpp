@@ -754,6 +754,7 @@ RBX_REGISTER_CLASS(Soundscape::AudioFilter);
 RBX_REGISTER_CLASS(Soundscape::AudioPitchShifter);
 RBX_REGISTER_CLASS(Soundscape::AudioEcho);
 RBX_REGISTER_CLASS(Soundscape::AudioReverb);
+RBX_REGISTER_CLASS(Soundscape::AudioAnalyzer);
 RBX_REGISTER_CLASS(Soundscape::AudioChannelMixer);
 RBX_REGISTER_CLASS(Soundscape::AudioChannelSplitter);
 RBX_REGISTER_CLASS(Soundscape::AudioEmitter);
