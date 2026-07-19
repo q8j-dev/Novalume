@@ -192,6 +192,15 @@ int main(int argc, char** argv)
         throw std::runtime_error("AudioFader did not enforce its current volume bound");
     audioFader->setVolume(0.25f);
     audioFader->setParent(audioRoot.get());
+    boost::shared_ptr<RBX::Soundscape::AudioDistortion> audioDistortion =
+        RBX::Creatable<RBX::Instance>::create<
+            RBX::Soundscape::AudioDistortion>();
+    audioDistortion->setLevel(2.0f);
+    if (audioDistortion->getLevel() != 1.0f)
+        throw std::runtime_error(
+            "AudioDistortion did not enforce its current level bound");
+    audioDistortion->setLevel(0.35f);
+    audioDistortion->setParent(audioRoot.get());
     boost::shared_ptr<RBX::Soundscape::AudioChannelMixer> audioMixer =
         RBX::Creatable<RBX::Instance>::create<
             RBX::Soundscape::AudioChannelMixer>();
@@ -212,8 +221,14 @@ int main(int argc, char** argv)
         RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
     faderWire->setName("FaderWire");
     faderWire->setSourceInstance(audioFader.get());
-    faderWire->setTargetInstance(audioMixer.get());
+    faderWire->setTargetInstance(audioDistortion.get());
     faderWire->setParent(audioFader.get());
+    boost::shared_ptr<RBX::Soundscape::Wire> distortionWire =
+        RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
+    distortionWire->setName("DistortionWire");
+    distortionWire->setSourceInstance(audioDistortion.get());
+    distortionWire->setTargetInstance(audioMixer.get());
+    distortionWire->setParent(audioDistortion.get());
     boost::shared_ptr<RBX::Soundscape::Wire> mixerWire =
         RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
     mixerWire->setName("MixerWire");
@@ -367,6 +382,9 @@ int main(int argc, char** argv)
         decodedAudioRoot->findFirstChildOfType<RBX::Soundscape::AudioEmitter>();
     RBX::Soundscape::AudioFader* decodedAudioFader =
         decodedAudioRoot->findFirstChildOfType<RBX::Soundscape::AudioFader>();
+    RBX::Soundscape::AudioDistortion* decodedAudioDistortion =
+        decodedAudioRoot->findFirstChildOfType<
+            RBX::Soundscape::AudioDistortion>();
     RBX::Soundscape::AudioChannelMixer* decodedAudioMixer =
         decodedAudioRoot->findFirstChildOfType<
             RBX::Soundscape::AudioChannelMixer>();
@@ -379,6 +397,7 @@ int main(int argc, char** argv)
         decodedAudioRoot->findFirstChildOfType<RBX::Soundscape::AudioListener>();
     if (!decodedAudioOutput || !decodedAudioWire ||
         !decodedAudioEmitter || !decodedAudioListener || !decodedAudioFader ||
+        !decodedAudioDistortion ||
         !decodedAudioMixer || !decodedAudioSplitter ||
         decodedAudioMixer->getLayout() != RBX::Soundscape::AUDIO_CHANNEL_QUAD ||
         decodedAudioSplitter->getLayout() != RBX::Soundscape::AUDIO_CHANNEL_QUAD ||
@@ -392,6 +411,8 @@ int main(int argc, char** argv)
         decodedAudioListener->distanceAttenuation().size() != 2 ||
         decodedAudioFader->getVolume() != 0.25f ||
         decodedAudioFader->getBypass() ||
+        decodedAudioDistortion->getLevel() != 0.35f ||
+        decodedAudioDistortion->getBypass() ||
         !decodedAudioPlayer || decodedAudioPlayer->getAssetId() !=
             "rbxasset://sounds/uuhhh.mp3" ||
         decodedAudioPlayer->getAudioContent().getSourceType() !=

@@ -576,6 +576,28 @@ int main()
     require(effectEngine.mix(effectMix) && channelEnergy(effectMix, 0) < 128.0f,
         "equalizer and compressor must attenuate a sustained over-threshold signal");
 
+    Engine distortionEngine({.sampleRate = 48000, .channels = 2});
+    const ClipHandle distortionClip = distortionEngine.createClip({
+        .sampleRate = 48000, .channels = 1,
+        .samples = std::vector<float>(512, 0.1f)});
+    VoiceParameters distortionParameters;
+    distortionParameters.looping = true;
+    distortionParameters.distortionLevels[0] = 0.75f;
+    distortionParameters.distortionCount = 1;
+    const VoiceHandle distortionVoice = distortionEngine.play(
+        distortionClip, distortionParameters);
+    require(static_cast<bool>(distortionVoice),
+        "a voice with a distortion node must start");
+    std::vector<float> distortionMix(128);
+    require(distortionEngine.mix(distortionMix) &&
+            channelEnergy(distortionMix, 0) > 20.0f,
+        "voice distortion must apply nonlinear drive before the output endpoint");
+    require(distortionEngine.setVoiceDistortion(
+                distortionVoice, std::span<const float>{}) &&
+            distortionEngine.mix(distortionMix) &&
+            channelEnergy(distortionMix, 0) < 8.0f,
+        "bypassing live voice distortion must restore the dry signal");
+
     Engine queuedEngine({.sampleRate = 48000, .channels = 2});
     require(queuedEngine.mixerTimeSeconds() == 0.0,
         "a fresh mixer clock must begin at zero");

@@ -26,6 +26,59 @@ void requireSuccess(ma_result result, const char* operation)
 
 struct Engine::Impl
 {
+    struct DistortionNode
+    {
+        ma_node_base base{};
+        std::array<std::atomic<float>, 32> levels{};
+        std::atomic<std::uint32_t> count{0};
+    };
+
+    static void processDistortion(ma_node* node, const float** input,
+        ma_uint32* inputFrames, float** output, ma_uint32* outputFrames)
+    {
+        DistortionNode* distortion = static_cast<DistortionNode*>(node);
+        const ma_uint32 frames = std::min(*inputFrames, *outputFrames);
+        const std::size_t samples = static_cast<std::size_t>(frames) *
+            distortion->base.pInputBuses[0].channels;
+        if (!input[0])
+        {
+            std::fill_n(output[0], samples, 0.0f);
+        }
+        const std::uint32_t effectCount = std::min<std::uint32_t>(
+            distortion->count.load(std::memory_order_acquire),
+            static_cast<std::uint32_t>(distortion->levels.size()));
+        if (input[0] && effectCount == 0)
+        {
+            std::copy_n(input[0], samples, output[0]);
+        }
+        else if (input[0])
+        {
+            for (std::size_t index = 0; index < samples; ++index)
+            {
+                float value = input[0][index];
+                for (std::uint32_t effect = 0; effect < effectCount; ++effect)
+                {
+                    const float level = std::clamp(distortion->levels[effect].load(
+                        std::memory_order_relaxed), 0.0f, 1.0f);
+                    if (level == 0.0f)
+                        continue;
+                    const float drive = 1.0f + level * 24.0f;
+                    value = std::tanh(value * drive) / std::tanh(drive);
+                }
+                output[0][index] = value;
+            }
+        }
+        *inputFrames = frames;
+        *outputFrames = frames;
+    }
+
+    static const ma_node_vtable& distortionVtable()
+    {
+        static const ma_node_vtable vtable = {
+            &processDistortion, nullptr, 1, 1, 0};
+        return vtable;
+    }
+
     struct Clip
     {
         std::uint32_t generation = 1;
@@ -62,6 +115,8 @@ struct Engine::Impl
         std::uint64_t loopEnd = UINT64_MAX;
         ma_audio_buffer_ref buffer{};
         ma_sound sound{};
+        DistortionNode distortion;
+        bool distortionInitialized = false;
     };
 
     struct Bus
@@ -313,6 +368,8 @@ struct Engine::Impl
             if (voice)
             {
                 ma_sound_uninit(&voice->sound);
+                if (voice->distortionInitialized)
+                    ma_node_uninit(&voice->distortion.base, nullptr);
                 if (voice->ownsBuffer)
                     ma_audio_buffer_ref_uninit(&voice->buffer);
             }
@@ -822,6 +879,8 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
             return {};
         Impl::Voice* stolen = impl->voices[stealIndex].get();
         ma_sound_uninit(&stolen->sound);
+        if (stolen->distortionInitialized)
+            ma_node_uninit(&stolen->distortion.base, nullptr);
         if (stolen->ownsBuffer)
             ma_audio_buffer_ref_uninit(&stolen->buffer);
         impl->voices[stealIndex].reset();
@@ -931,12 +990,40 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
         ma_sound_set_start_time_in_pcm_frames(&voice->sound,
             static_cast<ma_uint64>(std::max(frames, 0.0)));
     }
+    {
+        const ma_uint32 channels = impl->config.channels;
+        ma_node_config nodeConfig = ma_node_config_init();
+        nodeConfig.vtable = &Impl::distortionVtable();
+        nodeConfig.pInputChannels = &channels;
+        nodeConfig.pOutputChannels = &channels;
+        requireSuccess(ma_node_init(ma_engine_get_node_graph(&impl->engine),
+            &nodeConfig, nullptr, &voice->distortion.base),
+            "distortion node initialization failed");
+        voice->distortionInitialized = true;
+        const std::uint32_t distortionCount = std::min<std::uint32_t>(
+            parameters.distortionCount,
+            static_cast<std::uint32_t>(voice->distortion.levels.size()));
+        for (std::uint32_t index = 0; index < distortionCount; ++index)
+            voice->distortion.levels[index].store(std::clamp(
+                parameters.distortionLevels[index], 0.0f, 1.0f),
+                std::memory_order_relaxed);
+        voice->distortion.count.store(distortionCount, std::memory_order_release);
+        ma_node* destination = bus
+            ? static_cast<ma_node*>(&bus->group)
+            : ma_engine_get_endpoint(&impl->engine);
+        requireSuccess(ma_node_attach_output_bus(&voice->distortion.base, 0,
+            destination, 0), "distortion output attachment failed");
+        requireSuccess(ma_node_attach_output_bus(&voice->sound, 0,
+            &voice->distortion.base, 0), "distortion input attachment failed");
+    }
     requireSuccess(ma_sound_start(&voice->sound), "miniaudio voice start failed");
     }
     catch (...)
     {
         if (soundInitialized)
             ma_sound_uninit(&voice->sound);
+        if (voice->distortionInitialized)
+            ma_node_uninit(&voice->distortion.base, nullptr);
         if (voice->ownsBuffer)
             ma_audio_buffer_ref_uninit(&voice->buffer);
         throw;
@@ -963,6 +1050,8 @@ bool Engine::destroyVoice(VoiceHandle handle)
     if (!voice)
         return false;
     ma_sound_uninit(&voice->sound);
+    if (voice->distortionInitialized)
+        ma_node_uninit(&voice->distortion.base, nullptr);
     if (voice->ownsBuffer)
         ma_audio_buffer_ref_uninit(&voice->buffer);
     impl->voices[handle.index].reset();
@@ -1128,6 +1217,25 @@ bool Engine::setVoicePitch(VoiceHandle handle, float pitch)
     if (!voice)
         return false;
     ma_sound_set_pitch(&voice->sound, std::max(pitch, 0.01f));
+    return true;
+}
+
+bool Engine::setVoiceDistortion(VoiceHandle handle,
+    std::span<const float> levels)
+{
+    Impl::Voice* voice = impl->find(handle);
+    if (!voice || !voice->distortionInitialized ||
+        levels.size() > voice->distortion.levels.size())
+        return false;
+    for (std::size_t index = 0; index < levels.size(); ++index)
+    {
+        if (!std::isfinite(levels[index]))
+            return false;
+        voice->distortion.levels[index].store(
+            std::clamp(levels[index], 0.0f, 1.0f), std::memory_order_relaxed);
+    }
+    voice->distortion.count.store(static_cast<std::uint32_t>(levels.size()),
+        std::memory_order_release);
     return true;
 }
 

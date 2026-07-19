@@ -301,6 +301,7 @@ namespace RBX::Soundscape {
 const char* const sWire = "Wire";
 const char* const sAudioDeviceOutput = "AudioDeviceOutput";
 const char* const sAudioFader = "AudioFader";
+const char* const sAudioDistortion = "AudioDistortion";
 const char* const sAudioChannelMixer = "AudioChannelMixer";
 const char* const sAudioChannelSplitter = "AudioChannelSplitter";
 const char* const sAudioEmitter = "AudioEmitter";
@@ -368,6 +369,31 @@ static Reflection::EventDesc<AudioFader,
     void(bool, std::string, boost::shared_ptr<Instance>,
         boost::shared_ptr<Instance>)> eventAudioFaderWiringChanged(
     &AudioFader::wiringChangedSignal, "WiringChanged", "connected", "pin",
+    "wire", "instance", Security::None);
+
+static Reflection::PropDescriptor<AudioDistortion, bool>
+    propAudioDistortionBypass("Bypass", category_Behavior,
+        &AudioDistortion::getBypass, &AudioDistortion::setBypass);
+static Reflection::PropDescriptor<AudioDistortion, float>
+    propAudioDistortionLevel("Level", category_Data,
+        &AudioDistortion::getLevel, &AudioDistortion::setLevel);
+static Reflection::BoundFuncDesc<AudioDistortion,
+    boost::shared_ptr<const Instances>(std::string)>
+    funcAudioDistortionConnectedWires(
+        &AudioDistortion::getConnectedWiresReflection,
+        "GetConnectedWires", "pin", Security::None);
+static Reflection::BoundFuncDesc<AudioDistortion,
+    boost::shared_ptr<const Reflection::ValueArray>()>
+    funcAudioDistortionInputPins(&AudioDistortion::getInputPinsReflection,
+        "GetInputPins", Security::None);
+static Reflection::BoundFuncDesc<AudioDistortion,
+    boost::shared_ptr<const Reflection::ValueArray>()>
+    funcAudioDistortionOutputPins(&AudioDistortion::getOutputPinsReflection,
+        "GetOutputPins", Security::None);
+static Reflection::EventDesc<AudioDistortion,
+    void(bool, std::string, boost::shared_ptr<Instance>,
+        boost::shared_ptr<Instance>)> eventAudioDistortionWiringChanged(
+    &AudioDistortion::wiringChangedSignal, "WiringChanged", "connected", "pin",
     "wire", "instance", Security::None);
 
 static Reflection::EnumPropDescriptor<AudioChannelMixer, AudioChannelLayout>
@@ -842,6 +868,57 @@ AudioFader::getOutputPinsReflection()
 
 std::vector<std::string> AudioFader::inputPins() const { return {"Input"}; }
 std::vector<std::string> AudioFader::outputPins() const { return {"Output"}; }
+
+AudioDistortion::AudioDistortion()
+    : DescribedCreatable<AudioDistortion, Instance, sAudioDistortion>(
+        sAudioDistortion)
+    , bypass(false)
+    , level(0.5f)
+{
+}
+
+bool AudioDistortion::getBypass() const { return bypass; }
+float AudioDistortion::getLevel() const { return level; }
+
+void AudioDistortion::setBypass(bool value)
+{
+    if (bypass == value)
+        return;
+    bypass = value;
+    raisePropertyChanged(propAudioDistortionBypass);
+}
+
+void AudioDistortion::setLevel(float value)
+{
+    if (!std::isfinite(value))
+        throw std::runtime_error("AudioDistortion.Level must be finite");
+    value = std::clamp(value, 0.0f, 1.0f);
+    if (level == value)
+        return;
+    level = value;
+    raisePropertyChanged(propAudioDistortionLevel);
+}
+
+boost::shared_ptr<const Instances>
+AudioDistortion::getConnectedWiresReflection(std::string pin)
+{
+    return getConnectedWires(pin);
+}
+
+boost::shared_ptr<const Reflection::ValueArray>
+AudioDistortion::getInputPinsReflection()
+{
+    return getInputPins();
+}
+
+boost::shared_ptr<const Reflection::ValueArray>
+AudioDistortion::getOutputPinsReflection()
+{
+    return getOutputPins();
+}
+
+std::vector<std::string> AudioDistortion::inputPins() const { return {"Input"}; }
+std::vector<std::string> AudioDistortion::outputPins() const { return {"Output"}; }
 
 namespace {
 const std::vector<std::string>& channelPins()

@@ -1220,3 +1220,13 @@ verification is complete and the user separately gives explicit permission.
   and rolloff-unit conversion. The binary compatibility contract checks the
   reflected listener state and default, and the actual Backrooms package
   retained all three audible channels at RMS `0.0103454`.
+- Added the exact current `AudioDistortion` reflected, serializable, pin/wire,
+  bypass, and bounded `Level` surface from the supplied Studio API metadata.
+  AudioPlayer routes now carry every active distortion node in graph order
+  into a bounded per-voice miniaudio DSP chain, so unrelated legacy and graph
+  voices are not processed globally and live bypass/level changes reach the
+  realtime node without reallocating in the callback. Deterministic engine
+  coverage proves nonlinear drive and dry restoration, the binary contract
+  round-trips the node and wires, and the actual signed Player audio proof now
+  runs through `AudioPlayer -> AudioFader -> AudioDistortion ->
+  AudioChannelMixer -> AudioChannelSplitter -> AudioEmitter`.

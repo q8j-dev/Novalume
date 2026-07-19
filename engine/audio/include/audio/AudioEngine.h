@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <array>
 #include <filesystem>
 #include <memory>
 #include <span>
@@ -76,6 +77,8 @@ struct VoiceParameters
     float maxDistance = 10000.0f;
     float rolloff = 1.0f;
     float dopplerFactor = 1.0f;
+    std::array<float, 32> distortionLevels{};
+    std::uint32_t distortionCount = 0;
     AttenuationModel attenuation = AttenuationModel::Inverse;
     std::int32_t priority = 0;
     std::uint64_t rangeBeginFrame = 0;
@@ -187,6 +190,7 @@ public:
         std::span<const AttenuationPoint> curve);
     bool setVoiceVolume(VoiceHandle voice, float volume);
     bool setVoicePitch(VoiceHandle voice, float pitch);
+    bool setVoiceDistortion(VoiceHandle voice, std::span<const float> levels);
     bool setVoiceLooping(VoiceHandle voice, bool looping);
     bool scheduleVoiceStop(VoiceHandle voice, double mixerTimeSeconds);
     bool cancelVoiceStop(VoiceHandle voice);
