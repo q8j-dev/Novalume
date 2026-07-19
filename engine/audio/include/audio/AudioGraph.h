@@ -550,6 +550,50 @@ private:
     AudioWindowSize windowSize;
 };
 
+extern const char* const sAudioEcho;
+class AudioEcho final
+    : public DescribedCreatable<AudioEcho, Instance, sAudioEcho>
+    , public AudioNode
+{
+public:
+    AudioEcho();
+    bool getBypass() const;
+    void setBypass(bool value);
+    float getDelayTime() const;
+    void setDelayTime(float value);
+    float getDryLevel() const;
+    void setDryLevel(float value);
+    float getFeedback() const;
+    void setFeedback(float value);
+    float getRampTime() const;
+    void setRampTime(float value);
+    float getWetLevel() const;
+    void setWetLevel(float value);
+    void reset();
+    std::uint32_t getResetSerial() const { return resetSerial; }
+    boost::shared_ptr<const Instances> getConnectedWiresReflection(std::string pin);
+    boost::shared_ptr<const Reflection::ValueArray> getInputPinsReflection();
+    boost::shared_ptr<const Reflection::ValueArray> getOutputPinsReflection();
+    std::vector<std::string> inputPins() const override;
+    std::vector<std::string> outputPins() const override;
+    Instance* audioNodeInstance() override { return this; }
+    const Instance* audioNodeInstance() const override { return this; }
+    void fireWiringChanged(bool connected, const std::string& pin,
+        const boost::shared_ptr<Instance>& wire,
+        const boost::shared_ptr<Instance>& instance) override
+    { wiringChangedSignal(connected, pin, wire, instance); }
+    rbx::signal<void(bool, std::string, boost::shared_ptr<Instance>,
+        boost::shared_ptr<Instance>)> wiringChangedSignal;
+private:
+    bool bypass;
+    float delayTime;
+    float dryLevel;
+    float feedback;
+    float rampTime;
+    float wetLevel;
+    std::uint32_t resetSerial;
+};
+
 extern const char* const sAudioChannelMixer;
 class AudioChannelMixer final
     : public DescribedCreatable<AudioChannelMixer, Instance, sAudioChannelMixer>

@@ -255,6 +255,28 @@ AudioRoute findRoute(const AudioNode* node, float gain,
                 if (route.connected)
                     return route;
             }
+            else if (AudioEcho* echo =
+                         Instance::fastDynamicCast<AudioEcho>(target))
+            {
+                if (!echo->getBypass())
+                {
+                    if (effectCount >= effects.size())
+                        continue;
+                    Audio::VoiceEffect& effect = effects[effectCount++];
+                    effect.type = Audio::VoiceEffectType::Echo;
+                    const std::uintptr_t address =
+                        reinterpret_cast<std::uintptr_t>(echo);
+                    effect.parameters = {echo->getDelayTime(),
+                        echo->getDryLevel(), echo->getFeedback(),
+                        echo->getRampTime(), echo->getWetLevel(),
+                        static_cast<float>(echo->getResetSerial()),
+                        static_cast<float>(address & 0x00ffffffu)};
+                }
+                AudioRoute route = findRoute(echo, gain, effects,
+                    effectCount, visited);
+                if (route.connected)
+                    return route;
+            }
             else if (AudioChannelMixer* mixer =
                          Instance::fastDynamicCast<AudioChannelMixer>(target))
             {

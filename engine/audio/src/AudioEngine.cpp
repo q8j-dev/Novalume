@@ -28,14 +28,25 @@ struct Engine::Impl
 {
     struct EffectNode
     {
+        struct LongDelay
+        {
+            std::vector<float> samples;
+            std::uint32_t resetMarker = 0;
+            std::uint32_t ownerKey = 0;
+        };
         ma_node_base base{};
         std::array<std::atomic<std::uint8_t>, 32> types{};
         std::array<std::array<std::atomic<float>, 7>, 32> parameters{};
         std::array<float, 32> phases{};
+        std::array<float, 32> rampTargets{};
+        std::array<float, 32> rampSteps{};
+        std::array<std::uint32_t, 32> rampRemaining{};
         std::array<std::vector<float>, 32> delays;
         std::array<std::vector<float>, 32> states;
         std::array<std::vector<float>, 32> secondaryStates;
         std::array<std::uint32_t, 32> delayPositions{};
+        std::array<std::atomic<LongDelay*>, 32> longDelays{};
+        std::vector<std::unique_ptr<LongDelay>> retainedLongDelays;
         std::uint32_t sampleRate = 48000;
         std::uint32_t channels = 2;
         std::atomic<std::uint32_t> count{0};
@@ -559,6 +570,87 @@ struct Engine::Impl
                     }
                     effects->delayPositions[effect] = writeFrame;
                     effects->phases[effect] = phase;
+                }
+                else if (type == VoiceEffectType::Echo)
+                {
+                    EffectNode::LongDelay* longDelay =
+                        effects->longDelays[effect].load(std::memory_order_acquire);
+                    if (!longDelay || longDelay->samples.empty())
+                        continue;
+                    std::vector<float>& delay = longDelay->samples;
+                    const std::uint32_t delayFrames = channels
+                        ? static_cast<std::uint32_t>(delay.size() / channels) : 0;
+                    if (delayFrames < 2)
+                        continue;
+                    const float targetDelay = std::clamp(
+                        effects->parameters[effect][0].load(
+                            std::memory_order_relaxed), 0.001f, 5.0f) *
+                        effects->sampleRate;
+                    const float dryGain = std::pow(10.0f, std::clamp(
+                        effects->parameters[effect][1].load(
+                            std::memory_order_relaxed), -80.0f, 10.0f) / 20.0f);
+                    const float feedback = std::clamp(
+                        effects->parameters[effect][2].load(
+                            std::memory_order_relaxed), 0.0f, 1.0f);
+                    const float rampTime = std::clamp(
+                        effects->parameters[effect][3].load(
+                            std::memory_order_relaxed), 0.0f, 60000.0f);
+                    const float wetGain = std::pow(10.0f, std::clamp(
+                        effects->parameters[effect][4].load(
+                            std::memory_order_relaxed), -80.0f, 10.0f) / 20.0f);
+                    float currentDelay = effects->phases[effect];
+                    if (currentDelay < 1.0f || rampTime == 0.0f)
+                    {
+                        currentDelay = targetDelay;
+                        effects->rampTargets[effect] = targetDelay;
+                        effects->rampRemaining[effect] = 0;
+                    }
+                    else if (effects->rampTargets[effect] != targetDelay)
+                    {
+                        const std::uint32_t rampFrames = static_cast<std::uint32_t>(
+                            std::clamp(rampTime * effects->sampleRate, 1.0f,
+                                static_cast<float>(UINT32_MAX)));
+                        effects->rampTargets[effect] = targetDelay;
+                        effects->rampSteps[effect] =
+                            (targetDelay - currentDelay) / rampFrames;
+                        effects->rampRemaining[effect] = rampFrames;
+                    }
+                    std::uint32_t writeFrame = effects->delayPositions[effect] %
+                        delayFrames;
+                    for (ma_uint32 frame = 0; frame < frames; ++frame)
+                    {
+                        if (effects->rampRemaining[effect] > 0)
+                        {
+                            currentDelay += effects->rampSteps[effect];
+                            if (--effects->rampRemaining[effect] == 0)
+                                currentDelay = targetDelay;
+                        }
+                        for (ma_uint32 channel = 0; channel < channels; ++channel)
+                        {
+                            const std::size_t outputIndex =
+                                static_cast<std::size_t>(frame) * channels + channel;
+                            const float dry = output[0][outputIndex];
+                            float readFrame = static_cast<float>(writeFrame) -
+                                currentDelay;
+                            while (readFrame < 0.0f)
+                                readFrame += static_cast<float>(delayFrames);
+                            const std::uint32_t first =
+                                static_cast<std::uint32_t>(readFrame) % delayFrames;
+                            const std::uint32_t second = (first + 1) % delayFrames;
+                            const float fraction = readFrame - std::floor(readFrame);
+                            const float a = delay[static_cast<std::size_t>(first) *
+                                channels + channel];
+                            const float b = delay[static_cast<std::size_t>(second) *
+                                channels + channel];
+                            const float wet = a + (b - a) * fraction;
+                            delay[static_cast<std::size_t>(writeFrame) * channels +
+                                channel] = dry + wet * feedback;
+                            output[0][outputIndex] = dry * dryGain + wet * wetGain;
+                        }
+                        writeFrame = (writeFrame + 1) % delayFrames;
+                    }
+                    effects->delayPositions[effect] = writeFrame;
+                    effects->phases[effect] = currentDelay;
                 }
             }
         }
@@ -1370,7 +1462,8 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
                 effect.type != VoiceEffectType::Limiter &&
                 effect.type != VoiceEffectType::Equalizer &&
                 effect.type != VoiceEffectType::Filter &&
-                effect.type != VoiceEffectType::PitchShifter)
+                effect.type != VoiceEffectType::PitchShifter &&
+                effect.type != VoiceEffectType::Echo)
                 return {};
             const std::size_t parameterCount = effect.type ==
                 VoiceEffectType::Distortion ? 1 :
@@ -1380,7 +1473,8 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
                 effect.type == VoiceEffectType::Limiter ? 2 :
                 effect.type == VoiceEffectType::Equalizer ? 5 :
                 effect.type == VoiceEffectType::Filter ? 4 :
-                effect.type == VoiceEffectType::PitchShifter ? 2 : 3;
+                effect.type == VoiceEffectType::PitchShifter ? 2 :
+                effect.type == VoiceEffectType::Echo ? 7 : 3;
             for (std::size_t parameter = 0; parameter < parameterCount; ++parameter)
                 if (!std::isfinite(effect.parameters[parameter]))
                     return {};
@@ -1561,6 +1655,21 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
                  parameter < effect.parameters.size(); ++parameter)
                 voice->effects.parameters[index][parameter].store(
                     effect.parameters[parameter], std::memory_order_relaxed);
+            if (effect.type == VoiceEffectType::Echo)
+            {
+                std::unique_ptr<Impl::EffectNode::LongDelay> longDelay(
+                    new Impl::EffectNode::LongDelay());
+                longDelay->samples.resize((static_cast<std::size_t>(
+                    impl->config.sampleRate) * 5 + 2) * impl->config.channels);
+                longDelay->resetMarker = static_cast<std::uint32_t>(
+                    std::max(effect.parameters[5], 0.0f));
+                longDelay->ownerKey = static_cast<std::uint32_t>(
+                    std::max(effect.parameters[6], 0.0f));
+                Impl::EffectNode::LongDelay* published = longDelay.get();
+                voice->effects.retainedLongDelays.push_back(std::move(longDelay));
+                voice->effects.longDelays[index].store(published,
+                    std::memory_order_release);
+            }
         }
         voice->effects.count.store(effectCount, std::memory_order_release);
         ma_node* destination = bus
@@ -1810,7 +1919,8 @@ bool Engine::setVoiceEffects(VoiceHandle handle,
             effect.type != VoiceEffectType::Limiter &&
             effect.type != VoiceEffectType::Equalizer &&
             effect.type != VoiceEffectType::Filter &&
-            effect.type != VoiceEffectType::PitchShifter)
+            effect.type != VoiceEffectType::PitchShifter &&
+            effect.type != VoiceEffectType::Echo)
             return false;
         const std::size_t parameterCount = effect.type ==
             VoiceEffectType::Distortion ? 1 :
@@ -1820,13 +1930,40 @@ bool Engine::setVoiceEffects(VoiceHandle handle,
             effect.type == VoiceEffectType::Limiter ? 2 :
             effect.type == VoiceEffectType::Equalizer ? 5 :
             effect.type == VoiceEffectType::Filter ? 4 :
-            effect.type == VoiceEffectType::PitchShifter ? 2 : 3;
+            effect.type == VoiceEffectType::PitchShifter ? 2 :
+            effect.type == VoiceEffectType::Echo ? 7 : 3;
         for (std::size_t parameter = 0; parameter < parameterCount; ++parameter)
             if (!std::isfinite(effect.parameters[parameter]))
                 return false;
     }
     for (std::size_t index = 0; index < effects.size(); ++index)
     {
+        if (effects[index].type == VoiceEffectType::Echo)
+        {
+            const std::uint32_t resetMarker = static_cast<std::uint32_t>(
+                std::max(effects[index].parameters[5], 0.0f));
+            const std::uint32_t ownerKey = static_cast<std::uint32_t>(
+                std::max(effects[index].parameters[6], 0.0f));
+            Impl::EffectNode::LongDelay* current =
+                voice->effects.longDelays[index].load(std::memory_order_acquire);
+            const VoiceEffectType previousType = static_cast<VoiceEffectType>(
+                voice->effects.types[index].load(std::memory_order_relaxed));
+            if (!current || previousType != VoiceEffectType::Echo ||
+                current->resetMarker != resetMarker ||
+                current->ownerKey != ownerKey)
+            {
+                std::unique_ptr<Impl::EffectNode::LongDelay> longDelay(
+                    new Impl::EffectNode::LongDelay());
+                longDelay->samples.resize((static_cast<std::size_t>(
+                    impl->config.sampleRate) * 5 + 2) * impl->config.channels);
+                longDelay->resetMarker = resetMarker;
+                longDelay->ownerKey = ownerKey;
+                Impl::EffectNode::LongDelay* published = longDelay.get();
+                voice->effects.retainedLongDelays.push_back(std::move(longDelay));
+                voice->effects.longDelays[index].store(published,
+                    std::memory_order_release);
+            }
+        }
         voice->effects.types[index].store(static_cast<std::uint8_t>(
             effects[index].type), std::memory_order_relaxed);
         for (std::size_t parameter = 0;

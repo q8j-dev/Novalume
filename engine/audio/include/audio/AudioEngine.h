@@ -78,6 +78,7 @@ enum class VoiceEffectType : std::uint8_t
     Equalizer,
     Filter,
     PitchShifter,
+    Echo,
 };
 
 // Fixed-size effect descriptors keep graph updates and the real-time callback

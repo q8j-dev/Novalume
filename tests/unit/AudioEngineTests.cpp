@@ -765,6 +765,30 @@ int main()
             channelEnergy(pitchMix, 0) > 100.0f,
         "the graph pitch shifter must produce its windowed wet signal");
 
+    Engine graphEchoEngine({.sampleRate = 48000, .channels = 2});
+    std::vector<float> graphEchoImpulse(4096);
+    graphEchoImpulse[0] = 1.0f;
+    const ClipHandle graphEchoClip = graphEchoEngine.createClip({
+        .sampleRate = 48000, .channels = 1, .samples = graphEchoImpulse});
+    VoiceParameters graphEchoParameters;
+    graphEchoParameters.effects[0].type = VoiceEffectType::Echo;
+    graphEchoParameters.effects[0].parameters = {
+        0.01f, -80.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f};
+    graphEchoParameters.effectCount = 1;
+    require(static_cast<bool>(graphEchoEngine.play(graphEchoClip,
+                graphEchoParameters)),
+        "a voice with a graph echo must start");
+    std::vector<float> graphEchoMix(1024 * 2);
+    require(graphEchoEngine.mix(graphEchoMix),
+        "the graph echo mix must render");
+    float graphEchoPeak = 0.0f;
+    for (std::size_t frame = 400; frame < 600; ++frame)
+        graphEchoPeak = std::max(graphEchoPeak,
+            std::abs(graphEchoMix[frame * 2]));
+    require(graphEchoPeak > 0.5f &&
+            std::abs(graphEchoMix[0]) < 0.001f,
+        "the graph echo must emit its authored delayed wet signal");
+
     Engine queuedEngine({.sampleRate = 48000, .channels = 2});
     require(queuedEngine.mixerTimeSeconds() == 0.0,
         "a fresh mixer clock must begin at zero");

@@ -352,6 +352,7 @@ const char* const sAudioLimiter = "AudioLimiter";
 const char* const sAudioEqualizer = "AudioEqualizer";
 const char* const sAudioFilter = "AudioFilter";
 const char* const sAudioPitchShifter = "AudioPitchShifter";
+const char* const sAudioEcho = "AudioEcho";
 const char* const sAudioChannelMixer = "AudioChannelMixer";
 const char* const sAudioChannelSplitter = "AudioChannelSplitter";
 const char* const sAudioEmitter = "AudioEmitter";
@@ -708,6 +709,38 @@ static Reflection::EventDesc<AudioPitchShifter, void(bool, std::string,
     eventAudioPitchShifterWiringChanged(
         &AudioPitchShifter::wiringChangedSignal, "WiringChanged", "connected",
         "pin", "wire", "instance", Security::None);
+
+static Reflection::PropDescriptor<AudioEcho, bool> propAudioEchoBypass(
+    "Bypass", category_Behavior, &AudioEcho::getBypass, &AudioEcho::setBypass);
+static Reflection::PropDescriptor<AudioEcho, float> propAudioEchoDelayTime(
+    "DelayTime", category_Data, &AudioEcho::getDelayTime, &AudioEcho::setDelayTime);
+static Reflection::PropDescriptor<AudioEcho, float> propAudioEchoDryLevel(
+    "DryLevel", category_Data, &AudioEcho::getDryLevel, &AudioEcho::setDryLevel);
+static Reflection::PropDescriptor<AudioEcho, float> propAudioEchoFeedback(
+    "Feedback", category_Data, &AudioEcho::getFeedback, &AudioEcho::setFeedback);
+static Reflection::PropDescriptor<AudioEcho, float> propAudioEchoRampTime(
+    "RampTime", category_Data, &AudioEcho::getRampTime, &AudioEcho::setRampTime);
+static Reflection::PropDescriptor<AudioEcho, float> propAudioEchoWetLevel(
+    "WetLevel", category_Data, &AudioEcho::getWetLevel, &AudioEcho::setWetLevel);
+static Reflection::BoundFuncDesc<AudioEcho, void()> funcAudioEchoReset(
+    &AudioEcho::reset, "Reset", Security::RobloxScript);
+static Reflection::BoundFuncDesc<AudioEcho,
+    boost::shared_ptr<const Instances>(std::string)>
+    funcAudioEchoConnectedWires(&AudioEcho::getConnectedWiresReflection,
+        "GetConnectedWires", "pin", Security::None);
+static Reflection::BoundFuncDesc<AudioEcho,
+    boost::shared_ptr<const Reflection::ValueArray>()>
+    funcAudioEchoInputPins(&AudioEcho::getInputPinsReflection,
+        "GetInputPins", Security::None);
+static Reflection::BoundFuncDesc<AudioEcho,
+    boost::shared_ptr<const Reflection::ValueArray>()>
+    funcAudioEchoOutputPins(&AudioEcho::getOutputPinsReflection,
+        "GetOutputPins", Security::None);
+static Reflection::EventDesc<AudioEcho, void(bool, std::string,
+    boost::shared_ptr<Instance>, boost::shared_ptr<Instance>)>
+    eventAudioEchoWiringChanged(&AudioEcho::wiringChangedSignal,
+        "WiringChanged", "connected", "pin", "wire", "instance",
+        Security::None);
 
 static Reflection::EnumPropDescriptor<AudioChannelMixer, AudioChannelLayout>
     propAudioChannelMixerLayout("Layout", category_Data,
@@ -1852,6 +1885,72 @@ boost::shared_ptr<const Reflection::ValueArray>
 AudioPitchShifter::getOutputPinsReflection() { return getOutputPins(); }
 std::vector<std::string> AudioPitchShifter::inputPins() const { return {"Input"}; }
 std::vector<std::string> AudioPitchShifter::outputPins() const { return {"Output"}; }
+
+AudioEcho::AudioEcho()
+    : DescribedCreatable<AudioEcho, Instance, sAudioEcho>(sAudioEcho)
+    , bypass(false)
+    , delayTime(1.0f)
+    , dryLevel(0.0f)
+    , feedback(0.5f)
+    , rampTime(0.0f)
+    , wetLevel(0.0f)
+    , resetSerial(0)
+{
+}
+bool AudioEcho::getBypass() const { return bypass; }
+float AudioEcho::getDelayTime() const { return delayTime; }
+float AudioEcho::getDryLevel() const { return dryLevel; }
+float AudioEcho::getFeedback() const { return feedback; }
+float AudioEcho::getRampTime() const { return rampTime; }
+float AudioEcho::getWetLevel() const { return wetLevel; }
+void AudioEcho::setBypass(bool value)
+{
+    if (bypass == value) return;
+    bypass = value;
+    raisePropertyChanged(propAudioEchoBypass);
+}
+namespace {
+void setFiniteEchoValue(AudioEcho* echo, float& field, float value,
+    float minimum, float maximum,
+    const Reflection::PropertyDescriptor& descriptor, const char* name)
+{
+    if (!std::isfinite(value))
+        throw std::runtime_error(std::string("AudioEcho.") + name +
+            " must be finite");
+    value = std::clamp(value, minimum, maximum);
+    if (field == value) return;
+    field = value;
+    echo->raisePropertyChanged(descriptor);
+}
+}
+void AudioEcho::setDelayTime(float value)
+{ setFiniteEchoValue(this, delayTime, value, 0.001f, 5.0f,
+    propAudioEchoDelayTime, "DelayTime"); }
+void AudioEcho::setDryLevel(float value)
+{ setFiniteEchoValue(this, dryLevel, value, -80.0f, 10.0f,
+    propAudioEchoDryLevel, "DryLevel"); }
+void AudioEcho::setFeedback(float value)
+{ setFiniteEchoValue(this, feedback, value, 0.0f, 1.0f,
+    propAudioEchoFeedback, "Feedback"); }
+void AudioEcho::setRampTime(float value)
+{ setFiniteEchoValue(this, rampTime, value, 0.0f, 60000.0f,
+    propAudioEchoRampTime, "RampTime"); }
+void AudioEcho::setWetLevel(float value)
+{ setFiniteEchoValue(this, wetLevel, value, -80.0f, 10.0f,
+    propAudioEchoWetLevel, "WetLevel"); }
+void AudioEcho::reset()
+{
+    resetSerial = resetSerial == 0x00ffffffu ? 0u : resetSerial + 1u;
+}
+boost::shared_ptr<const Instances>
+AudioEcho::getConnectedWiresReflection(std::string pin)
+{ return getConnectedWires(pin); }
+boost::shared_ptr<const Reflection::ValueArray>
+AudioEcho::getInputPinsReflection() { return getInputPins(); }
+boost::shared_ptr<const Reflection::ValueArray>
+AudioEcho::getOutputPinsReflection() { return getOutputPins(); }
+std::vector<std::string> AudioEcho::inputPins() const { return {"Input"}; }
+std::vector<std::string> AudioEcho::outputPins() const { return {"Output"}; }
 
 namespace {
 const std::vector<std::string>& channelPins()

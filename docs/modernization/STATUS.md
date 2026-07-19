@@ -1296,3 +1296,12 @@ verification is complete and the user separately gives explicit permission.
   playback duration stable while shifting perceived pitch without callback
   allocation. Deterministic wet-output coverage and the actual signed Player
   chain exercise the implementation.
+- Added the current `AudioEcho` surface with bounded delay, dry/wet decibel
+  levels, feedback, delay-ramp time, protected `Reset`, and standard graph
+  wiring. Each authored echo lazily receives one retained five-second delay
+  line on the control path instead of preallocating the maximum for all 32
+  effect slots; realtime processing and live graph updates remain
+  allocation-free, and reset publishes fresh zeroed storage without racing the
+  callback. Fractional delay, feedback, exact ramp duration, binary
+  serialization, deterministic impulse timing, and the actual signed Player
+  graph are covered.

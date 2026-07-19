@@ -276,6 +276,14 @@ int main(int argc, char** argv)
     audioPitchShifter->setPitch(1.25f);
     audioPitchShifter->setWindowSize(RBX::Soundscape::AUDIO_WINDOW_LARGE);
     audioPitchShifter->setParent(audioRoot.get());
+    boost::shared_ptr<RBX::Soundscape::AudioEcho> audioEcho =
+        RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::AudioEcho>();
+    audioEcho->setDelayTime(0.2f);
+    audioEcho->setDryLevel(-2.0f);
+    audioEcho->setFeedback(0.25f);
+    audioEcho->setRampTime(0.1f);
+    audioEcho->setWetLevel(-4.0f);
+    audioEcho->setParent(audioRoot.get());
     boost::shared_ptr<RBX::Soundscape::AudioChannelMixer> audioMixer =
         RBX::Creatable<RBX::Instance>::create<
             RBX::Soundscape::AudioChannelMixer>();
@@ -356,8 +364,14 @@ int main(int argc, char** argv)
         RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
     pitchShifterWire->setName("PitchShifterWire");
     pitchShifterWire->setSourceInstance(audioPitchShifter.get());
-    pitchShifterWire->setTargetInstance(audioMixer.get());
+    pitchShifterWire->setTargetInstance(audioEcho.get());
     pitchShifterWire->setParent(audioPitchShifter.get());
+    boost::shared_ptr<RBX::Soundscape::Wire> echoWire =
+        RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
+    echoWire->setName("EchoWire");
+    echoWire->setSourceInstance(audioEcho.get());
+    echoWire->setTargetInstance(audioMixer.get());
+    echoWire->setParent(audioEcho.get());
     boost::shared_ptr<RBX::Soundscape::Wire> mixerWire =
         RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
     mixerWire->setName("MixerWire");
@@ -536,6 +550,8 @@ int main(int argc, char** argv)
     RBX::Soundscape::AudioPitchShifter* decodedAudioPitchShifter =
         decodedAudioRoot->findFirstChildOfType<
             RBX::Soundscape::AudioPitchShifter>();
+    RBX::Soundscape::AudioEcho* decodedAudioEcho =
+        decodedAudioRoot->findFirstChildOfType<RBX::Soundscape::AudioEcho>();
     RBX::Soundscape::AudioChannelMixer* decodedAudioMixer =
         decodedAudioRoot->findFirstChildOfType<
             RBX::Soundscape::AudioChannelMixer>();
@@ -552,7 +568,7 @@ int main(int argc, char** argv)
         !decodedAudioChorus || !decodedAudioFlanger ||
         !decodedAudioCompressor || !decodedAudioGate || !decodedAudioLimiter ||
         !decodedAudioEqualizer || !decodedAudioFilter ||
-        !decodedAudioPitchShifter ||
+        !decodedAudioPitchShifter || !decodedAudioEcho ||
         !decodedAudioMixer || !decodedAudioSplitter ||
         decodedAudioMixer->getLayout() != RBX::Soundscape::AUDIO_CHANNEL_QUAD ||
         decodedAudioSplitter->getLayout() != RBX::Soundscape::AUDIO_CHANNEL_QUAD ||
@@ -633,6 +649,13 @@ int main(int argc, char** argv)
         decodedAudioPitchShifter->getBypass() ||
         decodedAudioPitchShifter->getConnectedWiresReflection("Input")->size() != 1 ||
         decodedAudioPitchShifter->getConnectedWiresReflection("Output")->size() != 1 ||
+        decodedAudioEcho->getDelayTime() != 0.2f ||
+        decodedAudioEcho->getDryLevel() != -2.0f ||
+        decodedAudioEcho->getFeedback() != 0.25f ||
+        decodedAudioEcho->getRampTime() != 0.1f ||
+        decodedAudioEcho->getWetLevel() != -4.0f || decodedAudioEcho->getBypass() ||
+        decodedAudioEcho->getConnectedWiresReflection("Input")->size() != 1 ||
+        decodedAudioEcho->getConnectedWiresReflection("Output")->size() != 1 ||
         !decodedAudioPlayer || decodedAudioPlayer->getAssetId() !=
             "rbxasset://sounds/uuhhh.mp3" ||
         decodedAudioPlayer->getAudioContent().getSourceType() !=
