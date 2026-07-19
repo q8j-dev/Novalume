@@ -207,6 +207,17 @@ if(RBX_PLAYER_REFERENCE_ROOT AND RBX_APK_REFERENCE_PATH)
     set(RBX_UI_INVENTORY "${CMAKE_BINARY_DIR}/generated/resources/in-game-ui-inventory.json")
     set(RBX_UI_OVERLAY_ROOT "${CMAKE_BINARY_DIR}/generated/resources/in-game-ui-overlay")
     set(RBX_UI_OVERLAY_MANIFEST "${RBX_UI_OVERLAY_ROOT}/overlay-manifest.json")
+    set(RBX_PLAYER_CJK_FONT
+        "${RBX_PLAYER_REFERENCE_ROOT}/PlatformContent/pc/fonts/NotoSansCJKjp-Regular.otf")
+    set(RBX_PLAYER_CJK_FONT_SHA256
+        "f18253affd968c8ea592d8df6d84b1d4c5d3a46d267e53a1f6749e6c4f76a23d")
+    if(NOT EXISTS "${RBX_PLAYER_CJK_FONT}")
+        message(FATAL_ERROR "Supplied Player directory has no current PC CJK fallback font")
+    endif()
+    file(SHA256 "${RBX_PLAYER_CJK_FONT}" RBX_PLAYER_CJK_FONT_ACTUAL_SHA256)
+    if(NOT RBX_PLAYER_CJK_FONT_ACTUAL_SHA256 STREQUAL RBX_PLAYER_CJK_FONT_SHA256)
+        message(FATAL_ERROR "Supplied Player CJK fallback font hash does not match the selected 2026 reference")
+    endif()
 
     file(GLOB_RECURSE RBX_PLAYER_UI_REFERENCE_FILES CONFIGURE_DEPENDS
         "${RBX_PLAYER_REFERENCE_ROOT}/content/textures/ui/*"
@@ -341,6 +352,23 @@ add_custom_command(TARGET RobloxPlayerLegacy POST_BUILD
         "${CMAKE_SOURCE_DIR}/docs/modernization/player.spdx.json"
         "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayerLegacy>/Resources/player.spdx.json"
     COMMENT "Packaging the isolated legacy UI and avatar test player")
+
+if(RBX_PLAYER_CJK_FONT)
+    add_custom_command(TARGET RobloxPlayer POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E make_directory
+            "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/PlatformContent/pc/fonts"
+        COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+            "${RBX_PLAYER_CJK_FONT}"
+            "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/PlatformContent/pc/fonts/NotoSansCJKjp-Regular.otf"
+        COMMENT "Packaging the hash-verified current Player CJK fallback font")
+    add_custom_command(TARGET RobloxPlayerLegacy POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E make_directory
+            "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayerLegacy>/Resources/PlatformContent/pc/fonts"
+        COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+            "${RBX_PLAYER_CJK_FONT}"
+            "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayerLegacy>/Resources/PlatformContent/pc/fonts/NotoSansCJKjp-Regular.otf"
+        COMMENT "Packaging the hash-verified current Player CJK fallback font in the legacy test Player")
+endif()
 
 if(RBX_UI_OVERLAY_ROOT)
     add_custom_command(TARGET RobloxPlayer POST_BUILD

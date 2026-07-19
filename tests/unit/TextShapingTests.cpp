@@ -97,6 +97,41 @@ int main(int argc, char** argv)
             RBX::Vector2(mixedSize.x * 0.55f, 256.0f), nullptr);
         if (!(wrapped.y >= 64.0f))
             return fail("mixed-direction text did not retain bounded line wrapping");
+
+        const std::vector<RBX::Rect2D> selection = typesetter.getSelectionRects(
+            mixed, RBX::Vector2::zero(), 32.0f, RBX::Text::XALIGN_LEFT,
+            RBX::Text::YALIGN_TOP, RBX::Vector2(mixedSize.x * 0.55f, 256.0f), 4, 7);
+        if (selection.empty())
+            return fail("mixed-direction selection produced no visual geometry");
+        for (size_t i = 0; i < selection.size(); ++i)
+        {
+            if (!(selection[i].width() > 0.0f) || !(selection[i].height() > 0.0f) ||
+                selection[i].x0() < -0.01f || selection[i].x1() > mixedSize.x * 0.55f + 0.01f)
+                return fail("mixed-direction selection escaped its wrapped visual line");
+        }
+    }
+
+    if (fallbackPaths.size() >= 4)
+    {
+        const RBX::Vector2 cjk = typesetter.measure("\xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e\xed\x95\x9c\xea\xb5\xad\xec\x96\xb4", 32.0f, unconstrained, nullptr);
+        const RBX::Vector2 missing = typesetter.measure("\xef\xbf\xbd\xef\xbf\xbd\xef\xbf\xbd\xef\xbf\xbd\xef\xbf\xbd", 32.0f, unconstrained, nullptr);
+        if (!(cjk.x > 0.0f) || closeEnough(cjk.x, missing.x, 0.01f))
+            return fail("current Player CJK fallback rendered missing-glyph metrics");
+
+        const RBX::Vector2 wrappedCjk = typesetter.measure(
+            "\xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e\xed\x95\x9c\xea\xb5\xad\xec\x96\xb4\xe4\xb8\xad\xe6\x96\x87",
+            32.0f, RBX::Vector2(cjk.x * 0.55f, 256.0f), nullptr);
+        if (!(wrappedCjk.y >= 64.0f))
+            return fail("CJK fallback did not retain character-bounded wrapping");
+    }
+
+    if (fallbackPaths.size() >= 5)
+    {
+        if (typesetter.getColorLayerCount(0x1f600u) < 2)
+            return fail("current Player color emoji did not expose its COLR palette layers");
+        const RBX::Vector2 emoji = typesetter.measure("\xf0\x9f\x98\x80", 32.0f, unconstrained, nullptr);
+        if (!(emoji.x > 0.0f) || !(emoji.y > 0.0f))
+            return fail("current Player color emoji did not retain raster metrics");
     }
 
     const RBX::Vector2 first = typesetter.measure("office e\xcc\x81", 32.0f, unconstrained, nullptr);

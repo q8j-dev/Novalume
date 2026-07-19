@@ -46,6 +46,7 @@ int main(int argc, char** argv) {
         bool verifySkybox = false;
         bool verifyAudio = false;
         bool verifyPlaceAudio = false;
+        bool verifyTextRendering = false;
         rbx::player::AvatarRigVariant avatarRig =
             rbx::player::AvatarRigVariant::R15;
         std::optional<std::filesystem::path> videoVerificationPath;
@@ -70,6 +71,7 @@ int main(int argc, char** argv) {
             verifySkybox |= argument == "--verify-skybox";
             verifyAudio |= argument == "--verify-audio";
             verifyPlaceAudio |= argument == "--verify-place-audio";
+            verifyTextRendering |= argument == "--verify-text-rendering";
             if (argument == "--r15")
                 avatarRig = rbx::player::AvatarRigVariant::R15;
 			else if (argument == "--r15-plus")
@@ -204,7 +206,7 @@ int main(int argc, char** argv) {
             verifyPeoplePage, verifyExperienceChat, verifyCaptureGallery,
             verifyChromeLeaderboard, verifyReport, verifyRespawn,
             verifySwitchAvatar, verifySurfaceTextures, verifyShadowMap,
-            verifySkybox, verifyAudio, verifyPlaceAudio);
+            verifySkybox, verifyAudio, verifyPlaceAudio, verifyTextRendering);
         const double runtimeLoadMilliseconds =
             std::chrono::duration<double, std::milli>(
                 std::chrono::steady_clock::now() - runtimeLoadStart).count();
@@ -221,14 +223,14 @@ int main(int argc, char** argv) {
                 runtime.handleInput(event);
             host->setPointerLock(runtime.wantsPointerLock());
             if (headlessVerify && !verifySurfaceTextures && !verifyShadowMap &&
-                !verifySkybox &&
+                !verifySkybox && !verifyTextRendering &&
                 (frame == 60 || frame == 70 || frame == 80 || frame == 90)) {
                 runtime.handleInput(rbx::platform::InputEvent{
                     .kind = rbx::platform::InputEvent::Kind::keyDown,
                     .key = rbx::platform::InputEvent::Key::w,
                     .text = 'w'});
             } else if (headlessVerify && !verifySurfaceTextures && !verifyShadowMap &&
-                       !verifySkybox && frame == 100) {
+                       !verifySkybox && !verifyTextRendering && frame == 100) {
                 runtime.handleInput(rbx::platform::InputEvent{
                     .kind = rbx::platform::InputEvent::Kind::keyUp,
                     .key = rbx::platform::InputEvent::Key::w,
@@ -238,14 +240,14 @@ int main(int argc, char** argv) {
                     .key = rbx::platform::InputEvent::Key::d,
                     .text = 'd'});
             } else if (headlessVerify && !verifySurfaceTextures && !verifyShadowMap &&
-                       !verifySkybox &&
+                       !verifySkybox && !verifyTextRendering &&
                        (frame == 110 || frame == 120 || frame == 130)) {
                 runtime.handleInput(rbx::platform::InputEvent{
                     .kind = rbx::platform::InputEvent::Kind::keyDown,
                     .key = rbx::platform::InputEvent::Key::d,
                     .text = 'd'});
             } else if (headlessVerify && !verifySurfaceTextures && !verifyShadowMap &&
-                       !verifySkybox && frame == 140) {
+                       !verifySkybox && !verifyTextRendering && frame == 140) {
                 runtime.handleInput(rbx::platform::InputEvent{
                     .kind = rbx::platform::InputEvent::Kind::keyUp,
                     .key = rbx::platform::InputEvent::Key::d,
@@ -255,7 +257,7 @@ int main(int argc, char** argv) {
                     .key = rbx::platform::InputEvent::Key::s,
                     .text = 's'});
             } else if (headlessVerify && !verifySurfaceTextures && !verifyShadowMap &&
-                       !verifySkybox &&
+                       !verifySkybox && !verifyTextRendering &&
                        (frame == 150 || frame == 160 || frame == 170 ||
                         frame == 181 || frame == 201 || frame == 221)) {
                 runtime.handleInput(rbx::platform::InputEvent{
@@ -263,7 +265,7 @@ int main(int argc, char** argv) {
                     .key = rbx::platform::InputEvent::Key::s,
                     .text = 's'});
             } else if (headlessVerify && !verifySurfaceTextures && !verifyShadowMap &&
-                       !verifySkybox && frame == 230) {
+                       !verifySkybox && !verifyTextRendering && frame == 230) {
                 runtime.handleInput(rbx::platform::InputEvent{
                     .kind = rbx::platform::InputEvent::Kind::keyUp,
                     .key = rbx::platform::InputEvent::Key::s,

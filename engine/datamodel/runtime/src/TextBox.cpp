@@ -898,6 +898,60 @@ namespace RBX
 				if (showingCursor)
 					render2dTextImpl(adorn, getRenderBackgroundColor4(), "\1", getFont(), getTextSize(), applyCanvasGroup(getRenderTextColor4()), applyCanvasGroup(getRenderTextStrokeColor4()), getTextWrap(), getTextScale(), getXAlignment(), getYAlignment(), getTextTruncate());
 			}
+			else if (selectionStartPos >= 0 && selectionStartPos != cursorPos)
+			{
+				Rect2D textRect;
+				render2dImpl(adorn, getRenderBackgroundColor4(), textRect);
+				if (TextService* textService = ServiceProvider::create<TextService>(this))
+					if (Typesetter* typesetter = textService->getTypesetter(getFont()))
+					{
+						Vector2 textPosition;
+						switch (getXAlignment())
+						{
+						case TextService::XALIGNMENT_LEFT: textPosition.x = textRect.x0(); break;
+						case TextService::XALIGNMENT_RIGHT: textPosition.x = textRect.x1(); break;
+						case TextService::XALIGNMENT_CENTER: textPosition.x = textRect.center().x; break;
+						}
+						switch (getYAlignment())
+						{
+						case TextService::YALIGNMENT_TOP: textPosition.y = textRect.y0(); break;
+						case TextService::YALIGNMENT_CENTER: textPosition.y = textRect.center().y; break;
+						case TextService::YALIGNMENT_BOTTOM: textPosition.y = textRect.y1(); break;
+						}
+						const int selectionBegin = std::min(getSelectionStart(), getCursorPosition()) - 1;
+						const int selectionEnd = std::max(getSelectionStart(), getCursorPosition()) - 1;
+						const float resolvedFontSize = getFontSizeScale(getTextScale(), getTextWrap(), getTextSize(), textRect);
+						const std::vector<Rect2D> selectionRects = typesetter->getSelectionRects(
+							bufferedText, textPosition, resolvedFontSize,
+							TextService::ToTextXAlign(getXAlignment()), TextService::ToTextYAlign(getYAlignment()),
+							getTextWrap() ? textRect.wh() : Vector2::zero(),
+							static_cast<unsigned>(selectionBegin), static_cast<unsigned>(selectionEnd),
+							getTextScale() && getTextWrap() && adorn->useFontSmoothScalling());
+						const Color4 selectionColor = applyCanvasGroup(Color4(0.0f, 0.45f, 1.0f, 0.35f));
+						GuiObject* clippingObject = firstAncestorClipping();
+						bool useClip = getClipping();
+						Rect2D clipRect = textRect;
+						if (clippingObject && absoluteRotation.empty())
+						{
+							clipRect = useClip ? clipRect.intersect(clippingObject->getClippedRect()) :
+								clippingObject->getClippedRect();
+							useClip = true;
+						}
+						for (size_t i = 0; i < selectionRects.size(); ++i)
+						{
+							if (!absoluteRotation.empty())
+								adorn->rect2d(selectionRects[i], selectionColor, absoluteRotation);
+							else if (useClip)
+								adorn->rect2d(selectionRects[i], selectionColor, clipRect);
+							else
+								adorn->rect2d(selectionRects[i], selectionColor);
+						}
+					}
+				render2dTextImpl(adorn, textRect, getTextWithBlankCursor(),
+					getFont(), getTextSize(), applyCanvasGroup(getRenderTextColor4()),
+					applyCanvasGroup(getRenderTextStrokeColor4()), getTextWrap(), getTextScale(),
+					getXAlignment(), getYAlignment(), getTextTruncate());
+			}
 			else
 				render2dTextImpl(adorn, getRenderBackgroundColor4(), showingCursor ? getTextWithCursor() : getTextWithBlankCursor(), getFont(), getTextSize(), applyCanvasGroup(getRenderTextColor4()), applyCanvasGroup(getRenderTextStrokeColor4()), getTextWrap(), getTextScale(), getXAlignment(), getYAlignment(), getTextTruncate());
 		}

@@ -43,7 +43,8 @@ public:
                   bool verifyShadowMap = false,
                   bool verifySkybox = false,
                   bool verifyAudio = false,
-                  bool verifyPlaceAudio = false);
+                  bool verifyPlaceAudio = false,
+                  bool verifyTextRendering = false);
     ~PlayerRuntime();
 
     PlayerRuntime(const PlayerRuntime&) = delete;

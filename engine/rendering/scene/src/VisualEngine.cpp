@@ -141,6 +141,7 @@ VisualEngine::VisualEngine(Device* device, CRenderSettings* settings)
         glyphAtlas.reset(new TextureAtlas(this, 2048, 2048));
 		std::vector<std::string> fallbackFontPaths;
 		static const char* const fallbackFonts[] = {
+			"fonts/NotoSansCJKjp-Regular.otf",
 			"fonts/NotoNaskhArabicUI-Regular.ttf",
 			"fonts/NotoSansBengaliUI-Regular.ttf",
 			"fonts/NotoSansDevanagariUI-Regular.ttf",
@@ -150,7 +151,8 @@ VisualEngine::VisualEngine(Device* device, CRenderSettings* settings)
 			"fonts/NotoSansSinhalaUI-Regular.ttf",
 			"fonts/NotoSansThaiUI-Regular.ttf",
 			"fonts/RobloxEmoji.ttf",
-			"fonts/TwemojiMozilla.ttf"
+			"fonts/TwemojiMozilla.ttf",
+			"fonts/Arimo-Regular.ttf"
 		};
 		for (size_t i = 0; i < sizeof(fallbackFonts) / sizeof(fallbackFonts[0]); ++i)
 		{

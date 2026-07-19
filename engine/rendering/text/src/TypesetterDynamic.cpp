@@ -16,6 +16,7 @@
 #include FT_MODULE_H
 #include FT_TRUETYPE_DRIVER_H
 #include FT_LCD_FILTER_H
+#include FT_COLOR_H
 #include <hb-ft.h>
 #include <utf8proc.h>
 #include <SheenBidi/SheenBidi.h>
@@ -76,6 +77,12 @@ FASTINTVARIABLE(FontSizePadding, 1)
 		class GlyphProvider
 		{
 		public:
+			struct ColorLayer
+			{
+				unsigned glyphIndex;
+				Color4 color;
+				bool foreground;
+			};
             struct ShapedMetric
             {
                 unsigned glyphIndex;
@@ -399,7 +406,13 @@ FASTINTVARIABLE(FontSizePadding, 1)
 
 			bool setGlyphToSlot(unsigned character, unsigned size)
             {
-				FT_Face glyphFace = getFace(getFaceIndex(character));
+				const unsigned faceIndex = getFaceIndex(character);
+				return setGlyphIndexToSlot(faceIndex, getGlyphIndex(character), size);
+			}
+
+			bool setGlyphIndexToSlot(unsigned faceIndex, unsigned glyphIndex, unsigned size)
+            {
+				FT_Face glyphFace = getFace(faceIndex);
 				if (!glyphFace)
 					return false;
 				FT_Size_RequestRec_ request = {FT_SIZE_REQUEST_TYPE_REAL_DIM, 0,  (size + FInt::FontSizePadding) * 64, 0, 0};
@@ -408,9 +421,7 @@ FASTINTVARIABLE(FontSizePadding, 1)
                 if (error)
                     return false;        
 
-				unsigned glyph_index = getGlyphIndex(character);
-
-                error = FT_Load_Glyph(glyphFace, glyph_index, FT_LOAD_DEFAULT);
+                error = FT_Load_Glyph(glyphFace, glyphIndex, FT_LOAD_DEFAULT);
                 RBXASSERT(error == FT_Err_Ok);
                 if (error)
                     return false;
@@ -505,6 +516,83 @@ FASTINTVARIABLE(FontSizePadding, 1)
                 return errorTexRegion;
             }
 
+			bool getColorLayers(unsigned character, std::vector<ColorLayer>* layers) const
+			{
+				layers->clear();
+				FT_Face glyphFace = getFace(getFaceIndex(character));
+				if (!glyphFace || !FT_HAS_COLOR(glyphFace))
+					return false;
+				FT_Color* palette = NULL;
+				if (FT_Palette_Select(glyphFace, 0, &palette) != FT_Err_Ok || !palette)
+					return false;
+				FT_LayerIterator iterator = {};
+				FT_UInt layerGlyph = 0;
+				FT_UInt colorIndex = 0;
+				const FT_UInt baseGlyph = getGlyphIndex(character);
+				while (FT_Get_Color_Glyph_Layer(glyphFace, baseGlyph, &layerGlyph, &colorIndex, &iterator))
+				{
+					ColorLayer layer;
+					layer.glyphIndex = layerGlyph;
+					layer.foreground = colorIndex == 0xffffu;
+					if (layer.foreground)
+						layer.color = Color4(1.0f, 1.0f, 1.0f, 1.0f);
+					else
+					{
+						const FT_Color color = palette[colorIndex];
+						layer.color = Color4(color.red / 255.0f, color.green / 255.0f,
+							color.blue / 255.0f, color.alpha / 255.0f);
+					}
+					layers->push_back(layer);
+				}
+				return !layers->empty();
+			}
+
+			TypesetterDynamic::Glyph getLayerGlyphMetrics(unsigned character, unsigned layerGlyph, unsigned size)
+			{
+				TypesetterDynamic::Glyph result = {};
+				const unsigned faceIndex = getFaceIndex(character);
+				if (!setGlyphIndexToSlot(faceIndex, layerGlyph, size))
+					return result;
+				FT_Face glyphFace = getFace(faceIndex);
+				const FT_GlyphSlot& slot = glyphFace->glyph;
+				result.height = roundToPixelsSigned(slot->metrics.height);
+				result.width = roundToPixelsSigned(slot->metrics.width);
+				result.xadvance = roundToPixelsSigned(slot->advance.x);
+				result.xoffset = roundToPixelsSigned(slot->metrics.horiBearingX);
+				result.yoffset = roundToPixelsSigned(slot->metrics.horiBearingY);
+				ShapedMetricMap::const_iterator shaped = shapedMetricCache.find(character);
+				if (shaped != shapedMetricCache.end())
+				{
+					result.xoffset += shaped->second.xoffset;
+					result.yoffset += shaped->second.yoffset;
+				}
+				return result;
+			}
+
+			const TextureRegion& getLayerGlyphUVs(unsigned character, unsigned layerGlyph, unsigned size)
+			{
+				if (!textureAtlas)
+					return errorTexRegion;
+				const unsigned faceIndex = getFaceIndex(character);
+				const boost::uint64_t atlasId = (static_cast<boost::uint64_t>(fontId & 0xffu) << 56) |
+					(static_cast<boost::uint64_t>(faceIndex) << 48) |
+					(static_cast<boost::uint64_t>(size & 0xffffu) << 32) | layerGlyph;
+				const TextureRegion* textureRegion = NULL;
+				if (textureAtlas->getRegion(atlasId, textureRegion))
+					return *textureRegion;
+				if (!setGlyphIndexToSlot(faceIndex, layerGlyph, size))
+					return errorTexRegion;
+				FT_Face glyphFace = getFace(faceIndex);
+				if (glyphFace->glyph->format != FT_GLYPH_FORMAT_BITMAP &&
+					FT_Render_Glyph(glyphFace->glyph, FT_RENDER_MODE_NORMAL) != FT_Err_Ok)
+					return errorTexRegion;
+				FT_Bitmap& bitmap = glyphFace->glyph->bitmap;
+				if (textureAtlas->insert(atlasId, Vector2int16(bitmap.width, bitmap.rows),
+						bitmap.pitch, bitmap.buffer, textureRegion))
+					return *textureRegion;
+				return errorTexRegion;
+			}
+
 		private:
 			struct FallbackFace
 			{
@@ -581,9 +669,10 @@ FASTINTVARIABLE(FontSizePadding, 1)
 				ShapedMetricMap::const_iterator shaped = shapedMetricCache.find(character);
 				if (shaped != shapedMetricCache.end())
 					return shaped->second.glyphIndex;
-				return character & NAMED_GLYPH_MASK
-					? character & ~NAMED_GLYPH_MASK
-					: FT_Get_Char_Index(face, character);
+				if (character & NAMED_GLYPH_MASK)
+					return character & ~NAMED_GLYPH_MASK;
+				FT_Face glyphFace = getFace(getFaceIndex(character));
+				return glyphFace ? FT_Get_Char_Index(glyphFace, character) : 0;
 			}
 
 
@@ -710,6 +799,13 @@ FASTINTVARIABLE(FontSizePadding, 1)
 			return glyphProvider->getTexture();
 		}
 
+		unsigned TypesetterDynamic::getColorLayerCount(unsigned character) const
+		{
+			std::vector<GlyphProvider::ColorLayer> layers;
+			return glyphProvider->getColorLayers(character, &layers) ?
+				static_cast<unsigned>(layers.size()) : 0;
+		}
+
         void TypesetterDynamic::drawCursor(Adorn* adorn, bool useClipping, const Rect2D& clippingRect, const Rotation2D& rotation, const Rect2D& glyphRect, const Color4& color) const
         {
             adorn->setIgnoreTexture(true);
@@ -766,19 +862,31 @@ FASTINTVARIABLE(FontSizePadding, 1)
 
                         if (!isCharacterWhitespace(sourceCharacter))
                         {
-                            Rect2D rect = Rect2D::xywh(linex + dx + (x + glyph.xoffset) * scale, liney + dy + (ascender - glyph.yoffset) * scale, glyph.width * scale, glyph.height * scale);
-
-                            rect = rect.expand(FONT_PADDING);
-
-                            TextureRegion textureRegion = glyphProvider->getGlyphUVs(unicodeChar, renderSize);
-                            Rect2D uvs = Rect2D::xyxy(textureRegion.x / (float)texture->getWidth(), textureRegion.y / (float)texture->getHeight(),
-                                (textureRegion.x + textureRegion.width) / (float)texture->getWidth(), (textureRegion.y + textureRegion.height) / (float)texture->getHeight());
-
-                            drawRect(adorn, useClipping, clippingRect, rotation,
-                                rect,
-                                Vector2(uvs.x0() - uvOffset.x, uvs.y0() - uvOffset.y),
-                                Vector2(uvs.x1() + uvOffset.x, uvs.y1() + uvOffset.y),
-                                drawColor);
+							std::vector<GlyphProvider::ColorLayer> colorLayers;
+							const bool drawColorLayers = offsetIndex == 4 &&
+								glyphProvider->getColorLayers(unicodeChar, &colorLayers);
+							const size_t layerCount = drawColorLayers ? colorLayers.size() : 1;
+							for (size_t layerIndex = 0; layerIndex < layerCount; ++layerIndex)
+							{
+								const Glyph layerGlyph = drawColorLayers ?
+									glyphProvider->getLayerGlyphMetrics(unicodeChar, colorLayers[layerIndex].glyphIndex, measureSize) : glyph;
+								Rect2D rect = Rect2D::xywh(linex + dx + (x + layerGlyph.xoffset) * scale,
+									liney + dy + (ascender - layerGlyph.yoffset) * scale,
+									layerGlyph.width * scale, layerGlyph.height * scale).expand(FONT_PADDING);
+								const TextureRegion textureRegion = drawColorLayers ?
+									glyphProvider->getLayerGlyphUVs(unicodeChar, colorLayers[layerIndex].glyphIndex, renderSize) :
+									glyphProvider->getGlyphUVs(unicodeChar, renderSize);
+								const Rect2D uvs = Rect2D::xyxy(textureRegion.x / (float)texture->getWidth(), textureRegion.y / (float)texture->getHeight(),
+									(textureRegion.x + textureRegion.width) / (float)texture->getWidth(),
+									(textureRegion.y + textureRegion.height) / (float)texture->getHeight());
+								Color4 layerColor = drawColorLayers && !colorLayers[layerIndex].foreground ?
+									colorLayers[layerIndex].color : drawColor;
+								if (drawColorLayers && !colorLayers[layerIndex].foreground)
+									layerColor.a *= drawColor.a;
+								drawRect(adorn, useClipping, clippingRect, rotation, rect,
+									Vector2(uvs.x0() - uvOffset.x, uvs.y0() - uvOffset.y),
+									Vector2(uvs.x1() + uvOffset.x, uvs.y1() + uvOffset.y), layerColor);
+							}
                         }
 
                         x += glyph.xadvance;
@@ -986,6 +1094,86 @@ FASTINTVARIABLE(FontSizePadding, 1)
 			}
 
 			return -1;
+		}
+
+		std::vector<Rect2D> TypesetterDynamic::getSelectionRects(const std::string& s,
+			const RBX::Vector2& position, float size, RBX::Text::XAlign xalign,
+			RBX::Text::YAlign yalign, const RBX::Vector2& availableSpace,
+			unsigned selectionStart, unsigned selectionEnd, bool autoScale) const
+		{
+			std::vector<Rect2D> result;
+			if (selectionStart == selectionEnd)
+				return result;
+			if (selectionEnd < selectionStart)
+				std::swap(selectionStart, selectionEnd);
+
+			std::vector<unsigned> stringUnicode;
+			decodeUTF8(s, &stringUnicode);
+			selectionStart = std::min<unsigned>(selectionStart, stringUnicode.size());
+			selectionEnd = std::min<unsigned>(selectionEnd, stringUnicode.size());
+			if (selectionStart == selectionEnd)
+				return result;
+
+			const bool useAvailableSpace = availableSpace.x != 0;
+			const float height = autoScale ? 48.0f : size * legacyHeightScale * retinaScale;
+			float scale = autoScale ? 1.0f : 1.0f / retinaScale;
+			std::vector<unsigned> shapedUnicode;
+			std::vector<GlyphLine> lines;
+			glyphProvider->shape(stringUnicode, static_cast<unsigned>(height), &shapedUnicode);
+			const Vector2int16 intAvailableSpace = Vector2int16(availableSpace / scale);
+			Vector2int16 intSize = autoScale ?
+				layoutRatio(shapedUnicode, &lines, static_cast<int>(height), availableSpace) :
+				layout(shapedUnicode, &lines, static_cast<int>(height), intAvailableSpace,
+					useAvailableSpace, false, NULL);
+			if (autoScale)
+			{
+				scale = std::min(availableSpace.x / static_cast<float>(std::max<int>(1, intSize.x)),
+					availableSpace.y / static_cast<float>(std::max<int>(1, intSize.y)));
+				scale = std::min(1.0f, scale);
+			}
+			reshapeLines(stringUnicode, static_cast<unsigned>(height), &lines);
+			intSize.x = 0;
+			for (size_t i = 0; i < lines.size(); ++i)
+				intSize.x = std::max<int>(intSize.x, lines[i].width);
+			reorderLines(stringUnicode, &lines);
+
+			const float startx = round_int(position.x);
+			const float measuredHeight = autoScale ? measureLining(lines, static_cast<unsigned>(height)).y : intSize.y;
+			const float starty = fontAdjustY(round_int(position.y), measuredHeight, scale, yalign);
+			for (size_t li = 0; li < lines.size(); ++li)
+			{
+				const GlyphLine& line = lines[li];
+				const float linex = fontAdjustX(startx, line.width, scale, xalign);
+				const float liney = starty + line.yoffset * scale;
+				int x = 0;
+				int spanStart = -1;
+				unsigned previousChar = 0;
+				for (size_t i = 0; i < line.length; ++i)
+				{
+					const unsigned token = line.data[i];
+					Glyph glyph = glyphProvider->getGlyphMetrics(token, static_cast<unsigned>(height));
+					if (!glyphProvider->isShaped(token))
+						x += glyphProvider->getKerning(previousChar, token, static_cast<unsigned>(height));
+					const int glyphStart = x;
+					x += glyph.xadvance;
+					const unsigned clusterStart = glyphProvider->getSourceCluster(token, static_cast<unsigned>(i));
+					const unsigned clusterEnd = glyphProvider->getSourceEnd(token, static_cast<unsigned>(i));
+					const bool selected = clusterStart < selectionEnd && clusterEnd > selectionStart;
+					if (selected && spanStart < 0)
+						spanStart = glyphStart;
+					if (!selected && spanStart >= 0)
+					{
+						result.push_back(Rect2D::xywh(linex + spanStart * scale, liney,
+							(glyphStart - spanStart) * scale, height * scale));
+						spanStart = -1;
+					}
+					previousChar = token;
+				}
+				if (spanStart >= 0)
+					result.push_back(Rect2D::xywh(linex + spanStart * scale, liney,
+						(x - spanStart) * scale, height * scale));
+			}
+			return result;
 		}
 
 		Vector2 TypesetterDynamic::measure(const std::string& s, float size, const Vector2& availableSpace, bool* textFits) const

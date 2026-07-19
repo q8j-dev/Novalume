@@ -46,6 +46,17 @@ namespace RBX
 				const Rotation2D&       rotation,
 				RBX::Vector2			cursorPos) const;
 
+			virtual std::vector<Rect2D> getSelectionRects(
+				const std::string& s,
+				const RBX::Vector2& pos2D,
+				float size,
+				RBX::Text::XAlign xalign,
+				RBX::Text::YAlign yalign,
+				const RBX::Vector2& availableSpace,
+				unsigned selectionStart,
+				unsigned selectionEnd,
+				bool autoScale = false) const;
+
 			virtual Vector2 measure(
 				const std::string&  s,
 				float size,
@@ -56,6 +67,7 @@ namespace RBX
 			virtual const std::shared_ptr<Texture>& getTexture() const;
             virtual void loadResources(RBX::Graphics::TextureManager* textureManager, RBX::Graphics::TextureAtlas* glyphAtlas);
             virtual void releaseResources();
+			unsigned getColorLayerCount(unsigned character) const;
 
 			struct Glyph
 			{

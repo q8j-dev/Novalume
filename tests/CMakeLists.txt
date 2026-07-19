@@ -30,10 +30,14 @@ set(RBX_TEXT_SHAPING_FALLBACK_ARGS)
 if(RBX_PLAYER_REFERENCE_ROOT AND EXISTS
     "${RBX_PLAYER_REFERENCE_ROOT}/content/fonts/NotoNaskhArabicUI-Regular.ttf" AND EXISTS
     "${RBX_PLAYER_REFERENCE_ROOT}/content/fonts/NotoSansDevanagariUI-Regular.ttf" AND EXISTS
-    "${RBX_PLAYER_REFERENCE_ROOT}/content/fonts/Arimo-Regular.ttf")
+    "${RBX_PLAYER_REFERENCE_ROOT}/content/fonts/Arimo-Regular.ttf" AND EXISTS
+    "${RBX_PLAYER_REFERENCE_ROOT}/PlatformContent/pc/fonts/NotoSansCJKjp-Regular.otf" AND EXISTS
+    "${RBX_PLAYER_REFERENCE_ROOT}/content/fonts/TwemojiMozilla.ttf")
     list(APPEND RBX_TEXT_SHAPING_FALLBACK_ARGS
         "${RBX_PLAYER_REFERENCE_ROOT}/content/fonts/NotoNaskhArabicUI-Regular.ttf"
         "${RBX_PLAYER_REFERENCE_ROOT}/content/fonts/NotoSansDevanagariUI-Regular.ttf"
+        "${RBX_PLAYER_REFERENCE_ROOT}/PlatformContent/pc/fonts/NotoSansCJKjp-Regular.otf"
+        "${RBX_PLAYER_REFERENCE_ROOT}/content/fonts/TwemojiMozilla.ttf"
         "${RBX_PLAYER_REFERENCE_ROOT}/content/fonts/Arimo-Regular.ttf")
 endif()
 add_test(NAME text-shaping-contract
@@ -366,6 +370,19 @@ if(APPLE)
             TIMEOUT 30
             RUN_SERIAL TRUE
             LABELS "player;rendering;metal")
+
+        set(RBX_TEXT_RENDER_PROOF
+            "${CMAKE_BINARY_DIR}/test-output/text-render-golden.ppm")
+        add_test(NAME player-text-rendering-metal
+            COMMAND "$<TARGET_FILE:RobloxPlayer>"
+                --headless-verify
+                --verify-text-rendering
+                --frame-limit 120
+                --render-proof "${RBX_TEXT_RENDER_PROOF}")
+        set_tests_properties(player-text-rendering-metal PROPERTIES
+            TIMEOUT 30
+            RUN_SERIAL TRUE
+            LABELS "player;rendering;metal;text;unicode")
 
         set(RBX_SHADOW_MAP_RENDER_PROOF
             "${CMAKE_BINARY_DIR}/test-output/shadow-map-render.ppm")

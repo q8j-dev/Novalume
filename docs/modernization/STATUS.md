@@ -508,9 +508,22 @@ the final return; it is not replaced or treated as accepted while deferred.
   Automatically wrapped lines are now reshaped independently before visual
   reordering, so Arabic/Indic contextual forms do not retain joins across a
   line edge; bounded Arabic wrapping preserves logical caret mapping in the
-  native test and the rebuilt packaged Player remains green. CJK fallback,
-  color-emoji raster acceptance, selection geometry, and visual text goldens
-  remain required for final text acceptance.
+  native test and the rebuilt packaged Player remains green. The exact current
+  Player's 16,427,228-byte NotoSansCJKjp fallback is now hash-verified at
+  configure time and packaged in the actual app's PC platform mount; Japanese,
+  Korean, and Chinese measurement/wrapping are covered by the native contract.
+  FreeType COLR/CPAL layers from the supplied Twemoji face are rasterized into
+  the existing grayscale atlas and composited with their authentic palette
+  colors, without adding a dynamic text dependency. TextBox now produces
+  cluster-aware visual selection rectangles after line wrapping and UAX #9
+  reorder, including RTL selections, and suppresses the blinking caret while a
+  range is active. A deterministic 2560x1440 Metal golden renders Japanese,
+  Korean, Hebrew, Arabic, a colored emoji, and a selected mixed-direction
+  TextBox; two independent runs produced the identical scoped pixel hash
+  `15944835803061162936`, and the capture was visually inspected. The focused
+  shaping contract, the new `player-text-rendering-metal` golden, the normal
+  packaged baseplate render, and strict app signing all pass. This closes the
+  current text/font acceptance checkpoint.
 - Isolated macOS clipboard access in `platform/macos` behind the shared platform
   contract instead of compiling AppKit syntax into DataModel C++.
 - Added a real main-framebuffer contract to the bgfx backend using native pixel
@@ -942,7 +955,7 @@ remains the genuine Player package plus its native engine dependency closure;
 screenshot recreations and compatibility mocks are not acceptable. Its paused
 checkpoint is recorded in `docs/reverse-engineering/in-experience-ui.md`.
 
-1. Continue text/fonts, streaming/current-graph audio parity, launcher, and interactive
+1. Continue streaming/current-graph audio parity, launcher, and interactive
    Metal acceptance in buildable checkpoints.
 2. Integrate and verify the production networking certificate issuance/rotation
    path, and build the native Windows/Linux/iOS/Android matrices. Implement the Web

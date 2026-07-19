@@ -82,6 +82,7 @@
 #include "V8DataModel/PartCookie.h"
 #include "V8DataModel/PlayerGui.h"
 #include "V8DataModel/ScreenGui.h"
+#include "V8DataModel/Frame.h"
 #include "V8DataModel/Sky.h"
 #include "V8DataModel/TextChatService.h"
 #include "V8DataModel/TextChatConfiguration.h"
@@ -507,6 +508,8 @@ struct PlayerRuntime::State final {
     bool audioOutputDisabled = false;
     bool verifiesViewportRendering = false;
     bool verifiesVideoRendering = false;
+    bool verifiesTextRendering = false;
+    boost::shared_ptr<RBX::TextBox> verificationTextBox;
     bool verifiesPeoplePage = false;
     bool verifiesExperienceChat = false;
     bool verifiesCaptureGallery = false;
@@ -660,7 +663,8 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
     bool verifyShadowMap,
     bool verifySkybox,
     bool verifyAudio,
-    bool verifyPlaceAudio)
+    bool verifyPlaceAudio,
+    bool verifyTextRendering)
     : state(std::make_unique<State>())
 {
     if (!device || renderWidth == 0 || renderHeight == 0 ||
@@ -735,6 +739,7 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
     state->logicalHeight = logicalHeight;
     state->verifiesViewportRendering = verifyViewportRendering;
     state->verifiesVideoRendering = !videoVerificationPath.empty();
+    state->verifiesTextRendering = verifyTextRendering;
     state->verifiesPeoplePage = verifyPeoplePage;
     state->verifiesExperienceChat = verifyExperienceChat;
     state->verifiesCaptureGallery = verifyCaptureGallery;
@@ -2030,6 +2035,61 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
                 state->visualEngine->getTypesetter(font));
         }
     }
+    if (state->verifiesTextRendering) {
+        RBX::CoreGuiService* coreGui =
+            RBX::ServiceProvider::create<RBX::CoreGuiService>(state->dataModel.get());
+        boost::shared_ptr<RBX::ScreenGui> screen =
+            RBX::Creatable<RBX::Instance>::create<RBX::ScreenGui>();
+        screen->setName("TextRenderingVerification");
+        screen->setDisplayOrder(1000);
+        screen->setIgnoreGuiInset(true);
+        screen->setParent(coreGui);
+
+        boost::shared_ptr<RBX::Frame> panel =
+            RBX::Creatable<RBX::Instance>::create<RBX::Frame>();
+        panel->setName("TextGoldenPanel");
+        panel->setPosition(RBX::UDim2(0.0f, 360, 0.0f, 470));
+        panel->setSize(RBX::UDim2(0.0f, 800, 0.0f, 190));
+        panel->setBackgroundColor3(RBX::Color3(0.025f, 0.03f, 0.04f));
+        panel->setBackgroundTransparency(0.0f);
+        panel->setParent(screen.get());
+
+        boost::shared_ptr<RBX::TextLabel> label =
+            RBX::Creatable<RBX::Instance>::create<RBX::TextLabel>();
+        label->setName("UnicodeGoldenLabel");
+        label->setPosition(RBX::UDim2(0.0f, 24, 0.0f, 12));
+        label->setSize(RBX::UDim2(0.0f, 752, 0.0f, 74));
+        label->setBackgroundTransparency(1.0f);
+        label->setText("日本語 한국어 العربية עברית 😀");
+        label->setFont(RBX::TextService::FONT_SOURCESANS);
+        label->setTextSize(32.0f);
+        label->setTextColor3(RBX::Color3(1.0f, 1.0f, 1.0f));
+        label->setXAlignment(RBX::TextService::XALIGNMENT_LEFT);
+        label->setYAlignment(RBX::TextService::YALIGNMENT_CENTER);
+        label->setParent(panel.get());
+
+        boost::shared_ptr<RBX::TextBox> textBox =
+            RBX::Creatable<RBX::Instance>::create<RBX::TextBox>();
+        textBox->setName("BidiSelectionGoldenTextBox");
+        textBox->setPosition(RBX::UDim2(0.0f, 24, 0.0f, 100));
+        textBox->setSize(RBX::UDim2(0.0f, 752, 0.0f, 64));
+        textBox->setBackgroundColor3(RBX::Color3(0.06f, 0.07f, 0.09f));
+        textBox->setBackgroundTransparency(0.0f);
+        textBox->setText("abc אבג 123");
+        textBox->setFont(RBX::TextService::FONT_SOURCESANS);
+        textBox->setTextSize(30.0f);
+        textBox->setTextColor3(RBX::Color3(1.0f, 1.0f, 1.0f));
+        textBox->setXAlignment(RBX::TextService::XALIGNMENT_LEFT);
+        textBox->setYAlignment(RBX::TextService::YALIGNMENT_CENTER);
+        textBox->setClearTextOnFocus(false);
+        textBox->setParent(panel.get());
+        textBox->captureFocus();
+        textBox->setSelectionStart(5);
+        textBox->setCursorPosition(8);
+        state->verificationTextBox = textBox;
+        if (textBox->getSelectionStart() != 5 || textBox->getCursorPosition() != 8)
+            throw std::runtime_error("text visual proof did not retain its logical bidi selection");
+    }
     // CoreScripts mount before the graphics typesetters are available. Run the
     // host's first real viewport layout after VisualEngine initialization so
     // AutomaticSize text obtains intrinsic bounds and React AbsoluteSize
@@ -2296,6 +2356,12 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
     state->cameraChangesThisFrame.clear();
     state->mouseChangesThisFrame.clear();
     state->dataModel->renderStep(1.0F / 60.0F);
+    if (state->verifiesTextRendering && state->verificationTextBox) {
+        if (state->verificationTextBox->getSelectionStart() < 0)
+            state->verificationTextBox->captureFocus();
+        state->verificationTextBox->setSelectionStart(5);
+        state->verificationTextBox->setCursorPosition(8);
+    }
     if (state->verifiesAudio && state->verificationSound) {
         RBX::Soundscape::SoundService* soundService =
             RBX::ServiceProvider::find<RBX::Soundscape::SoundService>(
@@ -3756,6 +3822,12 @@ void PlayerRuntime::writeFrameProof(const std::filesystem::path& outputPath)
     std::array<bool, 32768> videoColorBuckets{};
     std::size_t videoBucketCount = 0;
     std::size_t videoColoredPixels = 0;
+    std::array<bool, 32768> textColorBuckets{};
+    std::size_t textColorBucketCount = 0;
+    std::size_t textBrightPixels = 0;
+    std::size_t textSelectionBluePixels = 0;
+    std::size_t textEmojiColorPixels = 0;
+    std::uint64_t textRegionHash = 1469598103934665603ULL;
     std::size_t chromeDarkPixels = 0;
     std::size_t chromeGlyphPixels = 0;
     std::size_t baseplateGridContrastPixels = 0;
@@ -3791,6 +3863,10 @@ void PlayerRuntime::writeFrameProof(const std::filesystem::path& outputPath)
     const unsigned int videoTop = 440U * state->height / state->logicalHeight;
     const unsigned int videoRight = 380U * state->width / state->logicalWidth;
     const unsigned int videoBottom = 620U * state->height / state->logicalHeight;
+    const unsigned int textLeft = 360U * state->width / state->logicalWidth;
+    const unsigned int textTop = 470U * state->height / state->logicalHeight;
+    const unsigned int textRight = 1160U * state->width / state->logicalWidth;
+    const unsigned int textBottom = 660U * state->height / state->logicalHeight;
     for (std::size_t index = 4U; index < pixels.size(); index += 4U) {
         if (pixels[index + 0U] != pixels[0] ||
             pixels[index + 1U] != pixels[1] ||
@@ -3904,6 +3980,26 @@ void PlayerRuntime::writeFrameProof(const std::filesystem::path& outputPath)
                 }
             }
         }
+        if (state->verifiesTextRendering) {
+            const std::size_t pixelIndex = index / 4U;
+            const unsigned int x = static_cast<unsigned int>(pixelIndex % state->width);
+            const unsigned int y = static_cast<unsigned int>(pixelIndex / state->width);
+            if (x >= textLeft && x < textRight && y >= textTop && y < textBottom) {
+                if (!textColorBuckets[bucket]) {
+                    textColorBuckets[bucket] = true;
+                    ++textColorBucketCount;
+                }
+                textBrightPixels += lowest > 180U;
+                textSelectionBluePixels += blue > red + 35U && blue > green + 8U;
+                textEmojiColorPixels += red > 140U && green > 70U && red > blue + 40U;
+                textRegionHash ^= red;
+                textRegionHash *= 1099511628211ULL;
+                textRegionHash ^= green;
+                textRegionHash *= 1099511628211ULL;
+                textRegionHash ^= blue;
+                textRegionHash *= 1099511628211ULL;
+            }
+        }
     }
     if (!outputPath.parent_path().empty())
         std::filesystem::create_directories(outputPath.parent_path());
@@ -3969,6 +4065,20 @@ void PlayerRuntime::writeFrameProof(const std::filesystem::path& outputPath)
             throw std::runtime_error(
                 "VideoFrame proof is blank or missing decoded colored video pixels");
         }
+    }
+    if (state->verifiesTextRendering) {
+        static constexpr std::uint64_t kTextRegionGoldenHash =
+            15944835803061162936ULL;
+        std::cout << "text visual golden hash=" << textRegionHash
+                  << " color-buckets=" << textColorBucketCount
+                  << " bright=" << textBrightPixels
+                  << " selection-blue=" << textSelectionBluePixels
+                  << " emoji-color=" << textEmojiColorPixels << '\n';
+        if (textRegionHash != kTextRegionGoldenHash ||
+            textColorBucketCount < 48U || textBrightPixels < 500U ||
+            textSelectionBluePixels < 500U || textEmojiColorPixels < 24U)
+            throw std::runtime_error(
+                "Unicode text proof is blank, monochrome, or missing bidi selection geometry");
     }
     if (state->verifiesCaptureGallery) {
         std::cout << "CaptureService Gallery card proof visible="

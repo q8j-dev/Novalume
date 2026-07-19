@@ -4,6 +4,7 @@
 #include "Util/Rotation2D.h"
 #include "GfxBase/Type.h"
 #include <memory>
+#include <vector>
 
 namespace  RBX {
 	class Adorn;
@@ -43,6 +44,20 @@ namespace  RBX {
 			const RBX::Vector2&		availableSpace,
 			const Rotation2D&       rotation,
 			RBX::Vector2			cursorPos) const = 0;
+
+		virtual std::vector<Rect2D> getSelectionRects(
+			const std::string&,
+			const RBX::Vector2&,
+			float,
+			RBX::Text::XAlign,
+			RBX::Text::YAlign,
+			const RBX::Vector2&,
+			unsigned,
+			unsigned,
+			bool = false) const
+		{
+			return std::vector<Rect2D>();
+		}
 
 
 		/**
