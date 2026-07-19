@@ -737,6 +737,12 @@ the final return; it is not replaced or treated as accepted while deferred.
   OpenGL include, corrected Intel-only macOS detection, and replaced the
   private CoreFoundation version query. `rbx-core` and the signed
   `RobloxPlayer.app` both link successfully after the move.
+- Moved the complete 30-source scalar/value-type implementation set out of the
+  mixed `App/util` directory into `engine/value_types/src`, including Content,
+  Font, BrickColor, regions, UDim, physical properties, identifiers, hashes,
+  and math-facing engine values. The owned `rbx-value-types` archive now builds
+  entirely from its subsystem directory, and the actual signed Player relinks
+  against the moved implementation without a compatibility source path.
 - Moved the complete 355-file CSG family under `engine/geometry/csg` and
   updated its Player, Studio, Xbox, model-analyzer, converter, solution,
   Visual Studio, and Xcode consumers. Added the named
