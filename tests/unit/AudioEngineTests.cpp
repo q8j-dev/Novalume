@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <stdexcept>
 #include <thread>
 #include <vector>
@@ -597,6 +598,38 @@ int main()
             distortionEngine.mix(distortionMix) &&
             channelEnergy(distortionMix, 0) < 8.0f,
         "bypassing live voice distortion must restore the dry signal");
+
+    Engine tremoloEngine({.sampleRate = 48000, .channels = 2});
+    const ClipHandle tremoloClip = tremoloEngine.createClip({
+        .sampleRate = 48000, .channels = 1,
+        .samples = std::vector<float>(48000, 1.0f)});
+    VoiceParameters tremoloParameters;
+    tremoloParameters.looping = true;
+    tremoloParameters.effects[0].type = VoiceEffectType::Tremolo;
+    tremoloParameters.effects[0].parameters = {
+        1.0f, 1.0f, 10.0f, 0.5f, 0.0f, 0.0f, 0.0f};
+    tremoloParameters.effectCount = 1;
+    const VoiceHandle tremoloVoice = tremoloEngine.play(
+        tremoloClip, tremoloParameters);
+    require(static_cast<bool>(tremoloVoice),
+        "a voice with a tremolo node must start");
+    std::vector<float> tremoloMix(4800 * 2);
+    require(tremoloEngine.mix(tremoloMix) &&
+            channelEnergy(tremoloMix, 0) > 400.0f &&
+            channelEnergy(tremoloMix, 0) < 4200.0f,
+        "voice tremolo must apply its sample-rate-correct periodic gain");
+    VoiceEffect dryTremolo;
+    dryTremolo.type = VoiceEffectType::Tremolo;
+    dryTremolo.parameters = {0.0f, 1.0f, 10.0f, 0.5f, 0.0f, 0.0f, 0.0f};
+    require(tremoloEngine.setVoiceEffects(tremoloVoice,
+                std::span<const VoiceEffect>(&dryTremolo, 1)) &&
+            tremoloEngine.mix(tremoloMix) &&
+            channelEnergy(tremoloMix, 0) > 4700.0f,
+        "a zero-depth live tremolo update must restore the dry voice");
+    dryTremolo.parameters[2] = std::numeric_limits<float>::quiet_NaN();
+    require(!tremoloEngine.setVoiceEffects(tremoloVoice,
+                std::span<const VoiceEffect>(&dryTremolo, 1)),
+        "voice effects must reject non-finite realtime parameters");
 
     Engine queuedEngine({.sampleRate = 48000, .channels = 2});
     require(queuedEngine.mixerTimeSeconds() == 0.0,

@@ -208,6 +208,56 @@ private:
     float level;
 };
 
+extern const char* const sAudioTremolo;
+class AudioTremolo final
+    : public DescribedCreatable<AudioTremolo, Instance, sAudioTremolo>
+    , public AudioNode
+{
+public:
+    AudioTremolo();
+
+    bool getBypass() const;
+    void setBypass(bool value);
+    float getDepth() const;
+    void setDepth(float value);
+    float getDuty() const;
+    void setDuty(float value);
+    float getFrequency() const;
+    void setFrequency(float value);
+    float getShape() const;
+    void setShape(float value);
+    float getSkew() const;
+    void setSkew(float value);
+    float getSquare() const;
+    void setSquare(float value);
+    boost::shared_ptr<const Instances> getConnectedWiresReflection(std::string pin);
+    boost::shared_ptr<const Reflection::ValueArray> getInputPinsReflection();
+    boost::shared_ptr<const Reflection::ValueArray> getOutputPinsReflection();
+
+    std::vector<std::string> inputPins() const override;
+    std::vector<std::string> outputPins() const override;
+    Instance* audioNodeInstance() override { return this; }
+    const Instance* audioNodeInstance() const override { return this; }
+    void fireWiringChanged(bool connected, const std::string& pin,
+        const boost::shared_ptr<Instance>& wire,
+        const boost::shared_ptr<Instance>& instance) override
+    {
+        wiringChangedSignal(connected, pin, wire, instance);
+    }
+
+    rbx::signal<void(bool, std::string, boost::shared_ptr<Instance>,
+        boost::shared_ptr<Instance>)> wiringChangedSignal;
+
+private:
+    bool bypass;
+    float depth;
+    float duty;
+    float frequency;
+    float shape;
+    float skew;
+    float square;
+};
+
 extern const char* const sAudioChannelMixer;
 class AudioChannelMixer final
     : public DescribedCreatable<AudioChannelMixer, Instance, sAudioChannelMixer>

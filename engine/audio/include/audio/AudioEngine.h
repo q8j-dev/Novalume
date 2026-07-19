@@ -66,6 +66,20 @@ struct AttenuationPoint
     float gain = 1.0f;
 };
 
+enum class VoiceEffectType : std::uint8_t
+{
+    Distortion,
+    Tremolo,
+};
+
+// Fixed-size effect descriptors keep graph updates and the real-time callback
+// allocation-free while preserving the authored wire order.
+struct VoiceEffect
+{
+    VoiceEffectType type = VoiceEffectType::Distortion;
+    std::array<float, 7> parameters{};
+};
+
 struct VoiceParameters
 {
     float volume = 1.0f;
@@ -79,6 +93,8 @@ struct VoiceParameters
     float dopplerFactor = 1.0f;
     std::array<float, 32> distortionLevels{};
     std::uint32_t distortionCount = 0;
+    std::array<VoiceEffect, 32> effects{};
+    std::uint32_t effectCount = 0;
     AttenuationModel attenuation = AttenuationModel::Inverse;
     std::int32_t priority = 0;
     std::uint64_t rangeBeginFrame = 0;
@@ -190,6 +206,8 @@ public:
         std::span<const AttenuationPoint> curve);
     bool setVoiceVolume(VoiceHandle voice, float volume);
     bool setVoicePitch(VoiceHandle voice, float pitch);
+    bool setVoiceEffects(VoiceHandle voice,
+        std::span<const VoiceEffect> effects);
     bool setVoiceDistortion(VoiceHandle voice, std::span<const float> levels);
     bool setVoiceLooping(VoiceHandle voice, bool looping);
     bool scheduleVoiceStop(VoiceHandle voice, double mixerTimeSeconds);

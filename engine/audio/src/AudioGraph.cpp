@@ -302,6 +302,7 @@ const char* const sWire = "Wire";
 const char* const sAudioDeviceOutput = "AudioDeviceOutput";
 const char* const sAudioFader = "AudioFader";
 const char* const sAudioDistortion = "AudioDistortion";
+const char* const sAudioTremolo = "AudioTremolo";
 const char* const sAudioChannelMixer = "AudioChannelMixer";
 const char* const sAudioChannelSplitter = "AudioChannelSplitter";
 const char* const sAudioEmitter = "AudioEmitter";
@@ -394,6 +395,40 @@ static Reflection::EventDesc<AudioDistortion,
     void(bool, std::string, boost::shared_ptr<Instance>,
         boost::shared_ptr<Instance>)> eventAudioDistortionWiringChanged(
     &AudioDistortion::wiringChangedSignal, "WiringChanged", "connected", "pin",
+    "wire", "instance", Security::None);
+
+static Reflection::PropDescriptor<AudioTremolo, bool> propAudioTremoloBypass(
+    "Bypass", category_Behavior, &AudioTremolo::getBypass,
+    &AudioTremolo::setBypass);
+static Reflection::PropDescriptor<AudioTremolo, float> propAudioTremoloDepth(
+    "Depth", category_Data, &AudioTremolo::getDepth, &AudioTremolo::setDepth);
+static Reflection::PropDescriptor<AudioTremolo, float> propAudioTremoloDuty(
+    "Duty", category_Data, &AudioTremolo::getDuty, &AudioTremolo::setDuty);
+static Reflection::PropDescriptor<AudioTremolo, float> propAudioTremoloFrequency(
+    "Frequency", category_Data, &AudioTremolo::getFrequency,
+    &AudioTremolo::setFrequency);
+static Reflection::PropDescriptor<AudioTremolo, float> propAudioTremoloShape(
+    "Shape", category_Data, &AudioTremolo::getShape, &AudioTremolo::setShape);
+static Reflection::PropDescriptor<AudioTremolo, float> propAudioTremoloSkew(
+    "Skew", category_Data, &AudioTremolo::getSkew, &AudioTremolo::setSkew);
+static Reflection::PropDescriptor<AudioTremolo, float> propAudioTremoloSquare(
+    "Square", category_Data, &AudioTremolo::getSquare, &AudioTremolo::setSquare);
+static Reflection::BoundFuncDesc<AudioTremolo,
+    boost::shared_ptr<const Instances>(std::string)>
+    funcAudioTremoloConnectedWires(&AudioTremolo::getConnectedWiresReflection,
+        "GetConnectedWires", "pin", Security::None);
+static Reflection::BoundFuncDesc<AudioTremolo,
+    boost::shared_ptr<const Reflection::ValueArray>()>
+    funcAudioTremoloInputPins(&AudioTremolo::getInputPinsReflection,
+        "GetInputPins", Security::None);
+static Reflection::BoundFuncDesc<AudioTremolo,
+    boost::shared_ptr<const Reflection::ValueArray>()>
+    funcAudioTremoloOutputPins(&AudioTremolo::getOutputPinsReflection,
+        "GetOutputPins", Security::None);
+static Reflection::EventDesc<AudioTremolo,
+    void(bool, std::string, boost::shared_ptr<Instance>,
+        boost::shared_ptr<Instance>)> eventAudioTremoloWiringChanged(
+    &AudioTremolo::wiringChangedSignal, "WiringChanged", "connected", "pin",
     "wire", "instance", Security::None);
 
 static Reflection::EnumPropDescriptor<AudioChannelMixer, AudioChannelLayout>
@@ -919,6 +954,99 @@ AudioDistortion::getOutputPinsReflection()
 
 std::vector<std::string> AudioDistortion::inputPins() const { return {"Input"}; }
 std::vector<std::string> AudioDistortion::outputPins() const { return {"Output"}; }
+
+AudioTremolo::AudioTremolo()
+    : DescribedCreatable<AudioTremolo, Instance, sAudioTremolo>(sAudioTremolo)
+    , bypass(false)
+    , depth(0.5f)
+    , duty(0.5f)
+    , frequency(5.0f)
+    , shape(0.5f)
+    , skew(0.0f)
+    , square(0.0f)
+{
+}
+
+bool AudioTremolo::getBypass() const { return bypass; }
+float AudioTremolo::getDepth() const { return depth; }
+float AudioTremolo::getDuty() const { return duty; }
+float AudioTremolo::getFrequency() const { return frequency; }
+float AudioTremolo::getShape() const { return shape; }
+float AudioTremolo::getSkew() const { return skew; }
+float AudioTremolo::getSquare() const { return square; }
+
+void AudioTremolo::setBypass(bool value)
+{
+    if (bypass == value)
+        return;
+    bypass = value;
+    raisePropertyChanged(propAudioTremoloBypass);
+}
+
+namespace {
+void setTremoloValue(AudioTremolo* tremolo, float& field, float value,
+    float minimum, float maximum,
+    const Reflection::PropertyDescriptor& descriptor, const char* name)
+{
+    if (!std::isfinite(value))
+        throw std::runtime_error(std::string("AudioTremolo.") + name +
+            " must be finite");
+    value = std::clamp(value, minimum, maximum);
+    if (field == value)
+        return;
+    field = value;
+    tremolo->raisePropertyChanged(descriptor);
+}
+}
+
+void AudioTremolo::setDepth(float value)
+{
+    setTremoloValue(this, depth, value, 0.0f, 1.0f,
+        propAudioTremoloDepth, "Depth");
+}
+void AudioTremolo::setDuty(float value)
+{
+    setTremoloValue(this, duty, value, 0.0f, 1.0f,
+        propAudioTremoloDuty, "Duty");
+}
+void AudioTremolo::setFrequency(float value)
+{
+    setTremoloValue(this, frequency, value, 0.0f, 20.0f,
+        propAudioTremoloFrequency, "Frequency");
+}
+void AudioTremolo::setShape(float value)
+{
+    setTremoloValue(this, shape, value, 0.0f, 1.0f,
+        propAudioTremoloShape, "Shape");
+}
+void AudioTremolo::setSkew(float value)
+{
+    setTremoloValue(this, skew, value, -1.0f, 1.0f,
+        propAudioTremoloSkew, "Skew");
+}
+void AudioTremolo::setSquare(float value)
+{
+    setTremoloValue(this, square, value, 0.0f, 1.0f,
+        propAudioTremoloSquare, "Square");
+}
+
+boost::shared_ptr<const Instances>
+AudioTremolo::getConnectedWiresReflection(std::string pin)
+{
+    return getConnectedWires(pin);
+}
+boost::shared_ptr<const Reflection::ValueArray>
+AudioTremolo::getInputPinsReflection()
+{
+    return getInputPins();
+}
+boost::shared_ptr<const Reflection::ValueArray>
+AudioTremolo::getOutputPinsReflection()
+{
+    return getOutputPins();
+}
+std::vector<std::string> AudioTremolo::inputPins() const { return {"Input"}; }
+std::vector<std::string> AudioTremolo::outputPins() const { return {"Output"}; }
 
 namespace {
 const std::vector<std::string>& channelPins()

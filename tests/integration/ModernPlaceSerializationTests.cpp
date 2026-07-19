@@ -201,6 +201,25 @@ int main(int argc, char** argv)
             "AudioDistortion did not enforce its current level bound");
     audioDistortion->setLevel(0.35f);
     audioDistortion->setParent(audioRoot.get());
+    boost::shared_ptr<RBX::Soundscape::AudioTremolo> audioTremolo =
+        RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::AudioTremolo>();
+    audioTremolo->setDepth(2.0f);
+    audioTremolo->setDuty(-1.0f);
+    audioTremolo->setFrequency(25.0f);
+    audioTremolo->setSkew(-2.0f);
+    if (audioTremolo->getDepth() != 1.0f ||
+        audioTremolo->getDuty() != 0.0f ||
+        audioTremolo->getFrequency() != 20.0f ||
+        audioTremolo->getSkew() != -1.0f)
+        throw std::runtime_error(
+            "AudioTremolo did not enforce current metadata bounds");
+    audioTremolo->setDepth(0.7f);
+    audioTremolo->setDuty(0.8f);
+    audioTremolo->setFrequency(6.0f);
+    audioTremolo->setShape(0.25f);
+    audioTremolo->setSkew(-0.2f);
+    audioTremolo->setSquare(0.4f);
+    audioTremolo->setParent(audioRoot.get());
     boost::shared_ptr<RBX::Soundscape::AudioChannelMixer> audioMixer =
         RBX::Creatable<RBX::Instance>::create<
             RBX::Soundscape::AudioChannelMixer>();
@@ -227,8 +246,14 @@ int main(int argc, char** argv)
         RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
     distortionWire->setName("DistortionWire");
     distortionWire->setSourceInstance(audioDistortion.get());
-    distortionWire->setTargetInstance(audioMixer.get());
+    distortionWire->setTargetInstance(audioTremolo.get());
     distortionWire->setParent(audioDistortion.get());
+    boost::shared_ptr<RBX::Soundscape::Wire> tremoloWire =
+        RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
+    tremoloWire->setName("TremoloWire");
+    tremoloWire->setSourceInstance(audioTremolo.get());
+    tremoloWire->setTargetInstance(audioMixer.get());
+    tremoloWire->setParent(audioTremolo.get());
     boost::shared_ptr<RBX::Soundscape::Wire> mixerWire =
         RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
     mixerWire->setName("MixerWire");
@@ -385,6 +410,9 @@ int main(int argc, char** argv)
     RBX::Soundscape::AudioDistortion* decodedAudioDistortion =
         decodedAudioRoot->findFirstChildOfType<
             RBX::Soundscape::AudioDistortion>();
+    RBX::Soundscape::AudioTremolo* decodedAudioTremolo =
+        decodedAudioRoot->findFirstChildOfType<
+            RBX::Soundscape::AudioTremolo>();
     RBX::Soundscape::AudioChannelMixer* decodedAudioMixer =
         decodedAudioRoot->findFirstChildOfType<
             RBX::Soundscape::AudioChannelMixer>();
@@ -397,7 +425,7 @@ int main(int argc, char** argv)
         decodedAudioRoot->findFirstChildOfType<RBX::Soundscape::AudioListener>();
     if (!decodedAudioOutput || !decodedAudioWire ||
         !decodedAudioEmitter || !decodedAudioListener || !decodedAudioFader ||
-        !decodedAudioDistortion ||
+        !decodedAudioDistortion || !decodedAudioTremolo ||
         !decodedAudioMixer || !decodedAudioSplitter ||
         decodedAudioMixer->getLayout() != RBX::Soundscape::AUDIO_CHANNEL_QUAD ||
         decodedAudioSplitter->getLayout() != RBX::Soundscape::AUDIO_CHANNEL_QUAD ||
@@ -413,6 +441,15 @@ int main(int argc, char** argv)
         decodedAudioFader->getBypass() ||
         decodedAudioDistortion->getLevel() != 0.35f ||
         decodedAudioDistortion->getBypass() ||
+        decodedAudioTremolo->getDepth() != 0.7f ||
+        decodedAudioTremolo->getDuty() != 0.8f ||
+        decodedAudioTremolo->getFrequency() != 6.0f ||
+        decodedAudioTremolo->getShape() != 0.25f ||
+        decodedAudioTremolo->getSkew() != -0.2f ||
+        decodedAudioTremolo->getSquare() != 0.4f ||
+        decodedAudioTremolo->getBypass() ||
+        decodedAudioTremolo->getConnectedWiresReflection("Input")->size() != 1 ||
+        decodedAudioTremolo->getConnectedWiresReflection("Output")->size() != 1 ||
         !decodedAudioPlayer || decodedAudioPlayer->getAssetId() !=
             "rbxasset://sounds/uuhhh.mp3" ||
         decodedAudioPlayer->getAudioContent().getSourceType() !=

@@ -1239,3 +1239,14 @@ verification is complete and the user separately gives explicit permission.
   round-trips the node and wires, and the actual signed Player audio proof now
   runs through `AudioPlayer -> AudioFader -> AudioDistortion ->
   AudioChannelMixer -> AudioChannelSplitter -> AudioEmitter`.
+- Added the current `AudioTremolo` reflected and serializable surface from the
+  exact Studio API dump and its Studio property metadata: `Bypass`, bounded
+  `Depth`, `Duty`, `Frequency`, `Shape`, `Skew`, and `Square`, standard pins,
+  connected-wire queries, and `WiringChanged`. Generalized the per-voice DSP
+  node from distortion-only levels to a fixed-capacity ordered effect
+  descriptor chain while keeping every control atomic and the realtime path
+  allocation-free. Tremolo now applies a sample-rate-correct persistent LFO,
+  supports live parameter and bypass changes, composes in authored wire order
+  with distortion, and is covered by deterministic dry/wet, finite-value,
+  bounds, and binary round-trip tests. The actual Player proof chain now adds
+  `AudioTremolo` between `AudioDistortion` and `AudioChannelMixer`.

@@ -19,12 +19,12 @@ struct AudioRoute
     AudioEmitter* emitter = nullptr;
     bool connected = false;
     float gain = 1.0f;
-    std::array<float, 32> distortionLevels{};
-    std::uint32_t distortionCount = 0;
+    std::array<Audio::VoiceEffect, 32> effects{};
+    std::uint32_t effectCount = 0;
 };
 
 AudioRoute findRoute(const AudioNode* node, float gain,
-    std::array<float, 32> distortionLevels, std::uint32_t distortionCount,
+    std::array<Audio::VoiceEffect, 32> effects, std::uint32_t effectCount,
     std::unordered_set<const Instance*>& visited)
 {
     if (!node)
@@ -55,8 +55,8 @@ AudioRoute findRoute(const AudioNode* node, float gain,
                 route.emitter = emitter;
                 route.connected = true;
                 route.gain = gain;
-                route.distortionLevels = distortionLevels;
-                route.distortionCount = distortionCount;
+                route.effects = effects;
+                route.effectCount = effectCount;
                 return route;
             }
             if (Instance::fastDynamicCast<AudioDeviceOutput>(target))
@@ -64,8 +64,8 @@ AudioRoute findRoute(const AudioNode* node, float gain,
                 AudioRoute route;
                 route.connected = true;
                 route.gain = gain;
-                route.distortionLevels = distortionLevels;
-                route.distortionCount = distortionCount;
+                route.effects = effects;
+                route.effectCount = effectCount;
                 return route;
             }
             if (AudioFader* fader = Instance::fastDynamicCast<AudioFader>(target))
@@ -73,7 +73,7 @@ AudioRoute findRoute(const AudioNode* node, float gain,
                 const float faderGain = fader->getBypass()
                     ? 1.0f : fader->getVolume();
                 AudioRoute route = findRoute(fader, gain * faderGain,
-                    distortionLevels, distortionCount, visited);
+                    effects, effectCount, visited);
                 if (route.connected)
                     return route;
             }
@@ -82,12 +82,32 @@ AudioRoute findRoute(const AudioNode* node, float gain,
             {
                 if (!distortion->getBypass())
                 {
-                    if (distortionCount >= distortionLevels.size())
+                    if (effectCount >= effects.size())
                         continue;
-                    distortionLevels[distortionCount++] = distortion->getLevel();
+                    Audio::VoiceEffect& effect = effects[effectCount++];
+                    effect.type = Audio::VoiceEffectType::Distortion;
+                    effect.parameters[0] = distortion->getLevel();
                 }
                 AudioRoute route = findRoute(distortion, gain,
-                    distortionLevels, distortionCount, visited);
+                    effects, effectCount, visited);
+                if (route.connected)
+                    return route;
+            }
+            else if (AudioTremolo* tremolo =
+                         Instance::fastDynamicCast<AudioTremolo>(target))
+            {
+                if (!tremolo->getBypass())
+                {
+                    if (effectCount >= effects.size())
+                        continue;
+                    Audio::VoiceEffect& effect = effects[effectCount++];
+                    effect.type = Audio::VoiceEffectType::Tremolo;
+                    effect.parameters = {tremolo->getDepth(), tremolo->getDuty(),
+                        tremolo->getFrequency(), tremolo->getShape(),
+                        tremolo->getSkew(), tremolo->getSquare(), 0.0f};
+                }
+                AudioRoute route = findRoute(tremolo, gain, effects,
+                    effectCount, visited);
                 if (route.connected)
                     return route;
             }
@@ -96,8 +116,8 @@ AudioRoute findRoute(const AudioNode* node, float gain,
             {
                 if (wire->getTargetName() != "Input")
                     continue;
-                AudioRoute route = findRoute(mixer, gain, distortionLevels,
-                    distortionCount, visited);
+                AudioRoute route = findRoute(mixer, gain, effects,
+                    effectCount, visited);
                 if (route.connected)
                     return route;
             }
@@ -106,8 +126,8 @@ AudioRoute findRoute(const AudioNode* node, float gain,
             {
                 if (wire->getTargetName() != "Input")
                     continue;
-                AudioRoute route = findRoute(splitter, gain, distortionLevels,
-                    distortionCount, visited);
+                AudioRoute route = findRoute(splitter, gain, effects,
+                    effectCount, visited);
                 if (route.connected)
                     return route;
             }
@@ -460,8 +480,8 @@ bool AudioPlayer::beginPlayback(double startMixerTime)
     parameters.direction = emitterDirection(emitter);
     parameters.startMixerTimeSeconds = startMixerTime;
     const AudioRoute route = findRoute(this);
-    parameters.distortionLevels = route.distortionLevels;
-    parameters.distortionCount = route.distortionCount;
+    parameters.effects = route.effects;
+    parameters.effectCount = route.effectCount;
     const std::uint32_t rate = audioEngine->clipSampleRate(sound->get());
     if (rate)
     {
@@ -659,8 +679,8 @@ void AudioPlayer::update()
     audioEngine->setVoiceVolume(voice,
         hasOutputRoute() ? volume * routedVolume() : 0.0f);
     const AudioRoute route = findRoute(this);
-    audioEngine->setVoiceDistortion(voice, std::span<const float>(
-        route.distortionLevels.data(), route.distortionCount));
+    audioEngine->setVoiceEffects(voice, std::span<const Audio::VoiceEffect>(
+        route.effects.data(), route.effectCount));
     const std::uint64_t position = audioEngine->positionFrames(voice);
     if (looping && position < previousFramePosition)
         loopedSignal();
