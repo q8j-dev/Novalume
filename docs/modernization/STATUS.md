@@ -1305,3 +1305,11 @@ verification is complete and the user separately gives explicit permission.
   callback. Fractional delay, feedback, exact ramp duration, binary
   serialization, deterministic impulse timing, and the actual signed Player
   graph are covered.
+- Added the complete current `AudioReverb` property and wiring contract:
+  decay ratio/time, density, diffusion, dry/wet levels, early/late delays,
+  high cut, low shelf frequency/gain, and reference frequency all enforce the
+  official documented ranges. Its ordered per-voice stage uses lazy retained
+  delay storage, four density-spaced reflections, diffusion, RT60-derived
+  feedback, low-shelf shaping, high-cut damping, and frequency-dependent decay
+  without callback allocation. Deterministic tail generation, full binary
+  round-trip, and the actual signed Player chain are covered.

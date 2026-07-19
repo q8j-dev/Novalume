@@ -277,6 +277,34 @@ AudioRoute findRoute(const AudioNode* node, float gain,
                 if (route.connected)
                     return route;
             }
+            else if (AudioReverb* reverb =
+                         Instance::fastDynamicCast<AudioReverb>(target))
+            {
+                if (!reverb->getBypass())
+                {
+                    if (effectCount >= effects.size())
+                        continue;
+                    Audio::VoiceEffect& effect = effects[effectCount++];
+                    effect.type = Audio::VoiceEffectType::Reverb;
+                    const std::uintptr_t address =
+                        reinterpret_cast<std::uintptr_t>(reverb);
+                    effect.parameters = {reverb->getDecayRatio(),
+                        reverb->getDecayTime(), reverb->getDensity(),
+                        reverb->getDiffusion(), reverb->getDryLevel(),
+                        reverb->getEarlyDelayTime(),
+                        reverb->getHighCutFrequency(),
+                        reverb->getLateDelayTime(),
+                        reverb->getLowShelfFrequency(),
+                        reverb->getLowShelfGain(),
+                        reverb->getReferenceFrequency(),
+                        reverb->getWetLevel(),
+                        static_cast<float>(address & 0x00ffffffu)};
+                }
+                AudioRoute route = findRoute(reverb, gain, effects,
+                    effectCount, visited);
+                if (route.connected)
+                    return route;
+            }
             else if (AudioChannelMixer* mixer =
                          Instance::fastDynamicCast<AudioChannelMixer>(target))
             {

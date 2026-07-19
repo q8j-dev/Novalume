@@ -284,6 +284,21 @@ int main(int argc, char** argv)
     audioEcho->setRampTime(0.1f);
     audioEcho->setWetLevel(-4.0f);
     audioEcho->setParent(audioRoot.get());
+    boost::shared_ptr<RBX::Soundscape::AudioReverb> audioReverb =
+        RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::AudioReverb>();
+    audioReverb->setDecayRatio(0.6f);
+    audioReverb->setDecayTime(2.0f);
+    audioReverb->setDensity(0.8f);
+    audioReverb->setDiffusion(0.7f);
+    audioReverb->setDryLevel(-1.0f);
+    audioReverb->setEarlyDelayTime(0.03f);
+    audioReverb->setHighCutFrequency(15000.0f);
+    audioReverb->setLateDelayTime(0.05f);
+    audioReverb->setLowShelfFrequency(300.0f);
+    audioReverb->setLowShelfGain(-2.0f);
+    audioReverb->setReferenceFrequency(4500.0f);
+    audioReverb->setWetLevel(-8.0f);
+    audioReverb->setParent(audioRoot.get());
     boost::shared_ptr<RBX::Soundscape::AudioChannelMixer> audioMixer =
         RBX::Creatable<RBX::Instance>::create<
             RBX::Soundscape::AudioChannelMixer>();
@@ -370,8 +385,14 @@ int main(int argc, char** argv)
         RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
     echoWire->setName("EchoWire");
     echoWire->setSourceInstance(audioEcho.get());
-    echoWire->setTargetInstance(audioMixer.get());
+    echoWire->setTargetInstance(audioReverb.get());
     echoWire->setParent(audioEcho.get());
+    boost::shared_ptr<RBX::Soundscape::Wire> reverbWire =
+        RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
+    reverbWire->setName("ReverbWire");
+    reverbWire->setSourceInstance(audioReverb.get());
+    reverbWire->setTargetInstance(audioMixer.get());
+    reverbWire->setParent(audioReverb.get());
     boost::shared_ptr<RBX::Soundscape::Wire> mixerWire =
         RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
     mixerWire->setName("MixerWire");
@@ -552,6 +573,8 @@ int main(int argc, char** argv)
             RBX::Soundscape::AudioPitchShifter>();
     RBX::Soundscape::AudioEcho* decodedAudioEcho =
         decodedAudioRoot->findFirstChildOfType<RBX::Soundscape::AudioEcho>();
+    RBX::Soundscape::AudioReverb* decodedAudioReverb =
+        decodedAudioRoot->findFirstChildOfType<RBX::Soundscape::AudioReverb>();
     RBX::Soundscape::AudioChannelMixer* decodedAudioMixer =
         decodedAudioRoot->findFirstChildOfType<
             RBX::Soundscape::AudioChannelMixer>();
@@ -568,7 +591,7 @@ int main(int argc, char** argv)
         !decodedAudioChorus || !decodedAudioFlanger ||
         !decodedAudioCompressor || !decodedAudioGate || !decodedAudioLimiter ||
         !decodedAudioEqualizer || !decodedAudioFilter ||
-        !decodedAudioPitchShifter || !decodedAudioEcho ||
+        !decodedAudioPitchShifter || !decodedAudioEcho || !decodedAudioReverb ||
         !decodedAudioMixer || !decodedAudioSplitter ||
         decodedAudioMixer->getLayout() != RBX::Soundscape::AUDIO_CHANNEL_QUAD ||
         decodedAudioSplitter->getLayout() != RBX::Soundscape::AUDIO_CHANNEL_QUAD ||
@@ -656,6 +679,21 @@ int main(int argc, char** argv)
         decodedAudioEcho->getWetLevel() != -4.0f || decodedAudioEcho->getBypass() ||
         decodedAudioEcho->getConnectedWiresReflection("Input")->size() != 1 ||
         decodedAudioEcho->getConnectedWiresReflection("Output")->size() != 1 ||
+        decodedAudioReverb->getDecayRatio() != 0.6f ||
+        decodedAudioReverb->getDecayTime() != 2.0f ||
+        decodedAudioReverb->getDensity() != 0.8f ||
+        decodedAudioReverb->getDiffusion() != 0.7f ||
+        decodedAudioReverb->getDryLevel() != -1.0f ||
+        decodedAudioReverb->getEarlyDelayTime() != 0.03f ||
+        decodedAudioReverb->getHighCutFrequency() != 15000.0f ||
+        decodedAudioReverb->getLateDelayTime() != 0.05f ||
+        decodedAudioReverb->getLowShelfFrequency() != 300.0f ||
+        decodedAudioReverb->getLowShelfGain() != -2.0f ||
+        decodedAudioReverb->getReferenceFrequency() != 4500.0f ||
+        decodedAudioReverb->getWetLevel() != -8.0f ||
+        decodedAudioReverb->getBypass() ||
+        decodedAudioReverb->getConnectedWiresReflection("Input")->size() != 1 ||
+        decodedAudioReverb->getConnectedWiresReflection("Output")->size() != 1 ||
         !decodedAudioPlayer || decodedAudioPlayer->getAssetId() !=
             "rbxasset://sounds/uuhhh.mp3" ||
         decodedAudioPlayer->getAudioContent().getSourceType() !=

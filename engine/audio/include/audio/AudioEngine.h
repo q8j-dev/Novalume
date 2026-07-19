@@ -79,6 +79,7 @@ enum class VoiceEffectType : std::uint8_t
     Filter,
     PitchShifter,
     Echo,
+    Reverb,
 };
 
 // Fixed-size effect descriptors keep graph updates and the real-time callback
@@ -86,7 +87,7 @@ enum class VoiceEffectType : std::uint8_t
 struct VoiceEffect
 {
     VoiceEffectType type = VoiceEffectType::Distortion;
-    std::array<float, 7> parameters{};
+    std::array<float, 16> parameters{};
 };
 
 struct VoiceParameters

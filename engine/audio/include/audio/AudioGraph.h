@@ -594,6 +594,46 @@ private:
     std::uint32_t resetSerial;
 };
 
+extern const char* const sAudioReverb;
+class AudioReverb final
+    : public DescribedCreatable<AudioReverb, Instance, sAudioReverb>
+    , public AudioNode
+{
+public:
+    AudioReverb();
+    bool getBypass() const; void setBypass(bool value);
+    float getDecayRatio() const; void setDecayRatio(float value);
+    float getDecayTime() const; void setDecayTime(float value);
+    float getDensity() const; void setDensity(float value);
+    float getDiffusion() const; void setDiffusion(float value);
+    float getDryLevel() const; void setDryLevel(float value);
+    float getEarlyDelayTime() const; void setEarlyDelayTime(float value);
+    float getHighCutFrequency() const; void setHighCutFrequency(float value);
+    float getLateDelayTime() const; void setLateDelayTime(float value);
+    float getLowShelfFrequency() const; void setLowShelfFrequency(float value);
+    float getLowShelfGain() const; void setLowShelfGain(float value);
+    float getReferenceFrequency() const; void setReferenceFrequency(float value);
+    float getWetLevel() const; void setWetLevel(float value);
+    boost::shared_ptr<const Instances> getConnectedWiresReflection(std::string pin);
+    boost::shared_ptr<const Reflection::ValueArray> getInputPinsReflection();
+    boost::shared_ptr<const Reflection::ValueArray> getOutputPinsReflection();
+    std::vector<std::string> inputPins() const override;
+    std::vector<std::string> outputPins() const override;
+    Instance* audioNodeInstance() override { return this; }
+    const Instance* audioNodeInstance() const override { return this; }
+    void fireWiringChanged(bool connected, const std::string& pin,
+        const boost::shared_ptr<Instance>& wire,
+        const boost::shared_ptr<Instance>& instance) override
+    { wiringChangedSignal(connected, pin, wire, instance); }
+    rbx::signal<void(bool, std::string, boost::shared_ptr<Instance>,
+        boost::shared_ptr<Instance>)> wiringChangedSignal;
+private:
+    bool bypass;
+    float decayRatio, decayTime, density, diffusion, dryLevel;
+    float earlyDelayTime, highCutFrequency, lateDelayTime;
+    float lowShelfFrequency, lowShelfGain, referenceFrequency, wetLevel;
+};
+
 extern const char* const sAudioChannelMixer;
 class AudioChannelMixer final
     : public DescribedCreatable<AudioChannelMixer, Instance, sAudioChannelMixer>

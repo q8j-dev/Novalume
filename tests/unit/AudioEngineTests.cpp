@@ -789,6 +789,27 @@ int main()
             std::abs(graphEchoMix[0]) < 0.001f,
         "the graph echo must emit its authored delayed wet signal");
 
+    Engine graphReverbEngine({.sampleRate = 48000, .channels = 2});
+    const ClipHandle graphReverbClip = graphReverbEngine.createClip({
+        .sampleRate = 48000, .channels = 1, .samples = graphEchoImpulse});
+    VoiceParameters graphReverbParameters;
+    graphReverbParameters.effects[0].type = VoiceEffectType::Reverb;
+    graphReverbParameters.effects[0].parameters = {0.5f, 1.5f, 1.0f,
+        1.0f, -80.0f, 0.01f, 20000.0f, 0.0f, 250.0f, 0.0f,
+        5000.0f, 0.0f, 2.0f};
+    graphReverbParameters.effectCount = 1;
+    require(static_cast<bool>(graphReverbEngine.play(graphReverbClip,
+                graphReverbParameters)),
+        "a voice with graph reverb must start");
+    std::vector<float> graphReverbMix(4096 * 2);
+    require(graphReverbEngine.mix(graphReverbMix),
+        "the graph reverb mix must render");
+    float graphReverbTail = 0.0f;
+    for (std::size_t frame = 400; frame < 4000; ++frame)
+        graphReverbTail += std::abs(graphReverbMix[frame * 2]);
+    require(graphReverbTail > 1.0f && std::abs(graphReverbMix[0]) < 0.001f,
+        "the graph reverb must produce a delayed diffuse tail");
+
     Engine queuedEngine({.sampleRate = 48000, .channels = 2});
     require(queuedEngine.mixerTimeSeconds() == 0.0,
         "a fresh mixer clock must begin at zero");

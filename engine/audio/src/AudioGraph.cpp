@@ -353,6 +353,7 @@ const char* const sAudioEqualizer = "AudioEqualizer";
 const char* const sAudioFilter = "AudioFilter";
 const char* const sAudioPitchShifter = "AudioPitchShifter";
 const char* const sAudioEcho = "AudioEcho";
+const char* const sAudioReverb = "AudioReverb";
 const char* const sAudioChannelMixer = "AudioChannelMixer";
 const char* const sAudioChannelSplitter = "AudioChannelSplitter";
 const char* const sAudioEmitter = "AudioEmitter";
@@ -739,6 +740,42 @@ static Reflection::BoundFuncDesc<AudioEcho,
 static Reflection::EventDesc<AudioEcho, void(bool, std::string,
     boost::shared_ptr<Instance>, boost::shared_ptr<Instance>)>
     eventAudioEchoWiringChanged(&AudioEcho::wiringChangedSignal,
+        "WiringChanged", "connected", "pin", "wire", "instance",
+        Security::None);
+
+static Reflection::PropDescriptor<AudioReverb, bool> propAudioReverbBypass(
+    "Bypass", category_Behavior, &AudioReverb::getBypass, &AudioReverb::setBypass);
+#define RBX_REVERB_PROP(Name) \
+static Reflection::PropDescriptor<AudioReverb, float> propAudioReverb##Name( \
+    #Name, category_Data, &AudioReverb::get##Name, &AudioReverb::set##Name)
+RBX_REVERB_PROP(DecayRatio);
+RBX_REVERB_PROP(DecayTime);
+RBX_REVERB_PROP(Density);
+RBX_REVERB_PROP(Diffusion);
+RBX_REVERB_PROP(DryLevel);
+RBX_REVERB_PROP(EarlyDelayTime);
+RBX_REVERB_PROP(HighCutFrequency);
+RBX_REVERB_PROP(LateDelayTime);
+RBX_REVERB_PROP(LowShelfFrequency);
+RBX_REVERB_PROP(LowShelfGain);
+RBX_REVERB_PROP(ReferenceFrequency);
+RBX_REVERB_PROP(WetLevel);
+#undef RBX_REVERB_PROP
+static Reflection::BoundFuncDesc<AudioReverb,
+    boost::shared_ptr<const Instances>(std::string)>
+    funcAudioReverbConnectedWires(&AudioReverb::getConnectedWiresReflection,
+        "GetConnectedWires", "pin", Security::None);
+static Reflection::BoundFuncDesc<AudioReverb,
+    boost::shared_ptr<const Reflection::ValueArray>()>
+    funcAudioReverbInputPins(&AudioReverb::getInputPinsReflection,
+        "GetInputPins", Security::None);
+static Reflection::BoundFuncDesc<AudioReverb,
+    boost::shared_ptr<const Reflection::ValueArray>()>
+    funcAudioReverbOutputPins(&AudioReverb::getOutputPinsReflection,
+        "GetOutputPins", Security::None);
+static Reflection::EventDesc<AudioReverb, void(bool, std::string,
+    boost::shared_ptr<Instance>, boost::shared_ptr<Instance>)>
+    eventAudioReverbWiringChanged(&AudioReverb::wiringChangedSignal,
         "WiringChanged", "connected", "pin", "wire", "instance",
         Security::None);
 
@@ -1951,6 +1988,74 @@ boost::shared_ptr<const Reflection::ValueArray>
 AudioEcho::getOutputPinsReflection() { return getOutputPins(); }
 std::vector<std::string> AudioEcho::inputPins() const { return {"Input"}; }
 std::vector<std::string> AudioEcho::outputPins() const { return {"Output"}; }
+
+AudioReverb::AudioReverb()
+    : DescribedCreatable<AudioReverb, Instance, sAudioReverb>(sAudioReverb)
+    , bypass(false), decayRatio(0.5f), decayTime(1.5f), density(1.0f)
+    , diffusion(1.0f), dryLevel(0.0f), earlyDelayTime(0.02f)
+    , highCutFrequency(20000.0f), lateDelayTime(0.04f)
+    , lowShelfFrequency(250.0f), lowShelfGain(0.0f)
+    , referenceFrequency(5000.0f), wetLevel(-6.0f)
+{
+}
+bool AudioReverb::getBypass() const { return bypass; }
+void AudioReverb::setBypass(bool value)
+{ if (bypass != value) { bypass = value; raisePropertyChanged(propAudioReverbBypass); } }
+#define RBX_REVERB_GETTER(Name, Field) \
+float AudioReverb::get##Name() const { return Field; }
+RBX_REVERB_GETTER(DecayRatio, decayRatio)
+RBX_REVERB_GETTER(DecayTime, decayTime)
+RBX_REVERB_GETTER(Density, density)
+RBX_REVERB_GETTER(Diffusion, diffusion)
+RBX_REVERB_GETTER(DryLevel, dryLevel)
+RBX_REVERB_GETTER(EarlyDelayTime, earlyDelayTime)
+RBX_REVERB_GETTER(HighCutFrequency, highCutFrequency)
+RBX_REVERB_GETTER(LateDelayTime, lateDelayTime)
+RBX_REVERB_GETTER(LowShelfFrequency, lowShelfFrequency)
+RBX_REVERB_GETTER(LowShelfGain, lowShelfGain)
+RBX_REVERB_GETTER(ReferenceFrequency, referenceFrequency)
+RBX_REVERB_GETTER(WetLevel, wetLevel)
+#undef RBX_REVERB_GETTER
+namespace {
+void setFiniteReverbValue(AudioReverb* reverb, float& field, float value,
+    float minimum, float maximum,
+    const Reflection::PropertyDescriptor& descriptor, const char* name)
+{
+    if (!std::isfinite(value))
+        throw std::runtime_error(std::string("AudioReverb.") + name +
+            " must be finite");
+    value = std::clamp(value, minimum, maximum);
+    if (field == value) return;
+    field = value;
+    reverb->raisePropertyChanged(descriptor);
+}
+}
+#define RBX_REVERB_SETTER(Name, Field, Minimum, Maximum) \
+void AudioReverb::set##Name(float value) \
+{ setFiniteReverbValue(this, Field, value, Minimum, Maximum, \
+    propAudioReverb##Name, #Name); }
+RBX_REVERB_SETTER(DecayRatio, decayRatio, 0.1f, 1.0f)
+RBX_REVERB_SETTER(DecayTime, decayTime, 0.1f, 20.0f)
+RBX_REVERB_SETTER(Density, density, 0.1f, 1.0f)
+RBX_REVERB_SETTER(Diffusion, diffusion, 0.1f, 1.0f)
+RBX_REVERB_SETTER(DryLevel, dryLevel, -80.0f, 20.0f)
+RBX_REVERB_SETTER(EarlyDelayTime, earlyDelayTime, 0.0f, 0.3f)
+RBX_REVERB_SETTER(HighCutFrequency, highCutFrequency, 20.0f, 20000.0f)
+RBX_REVERB_SETTER(LateDelayTime, lateDelayTime, 0.0f, 0.1f)
+RBX_REVERB_SETTER(LowShelfFrequency, lowShelfFrequency, 20.0f, 20000.0f)
+RBX_REVERB_SETTER(LowShelfGain, lowShelfGain, -36.0f, 12.0f)
+RBX_REVERB_SETTER(ReferenceFrequency, referenceFrequency, 20.0f, 20000.0f)
+RBX_REVERB_SETTER(WetLevel, wetLevel, -80.0f, 20.0f)
+#undef RBX_REVERB_SETTER
+boost::shared_ptr<const Instances>
+AudioReverb::getConnectedWiresReflection(std::string pin)
+{ return getConnectedWires(pin); }
+boost::shared_ptr<const Reflection::ValueArray>
+AudioReverb::getInputPinsReflection() { return getInputPins(); }
+boost::shared_ptr<const Reflection::ValueArray>
+AudioReverb::getOutputPinsReflection() { return getOutputPins(); }
+std::vector<std::string> AudioReverb::inputPins() const { return {"Input"}; }
+std::vector<std::string> AudioReverb::outputPins() const { return {"Output"}; }
 
 namespace {
 const std::vector<std::string>& channelPins()
