@@ -95,6 +95,8 @@ namespace RBX
             void decodeUTF8(const std::string& string, std::vector<unsigned>* out) const;
 			void reorderLines(const std::vector<unsigned>& stringUnicode,
 				std::vector<GlyphLine>* lines) const;
+			void reshapeLines(const std::vector<unsigned>& stringUnicode, unsigned size,
+				std::vector<GlyphLine>* lines) const;
 
 			Vector2 drawScaledImpl(
 				Adorn*				adorn,

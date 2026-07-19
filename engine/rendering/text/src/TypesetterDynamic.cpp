@@ -166,10 +166,8 @@ FASTINTVARIABLE(FontSizePadding, 1)
 					FT_Done_FreeType(library);
 			}
 
-			void shape(const std::vector<unsigned>& input, unsigned size, std::vector<unsigned>* output)
+			void beginShape()
 			{
-				output->clear();
-				output->reserve(input.size());
 				shapedMetricCache.clear();
 				nextShapedGlyph = 1;
 				for (GlyphMap::iterator it = glyphMap.begin(); it != glyphMap.end();)
@@ -179,6 +177,13 @@ FASTINTVARIABLE(FontSizePadding, 1)
 					else
 						++it;
 				}
+			}
+
+			void shapeRange(const std::vector<unsigned>& input, unsigned size,
+				unsigned sourceOffset, std::vector<unsigned>* output)
+			{
+				output->clear();
+				output->reserve(input.size());
 				if (!hbFont || input.empty())
 				{
 					*output = input;
@@ -223,8 +228,9 @@ FASTINTVARIABLE(FontSizePadding, 1)
 						else
 						{
 							unsigned token = SHAPED_GLYPH_MASK | (nextShapedGlyph++ & 0x3fffffffu);
-							ShapedMetric metric = {0, 0, input[runStart], static_cast<unsigned>(runStart),
-								static_cast<unsigned>(runStart + 1), false, 0, 0, 0};
+							ShapedMetric metric = {0, 0, input[runStart],
+								sourceOffset + static_cast<unsigned>(runStart),
+								sourceOffset + static_cast<unsigned>(runStart + 1), false, 0, 0, 0};
 							shapedMetricCache[token] = metric;
 							output->push_back(token);
 						}
@@ -269,12 +275,14 @@ FASTINTVARIABLE(FontSizePadding, 1)
 					for (unsigned logicalIndex = 0; logicalIndex < count; ++logicalIndex)
 					{
 						const unsigned i = rightToLeft ? count - logicalIndex - 1 : logicalIndex;
-						const unsigned cluster = infos[i].cluster;
+						const unsigned localCluster = infos[i].cluster;
 						std::vector<unsigned>::const_iterator nextCluster =
-							std::upper_bound(clusters.begin(), clusters.end(), cluster);
-						const unsigned clusterEnd = nextCluster == clusters.end() ?
+							std::upper_bound(clusters.begin(), clusters.end(), localCluster);
+						const unsigned localClusterEnd = nextCluster == clusters.end() ?
 							static_cast<unsigned>(runEnd) : *nextCluster;
-						const unsigned source = cluster < input.size() ? input[cluster] : 0xfffdu;
+						const unsigned source = localCluster < input.size() ? input[localCluster] : 0xfffdu;
+						const unsigned cluster = sourceOffset + localCluster;
+						const unsigned clusterEnd = sourceOffset + localClusterEnd;
 						unsigned token = SHAPED_GLYPH_MASK | (nextShapedGlyph++ & 0x3fffffffu);
 						if ((token & 0x3fffffffu) == 0)
 							token = SHAPED_GLYPH_MASK | (nextShapedGlyph++ & 0x3fffffffu);
@@ -287,6 +295,12 @@ FASTINTVARIABLE(FontSizePadding, 1)
 					hb_buffer_destroy(buffer);
 					runStart = runEnd;
 				}
+			}
+
+			void shape(const std::vector<unsigned>& input, unsigned size, std::vector<unsigned>* output)
+			{
+				beginShape();
+				shapeRange(input, size, 0, output);
 			}
 
 			bool isShaped(unsigned character) const { return (character & SHAPED_GLYPH_MASK) && !(character & NAMED_GLYPH_MASK); }
@@ -792,6 +806,10 @@ FASTINTVARIABLE(FontSizePadding, 1)
             Vector2int16 intAvailableSpace = Vector2int16(availableSpace / scale);
 
             Vector2int16 intSize = layout(shapedUnicode, &lines, height, intAvailableSpace, useAvailableSpace, false, NULL);
+			reshapeLines(stringUnicode, height, &lines);
+			intSize.x = 0;
+			for (size_t i = 0; i < lines.size(); ++i)
+				intSize.x = std::max<int>(intSize.x, lines[i].width);
 			reorderLines(stringUnicode, &lines);
             unsigned ascender = glyphProvider->getSizeData(height).ascender;
 
@@ -827,6 +845,10 @@ FASTINTVARIABLE(FontSizePadding, 1)
 			std::vector<unsigned> shapedUnicode;
 			glyphProvider->shape(stringUnicode, height, &shapedUnicode);
 			Vector2int16 intSize = layoutRatio(shapedUnicode, &lines, height, availableSpace);
+			reshapeLines(stringUnicode, height, &lines);
+			intSize.x = 0;
+			for (size_t i = 0; i < lines.size(); ++i)
+				intSize.x = std::max<int>(intSize.x, lines[i].width);
 			reorderLines(stringUnicode, &lines);
 
 			// ratio is the smaller one from XY ratios to make text fit
@@ -904,6 +926,10 @@ FASTINTVARIABLE(FontSizePadding, 1)
 
 			Vector2int16 intAvailableSpace = Vector2int16(availableSpace / scale);
 			Vector2int16 intSize = layout(shapedUnicode, &lines, height, intAvailableSpace, useAvailableSpace, false, NULL);
+			reshapeLines(stringUnicode, height, &lines);
+			intSize.x = 0;
+			for (size_t i = 0; i < lines.size(); ++i)
+				intSize.x = std::max<int>(intSize.x, lines[i].width);
 			reorderLines(stringUnicode, &lines);
 
 			float startx = round_int(position.x);
@@ -1149,6 +1175,40 @@ FASTINTVARIABLE(FontSizePadding, 1)
 				}
 			}
         }
+
+		void TypesetterDynamic::reshapeLines(const std::vector<unsigned>& stringUnicode,
+			unsigned size, std::vector<GlyphLine>* lines) const
+		{
+			if (!lines)
+				return;
+			glyphProvider->beginShape();
+			for (size_t lineIndex = 0; lineIndex < lines->size(); ++lineIndex)
+			{
+				GlyphLine& line = (*lines)[lineIndex];
+				const unsigned sourceStart = std::min(line.sourceStart,
+					static_cast<unsigned>(stringUnicode.size()));
+				const unsigned sourceEnd = std::min(std::max(line.sourceEnd, sourceStart),
+					static_cast<unsigned>(stringUnicode.size()));
+				std::vector<unsigned> sourceLine(stringUnicode.begin() + sourceStart,
+					stringUnicode.begin() + sourceEnd);
+				glyphProvider->shapeRange(sourceLine, size, sourceStart, &line.data);
+				line.length = line.data.size();
+				line.width = 0;
+				unsigned previousCharacter = 0;
+				for (size_t i = 0; i < line.data.size(); ++i)
+				{
+					const unsigned token = line.data[i];
+					const unsigned sourceCharacter = glyphProvider->getSourceCharacter(token);
+					if (isCharacterZeroWidth(sourceCharacter))
+						continue;
+					Glyph glyph = glyphProvider->getGlyphMetrics(token, size);
+					if (!glyphProvider->isShaped(token))
+						line.width += glyphProvider->getKerning(previousCharacter, token, size);
+					line.width += glyph.xadvance;
+					previousCharacter = sourceCharacter;
+				}
+			}
+		}
 
 		void TypesetterDynamic::reorderLines(const std::vector<unsigned>& stringUnicode,
 			std::vector<GlyphLine>* lines) const

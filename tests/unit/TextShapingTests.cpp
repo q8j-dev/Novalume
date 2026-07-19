@@ -54,6 +54,19 @@ int main(int argc, char** argv)
         if (closeEnough(arabic.x, splitArabic.x, 0.01f))
             return fail("Arabic fallback face did not apply contextual shaping");
 
+        const std::string wrappedArabic =
+            "\xd8\xb3\xd9\x84\xd8\xa7\xd9\x85 \xd8\xb3\xd9\x84\xd8\xa7\xd9\x85 \xd8\xb3\xd9\x84\xd8\xa7\xd9\x85";
+        const RBX::Vector2 arabicBounds(arabic.x * 1.6f, 256.0f);
+        const RBX::Vector2 wrappedArabicSize = typesetter.measure(
+            wrappedArabic, 32.0f, arabicBounds, nullptr);
+        if (!(wrappedArabicSize.y >= 64.0f))
+            return fail("Arabic contextual run did not wrap to multiple lines");
+        const int secondLineCaret = typesetter.getCursorPositionInText(wrappedArabic,
+            RBX::Vector2::zero(), 32.0f, RBX::Text::XALIGN_LEFT, RBX::Text::YALIGN_TOP,
+            arabicBounds, RBX::Rotation2D(), RBX::Vector2(1.0f, 40.0f));
+        if (secondLineCaret < 0 || secondLineCaret > 14)
+            return fail("line-edge Arabic reshaping lost its logical caret mapping");
+
         const RBX::Vector2 devanagari = typesetter.measure("\xe0\xa4\x95\xe0\xa5\x8d\xe0\xa4\xb7", 32.0f, unconstrained, nullptr);
         const RBX::Vector2 splitDevanagari = typesetter.measure("\xe0\xa4\x95\1\xe0\xa5\x8d\1\xe0\xa4\xb7", 32.0f, unconstrained, nullptr);
         if (closeEnough(devanagari.x, splitDevanagari.x, 0.01f))

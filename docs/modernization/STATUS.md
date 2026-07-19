@@ -505,8 +505,12 @@ the final return; it is not replaced or treated as accepted while deferred.
   clusters. The contract additionally proves mixed Latin/Hebrew/number caret
   reordering and bounded mixed-direction wrapping, and the signed packaged
   Player passes its live Metal baseplate render with the new text stack.
-  Contextual reshaping at automatically inserted line edges remains required
-  for final text acceptance.
+  Automatically wrapped lines are now reshaped independently before visual
+  reordering, so Arabic/Indic contextual forms do not retain joins across a
+  line edge; bounded Arabic wrapping preserves logical caret mapping in the
+  native test and the rebuilt packaged Player remains green. CJK fallback,
+  color-emoji raster acceptance, selection geometry, and visual text goldens
+  remain required for final text acceptance.
 - Isolated macOS clipboard access in `platform/macos` behind the shared platform
   contract instead of compiling AppKit syntax into DataModel C++.
 - Added a real main-framebuffer contract to the bgfx backend using native pixel
