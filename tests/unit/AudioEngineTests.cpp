@@ -745,6 +745,26 @@ int main()
             channelEnergy(filterMix, 0) < 10.0f,
         "the graph low-pass filter must apply its authored cascade");
 
+    Engine graphPitchEngine({.sampleRate = 48000, .channels = 2});
+    std::vector<float> pitchTone(32768);
+    for (std::size_t index = 0; index < pitchTone.size(); ++index)
+        pitchTone[index] = std::sin(6.2831853071795864769f * 440.0f *
+            static_cast<float>(index) / 48000.0f);
+    const ClipHandle graphPitchClip = graphPitchEngine.createClip({
+        .sampleRate = 48000, .channels = 1, .samples = pitchTone});
+    VoiceParameters graphPitchParameters;
+    graphPitchParameters.effects[0].type = VoiceEffectType::PitchShifter;
+    graphPitchParameters.effects[0].parameters = {
+        1.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+    graphPitchParameters.effectCount = 1;
+    require(static_cast<bool>(graphPitchEngine.play(graphPitchClip,
+                graphPitchParameters)),
+        "a voice with a graph pitch shifter must start");
+    std::vector<float> pitchMix(8192 * 2);
+    require(graphPitchEngine.mix(pitchMix) &&
+            channelEnergy(pitchMix, 0) > 100.0f,
+        "the graph pitch shifter must produce its windowed wet signal");
+
     Engine queuedEngine({.sampleRate = 48000, .channels = 2});
     require(queuedEngine.mixerTimeSeconds() == 0.0,
         "a fresh mixer clock must begin at zero");

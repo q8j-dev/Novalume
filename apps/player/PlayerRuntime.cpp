@@ -532,6 +532,7 @@ struct PlayerRuntime::State final {
     boost::shared_ptr<RBX::Soundscape::AudioLimiter> verificationAudioLimiter;
     boost::shared_ptr<RBX::Soundscape::AudioEqualizer> verificationAudioEqualizer;
     boost::shared_ptr<RBX::Soundscape::AudioFilter> verificationAudioFilter;
+    boost::shared_ptr<RBX::Soundscape::AudioPitchShifter> verificationAudioPitchShifter;
     boost::shared_ptr<RBX::Soundscape::AudioChannelMixer> verificationAudioMixer;
     boost::shared_ptr<RBX::Soundscape::AudioChannelSplitter> verificationAudioSplitter;
     boost::shared_ptr<RBX::Soundscape::AudioPlayer> verificationAudioPlayer;
@@ -548,6 +549,7 @@ struct PlayerRuntime::State final {
     boost::shared_ptr<RBX::Soundscape::Wire> verificationAudioLimiterWire;
     boost::shared_ptr<RBX::Soundscape::Wire> verificationAudioEqualizerWire;
     boost::shared_ptr<RBX::Soundscape::Wire> verificationAudioFilterWire;
+    boost::shared_ptr<RBX::Soundscape::Wire> verificationAudioPitchShifterWire;
     boost::shared_ptr<RBX::Soundscape::Wire> verificationAudioMixerWire;
     boost::shared_ptr<RBX::Soundscape::Wire> verificationAudioSplitterWire;
     boost::shared_ptr<RBX::Soundscape::Wire> verificationAudioListenerWire;
@@ -1287,6 +1289,16 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
             state->verificationAudioFilter->setQ(0.70710678f);
             state->verificationAudioFilter->setParent(
                 state->verificationAudioEmitter.get());
+            state->verificationAudioPitchShifter =
+                RBX::Creatable<RBX::Instance>::create<
+                    RBX::Soundscape::AudioPitchShifter>();
+            state->verificationAudioPitchShifter->setName(
+                "PlayerAudioVerificationPitchShifter");
+            state->verificationAudioPitchShifter->setPitch(1.01f);
+            state->verificationAudioPitchShifter->setWindowSize(
+                RBX::Soundscape::AUDIO_WINDOW_SMALL);
+            state->verificationAudioPitchShifter->setParent(
+                state->verificationAudioEmitter.get());
             state->verificationAudioMixer =
                 RBX::Creatable<RBX::Instance>::create<
                     RBX::Soundscape::AudioChannelMixer>();
@@ -1412,9 +1424,19 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
             state->verificationAudioFilterWire->setSourceInstance(
                 state->verificationAudioFilter.get());
             state->verificationAudioFilterWire->setTargetInstance(
-                state->verificationAudioMixer.get());
+                state->verificationAudioPitchShifter.get());
             state->verificationAudioFilterWire->setParent(
                 state->verificationAudioFilter.get());
+            state->verificationAudioPitchShifterWire =
+                RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
+            state->verificationAudioPitchShifterWire->setName(
+                "PlayerAudioVerificationPitchShifterWire");
+            state->verificationAudioPitchShifterWire->setSourceInstance(
+                state->verificationAudioPitchShifter.get());
+            state->verificationAudioPitchShifterWire->setTargetInstance(
+                state->verificationAudioMixer.get());
+            state->verificationAudioPitchShifterWire->setParent(
+                state->verificationAudioPitchShifter.get());
             state->verificationAudioMixerWire =
                 RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
             state->verificationAudioMixerWire->setName(
@@ -3958,6 +3980,8 @@ void PlayerRuntime::finishVerification()
             !state->verificationAudioEqualizerWire->getConnected() ||
             !state->verificationAudioFilterWire ||
             !state->verificationAudioFilterWire->getConnected() ||
+            !state->verificationAudioPitchShifterWire ||
+            !state->verificationAudioPitchShifterWire->getConnected() ||
             !state->verificationAudioMixerWire ||
             !state->verificationAudioMixerWire->getConnected() ||
             !state->verificationAudioSplitterWire ||
@@ -3992,6 +4016,10 @@ void PlayerRuntime::finishVerification()
             state->verificationAudioFilter->getFilterType() !=
                 RBX::Soundscape::AUDIO_FILTER_LOWPASS_24DB ||
             state->verificationAudioFilter->getFrequency() != 12000.0f ||
+            !state->verificationAudioPitchShifter ||
+            state->verificationAudioPitchShifter->getPitch() != 1.01f ||
+            state->verificationAudioPitchShifter->getWindowSize() !=
+                RBX::Soundscape::AUDIO_WINDOW_SMALL ||
             !state->verificationAudioListenerWire ||
             !state->verificationAudioListenerWire->getConnected() ||
             !state->verificationAudioListener ||
@@ -4041,6 +4069,8 @@ void PlayerRuntime::finishVerification()
         state->verificationAudioEqualizerWire.reset();
         state->verificationAudioFilterWire->setParent(nullptr);
         state->verificationAudioFilterWire.reset();
+        state->verificationAudioPitchShifterWire->setParent(nullptr);
+        state->verificationAudioPitchShifterWire.reset();
         state->verificationAudioMixerWire->setParent(nullptr);
         state->verificationAudioMixerWire.reset();
         state->verificationAudioSplitterWire->setParent(nullptr);
@@ -4069,6 +4099,8 @@ void PlayerRuntime::finishVerification()
         state->verificationAudioEqualizer.reset();
         state->verificationAudioFilter->setParent(nullptr);
         state->verificationAudioFilter.reset();
+        state->verificationAudioPitchShifter->setParent(nullptr);
+        state->verificationAudioPitchShifter.reset();
         state->verificationAudioPlayer->setParent(nullptr);
         state->verificationAudioPlayer.reset();
         if (RBX::Soundscape::SoundService* automaticListenerService =

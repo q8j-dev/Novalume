@@ -70,6 +70,13 @@ enum AudioFilterType
     AUDIO_FILTER_LOWPASS_6DB = 11,
 };
 
+enum AudioWindowSize
+{
+    AUDIO_WINDOW_SMALL = 0,
+    AUDIO_WINDOW_MEDIUM = 1,
+    AUDIO_WINDOW_LARGE = 2,
+};
+
 class AudioNode
 {
 public:
@@ -509,6 +516,38 @@ private:
     float frequency;
     float gain;
     float q;
+};
+
+extern const char* const sAudioPitchShifter;
+class AudioPitchShifter final
+    : public DescribedCreatable<AudioPitchShifter, Instance, sAudioPitchShifter>
+    , public AudioNode
+{
+public:
+    AudioPitchShifter();
+    bool getBypass() const;
+    void setBypass(bool value);
+    float getPitch() const;
+    void setPitch(float value);
+    AudioWindowSize getWindowSize() const;
+    void setWindowSize(AudioWindowSize value);
+    boost::shared_ptr<const Instances> getConnectedWiresReflection(std::string pin);
+    boost::shared_ptr<const Reflection::ValueArray> getInputPinsReflection();
+    boost::shared_ptr<const Reflection::ValueArray> getOutputPinsReflection();
+    std::vector<std::string> inputPins() const override;
+    std::vector<std::string> outputPins() const override;
+    Instance* audioNodeInstance() override { return this; }
+    const Instance* audioNodeInstance() const override { return this; }
+    void fireWiringChanged(bool connected, const std::string& pin,
+        const boost::shared_ptr<Instance>& wire,
+        const boost::shared_ptr<Instance>& instance) override
+    { wiringChangedSignal(connected, pin, wire, instance); }
+    rbx::signal<void(bool, std::string, boost::shared_ptr<Instance>,
+        boost::shared_ptr<Instance>)> wiringChangedSignal;
+private:
+    bool bypass;
+    float pitch;
+    AudioWindowSize windowSize;
 };
 
 extern const char* const sAudioChannelMixer;

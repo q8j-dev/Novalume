@@ -1289,3 +1289,10 @@ verification is complete and the user separately gives explicit permission.
   low/high-pass responses with persistent channel state. High-frequency
   rejection, binary round-trip and Editor exclusion, and the actual signed
   Player graph are covered end to end.
+- Added the current `AudioPitchShifter` surface with the exact
+  `AudioWindowSize` enum, bounded pitch multiplier, bypass, graph pins/events,
+  and binary serialization. Its per-voice realtime stage uses persistent,
+  preallocated dual windowed read heads with fractional interpolation, keeping
+  playback duration stable while shifting perceived pitch without callback
+  allocation. Deterministic wet-output coverage and the actual signed Player
+  chain exercise the implementation.

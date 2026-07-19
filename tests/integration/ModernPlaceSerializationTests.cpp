@@ -270,6 +270,12 @@ int main(int argc, char** argv)
     audioFilter->setQ(0.8f);
     audioFilter->setEditor(true);
     audioFilter->setParent(audioRoot.get());
+    boost::shared_ptr<RBX::Soundscape::AudioPitchShifter> audioPitchShifter =
+        RBX::Creatable<RBX::Instance>::create<
+            RBX::Soundscape::AudioPitchShifter>();
+    audioPitchShifter->setPitch(1.25f);
+    audioPitchShifter->setWindowSize(RBX::Soundscape::AUDIO_WINDOW_LARGE);
+    audioPitchShifter->setParent(audioRoot.get());
     boost::shared_ptr<RBX::Soundscape::AudioChannelMixer> audioMixer =
         RBX::Creatable<RBX::Instance>::create<
             RBX::Soundscape::AudioChannelMixer>();
@@ -344,8 +350,14 @@ int main(int argc, char** argv)
         RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
     filterWire->setName("FilterWire");
     filterWire->setSourceInstance(audioFilter.get());
-    filterWire->setTargetInstance(audioMixer.get());
+    filterWire->setTargetInstance(audioPitchShifter.get());
     filterWire->setParent(audioFilter.get());
+    boost::shared_ptr<RBX::Soundscape::Wire> pitchShifterWire =
+        RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
+    pitchShifterWire->setName("PitchShifterWire");
+    pitchShifterWire->setSourceInstance(audioPitchShifter.get());
+    pitchShifterWire->setTargetInstance(audioMixer.get());
+    pitchShifterWire->setParent(audioPitchShifter.get());
     boost::shared_ptr<RBX::Soundscape::Wire> mixerWire =
         RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::Wire>();
     mixerWire->setName("MixerWire");
@@ -521,6 +533,9 @@ int main(int argc, char** argv)
             RBX::Soundscape::AudioEqualizer>();
     RBX::Soundscape::AudioFilter* decodedAudioFilter =
         decodedAudioRoot->findFirstChildOfType<RBX::Soundscape::AudioFilter>();
+    RBX::Soundscape::AudioPitchShifter* decodedAudioPitchShifter =
+        decodedAudioRoot->findFirstChildOfType<
+            RBX::Soundscape::AudioPitchShifter>();
     RBX::Soundscape::AudioChannelMixer* decodedAudioMixer =
         decodedAudioRoot->findFirstChildOfType<
             RBX::Soundscape::AudioChannelMixer>();
@@ -537,6 +552,7 @@ int main(int argc, char** argv)
         !decodedAudioChorus || !decodedAudioFlanger ||
         !decodedAudioCompressor || !decodedAudioGate || !decodedAudioLimiter ||
         !decodedAudioEqualizer || !decodedAudioFilter ||
+        !decodedAudioPitchShifter ||
         !decodedAudioMixer || !decodedAudioSplitter ||
         decodedAudioMixer->getLayout() != RBX::Soundscape::AUDIO_CHANNEL_QUAD ||
         decodedAudioSplitter->getLayout() != RBX::Soundscape::AUDIO_CHANNEL_QUAD ||
@@ -611,6 +627,12 @@ int main(int argc, char** argv)
         decodedAudioFilter->getEditor() || decodedAudioFilter->getBypass() ||
         decodedAudioFilter->getConnectedWiresReflection("Input")->size() != 1 ||
         decodedAudioFilter->getConnectedWiresReflection("Output")->size() != 1 ||
+        decodedAudioPitchShifter->getPitch() != 1.25f ||
+        decodedAudioPitchShifter->getWindowSize() !=
+            RBX::Soundscape::AUDIO_WINDOW_LARGE ||
+        decodedAudioPitchShifter->getBypass() ||
+        decodedAudioPitchShifter->getConnectedWiresReflection("Input")->size() != 1 ||
+        decodedAudioPitchShifter->getConnectedWiresReflection("Output")->size() != 1 ||
         !decodedAudioPlayer || decodedAudioPlayer->getAssetId() !=
             "rbxasset://sounds/uuhhh.mp3" ||
         decodedAudioPlayer->getAudioContent().getSourceType() !=

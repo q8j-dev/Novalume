@@ -262,6 +262,14 @@ template<> EnumDesc<RBX::Soundscape::AudioFilterType>::EnumDesc()
     addPair(RBX::Soundscape::AUDIO_FILTER_LOWPASS_6DB, "Lowpass6dB");
 }
 
+template<> EnumDesc<RBX::Soundscape::AudioWindowSize>::EnumDesc()
+    : EnumDescriptor("AudioWindowSize")
+{
+    addPair(RBX::Soundscape::AUDIO_WINDOW_SMALL, "Small");
+    addPair(RBX::Soundscape::AUDIO_WINDOW_MEDIUM, "Medium");
+    addPair(RBX::Soundscape::AUDIO_WINDOW_LARGE, "Large");
+}
+
 template<> RBX::Soundscape::EmitterPositionType&
 Variant::convert<RBX::Soundscape::EmitterPositionType>()
 {
@@ -287,6 +295,10 @@ Variant::convert<RBX::Soundscape::AudioChannelLayout>()
 template<> RBX::Soundscape::AudioFilterType&
 Variant::convert<RBX::Soundscape::AudioFilterType>()
 { return genericConvert<RBX::Soundscape::AudioFilterType>(); }
+
+template<> RBX::Soundscape::AudioWindowSize&
+Variant::convert<RBX::Soundscape::AudioWindowSize>()
+{ return genericConvert<RBX::Soundscape::AudioWindowSize>(); }
 
 } // namespace RBX::Reflection
 
@@ -319,6 +331,10 @@ template<> bool StringConverter<Soundscape::AudioFilterType>::convertToValue(
     const std::string& text, Soundscape::AudioFilterType& value)
 { return Reflection::EnumDesc<Soundscape::AudioFilterType>::singleton().convertToValue(text.c_str(), value); }
 
+template<> bool StringConverter<Soundscape::AudioWindowSize>::convertToValue(
+    const std::string& text, Soundscape::AudioWindowSize& value)
+{ return Reflection::EnumDesc<Soundscape::AudioWindowSize>::singleton().convertToValue(text.c_str(), value); }
+
 } // namespace RBX
 
 namespace RBX::Soundscape {
@@ -335,6 +351,7 @@ const char* const sAudioGate = "AudioGate";
 const char* const sAudioLimiter = "AudioLimiter";
 const char* const sAudioEqualizer = "AudioEqualizer";
 const char* const sAudioFilter = "AudioFilter";
+const char* const sAudioPitchShifter = "AudioPitchShifter";
 const char* const sAudioChannelMixer = "AudioChannelMixer";
 const char* const sAudioChannelSplitter = "AudioChannelSplitter";
 const char* const sAudioEmitter = "AudioEmitter";
@@ -663,6 +680,34 @@ static Reflection::EventDesc<AudioFilter, void(bool, std::string,
     eventAudioFilterWiringChanged(&AudioFilter::wiringChangedSignal,
         "WiringChanged", "connected", "pin", "wire", "instance",
         Security::None);
+
+static Reflection::PropDescriptor<AudioPitchShifter, bool>
+    propAudioPitchShifterBypass("Bypass", category_Behavior,
+        &AudioPitchShifter::getBypass, &AudioPitchShifter::setBypass);
+static Reflection::PropDescriptor<AudioPitchShifter, float>
+    propAudioPitchShifterPitch("Pitch", category_Data,
+        &AudioPitchShifter::getPitch, &AudioPitchShifter::setPitch);
+static Reflection::EnumPropDescriptor<AudioPitchShifter, AudioWindowSize>
+    propAudioPitchShifterWindowSize("WindowSize", category_Data,
+        &AudioPitchShifter::getWindowSize, &AudioPitchShifter::setWindowSize);
+static Reflection::BoundFuncDesc<AudioPitchShifter,
+    boost::shared_ptr<const Instances>(std::string)>
+    funcAudioPitchShifterConnectedWires(
+        &AudioPitchShifter::getConnectedWiresReflection,
+        "GetConnectedWires", "pin", Security::None);
+static Reflection::BoundFuncDesc<AudioPitchShifter,
+    boost::shared_ptr<const Reflection::ValueArray>()>
+    funcAudioPitchShifterInputPins(&AudioPitchShifter::getInputPinsReflection,
+        "GetInputPins", Security::None);
+static Reflection::BoundFuncDesc<AudioPitchShifter,
+    boost::shared_ptr<const Reflection::ValueArray>()>
+    funcAudioPitchShifterOutputPins(&AudioPitchShifter::getOutputPinsReflection,
+        "GetOutputPins", Security::None);
+static Reflection::EventDesc<AudioPitchShifter, void(bool, std::string,
+    boost::shared_ptr<Instance>, boost::shared_ptr<Instance>)>
+    eventAudioPitchShifterWiringChanged(
+        &AudioPitchShifter::wiringChangedSignal, "WiringChanged", "connected",
+        "pin", "wire", "instance", Security::None);
 
 static Reflection::EnumPropDescriptor<AudioChannelMixer, AudioChannelLayout>
     propAudioChannelMixerLayout("Layout", category_Data,
@@ -1763,6 +1808,50 @@ boost::shared_ptr<const Reflection::ValueArray>
 AudioFilter::getOutputPinsReflection() { return getOutputPins(); }
 std::vector<std::string> AudioFilter::inputPins() const { return {"Input"}; }
 std::vector<std::string> AudioFilter::outputPins() const { return {"Output"}; }
+
+AudioPitchShifter::AudioPitchShifter()
+    : DescribedCreatable<AudioPitchShifter, Instance, sAudioPitchShifter>(
+        sAudioPitchShifter)
+    , bypass(false)
+    , pitch(1.0f)
+    , windowSize(AUDIO_WINDOW_MEDIUM)
+{
+}
+bool AudioPitchShifter::getBypass() const { return bypass; }
+float AudioPitchShifter::getPitch() const { return pitch; }
+AudioWindowSize AudioPitchShifter::getWindowSize() const { return windowSize; }
+void AudioPitchShifter::setBypass(bool value)
+{
+    if (bypass == value) return;
+    bypass = value;
+    raisePropertyChanged(propAudioPitchShifterBypass);
+}
+void AudioPitchShifter::setPitch(float value)
+{
+    if (!std::isfinite(value))
+        throw std::runtime_error("AudioPitchShifter.Pitch must be finite");
+    value = std::clamp(value, 0.5f, 2.0f);
+    if (pitch == value) return;
+    pitch = value;
+    raisePropertyChanged(propAudioPitchShifterPitch);
+}
+void AudioPitchShifter::setWindowSize(AudioWindowSize value)
+{
+    if (value < AUDIO_WINDOW_SMALL || value > AUDIO_WINDOW_LARGE)
+        throw std::runtime_error("AudioPitchShifter.WindowSize is invalid");
+    if (windowSize == value) return;
+    windowSize = value;
+    raisePropertyChanged(propAudioPitchShifterWindowSize);
+}
+boost::shared_ptr<const Instances>
+AudioPitchShifter::getConnectedWiresReflection(std::string pin)
+{ return getConnectedWires(pin); }
+boost::shared_ptr<const Reflection::ValueArray>
+AudioPitchShifter::getInputPinsReflection() { return getInputPins(); }
+boost::shared_ptr<const Reflection::ValueArray>
+AudioPitchShifter::getOutputPinsReflection() { return getOutputPins(); }
+std::vector<std::string> AudioPitchShifter::inputPins() const { return {"Input"}; }
+std::vector<std::string> AudioPitchShifter::outputPins() const { return {"Output"}; }
 
 namespace {
 const std::vector<std::string>& channelPins()

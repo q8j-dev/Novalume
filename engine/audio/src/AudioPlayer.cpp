@@ -237,6 +237,24 @@ AudioRoute findRoute(const AudioNode* node, float gain,
                 if (route.connected)
                     return route;
             }
+            else if (AudioPitchShifter* pitchShifter =
+                         Instance::fastDynamicCast<AudioPitchShifter>(target))
+            {
+                if (!pitchShifter->getBypass())
+                {
+                    if (effectCount >= effects.size())
+                        continue;
+                    Audio::VoiceEffect& effect = effects[effectCount++];
+                    effect.type = Audio::VoiceEffectType::PitchShifter;
+                    effect.parameters = {pitchShifter->getPitch(),
+                        static_cast<float>(pitchShifter->getWindowSize()),
+                        0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+                }
+                AudioRoute route = findRoute(pitchShifter, gain, effects,
+                    effectCount, visited);
+                if (route.connected)
+                    return route;
+            }
             else if (AudioChannelMixer* mixer =
                          Instance::fastDynamicCast<AudioChannelMixer>(target))
             {

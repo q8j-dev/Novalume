@@ -499,6 +499,67 @@ struct Engine::Impl
                             output[0][index] = sample;
                         }
                 }
+                else if (type == VoiceEffectType::PitchShifter)
+                {
+                    const float pitch = std::clamp(
+                        effects->parameters[effect][0].load(
+                            std::memory_order_relaxed), 0.5f, 2.0f);
+                    if (std::abs(pitch - 1.0f) < 0.00001f)
+                        continue;
+                    const int windowSelection = std::clamp(static_cast<int>(
+                        effects->parameters[effect][1].load(
+                            std::memory_order_relaxed)), 0, 2);
+                    const std::uint32_t windowFrames =
+                        windowSelection == 0 ? 512u :
+                        windowSelection == 1 ? 1024u : 2048u;
+                    std::vector<float>& delay = effects->delays[effect];
+                    const std::uint32_t delayFrames = channels && !delay.empty()
+                        ? static_cast<std::uint32_t>(delay.size() / channels) : 0;
+                    if (delayFrames < windowFrames + 2)
+                        continue;
+                    std::uint32_t writeFrame = effects->delayPositions[effect] %
+                        delayFrames;
+                    float phase = effects->phases[effect];
+                    const float phaseStep = (1.0f - pitch) /
+                        static_cast<float>(windowFrames);
+                    for (ma_uint32 frame = 0; frame < frames; ++frame)
+                    {
+                        for (ma_uint32 channel = 0; channel < channels; ++channel)
+                        {
+                            const std::size_t outputIndex =
+                                static_cast<std::size_t>(frame) * channels + channel;
+                            delay[static_cast<std::size_t>(writeFrame) * channels +
+                                channel] = output[0][outputIndex];
+                            float shifted = 0.0f;
+                            for (int head = 0; head < 2; ++head)
+                            {
+                                float headPhase = phase + 0.5f * head;
+                                headPhase -= std::floor(headPhase);
+                                float readFrame = static_cast<float>(writeFrame) -
+                                    headPhase * windowFrames;
+                                while (readFrame < 0.0f)
+                                    readFrame += static_cast<float>(delayFrames);
+                                const std::uint32_t first =
+                                    static_cast<std::uint32_t>(readFrame) % delayFrames;
+                                const std::uint32_t second = (first + 1) % delayFrames;
+                                const float fraction = readFrame - std::floor(readFrame);
+                                const float a = delay[static_cast<std::size_t>(first) *
+                                    channels + channel];
+                                const float b = delay[static_cast<std::size_t>(second) *
+                                    channels + channel];
+                                const float weight = 0.5f - 0.5f * std::cos(
+                                    6.2831853071795864769f * headPhase);
+                                shifted += (a + (b - a) * fraction) * weight;
+                            }
+                            output[0][outputIndex] = shifted;
+                        }
+                        writeFrame = (writeFrame + 1) % delayFrames;
+                        phase += phaseStep;
+                        phase -= std::floor(phase);
+                    }
+                    effects->delayPositions[effect] = writeFrame;
+                    effects->phases[effect] = phase;
+                }
             }
         }
         *inputFrames = frames;
@@ -1308,7 +1369,8 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
                 effect.type != VoiceEffectType::Gate &&
                 effect.type != VoiceEffectType::Limiter &&
                 effect.type != VoiceEffectType::Equalizer &&
-                effect.type != VoiceEffectType::Filter)
+                effect.type != VoiceEffectType::Filter &&
+                effect.type != VoiceEffectType::PitchShifter)
                 return {};
             const std::size_t parameterCount = effect.type ==
                 VoiceEffectType::Distortion ? 1 :
@@ -1317,7 +1379,8 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
                 effect.type == VoiceEffectType::Gate ? 4 :
                 effect.type == VoiceEffectType::Limiter ? 2 :
                 effect.type == VoiceEffectType::Equalizer ? 5 :
-                effect.type == VoiceEffectType::Filter ? 4 : 3;
+                effect.type == VoiceEffectType::Filter ? 4 :
+                effect.type == VoiceEffectType::PitchShifter ? 2 : 3;
             for (std::size_t parameter = 0; parameter < parameterCount; ++parameter)
                 if (!std::isfinite(effect.parameters[parameter]))
                     return {};
@@ -1472,9 +1535,9 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
         voice->effectsInitialized = true;
         voice->effects.sampleRate = impl->config.sampleRate;
         voice->effects.channels = impl->config.channels;
-        const std::size_t modulationDelaySamples =
-            (static_cast<std::size_t>(impl->config.sampleRate) / 20 + 2) *
-            impl->config.channels;
+        const std::size_t modulationDelaySamples = std::max<std::size_t>(
+            static_cast<std::size_t>(impl->config.sampleRate) / 20 + 2,
+            2050) * impl->config.channels;
         for (std::vector<float>& delay : voice->effects.delays)
             delay.resize(modulationDelaySamples);
         for (std::vector<float>& state : voice->effects.states)
@@ -1746,7 +1809,8 @@ bool Engine::setVoiceEffects(VoiceHandle handle,
             effect.type != VoiceEffectType::Gate &&
             effect.type != VoiceEffectType::Limiter &&
             effect.type != VoiceEffectType::Equalizer &&
-            effect.type != VoiceEffectType::Filter)
+            effect.type != VoiceEffectType::Filter &&
+            effect.type != VoiceEffectType::PitchShifter)
             return false;
         const std::size_t parameterCount = effect.type ==
             VoiceEffectType::Distortion ? 1 :
@@ -1755,7 +1819,8 @@ bool Engine::setVoiceEffects(VoiceHandle handle,
             effect.type == VoiceEffectType::Gate ? 4 :
             effect.type == VoiceEffectType::Limiter ? 2 :
             effect.type == VoiceEffectType::Equalizer ? 5 :
-            effect.type == VoiceEffectType::Filter ? 4 : 3;
+            effect.type == VoiceEffectType::Filter ? 4 :
+            effect.type == VoiceEffectType::PitchShifter ? 2 : 3;
         for (std::size_t parameter = 0; parameter < parameterCount; ++parameter)
             if (!std::isfinite(effect.parameters[parameter]))
                 return false;
