@@ -14,6 +14,7 @@
 #include "V8Tree/Verb.h"
 #include "Security/SecurityContext.h"
 #include "audio/AudioGraph.h"
+#include "audio/SoundService.h"
 #include "lua/lua.hpp"
 
 #include <fstream>
@@ -99,6 +100,17 @@ int main(int argc, char** argv)
     boost::shared_ptr<RBX::DataModel> dataModel = RBX::DataModel::createDataModel(
         true, new RBX::NullVerb(nullptr, ""), false);
     RBX::ServiceProvider::create<RBX::ProximityPromptService>(dataModel.get());
+    RBX::Soundscape::SoundService* soundService =
+        RBX::ServiceProvider::create<RBX::Soundscape::SoundService>(
+            dataModel.get());
+    const RBX::CoordinateFrame authoredListener(
+        RBX::Vector3(4.0f, 5.0f, 6.0f));
+    soundService->setListenerCFrame(authoredListener);
+    soundService->setListenerType(RBX::Soundscape::CFrame);
+    if (soundService->getDistanceFactor() != 3.33f ||
+        soundService->getListenerType() != RBX::Soundscape::CFrame ||
+        soundService->getListenerCFrame() != authoredListener)
+        throw std::runtime_error("current SoundService listener properties failed");
     const Inventory baseline = inventory(*dataModel);
     loadPlace(argv[1], *dataModel);
     const Inventory afterBinary = inventory(*dataModel);

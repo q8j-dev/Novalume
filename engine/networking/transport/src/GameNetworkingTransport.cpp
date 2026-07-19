@@ -745,6 +745,42 @@ Endpoint GameNetworkingTransport::listeningEndpoint() const
     return impl->boundEndpoint;
 }
 
+bool GameNetworkingTransport::certificateRequest(
+    std::vector<std::byte>& request, std::string& error)
+{
+    request.clear();
+    if (!isReady()) {
+        error = impl->initError;
+        return false;
+    }
+
+    SteamNetworkingErrMsg message{};
+    int byteCount = 0;
+    if (!impl->sockets->GetCertificateRequest(&byteCount, nullptr, message)) {
+        error = message;
+        return false;
+    }
+    if (byteCount <= 0 || byteCount > 64 * 1024) {
+        error = "GameNetworkingSockets returned an invalid certificate request size";
+        return false;
+    }
+    request.resize(static_cast<std::size_t>(byteCount));
+    int written = byteCount;
+    if (!impl->sockets->GetCertificateRequest(
+            &written, request.data(), message)) {
+        request.clear();
+        error = message;
+        return false;
+    }
+    if (written <= 0 || written > byteCount) {
+        request.clear();
+        error = "GameNetworkingSockets returned an invalid certificate request payload";
+        return false;
+    }
+    request.resize(static_cast<std::size_t>(written));
+    return true;
+}
+
 bool GameNetworkingTransport::setCertificate(std::span<const std::byte> certificate,
     std::string& error)
 {

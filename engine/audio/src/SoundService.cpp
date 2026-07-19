@@ -145,6 +145,15 @@ static Reflection::EnumPropDescriptor<SoundService, ListenerLocation>
 	propDefaultListenerLocation("DefaultListenerLocation", category_Data,
 		&SoundService::getDefaultListenerLocation,
 		&SoundService::setDefaultListenerLocation);
+static Reflection::PropDescriptor<SoundService, CoordinateFrame>
+	propListenerCFrame("ListenerCFrame", category_Data,
+		&SoundService::getListenerCFrame, &SoundService::setListenerCFrame);
+static Reflection::RefPropDescriptor<SoundService, Instance>
+	propListenerObject("ListenerObject", category_Data,
+		&SoundService::getListenerObject, &SoundService::setListenerObject);
+static Reflection::EnumPropDescriptor<SoundService, ListenerType>
+	propListenerType("ListenerType", category_Data,
+		&SoundService::getListenerType, &SoundService::setListenerType);
 Reflection::BoundFuncDesc<SoundService, void(SoundType)> func_playSound(&SoundService::playSound, "PlayStockSound", "sound", Security::RobloxScript);
 Reflection::BoundFuncDesc<SoundService, void(ListenerType, shared_ptr<const RBX::Reflection::Tuple>)> func_setListener(&SoundService::setListener, "SetListener", "listenerType", "listener", Security::None);
 Reflection::BoundFuncDesc<SoundService, shared_ptr<const RBX::Reflection::Tuple>()> func_getListener(&SoundService::getListener, "GetListener", Security::None);
@@ -157,7 +166,7 @@ Reflection::EventDesc<SoundService, void(shared_ptr<const Reflection::Tuple>)>
 SoundService::SoundService()
 	:audioEngine(std::make_unique<Audio::Engine>(Audio::EngineConfig{}))
 	,dopplerscale(1.0f) 
-	,distancefactor(10.0f)
+	,distancefactor(3.33f)
 	,rolloffscale(1.0f)
 	,ambientReverb(NoReverb)
 	,characterSoundsUseNewApi(Enums::ROLLOUT_ENABLED)
@@ -447,6 +456,7 @@ void SoundService::setListener(ListenerType listenerType, shared_ptr<const RBX::
 		if (tupleIter->isType<CoordinateFrame>())
 		{
 			currentListenerValues.listenCFrame = tupleIter->cast<CoordinateFrame>();
+			raisePropertyChanged(propListenerCFrame);
 		}
 		else
 		{
@@ -464,6 +474,7 @@ void SoundService::setListener(ListenerType listenerType, shared_ptr<const RBX::
 			if (shared_ptr<IHasLocation> location = shared_dynamic_cast<IHasLocation>(instance))
 			{
 				currentListenerValues.listenObject = location;
+				raisePropertyChanged(propListenerObject);
 			}
 			else
 			{
@@ -478,6 +489,50 @@ void SoundService::setListener(ListenerType listenerType, shared_ptr<const RBX::
 		}
 	}
 	currentListenerType = listenerType;
+	raisePropertyChanged(propListenerType);
+}
+
+CoordinateFrame SoundService::getListenerCFrame() const
+{
+	Workspace* workspace = ServiceProvider::find<Workspace>(this);
+	Camera* camera = workspace ? workspace->getCamera() : nullptr;
+	return camera
+		? const_cast<SoundService*>(this)->getListenCFrame(camera)
+		: currentListenerValues.listenCFrame;
+}
+
+void SoundService::setListenerCFrame(const CoordinateFrame& value)
+{
+	if (currentListenerValues.listenCFrame == value)
+		return;
+	currentListenerValues.listenCFrame = value;
+	raisePropertyChanged(propListenerCFrame);
+}
+
+Instance* SoundService::getListenerObject() const
+{
+	return shared_dynamic_cast<Instance>(currentListenerValues.listenObject).get();
+}
+
+void SoundService::setListenerObject(Instance* value)
+{
+	shared_ptr<IHasLocation> location = value
+		? shared_dynamic_cast<IHasLocation>(shared_from(value))
+		: shared_ptr<IHasLocation>();
+	if (value && !location)
+		throw RBX::runtime_error("SoundService.ListenerObject must have a world location");
+	if (currentListenerValues.listenObject == location)
+		return;
+	currentListenerValues.listenObject = location;
+	raisePropertyChanged(propListenerObject);
+}
+
+void SoundService::setListenerType(ListenerType value)
+{
+	if (currentListenerType == value)
+		return;
+	currentListenerType = value;
+	raisePropertyChanged(propListenerType);
 }
 
 shared_ptr<const RBX::Reflection::Tuple> SoundService::getListener()

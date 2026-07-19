@@ -68,8 +68,8 @@ set_target_properties(RobloxPlayer PROPERTIES
 set_target_properties(RobloxPlayerLegacy PROPERTIES
     MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in"
     MACOSX_BUNDLE_BUNDLE_NAME "Roblox Legacy UI Test"
-    MACOSX_BUNDLE_GUI_IDENTIFIER "com.openrblx.legacy-ui-test"
-    MACOSX_BUNDLE_INFO_STRING "OpenRBLX legacy UI and avatar test player"
+    MACOSX_BUNDLE_GUI_IDENTIFIER "dev.q8j.novalume.legacy-ui-test"
+    MACOSX_BUNDLE_INFO_STRING "Novalume legacy UI and avatar test player"
     MACOSX_BUNDLE_SHORT_VERSION_STRING "0.1.0"
     MACOSX_BUNDLE_BUNDLE_VERSION "1")
 
@@ -435,7 +435,7 @@ if(APPLE)
     # with a per-signature privacy prompt. Keep the build artifact intact and
     # provide a runnable copy whose packaged resources do not require Desktop
     # access. CI and headless verification continue to use the build artifact.
-    set(RBX_LOCAL_PLAYER_DIR "$ENV{HOME}/Applications/OpenRBLX")
+    set(RBX_LOCAL_PLAYER_DIR "$ENV{HOME}/Applications/Novalume")
     add_custom_target(RobloxPlayerLocalInstall
         COMMAND "${CMAKE_COMMAND}" -E make_directory "${RBX_LOCAL_PLAYER_DIR}"
         COMMAND "${CMAKE_COMMAND}" -E copy_directory

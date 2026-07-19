@@ -106,6 +106,7 @@ public:
     void DetachPlugin(PacketHandler* handler);
     void SetMaximumIncomingConnections(unsigned short) {}
     void SetIncomingPassword(const char*, int) {}
+    bool GetCertificateRequest(std::vector<std::byte>& request, std::string& error);
     bool SetCertificate(std::span<const std::byte> certificate, std::string& error);
     void SetTimeoutTime(unsigned int milliseconds, PeerAddress address);
     void SetOccasionalPing(bool) {}

@@ -66,6 +66,8 @@ public:
 
     virtual bool listen(const Endpoint& endpoint, std::string& error) = 0;
     virtual Endpoint listeningEndpoint() const = 0;
+    virtual bool certificateRequest(std::vector<std::byte>& request,
+        std::string& error) = 0;
     virtual bool setCertificate(std::span<const std::byte> certificate,
         std::string& error) = 0;
     virtual ConnectionId connect(const Endpoint& endpoint, std::string& error) = 0;

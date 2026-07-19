@@ -581,6 +581,12 @@ bool ConcurrentPeer::SetCertificate(std::span<const std::byte> certificate, std:
     return transport->setCertificate(certificate, error);
 }
 
+bool ConcurrentPeer::GetCertificateRequest(std::vector<std::byte>& request,
+    std::string& error)
+{
+    return transport->certificateRequest(request, error);
+}
+
 void ConcurrentPeer::SetPerConnectionOutgoingBandwidthLimit(int bitsPerSecond)
 {
     outgoingBitsPerSecondLimit = static_cast<std::uint32_t>(std::max(bitsPerSecond, 0));

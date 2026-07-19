@@ -19,6 +19,8 @@ public:
 
     bool listen(const Endpoint& endpoint, std::string& error) override;
     Endpoint listeningEndpoint() const override;
+    bool certificateRequest(std::vector<std::byte>& request,
+        std::string& error) override;
     bool setCertificate(std::span<const std::byte> certificate,
         std::string& error) override;
     ConnectionId connect(const Endpoint& endpoint, std::string& error) override;

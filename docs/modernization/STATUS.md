@@ -12,6 +12,13 @@ the final return; it is not replaced or treated as accepted while deferred.
 
 ## Completed evidence
 
+- Created the requested private GitHub repository as `q8j-dev/Novalume`, kept
+  the historical upstream as the separate `origin` remote, and pushed the full
+  reorganized modernization tree to the private `novalume` remote without
+  credentials or browser-cookie material. The initial modernization commit is
+  authored only as `q8j-dev`; no co-author attribution was added. Cross-platform
+  Actions are intentionally not claimed complete until their native build
+  configurations pass rather than publishing decorative or always-green jobs.
 - Connected the replacement miniaudio engine to the packaged Player's normal
   `Sound`/`SoundChannel`/`SoundService` DataModel path. Headless verification
   now disables only the physical output device while retaining the same active
@@ -696,6 +703,15 @@ the final return; it is not replaced or treated as accepted while deferred.
   authentication state in connection events and metrics. Production
   certificate issuance, rotation, and Player/backend delivery remain to be
   integrated and verified.
+- Exposed the real `ISteamNetworkingSockets::GetCertificateRequest` flow
+  through the engine Transport and ConcurrentPeer contracts. It performs the
+  required size query, bounds the coordinator payload to 64 KiB, obtains the
+  actual private-key-bound request blob, and clears partial output on failure;
+  the existing `SetCertificate` path consumes the coordinator's signed reply.
+  The native transport test now requires a nonempty real request before its
+  loopback handshake, and full DataModel replication remains green. A deployed
+  coordinator issuer and expiry-driven rotation policy are still required for
+  production remote authentication.
 - Pinned GameNetworkingSockets, protobuf 35.1, and Abseil 20250512.1 to
   immutable commits. Windows selects BCrypt; non-Windows cross-builds require
   an explicit target-architecture OpenSSL root and host protoc, preventing host
@@ -1179,3 +1195,12 @@ verification is complete and the user separately gives explicit permission.
   Backrooms package returned to its established audible level after this fix:
   all three authored sounds loaded, remained spatial, advanced to
   `4.49306/4.49306/0.18576`, and mixed at RMS `0.0105201`.
+- Completed the current writable `SoundService.ListenerCFrame`,
+  `ListenerObject`, and `ListenerType` property surface over the same legacy
+  listener state used by `GetListener`/`SetListener`, including property-change
+  delivery and location-type validation. Corrected the service's authored
+  `DistanceFactor` default from the historical 10 studs to the documented
+  current 3.33 studs per meter while retaining consistent source, listener,
+  and rolloff-unit conversion. The binary compatibility contract checks the
+  reflected listener state and default, and the actual Backrooms package
+  retained all three audible channels at RMS `0.0103454`.

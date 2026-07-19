@@ -174,6 +174,12 @@ namespace RBX
 			void setListener(ListenerType listenerType, shared_ptr<const RBX::Reflection::Tuple> value);
 			shared_ptr<const RBX::Reflection::Tuple> getListener();
 			CoordinateFrame getListenCFrame(Camera* camera);
+			CoordinateFrame getListenerCFrame() const;
+			void setListenerCFrame(const CoordinateFrame& value);
+			Instance* getListenerObject() const;
+			void setListenerObject(Instance* value);
+			ListenerType getListenerType() const { return currentListenerType; }
+			void setListenerType(ListenerType value);
 			void setMasterVolume(float value);
 			float getMasterVolume();
 

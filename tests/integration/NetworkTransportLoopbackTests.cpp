@@ -31,6 +31,11 @@ int main()
         return fail(client.startupError()) ? 0 : 1;
 
     std::string error;
+    std::vector<std::byte> certificateRequest;
+    if (!client.certificateRequest(certificateRequest, error) ||
+        certificateRequest.empty() || certificateRequest.size() > 64 * 1024)
+        return fail(error.empty()
+            ? "coordinator certificate request was invalid" : error) ? 0 : 1;
     if (client.setCertificate({}, error))
         return fail("empty certificate was accepted") ? 0 : 1;
     error.clear();

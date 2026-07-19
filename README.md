@@ -1,201 +1,74 @@
-# Roblox
+# Novalume
 
-This is a version of Roblox from 2016 with its source code fixed. The base used is from git.rip, from https://git.rip/exconfidential/roblox/roblox.
+Novalume is a cross-platform modernization of the classic Roblox client and
+server source tree. It preserves the historical engine where compatibility
+requires it while replacing obsolete platform, rendering, networking, audio,
+and build infrastructure with maintained equivalents.
 
-[![Dependabot Updates](https://github.com/PatoFlamejanteTV/ROBLOX/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/PatoFlamejanteTV/ROBLOX/actions/workflows/dependabot/dependabot-updates)
-[![CodeQL](https://github.com/PatoFlamejanteTV/ROBLOX/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/PatoFlamejanteTV/ROBLOX/actions/workflows/github-code-scanning/codeql)
+The active macOS Player runs the real DataModel, Luau scripts, simulation,
+bgfx/Metal renderer, GameNetworkingSockets transport, miniaudio runtime, and
+package-backed current Roblox resources. Standard R15, R15-plus, and supported
+Rthro rigs use hash-pinned assets from the designated Studio build. Modern
+RBXL/RBXLX compatibility is verified against the selected Backrooms fixture;
+the project also provides an RBXLP place package format for embedding authorized
+assets without changing authored place semantics.
 
-[![Star History Chart](https://api.star-history.com/svg?repos=PatoFlamejanteTV/ROBLOX&type=Date)](https://star-history.com/#bytebase/star-history&Date)
+This remains an active modernization project. See
+[`docs/modernization/STATUS.md`](docs/modernization/STATUS.md) for evidence and
+known incomplete work. In particular, the authentic current in-experience UI
+is preserved but its final semantic and visual acceptance is deferred until the
+remaining non-UI runtime and platform work is complete.
 
+## Repository layout
 
-## Warning(s)
+- `apps/player` — shared Player entry point and platform packaging
+- `apps/services` — RCC and related server applications
+- `engine` — subsystem-owned runtime libraries
+- `platform` — host and platform integrations
+- `shaders` — owned cross-platform shader sources and manifests
+- `content` — preserved and imported runtime content
+- `tests` — unit, integration, rendering, and compatibility contracts
+- `tools` — dependency, packaging, import, and verification tools
+- `third_party` — documented external and historical dependencies
 
-### From now, im going to accept pull requests to fixes/PRs
-### In case building dont work/Theres any error with images (.png, .svg, etc.), make an `Issue` and i will revert `[ImgBot] Optimize images`
+## macOS arm64 build
 
-## Build
+Requirements are CMake 3.28+, Ninja, Xcode, Python 3, and the pinned dependency
+sources fetched by CMake. Build the pinned OpenSSL archive first:
 
-You will need the following to compile, for Windows:
-- Visual Studio 2019
-- Visual Studio 2015 build tools (v141_xp(?), i updated it to v141 as an test, idk if still works)
-
-### Boost
-1. Run `bootstrap.bat` in `Library/boost/`. Edit the paths in `build_boost.bat` to correspond to where you are keeping this repository, and run `build_boost.bat`
-2. Congratulations! You've built boost.
-
-### Qt
-1. This is where the necessity of the Visual Studio 2015 build tools becomes apparent. You will need to open the VS2015 x86 Native Tools Command Prompt (search VS2015 in your Start Menu.)
-2. Set your current directory to this repositorys Library/Qt folder.
-3. Run the following command, substituting "${path}" for where you are keeping this repository.
 ```sh
-$ ./configure -make nmake -platform win32-msvc2015 -prefix ${path}\Library\Qt -opensource -confirm-license -opengl desktop -nomake examples -nomake tests -webkit -xmlpatterns
+./tools/dependencies/build-openssl.sh macos-arm64
+cmake --preset macos-arm64-release
+cmake --build --preset macos-arm64-release -j 1
+ctest --preset macos-arm64-release
 ```
-4. Example command if I kept the repository in `D:\Roblox\Source`:
-```sh
-$ ./configure -make nmake -platform win32-msvc2015 -prefix D:\Roblox\Source\Library\Qt -opensource -confirm-license -opengl desktop -nomake examples -nomake tests -webkit -xmlpatterns
+
+The self-contained application is produced at:
+
+```text
+out/build/macos-arm64-release/apps/player/RobloxPlayer.app
 ```
-5. That will configure everything. Once it is finished, run `nmake`. If you get an error for `rc` not being recognized, add your SDK to PATH.
-6. It should eventually stop and break somewhere, but by that time, you will have all the libraries you need.
-7. Congratulations! You *partially* compiled Qt.
 
-### Main Roblox projects
-Simply open up Roblox.sln and build. Everything listed as able to compile will compile, unless you're doing something wrong.
+Reference-dependent resource imports require the exact external roots recorded
+in `CMakePresets.json`. Importers validate their manifests and hashes; missing
+or mismatched reference data is an error rather than permission to substitute
+or fabricate assets.
 
-## Libraries
-Library names suffixed with an asterisk (\*) denote a library that is currently out of date.
+## Compatibility and verification
 
-- Boost v1.74.0
-- libcurl v7.71.0
-- zlib v1.12.11
-- SDL v2.0.12
-- VMProtect v2.1.3 \*
-- cpp-netlib v0.13.0-final
-- Mesa v7.8.1 \*
-- xulrunner-sdk v1.9.0.11.en-US.win32.sdk \*
-- glsl-optimizer \*
-- hlsl2glsl \*
-- cabsdk \*
-- Windows/DirectX SDK
-- w3c-libwww v5.4.2
-- Qt 4.8.5 \*
+The default build excludes the historical D3D9, D3D11, and OpenGL renderers but
+does not delete them. Current verification includes deterministic audio,
+network transport and DataModel replication, serialization, R15 animation and
+mesh loading, package-local asset delivery, and actual Metal Player runs.
 
-## Extras
-This is a complete and comprehensive list of all the major changes made to the original source code.
+Project boundaries and acceptance policy are documented in
+[`AGENTS.md`](AGENTS.md), and the immutable execution checklist is in
+[`docs/modernization/TASKLIST.md`](docs/modernization/TASKLIST.md).
 
-- [x] Added all the "Contrib" libraries (see above)
-- [ ] Able to compile, and run successfully all projects
-	- [x] App
-	- [x] AppDraw
-	- [x] Network
-	- [x] RCCService
-	- [x] Base
-	- [x] boost.static
-	- [x] boost.test
-	- [x] GfxBase
-	- [x] RbxG3D
-	- [x] graphics3D
-	- [x] RbxTestHooks
-	- [ ] Base.UnitTest
-	- [ ] App.UnitTest
-	- [x] RobloxStudio
-	- [x] Log
-	- [x] WindowsClient
-	- [ ] RobloxTest
-	- [x] GfxCore
-	- [x] GfxRender
-	- [x] CSG
-	- [x] App.BulletPhysics
-	- [ ] CoreScriptConverter2
-	- [ ] Microsoft.Xbox.GameChat
-	- [ ] Microsoft.Xbox.Samples.NetworkMesh
-	- [ ] XboxClient
-	- [ ] Bootstrapper
-	- [ ] BootstrapperClient
-	- [x] RobloxProxy
-	- [x] NPRobloxProxy
-	- [ ] BootstrapperQTStudio
-	- [ ] BootstrapperRCCService
-	- [ ] RCCServiceArbiter
-	- [x] RobloxModelAnalyzer
-	- [ ] Extract RbxDebug source files from bin/obj files
-	- [ ] MacClient
-	- [ ] RobloxMac
-	- [ ] Android
-	- [ ] iOS
-- [ ] Backported features
-	- [ ] Studio dark theme
-	- [ ] Constraints
-	- [ ] Sound.PlaybackSpeed
-	- [ ] ScreenGui.Enabled
-	- [ ] ScreenGui.DisplayOrder
-	- [ ] Atmosphere
-	- [ ] Instance
-		- [x] Wait
-		- [x] Connect
-		- [ ] GetPropertyChangedSignal
-	- [ ] AnimationTrack.Looped
-	- [ ] Color3uint8
-	- [x] Sky
-		- [x] SunAngularSize
-		- [x] MoonAngularSize
-		- [x] SunTextureId
-		- [x] MoonTextureId
-	- [x] Lighting
-		- [x] ClockTime
-	- [ ] Post Processing
-		- [x] MSAA
-			- [ ] AASamples
-		- [ ] BloomEffect
-		- [ ] BlurEffect
-		- [ ] ColorCorrectionEffect
-		- [ ] SunRaysEffect
-		- [ ] Attempt a backport of the 2015 1x1 stud voxel shadow FIB prototype (demo [here in 2015,](https://www.youtube.com/watch?v=z5TmqDtpwSM) and [here in 2014](https://www.youtube.com/watch?v=Y9-KDzMasjg))
-	- [ ] TextSize
-	- [x] Easier to read debug stat GUIs
-	- [ ] LayerCollector.ResetOnSpawn
-	- [x] "Oof" sound in volume slider
-	- [ ] Smooth camera scrolling
-	- [ ] Color3
-		- [x] Color3.fromRGB
-		- [ ] Color3.fromHSV
-		- [ ] Color3.toHSV
-	- [ ] Instance:GetDescendants()
-	- [ ] MeshPart
-	- [ ] Terrain
-		- [ ] WaterReflectance
-		- [ ] MaterialColors
-		- [ ] New 2020 materials
-	- [ ] Sound effects
-		- [ ] FlangeSoundEffect
-		- [ ] SoundEffect
-		- [ ] SoundGroup
-		- [ ] PitchShiftSoundEffect
-		- [ ] ChorusSoundEffect
-		- [ ] CompressorSoundEffect
-		- [ ] TremoloSoundEffect
-		- [ ] ReverbSoundEffect
-		- [ ] DistortionSoundEffect
-		- [ ] EchoSoundEffect
-		- [ ] EqualizerSoundEffect
-	- [ ] ScreenGui.IgnoreGuiInset
-	- [ ] TextBox
-		- [ ] TextBox.CursorPosition
-		- [ ] TextBox.SelectionStart
-		- [ ] Home / End key compatibility with this
-	- [ ] New Developer Console
-	- [ ] Team
-		- [ ] Player.Team
-		- [ ] Team:GetPlayers()
-		- [ ] Team.PlayerAdded
-		- [ ] Team.PlayerRemoved
-	- [ ] Particle visiblity
-		- [ ] ForceField.Visible
-		- [ ] Explosion.Visible
-	- [ ] Decal.Color3
-	- [ ] ClickDetector
-		- [ ] ClickDetector.RightMouseClick
-		- [ ] ClickDetector.CursorIcon
-	- [ ] HttpService headers in HttpService:GetAsync and HttpService:PostAsync
-	- [ ] Humanoid.FloorMaterial
-	- [ ] Smooth camera scrolling
-- [ ] New features
-	- [x] WaterWave{Size|Speed} can be in the range of -FLT_MIN to FLT_MAX
-	- [ ] TextBox text selection
-	- [ ] Bring back SafeChat (Studio Settings -> Game Options -> ShowSafeChatButton)
-	- [ ] `int64`
-	- [ ] Unicode/UTF8
-	- [ ] 64-bit support
-	- [ ] Compile as VC++ 2019
-	- [x] Uncap friction
-	- [x] Lua 5.3 (or, port over the Lua 5.3 utf8 library) (Ported over the utf8 library)
-	- [ ] Unlock TextureTrail
-	- [x] Uncap PlayerGui:SetTopbarTransparency
-	- [ ] Mesh format version 3.00 support
-	- [ ] Color3.toRGB
-- [ ] Bug fixes
-	- [ ] DirectX
-		- [x] DirectX 9 [ text render bug ] [ fixed, apparently never existed in first place ]
-		- [ ] DirectX 11 [ not initializing ]
-	- [x] SDL Windows Key
-	- [x] Keyboard Shortcuts
-	- [x] Chat output being smaller upon minimize
+## Provenance
+
+The source began from the public 2016 Roblox tree maintained at
+[`Julien-Rodot/Roblox-2016-`](https://github.com/Julien-Rodot/Roblox-2016-).
+Third-party licensing and attribution are preserved in
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) and the files under
+`third_party`.

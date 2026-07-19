@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.28)
 
-project(RobloxModernization VERSION 0.1.0 LANGUAGES C CXX)
+project(Novalume VERSION 0.1.0 LANGUAGES C CXX)
 
 option(RBX_BUILD_PLAYER "Build the shared RobloxPlayer runtime" ON)
 option(RBX_BUILD_TESTS "Build modernization tests" ON)
