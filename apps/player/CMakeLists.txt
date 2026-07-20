@@ -73,6 +73,17 @@ set_target_properties(RobloxPlayerLegacy PROPERTIES
     MACOSX_BUNDLE_SHORT_VERSION_STRING "0.1.0"
     MACOSX_BUNDLE_BUNDLE_VERSION "1")
 
+if(APPLE)
+    set(RBX_PLAYER_RESOURCE_DIR
+        "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources")
+    set(RBX_LEGACY_PLAYER_RESOURCE_DIR
+        "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayerLegacy>/Resources")
+else()
+    set(RBX_PLAYER_RESOURCE_DIR "$<TARGET_FILE_DIR:RobloxPlayer>/Resources")
+    set(RBX_LEGACY_PLAYER_RESOURCE_DIR
+        "$<TARGET_FILE_DIR:RobloxPlayerLegacy>/Resources")
+endif()
+
 set(RBX_RESOURCE_MANIFEST "${CMAKE_BINARY_DIR}/generated/resources/manifest.json")
 add_custom_command(
     OUTPUT "${RBX_RESOURCE_MANIFEST}"
@@ -315,162 +326,162 @@ set_property(TARGET RobloxPlayer APPEND PROPERTY LINK_DEPENDS
 add_custom_command(TARGET RobloxPlayer POST_BUILD
     COMMAND "${CMAKE_COMMAND}" -E copy_directory
         "${CMAKE_SOURCE_DIR}/content"
-        "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/content"
+        "${RBX_PLAYER_RESOURCE_DIR}/content"
     COMMAND "${CMAKE_COMMAND}" -E copy_directory
         "${CMAKE_SOURCE_DIR}/PlatformContent/pc"
-        "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/PlatformContent/pc"
+        "${RBX_PLAYER_RESOURCE_DIR}/PlatformContent/pc"
     COMMAND "${CMAKE_COMMAND}" -E copy_directory
         "${CMAKE_SOURCE_DIR}/PlatformContent/durango/scripts/ui"
-        "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/launcher/content/scripts"
+        "${RBX_PLAYER_RESOURCE_DIR}/launcher/content/scripts"
     COMMAND "${CMAKE_COMMAND}" -E copy_directory
         "${CMAKE_SOURCE_DIR}/PlatformContent/durango/textures/ui"
-        "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/launcher/content/textures/ui"
+        "${RBX_PLAYER_RESOURCE_DIR}/launcher/content/textures/ui"
     COMMAND "${CMAKE_COMMAND}" -E copy_directory
         "${CMAKE_SOURCE_DIR}/PlatformContent/durango/sounds/ui"
-        "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/launcher/content/sounds/ui"
+        "${RBX_PLAYER_RESOURCE_DIR}/launcher/content/sounds/ui"
     COMMAND "${CMAKE_COMMAND}" -E make_directory
-        "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/places"
+        "${RBX_PLAYER_RESOURCE_DIR}/places"
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
         "${CMAKE_SOURCE_DIR}/apps/studio/source/content/FirstPlaceBasePlate.rbxl"
-        "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/places/Baseplate.rbxl"
+        "${RBX_PLAYER_RESOURCE_DIR}/places/Baseplate.rbxl"
     COMMAND "${CMAKE_COMMAND}" -E copy_directory
         "${CMAKE_BINARY_DIR}/generated/shaders"
-        "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/shaders"
+        "${RBX_PLAYER_RESOURCE_DIR}/shaders"
     COMMAND "${CMAKE_COMMAND}" -E copy_directory
         "${CMAKE_SOURCE_DIR}/shaders/manifests"
-        "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/shader-manifests"
+        "${RBX_PLAYER_RESOURCE_DIR}/shader-manifests"
     COMMAND "${CMAKE_COMMAND}" -E copy
         "${RBX_RESOURCE_MANIFEST}"
-        "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/resource-manifest.json"
+        "${RBX_PLAYER_RESOURCE_DIR}/resource-manifest.json"
     COMMAND "${CMAKE_COMMAND}" -E copy
         "${CMAKE_SOURCE_DIR}/THIRD_PARTY_NOTICES.md"
-        "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/THIRD_PARTY_NOTICES.md"
+        "${RBX_PLAYER_RESOURCE_DIR}/THIRD_PARTY_NOTICES.md"
     COMMAND "${CMAKE_COMMAND}" -E copy
         "${CMAKE_SOURCE_DIR}/docs/modernization/player.spdx.json"
-        "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/player.spdx.json"
+        "${RBX_PLAYER_RESOURCE_DIR}/player.spdx.json"
     COMMENT "Packaging owned shaders and source-tree Roblox resources")
 
 add_custom_command(TARGET RobloxPlayerLegacy POST_BUILD
     COMMAND "${CMAKE_COMMAND}" -E copy_directory
         "${CMAKE_SOURCE_DIR}/content"
-        "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayerLegacy>/Resources/content"
+        "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/content"
     COMMAND "${CMAKE_COMMAND}" -E copy_directory
         "${CMAKE_SOURCE_DIR}/PlatformContent/pc"
-        "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayerLegacy>/Resources/PlatformContent/pc"
+        "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/PlatformContent/pc"
     COMMAND "${CMAKE_COMMAND}" -E make_directory
-        "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayerLegacy>/Resources/places"
+        "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/places"
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
         "${CMAKE_SOURCE_DIR}/apps/studio/source/content/FirstPlaceBasePlate.rbxl"
-        "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayerLegacy>/Resources/places/Baseplate.rbxl"
+        "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/places/Baseplate.rbxl"
     COMMAND "${CMAKE_COMMAND}" -E copy_directory
         "${CMAKE_BINARY_DIR}/generated/shaders"
-        "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayerLegacy>/Resources/shaders"
+        "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/shaders"
     COMMAND "${CMAKE_COMMAND}" -E copy_directory
         "${CMAKE_SOURCE_DIR}/shaders/manifests"
-        "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayerLegacy>/Resources/shader-manifests"
+        "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/shader-manifests"
     COMMAND "${CMAKE_COMMAND}" -E copy
         "${RBX_RESOURCE_MANIFEST}"
-        "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayerLegacy>/Resources/resource-manifest.json"
+        "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/resource-manifest.json"
     COMMAND "${CMAKE_COMMAND}" -E copy
         "${CMAKE_SOURCE_DIR}/THIRD_PARTY_NOTICES.md"
-        "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayerLegacy>/Resources/THIRD_PARTY_NOTICES.md"
+        "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/THIRD_PARTY_NOTICES.md"
     COMMAND "${CMAKE_COMMAND}" -E copy
         "${CMAKE_SOURCE_DIR}/docs/modernization/player.spdx.json"
-        "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayerLegacy>/Resources/player.spdx.json"
+        "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/player.spdx.json"
     COMMENT "Packaging the isolated legacy UI and avatar test player")
 
 if(RBX_PLAYER_CJK_FONT)
     add_custom_command(TARGET RobloxPlayer POST_BUILD
         COMMAND "${CMAKE_COMMAND}" -E make_directory
-            "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/PlatformContent/pc/fonts"
+            "${RBX_PLAYER_RESOURCE_DIR}/PlatformContent/pc/fonts"
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
             "${RBX_PLAYER_CJK_FONT}"
-            "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/PlatformContent/pc/fonts/NotoSansCJKjp-Regular.otf"
+            "${RBX_PLAYER_RESOURCE_DIR}/PlatformContent/pc/fonts/NotoSansCJKjp-Regular.otf"
         COMMENT "Packaging the hash-verified current Player CJK fallback font")
     add_custom_command(TARGET RobloxPlayerLegacy POST_BUILD
         COMMAND "${CMAKE_COMMAND}" -E make_directory
-            "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayerLegacy>/Resources/PlatformContent/pc/fonts"
+            "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/PlatformContent/pc/fonts"
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
             "${RBX_PLAYER_CJK_FONT}"
-            "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayerLegacy>/Resources/PlatformContent/pc/fonts/NotoSansCJKjp-Regular.otf"
+            "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/PlatformContent/pc/fonts/NotoSansCJKjp-Regular.otf"
         COMMENT "Packaging the hash-verified current Player CJK fallback font in the legacy test Player")
 endif()
 
 if(RBX_UI_OVERLAY_ROOT)
     add_custom_command(TARGET RobloxPlayer POST_BUILD
         COMMAND "${CMAKE_COMMAND}" -E rm -rf
-            "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/overlays/player-2026"
+            "${RBX_PLAYER_RESOURCE_DIR}/overlays/player-2026"
         COMMAND "${CMAKE_COMMAND}" -E copy_directory
             "${RBX_UI_OVERLAY_ROOT}"
-            "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/overlays/player-2026"
+            "${RBX_PLAYER_RESOURCE_DIR}/overlays/player-2026"
         COMMENT "Packaging only the scoped, hash-verified in-game Player UI overlay")
 
     add_custom_command(TARGET RobloxPlayer POST_BUILD
         COMMAND "${CMAKE_COMMAND}" -E make_directory
-            "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/models/InExperience"
+            "${RBX_PLAYER_RESOURCE_DIR}/models/InExperience"
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
             "${RBX_IN_EXPERIENCE_MODEL_ROOT}/InExperience.rbxm"
-            "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/models/InExperience/InExperience.rbxm"
+            "${RBX_PLAYER_RESOURCE_DIR}/models/InExperience/InExperience.rbxm"
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
             "${RBX_IN_EXPERIENCE_MODEL_ROOT}/InExperience_checksum"
-            "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/models/InExperience/InExperience_checksum"
+            "${RBX_PLAYER_RESOURCE_DIR}/models/InExperience/InExperience_checksum"
         COMMENT "Packaging the checksum-verified Player InExperience data-model patch")
 endif()
 
 if(RBX_AVATAR_RUNTIME_ROOT)
     add_custom_command(TARGET RobloxPlayer POST_BUILD
         COMMAND "${CMAKE_COMMAND}" -E rm -rf
-            "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/overlays/avatar-runtime"
+            "${RBX_PLAYER_RESOURCE_DIR}/overlays/avatar-runtime"
         COMMAND "${CMAKE_COMMAND}" -E copy_directory
             "${RBX_AVATAR_RUNTIME_ROOT}"
-            "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/overlays/avatar-runtime"
+            "${RBX_PLAYER_RESOURCE_DIR}/overlays/avatar-runtime"
         COMMENT "Packaging hash-pinned Studio R15 runtime assets")
     add_custom_command(TARGET RobloxPlayerLegacy POST_BUILD
         COMMAND "${CMAKE_COMMAND}" -E rm -rf
-            "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayerLegacy>/Resources/overlays/avatar-runtime"
+            "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/overlays/avatar-runtime"
         COMMAND "${CMAKE_COMMAND}" -E copy_directory
             "${RBX_AVATAR_RUNTIME_ROOT}"
-            "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayerLegacy>/Resources/overlays/avatar-runtime"
+            "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/overlays/avatar-runtime"
         COMMENT "Packaging hash-pinned Studio R15 runtime assets in the legacy test Player")
 endif()
 
 if(RBX_STUDIO_RUNTIME_ROOT)
     add_custom_command(TARGET RobloxPlayer POST_BUILD
         COMMAND "${CMAKE_COMMAND}" -E rm -rf
-            "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/overlays/studio-runtime"
+            "${RBX_PLAYER_RESOURCE_DIR}/overlays/studio-runtime"
         COMMAND "${CMAKE_COMMAND}" -E copy_directory
             "${RBX_STUDIO_RUNTIME_ROOT}"
-            "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/overlays/studio-runtime"
+            "${RBX_PLAYER_RESOURCE_DIR}/overlays/studio-runtime"
         COMMENT "Packaging hash-pinned Studio server runtime assets")
     add_custom_command(TARGET RobloxPlayerLegacy POST_BUILD
         COMMAND "${CMAKE_COMMAND}" -E rm -rf
-            "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayerLegacy>/Resources/overlays/studio-runtime"
+            "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/overlays/studio-runtime"
         COMMAND "${CMAKE_COMMAND}" -E copy_directory
             "${RBX_STUDIO_RUNTIME_ROOT}"
-            "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayerLegacy>/Resources/overlays/studio-runtime"
+            "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/overlays/studio-runtime"
         COMMENT "Packaging Studio server runtime assets in the legacy test Player")
 endif()
 
 if(RBX_CURRENT_PLAYER_SCRIPTS_MODEL)
     add_custom_command(TARGET RobloxPlayer POST_BUILD
         COMMAND "${CMAKE_COMMAND}" -E make_directory
-            "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/content/scripts"
+            "${RBX_PLAYER_RESOURCE_DIR}/content/scripts"
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
             "${RBX_CURRENT_PLAYER_SCRIPTS_MODEL}"
-            "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/content/scripts/PlayerScripts.rbxmx"
+            "${RBX_PLAYER_RESOURCE_DIR}/content/scripts/PlayerScripts.rbxmx"
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
             "${RBX_CURRENT_PLAYER_SCRIPTS_MANIFEST}"
-            "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/content/scripts/PlayerScripts.manifest.json"
+            "${RBX_PLAYER_RESOURCE_DIR}/content/scripts/PlayerScripts.manifest.json"
         COMMENT "Packaging the hash-recorded current Studio PlayerModule")
     add_custom_command(TARGET RobloxPlayerLegacy POST_BUILD
         COMMAND "${CMAKE_COMMAND}" -E make_directory
-            "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayerLegacy>/Resources/content/scripts"
+            "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/content/scripts"
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
             "${RBX_CURRENT_PLAYER_SCRIPTS_MODEL}"
-            "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayerLegacy>/Resources/content/scripts/PlayerScripts.rbxmx"
+            "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/content/scripts/PlayerScripts.rbxmx"
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
             "${RBX_CURRENT_PLAYER_SCRIPTS_MANIFEST}"
-            "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayerLegacy>/Resources/content/scripts/PlayerScripts.manifest.json"
+            "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/content/scripts/PlayerScripts.manifest.json"
         COMMENT "Packaging current Studio PlayerModule in the legacy UI test Player")
 endif()
 

@@ -13,3 +13,9 @@ target_link_libraries(rbx-platform-clipboard-linux
     PRIVATE SDL3::SDL3-static)
 target_compile_features(rbx-platform-clipboard-linux PUBLIC cxx_std_20)
 rbx_enable_warnings(rbx-platform-clipboard-linux)
+
+rbx_add_portable_platform_runtime(rbx-platform-runtime-linux
+    FileSystem.cpp
+    MemoryStats.cpp
+    StringConv.cpp)
+add_library(Roblox::PlatformRuntime ALIAS rbx-platform-runtime-linux)

@@ -37,9 +37,6 @@ jobs:
             build_dir: windows-arm64-release
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 180
-    env:
-      VCPKG_BINARY_SOURCES: clear;files,${{ runner.temp }}/vcpkg-binary-cache,readwrite
-
     steps:
       - uses: actions/checkout@v4
 
@@ -52,6 +49,7 @@ jobs:
       - name: Install pkg-config and FFmpeg development libraries
         shell: pwsh
         run: |
+          $env:VCPKG_BINARY_SOURCES = "clear;files,$env:RUNNER_TEMP\vcpkg-binary-cache,readwrite"
           choco install pkgconfiglite --yes --no-progress
           & "$env:VCPKG_INSTALLATION_ROOT\vcpkg.exe" install "ffmpeg[avcodec,avformat,swresample,swscale]:${{ matrix.triplet }}"
 
