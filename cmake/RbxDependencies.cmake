@@ -241,6 +241,20 @@ else()
     set(OPENSSL_INCLUDE_DIR "${RBX_OPENSSL_ROOT}/include" CACHE PATH "" FORCE)
     set(OPENSSL_CRYPTO_LIBRARY "${RBX_OPENSSL_ROOT}/lib/libcrypto.a" CACHE FILEPATH "" FORCE)
     set(OPENSSL_SSL_LIBRARY "${RBX_OPENSSL_ROOT}/lib/libssl.a" CACHE FILEPATH "" FORCE)
+
+    # FindOpenSSL cannot infer every private dependency when callers pin a
+    # static archive through OPENSSL_CRYPTO_LIBRARY.  Establish the imported
+    # targets here and carry the platform thread/dynamic-loader requirements
+    # with libcrypto so both configure-time symbol probes and final consumers
+    # use the same complete link contract.
+    find_package(OpenSSL 3.5.7 EXACT REQUIRED COMPONENTS Crypto SSL)
+    find_package(Threads REQUIRED)
+    set_property(TARGET OpenSSL::Crypto APPEND PROPERTY
+        INTERFACE_LINK_LIBRARIES Threads::Threads)
+    if(CMAKE_DL_LIBS)
+        set_property(TARGET OpenSSL::Crypto APPEND PROPERTY
+            INTERFACE_LINK_LIBRARIES "${CMAKE_DL_LIBS}")
+    endif()
 endif()
 set(Protobuf_DIR "${rbx_protobuf_BINARY_DIR}" CACHE PATH "" FORCE)
 

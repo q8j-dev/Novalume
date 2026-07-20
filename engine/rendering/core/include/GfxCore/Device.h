@@ -30,7 +30,8 @@ struct DeviceWindow
         Direct3D11,
         Metal,
         OpenGL,
-        Vulkan
+        Vulkan,
+        WebGPU
     };
 
     void* windowHandle = nullptr;

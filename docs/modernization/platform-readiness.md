@@ -1,8 +1,10 @@
 # Deferred platform readiness
 
 The target matrix below is still incomplete. The native networking dependency
-and owned transport adapter have been cross-compiled for iPhoneOS arm64; full
-Player targets and the other deferred platforms are not yet built or verified.
+and owned transport adapter have been cross-compiled for iPhoneOS arm64. Native
+Windows and Linux shared-engine workflows now exercise both x64 and arm64, but
+their initial bring-up runs are still being repaired and are not acceptance
+evidence. Full non-macOS Player targets are not yet built or verified.
 
 The shared `Host` and renderer interfaces contain no Cocoa, Win32, UIKit, JNI,
 X11/Wayland, browser, Metal, D3D, Vulkan, GL, or WebGPU public types. Native
@@ -14,11 +16,15 @@ exposing a native picker or process type. The macOS adapter implements the
 contract with NSOpenPanel, NSApplicationDelegate, and NSTask; equivalent
 Windows, Linux, mobile, and browser adapters remain required before their
 launcher builds can claim local-file parity.
+The root build now selects the AppKit adapter only for Darwin instead of every
+Apple toolchain. An iPhoneOS configure therefore cannot accidentally compile
+the macOS window host; it fails honestly until the separate UIKit host target
+is connected.
 
 | Target | Expected bring-up | Current follow-up |
 |---|---|---|
-| Windows x64/arm64 | VS 2022+, Windows SDK, Ninja/MSVC; implement Win32/SDL3 host; select bgfx D3D11 initially and D3D12 after parity; package logical resources beside executable | Migrate historical input/window behavior and add CI only when authorized |
-| Linux x64/arm64 | Clang/GCC, Ninja, X11 or Wayland development packages; implement SDL3/native host; select bgfx Vulkan with GL fallback only when explicitly supported | Decide X11/Wayland policy and test case-sensitive resource mounts |
+| Windows x64/arm64 | VS 2022+, Windows SDK, Ninja/MSVC; the production Win32 host now owns DPI-aware windowing, input/raw pointer lock, clipboard, picker, drag/drop, and fresh document launch; select bgfx D3D11 initially and D3D12 after parity; package logical resources beside executable | Connect the portable runtime target, complete D3D11 Player packaging, and verify both native CI architectures |
+| Linux x64/arm64 | Clang/GCC, Ninja, X11 or Wayland development packages; implement SDL3/native host; select bgfx Vulkan with GL fallback only when explicitly supported | Connect the SDL3 X11/Wayland host and test case-sensitive resource mounts in the native CI matrix |
 | iOS arm64 | Xcode/iOS SDK; preserve existing lifecycle/touch/IME/safe-area intent in Objective-C++ adapter; bgfx Metal; package resources in app bundle | Map existing iOS shell without sharing AppKit implementation |
 | Android arm64/x86_64 | Android SDK/NDK and Gradle only in a later authorized task; preserve JNI lifecycle/touch/surface recreation; bgfx Vulkan/GLES capability selection; density-specific assets | Reconcile old Android shell, ANativeWindow ownership, audio focus and memory pressure |
 | Web/Emscripten | Emscripten SDK, CMake/Ninja; browser host glue under `platform/web`; bgfx WebGPU with WebGL fallback policy; preload versioned resource package | Define persistent storage, threading/COOP-COEP, browser IME and asset streaming limits |
@@ -43,8 +49,10 @@ belong to the future production backend integration and are not yet accepted.
 Hostname resolution runs away from the engine thread, keeps a stable logical
 connection ID, and retries each unique IPv4/IPv6 result sequentially.
 
-Shader source and manifests compile by backend profile: SPIR-V, GLSL, GLES, and
-Metal are emitted on the current host; D3D profiles are structurally supported
-by the same `shaderc` pipeline on Windows. Package texture-compression selection,
+Shader source and manifests compile by backend profile. The complete 137-entry
+scene corpus now compiles into owned bgfx GLSL, Metal, SPIR-V, and WGSL packs;
+the same HLSL-source pipeline emits the D3D11 pack with Windows shaderc. Player
+bootstrap selects Metal on Apple, D3D11 on Windows, Vulkan on Linux/Android,
+and WebGPU on Emscripten instead of hard-coding the macOS renderer. Package texture-compression selection,
 surface recreation, controller/touch coexistence, endian/alignment serializer
 audits, and real device/browser testing remain follow-up work.

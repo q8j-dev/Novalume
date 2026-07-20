@@ -1023,6 +1023,21 @@ checkpoint is recorded in `docs/reverse-engineering/in-experience-ui.md`.
    UI is complete, then perform semantic, perceptual, and interactive
    verification before acceptance.
 
+- Began the real non-macOS launcher/Player bring-up without weakening the
+  shared host boundary. The Windows adapter now provides a native DPI-aware
+  HWND for bgfx, keyboard/mouse/raw-relative input, focus and close delivery,
+  pointer confinement, UTF-8 clipboard publication, the system Roblox-file
+  picker, Explorer drag/drop, per-user data/settings roots, and confirmed fresh
+  Player document launch. It is included in the Windows engine graph while the
+  remaining portable runtime and executable packaging are connected.
+- Removed the Player entry point's Metal-only bootstrap assumption. Backend
+  selection is now D3D11 on Windows, Metal on Apple, Vulkan on Linux/Android,
+  and WebGPU on Emscripten, with renderer-specific packaged-payload validation.
+  The complete 137-entry scene database compiles from the owned HLSL corpus to
+  a bgfx SPIR-V pack locally; the same pipeline produces WGSL end to end and is
+  wired to emit D3D11 containers under the Windows toolchain. The actual macOS
+  app was relinked with the new SPIR-V payload and still passes strict signing.
+
 ## Blockers
 
 None external. The actual VisualEngine now links and runs inside the Player.

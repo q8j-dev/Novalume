@@ -9,7 +9,7 @@ on:
       - 'CMakeLists.txt'
       - 'cmake/**'
       - 'engine/**'
-      - 'platform/common/**'
+      - 'platform/**'
       - 'shaders/**'
       - 'third_party/**'
       - 'tools/dependencies/**'

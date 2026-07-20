@@ -38,6 +38,32 @@ bool isSupportedDocument(const std::filesystem::path& path)
          extension == ".rbxlp");
 }
 
+struct RendererBootstrap final {
+    RBX::Graphics::DeviceWindow::Renderer renderer;
+    std::string_view uiShaderDirectory;
+    std::string_view scenePack;
+};
+
+constexpr RendererBootstrap rendererBootstrap()
+{
+#if defined(_WIN32)
+    return {RBX::Graphics::DeviceWindow::Renderer::Direct3D11,
+            "dxbc", "shaders_bgfx-d3d11.pack"};
+#elif defined(__EMSCRIPTEN__)
+    return {RBX::Graphics::DeviceWindow::Renderer::WebGPU,
+            "wgsl", "shaders_bgfx-wgsl.pack"};
+#elif defined(__APPLE__)
+    return {RBX::Graphics::DeviceWindow::Renderer::Metal,
+            "metal", "shaders_bgfx-metal.pack"};
+#elif defined(__ANDROID__) || defined(__linux__)
+    return {RBX::Graphics::DeviceWindow::Renderer::Vulkan,
+            "spirv", "shaders_bgfx-spirv.pack"};
+#else
+    return {RBX::Graphics::DeviceWindow::Renderer::Default,
+            "glsl", "shaders_bgfx-glsl.pack"};
+#endif
+}
+
 } // namespace
 
 int main(int argc, char** argv) {
@@ -150,15 +176,21 @@ int main(int argc, char** argv) {
         const auto manifest = resources / "resource-manifest.json";
         const auto uiOverlayManifest = resources / "overlays" / "player-2026" /
                                        "overlay-manifest.json";
-        const auto metalUiShader = resources / "shaders" / "metal" /
-                                   "vs_player_ui.sc.bin";
+        constexpr auto rendererConfig = rendererBootstrap();
+        const auto uiShader = resources / "shaders" /
+                              rendererConfig.uiShaderDirectory /
+                              "vs_player_ui.sc.bin";
+        const auto sceneShaderPack = resources / "shaders" /
+                                     rendererConfig.scenePack;
         if (!std::filesystem::is_regular_file(manifest) ||
             std::filesystem::file_size(manifest) == 0 ||
             (useCurrentInExperienceUi &&
              (!std::filesystem::is_regular_file(uiOverlayManifest) ||
               std::filesystem::file_size(uiOverlayManifest) == 0)) ||
-            !std::filesystem::is_regular_file(metalUiShader)) {
-            throw std::runtime_error("packaged resource, in-game UI overlay, or Metal shader manifest is missing");
+            !std::filesystem::is_regular_file(uiShader) ||
+            !std::filesystem::is_regular_file(sceneShaderPack)) {
+            throw std::runtime_error(
+                "packaged resource, in-game UI overlay, or selected renderer shader payload is missing");
         }
 
         auto& assetMounts = RBX::Assets::assetMountTable();
@@ -197,12 +229,11 @@ int main(int argc, char** argv) {
             .width = surface.width,
             .height = surface.height,
             .pixelDensity = surface.pixelDensity,
-            .renderer = RBX::Graphics::DeviceWindow::Renderer::Metal};
+            .renderer = rendererConfig.renderer};
         std::unique_ptr<RBX::Graphics::Device> device(
             RBX::Graphics::Device::create(RBX::Graphics::Device::API_Bgfx, deviceWindow));
-        if (!device->validate() || device->getFeatureLevel() != "Metal") {
-            throw std::runtime_error("RobloxPlayer requires bgfx Metal on macOS");
-        }
+        if (!device->validate())
+            throw std::runtime_error("RobloxPlayer could not initialize the selected bgfx renderer");
         std::cout << rbx::core::BuildInfo::productName << " renderer="
                   << device->getAPIName() << '/' << device->getFeatureLevel() << '\n';
 

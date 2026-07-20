@@ -3,7 +3,7 @@ add_library(Roblox::PlatformContract ALIAS rbx-platform-contract)
 target_include_directories(rbx-platform-contract INTERFACE include)
 target_compile_features(rbx-platform-contract INTERFACE cxx_std_20)
 
-if(NOT APPLE)
+if(NOT APPLE AND NOT WIN32)
     add_library(rbx-platform-clipboard STATIC src/ClipboardStub.cpp)
     add_library(Roblox::PlatformClipboard ALIAS rbx-platform-clipboard)
     target_link_libraries(rbx-platform-clipboard PUBLIC Roblox::PlatformContract)

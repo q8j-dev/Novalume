@@ -121,6 +121,7 @@ bgfx::RendererType::Enum rendererType(DeviceWindow::Renderer renderer) {
     case DeviceWindow::Renderer::Metal: return bgfx::RendererType::Metal;
     case DeviceWindow::Renderer::OpenGL: return bgfx::RendererType::OpenGL;
     case DeviceWindow::Renderer::Vulkan: return bgfx::RendererType::Vulkan;
+    case DeviceWindow::Renderer::WebGPU: return bgfx::RendererType::WebGPU;
     }
     return bgfx::RendererType::Count;
 }
@@ -1343,6 +1344,7 @@ std::string DeviceBgfx::getShadingLanguage() {
     case bgfx::RendererType::OpenGL: return "bgfx-glsl";
     case bgfx::RendererType::OpenGLES: return "bgfx-gles";
     case bgfx::RendererType::Vulkan: return "bgfx-spirv";
+    case bgfx::RendererType::WebGPU: return "bgfx-wgsl";
     default: return "bgfx-unknown";
     }
 }

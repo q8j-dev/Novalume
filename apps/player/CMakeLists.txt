@@ -286,14 +286,24 @@ endif()
 
 add_dependencies(RobloxPlayer rbx-player-shaders rbx-resource-manifest)
 add_dependencies(RobloxPlayerLegacy rbx-player-shaders rbx-resource-manifest)
+set(RBX_PLAYER_SHADER_LINK_DEPENDS
+    "${CMAKE_BINARY_DIR}/generated/shaders/shaders_bgfx-glsl.pack"
+    "${CMAKE_BINARY_DIR}/generated/shaders/shaders_bgfx-spirv.pack"
+    "${CMAKE_BINARY_DIR}/generated/shaders/shaders.json")
+if(APPLE AND CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    list(APPEND RBX_PLAYER_SHADER_LINK_DEPENDS
+        "${CMAKE_BINARY_DIR}/generated/shaders/shaders_bgfx-metal.pack")
+elseif(WIN32)
+    list(APPEND RBX_PLAYER_SHADER_LINK_DEPENDS
+        "${CMAKE_BINARY_DIR}/generated/shaders/shaders_bgfx-d3d11.pack")
+elseif(EMSCRIPTEN)
+    list(APPEND RBX_PLAYER_SHADER_LINK_DEPENDS
+        "${CMAKE_BINARY_DIR}/generated/shaders/shaders_bgfx-wgsl.pack")
+endif()
 set_property(TARGET RobloxPlayer APPEND PROPERTY LINK_DEPENDS
-    "${CMAKE_BINARY_DIR}/generated/shaders/shaders_bgfx-glsl.pack"
-    "${CMAKE_BINARY_DIR}/generated/shaders/shaders_bgfx-metal.pack"
-    "${CMAKE_BINARY_DIR}/generated/shaders/shaders.json")
+    ${RBX_PLAYER_SHADER_LINK_DEPENDS})
 set_property(TARGET RobloxPlayerLegacy APPEND PROPERTY LINK_DEPENDS
-    "${CMAKE_BINARY_DIR}/generated/shaders/shaders_bgfx-glsl.pack"
-    "${CMAKE_BINARY_DIR}/generated/shaders/shaders_bgfx-metal.pack"
-    "${CMAKE_BINARY_DIR}/generated/shaders/shaders.json")
+    ${RBX_PLAYER_SHADER_LINK_DEPENDS})
 
 file(GLOB_RECURSE RBX_DURANGO_LAUNCHER_FILES CONFIGURE_DEPENDS
     "${CMAKE_SOURCE_DIR}/PlatformContent/durango/scripts/ui/*"

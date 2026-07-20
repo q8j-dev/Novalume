@@ -2,6 +2,9 @@ set(RBX_SHADER_OUTPUT_DIR "${CMAKE_BINARY_DIR}/generated/shaders")
 set(RBX_VARYING_DEF "${CMAKE_CURRENT_SOURCE_DIR}/varying/player_ui.def.sc")
 set(RBX_SCENE_SHADER_PACK "${RBX_SHADER_OUTPUT_DIR}/shaders_bgfx-glsl.pack")
 set(RBX_METAL_SCENE_SHADER_PACK "${RBX_SHADER_OUTPUT_DIR}/shaders_bgfx-metal.pack")
+set(RBX_SPIRV_SCENE_SHADER_PACK "${RBX_SHADER_OUTPUT_DIR}/shaders_bgfx-spirv.pack")
+set(RBX_D3D11_SCENE_SHADER_PACK "${RBX_SHADER_OUTPUT_DIR}/shaders_bgfx-d3d11.pack")
+set(RBX_WGSL_SCENE_SHADER_PACK "${RBX_SHADER_OUTPUT_DIR}/shaders_bgfx-wgsl.pack")
 
 file(GLOB RBX_SCENE_SHADER_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/source/*.hlsl"
@@ -30,6 +33,79 @@ add_custom_command(
         "${CMAKE_SOURCE_DIR}/Rendering/ShaderCompiler/ShaderCompiler"
         ${RBX_SCENE_SHADER_SOURCES}
     COMMENT "Compiling the complete scene shader pack for bgfx OpenGL"
+    VERBATIM)
+
+if(WIN32)
+    add_custom_command(
+        OUTPUT "${RBX_D3D11_SCENE_SHADER_PACK}"
+        COMMAND "${Python3_EXECUTABLE}"
+            "${CMAKE_SOURCE_DIR}/tools/shader_pipeline/compile_scene_pack.py"
+            --source-pack "${CMAKE_CURRENT_SOURCE_DIR}/shaders_glsl3.pack"
+            --shader-db "${CMAKE_CURRENT_SOURCE_DIR}/shaders.json"
+            --shaderc "$<TARGET_FILE:shaderc>"
+            --translator "${CMAKE_SOURCE_DIR}/Rendering/ShaderCompiler/ShaderCompiler"
+            --source-root "${CMAKE_CURRENT_SOURCE_DIR}/source"
+            --platform windows
+            --profile s_5_0
+            --preprocessor "${CMAKE_C_COMPILER}"
+            --output "${RBX_D3D11_SCENE_SHADER_PACK}"
+        DEPENDS
+            shaderc
+            "${CMAKE_SOURCE_DIR}/tools/shader_pipeline/compile_scene_pack.py"
+            "${CMAKE_SOURCE_DIR}/Rendering/ShaderCompiler/ShaderCompiler"
+            "${CMAKE_CURRENT_SOURCE_DIR}/shaders_glsl3.pack"
+            "${CMAKE_CURRENT_SOURCE_DIR}/shaders.json"
+            ${RBX_SCENE_SHADER_SOURCES}
+        COMMENT "Compiling the complete scene shader pack for bgfx Direct3D 11"
+        VERBATIM)
+endif()
+
+if(EMSCRIPTEN)
+    add_custom_command(
+        OUTPUT "${RBX_WGSL_SCENE_SHADER_PACK}"
+        COMMAND "${Python3_EXECUTABLE}"
+            "${CMAKE_SOURCE_DIR}/tools/shader_pipeline/compile_scene_pack.py"
+            --source-pack "${CMAKE_CURRENT_SOURCE_DIR}/shaders_glsl3.pack"
+            --shader-db "${CMAKE_CURRENT_SOURCE_DIR}/shaders.json"
+            --shaderc "$<TARGET_FILE:shaderc>"
+            --translator "${CMAKE_SOURCE_DIR}/Rendering/ShaderCompiler/ShaderCompiler"
+            --source-root "${CMAKE_CURRENT_SOURCE_DIR}/source"
+            --platform asm.js
+            --profile wgsl
+            --preprocessor "${CMAKE_C_COMPILER}"
+            --output "${RBX_WGSL_SCENE_SHADER_PACK}"
+        DEPENDS
+            shaderc
+            "${CMAKE_SOURCE_DIR}/tools/shader_pipeline/compile_scene_pack.py"
+            "${CMAKE_SOURCE_DIR}/Rendering/ShaderCompiler/ShaderCompiler"
+            "${CMAKE_CURRENT_SOURCE_DIR}/shaders_glsl3.pack"
+            "${CMAKE_CURRENT_SOURCE_DIR}/shaders.json"
+            ${RBX_SCENE_SHADER_SOURCES}
+        COMMENT "Compiling the complete scene shader pack for bgfx WebGPU"
+        VERBATIM)
+endif()
+
+add_custom_command(
+    OUTPUT "${RBX_SPIRV_SCENE_SHADER_PACK}"
+    COMMAND "${Python3_EXECUTABLE}"
+        "${CMAKE_SOURCE_DIR}/tools/shader_pipeline/compile_scene_pack.py"
+        --source-pack "${CMAKE_CURRENT_SOURCE_DIR}/shaders_glsl3.pack"
+        --shader-db "${CMAKE_CURRENT_SOURCE_DIR}/shaders.json"
+        --shaderc "$<TARGET_FILE:shaderc>"
+        --translator "${CMAKE_SOURCE_DIR}/Rendering/ShaderCompiler/ShaderCompiler"
+        --source-root "${CMAKE_CURRENT_SOURCE_DIR}/source"
+        --platform linux
+        --profile spirv
+        --preprocessor "${CMAKE_C_COMPILER}"
+        --output "${RBX_SPIRV_SCENE_SHADER_PACK}"
+    DEPENDS
+        shaderc
+        "${CMAKE_SOURCE_DIR}/tools/shader_pipeline/compile_scene_pack.py"
+        "${CMAKE_SOURCE_DIR}/Rendering/ShaderCompiler/ShaderCompiler"
+        "${CMAKE_CURRENT_SOURCE_DIR}/shaders_glsl3.pack"
+        "${CMAKE_CURRENT_SOURCE_DIR}/shaders.json"
+        ${RBX_SCENE_SHADER_SOURCES}
+    COMMENT "Compiling the complete scene shader pack for bgfx Vulkan/WebGPU"
     VERBATIM)
 
 if(APPLE AND CMAKE_SYSTEM_NAME STREQUAL "Darwin")
@@ -72,7 +148,20 @@ add_custom_target(rbx-player-shaders ALL
         ${RBX_PLAYER_UI_VERTEX_OUTPUTS}
         ${RBX_PLAYER_UI_FRAGMENT_OUTPUTS}
         "${RBX_SCENE_SHADER_PACK}"
+        "${RBX_SPIRV_SCENE_SHADER_PACK}"
         "${RBX_SHADER_OUTPUT_DIR}/shaders.json")
+
+if(WIN32)
+    add_custom_target(rbx-d3d11-scene-shaders
+        DEPENDS "${RBX_D3D11_SCENE_SHADER_PACK}")
+    add_dependencies(rbx-player-shaders rbx-d3d11-scene-shaders)
+endif()
+
+if(EMSCRIPTEN)
+    add_custom_target(rbx-wgsl-scene-shaders
+        DEPENDS "${RBX_WGSL_SCENE_SHADER_PACK}")
+    add_dependencies(rbx-player-shaders rbx-wgsl-scene-shaders)
+endif()
 
 if(APPLE AND CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     add_custom_target(rbx-metal-scene-shaders DEPENDS "${RBX_METAL_SCENE_SHADER_PACK}")
