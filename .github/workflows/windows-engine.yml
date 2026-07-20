@@ -1,0 +1,68 @@
+name: Windows engine bring-up
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/windows-engine.yml'
+      - 'CMakeLists.txt'
+      - 'cmake/**'
+      - 'engine/**'
+      - 'platform/common/**'
+      - 'shaders/**'
+      - 'third_party/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-engine-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  engine:
+    name: ${{ matrix.label }} shared engine
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Windows 2025 x64
+            runner: windows-2025
+            triplet: x64-windows
+            build_dir: windows-x64-release
+          - label: Windows 11 ARM64
+            runner: windows-11-vs2026-arm
+            triplet: arm64-windows
+            build_dir: windows-arm64-release
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 180
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pkg-config and FFmpeg development libraries
+        shell: pwsh
+        run: |
+          choco install pkgconfiglite --yes --no-progress
+          & "$env:VCPKG_INSTALLATION_ROOT\vcpkg.exe" install "ffmpeg[avcodec,avformat,swresample,swscale]:${{ matrix.triplet }}"
+
+      - name: Configure the shared engine
+        shell: pwsh
+        run: |
+          $installed = "$env:VCPKG_INSTALLATION_ROOT\installed\${{ matrix.triplet }}"
+          $env:PKG_CONFIG_PATH = "$installed\lib\pkgconfig;$installed\share\pkgconfig"
+          cmake -S . -B "out/build/${{ matrix.build_dir }}" -G Ninja `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT\scripts\buildsystems\vcpkg.cmake" `
+            -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }} `
+            -DRBX_BUILD_PLAYER=OFF `
+            -DRBX_BUILD_TESTS=OFF `
+            -DRBX_ENABLE_LEGACY_BUILD=OFF `
+            -DRBX_ENABLE_LEGACY_RENDERERS=OFF
+
+      - name: Build the actual shared engine graph
+        run: cmake --build out/build/${{ matrix.build_dir }} --parallel 2
+
+      - name: Enforce application-engine-platform boundaries
+        run: cmake --build out/build/${{ matrix.build_dir }} --target check-dependency-boundaries
