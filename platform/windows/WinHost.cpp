@@ -8,6 +8,7 @@
 #endif
 #include <windows.h>
 #include <windowsx.h>
+#include <xinput.h>
 #include <knownfolders.h>
 #include <shellapi.h>
 #include <shlobj.h>
@@ -215,6 +216,7 @@ public:
             TranslateMessage(&message);
             DispatchMessageW(&message);
         }
+        pollGamepads();
         updatePointerLock();
         return running_ && (!visible_ || IsWindow(window_));
     }
@@ -533,6 +535,113 @@ private:
         pointerLocked_ = shouldLock;
     }
 
+    void enqueueGamepadButton(std::uint8_t index, InputEvent::GamepadControl control,
+                              bool down)
+    {
+        events_.push_back(InputEvent{
+            .kind = down ? InputEvent::Kind::gamepadButtonDown
+                         : InputEvent::Kind::gamepadButtonUp,
+            .gamepadControl = control,
+            .gamepadIndex = index});
+    }
+
+    void enqueueGamepadAxis(std::uint8_t index, InputEvent::GamepadControl control,
+                            float x, float y = 0.0F)
+    {
+        events_.push_back(InputEvent{
+            .kind = InputEvent::Kind::gamepadAxis,
+            .gamepadControl = control,
+            .gamepadIndex = index,
+            .x = x,
+            .y = y});
+    }
+
+    static float normalizeThumb(SHORT value)
+    {
+        return value < 0 ? static_cast<float>(value) / 32768.0F
+                         : static_cast<float>(value) / 32767.0F;
+    }
+
+    void emitReleasedGamepad(std::uint8_t index, const XINPUT_GAMEPAD& gamepad)
+    {
+        emitChangedButtons(index, gamepad.wButtons, 0);
+        enqueueGamepadAxis(index, InputEvent::GamepadControl::leftStick, 0.0F, 0.0F);
+        enqueueGamepadAxis(index, InputEvent::GamepadControl::rightStick, 0.0F, 0.0F);
+        enqueueGamepadAxis(index, InputEvent::GamepadControl::leftTrigger, 0.0F);
+        enqueueGamepadAxis(index, InputEvent::GamepadControl::rightTrigger, 0.0F);
+    }
+
+    void emitChangedButtons(std::uint8_t index, WORD previous, WORD current)
+    {
+        using Control = InputEvent::GamepadControl;
+        static constexpr std::array<std::pair<WORD, Control>, 14> mappings{{
+            {XINPUT_GAMEPAD_A, Control::buttonA},
+            {XINPUT_GAMEPAD_B, Control::buttonB},
+            {XINPUT_GAMEPAD_X, Control::buttonX},
+            {XINPUT_GAMEPAD_Y, Control::buttonY},
+            {XINPUT_GAMEPAD_LEFT_SHOULDER, Control::leftShoulder},
+            {XINPUT_GAMEPAD_RIGHT_SHOULDER, Control::rightShoulder},
+            {XINPUT_GAMEPAD_LEFT_THUMB, Control::leftStick},
+            {XINPUT_GAMEPAD_RIGHT_THUMB, Control::rightStick},
+            {XINPUT_GAMEPAD_START, Control::start},
+            {XINPUT_GAMEPAD_BACK, Control::select},
+            {XINPUT_GAMEPAD_DPAD_LEFT, Control::dpadLeft},
+            {XINPUT_GAMEPAD_DPAD_RIGHT, Control::dpadRight},
+            {XINPUT_GAMEPAD_DPAD_UP, Control::dpadUp},
+            {XINPUT_GAMEPAD_DPAD_DOWN, Control::dpadDown}}};
+        const WORD changed = previous ^ current;
+        for (const auto& [mask, control] : mappings) {
+            if (changed & mask)
+                enqueueGamepadButton(index, control, (current & mask) != 0);
+        }
+    }
+
+    void emitChangedAxes(std::uint8_t index, const XINPUT_GAMEPAD& previous,
+                         const XINPUT_GAMEPAD& current)
+    {
+        if (previous.sThumbLX != current.sThumbLX || previous.sThumbLY != current.sThumbLY)
+            enqueueGamepadAxis(index, InputEvent::GamepadControl::leftStick,
+                normalizeThumb(current.sThumbLX), normalizeThumb(current.sThumbLY));
+        if (previous.sThumbRX != current.sThumbRX || previous.sThumbRY != current.sThumbRY)
+            enqueueGamepadAxis(index, InputEvent::GamepadControl::rightStick,
+                normalizeThumb(current.sThumbRX), normalizeThumb(current.sThumbRY));
+        if (previous.bLeftTrigger != current.bLeftTrigger)
+            enqueueGamepadAxis(index, InputEvent::GamepadControl::leftTrigger,
+                static_cast<float>(current.bLeftTrigger) / 255.0F);
+        if (previous.bRightTrigger != current.bRightTrigger)
+            enqueueGamepadAxis(index, InputEvent::GamepadControl::rightTrigger,
+                static_cast<float>(current.bRightTrigger) / 255.0F);
+    }
+
+    void pollGamepads()
+    {
+        for (DWORD index = 0; index < gamepads_.size(); ++index) {
+            XINPUT_STATE current{};
+            const bool connected = XInputGetState(index, &current) == ERROR_SUCCESS;
+            GamepadState& previous = gamepads_[index];
+            if (!connected) {
+                if (previous.connected)
+                    emitReleasedGamepad(static_cast<std::uint8_t>(index), previous.state.Gamepad);
+                previous = {};
+                continue;
+            }
+            const XINPUT_GAMEPAD empty{};
+            const XINPUT_GAMEPAD& old = previous.connected ? previous.state.Gamepad : empty;
+            if (!previous.connected || current.dwPacketNumber != previous.state.dwPacketNumber) {
+                emitChangedButtons(static_cast<std::uint8_t>(index), old.wButtons,
+                    current.Gamepad.wButtons);
+                emitChangedAxes(static_cast<std::uint8_t>(index), old, current.Gamepad);
+            }
+            previous.connected = true;
+            previous.state = current;
+        }
+    }
+
+    struct GamepadState final {
+        bool connected = false;
+        XINPUT_STATE state{};
+    };
+
     HWND window_ = nullptr;
     bool visible_ = false;
     bool running_ = true;
@@ -541,6 +650,7 @@ private:
     bool pointerLocked_ = false;
     std::vector<InputEvent> events_;
     std::vector<std::filesystem::path> openedDocuments_;
+    std::array<GamepadState, XUSER_MAX_COUNT> gamepads_{};
 };
 
 } // namespace

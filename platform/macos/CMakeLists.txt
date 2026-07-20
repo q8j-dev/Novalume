@@ -3,7 +3,7 @@ add_library(Roblox::PlatformHost ALIAS rbx-platform-macos)
 target_include_directories(rbx-platform-macos PUBLIC include)
 target_link_libraries(rbx-platform-macos
     PUBLIC Roblox::PlatformContract
-    PRIVATE "-framework AppKit" "-framework QuartzCore")
+    PRIVATE "-framework AppKit" "-framework GameController" "-framework QuartzCore")
 target_compile_features(rbx-platform-macos PUBLIC cxx_std_20)
 rbx_enable_warnings(rbx-platform-macos)
 

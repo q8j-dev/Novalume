@@ -2455,6 +2455,50 @@ void PlayerRuntime::handleInput(const rbx::platform::InputEvent& event)
     RBX::UserInputService* input =
         RBX::ServiceProvider::create<RBX::UserInputService>(state->dataModel.get());
 
+    if (event.kind == HostEvent::Kind::gamepadButtonDown ||
+        event.kind == HostEvent::Kind::gamepadButtonUp ||
+        event.kind == HostEvent::Kind::gamepadAxis) {
+        const auto gamepadType = RBX::GamepadService::getGamepadEnumForInt(
+            static_cast<int>(event.gamepadIndex));
+        if (gamepadType == RBX::InputObject::TYPE_NONE)
+            return;
+
+        RBX::KeyCode code = RBX::SDLK_UNKNOWN;
+        switch (event.gamepadControl) {
+        case HostEvent::GamepadControl::buttonA: code = RBX::SDLK_GAMEPAD_BUTTONA; break;
+        case HostEvent::GamepadControl::buttonB: code = RBX::SDLK_GAMEPAD_BUTTONB; break;
+        case HostEvent::GamepadControl::buttonX: code = RBX::SDLK_GAMEPAD_BUTTONX; break;
+        case HostEvent::GamepadControl::buttonY: code = RBX::SDLK_GAMEPAD_BUTTONY; break;
+        case HostEvent::GamepadControl::leftShoulder: code = RBX::SDLK_GAMEPAD_BUTTONL1; break;
+        case HostEvent::GamepadControl::rightShoulder: code = RBX::SDLK_GAMEPAD_BUTTONR1; break;
+        case HostEvent::GamepadControl::leftTrigger: code = RBX::SDLK_GAMEPAD_BUTTONL2; break;
+        case HostEvent::GamepadControl::rightTrigger: code = RBX::SDLK_GAMEPAD_BUTTONR2; break;
+        case HostEvent::GamepadControl::leftStick: code = RBX::SDLK_GAMEPAD_THUMBSTICK1; break;
+        case HostEvent::GamepadControl::rightStick: code = RBX::SDLK_GAMEPAD_THUMBSTICK2; break;
+        case HostEvent::GamepadControl::start: code = RBX::SDLK_GAMEPAD_BUTTONSTART; break;
+        case HostEvent::GamepadControl::select: code = RBX::SDLK_GAMEPAD_BUTTONSELECT; break;
+        case HostEvent::GamepadControl::dpadLeft: code = RBX::SDLK_GAMEPAD_DPADLEFT; break;
+        case HostEvent::GamepadControl::dpadRight: code = RBX::SDLK_GAMEPAD_DPADRIGHT; break;
+        case HostEvent::GamepadControl::dpadUp: code = RBX::SDLK_GAMEPAD_DPADUP; break;
+        case HostEvent::GamepadControl::dpadDown: code = RBX::SDLK_GAMEPAD_DPADDOWN; break;
+        case HostEvent::GamepadControl::none: break;
+        }
+        if (code == RBX::SDLK_UNKNOWN)
+            return;
+
+        const auto inputState = event.kind == HostEvent::Kind::gamepadButtonDown
+            ? RBX::InputObject::INPUT_STATE_BEGIN
+            : event.kind == HostEvent::Kind::gamepadButtonUp
+                ? RBX::InputObject::INPUT_STATE_END
+                : RBX::InputObject::INPUT_STATE_CHANGE;
+        boost::shared_ptr<RBX::InputObject> object =
+            RBX::Creatable<RBX::Instance>::create<RBX::InputObject>(
+                gamepadType, inputState, RBX::Vector3(event.x, event.y, 0.0F),
+                code, state->dataModel.get());
+        input->dangerousFireInputEvent(object, nullptr);
+        return;
+    }
+
     if (event.kind == HostEvent::Kind::keyDown ||
         event.kind == HostEvent::Kind::keyUp) {
         const RBX::KeyCode code = translateKey(event.key);

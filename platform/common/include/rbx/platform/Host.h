@@ -40,6 +40,9 @@ struct InputEvent final {
         pointerDown,
         pointerUp,
         scroll,
+        gamepadButtonDown,
+        gamepadButtonUp,
+        gamepadAxis,
         focusGained,
         focusLost,
         nativeCloseRequested
@@ -127,9 +130,31 @@ struct InputEvent final {
 
     enum class PointerButton : std::uint8_t { none, primary, secondary, middle };
 
+    enum class GamepadControl : std::uint8_t {
+        none,
+        buttonA,
+        buttonB,
+        buttonX,
+        buttonY,
+        leftShoulder,
+        rightShoulder,
+        leftTrigger,
+        rightTrigger,
+        leftStick,
+        rightStick,
+        start,
+        select,
+        dpadLeft,
+        dpadRight,
+        dpadUp,
+        dpadDown
+    };
+
     Kind kind = Kind::pointerMove;
     Key key = Key::unknown;
     PointerButton button = PointerButton::none;
+    GamepadControl gamepadControl = GamepadControl::none;
+    std::uint8_t gamepadIndex = 0;
     float x = 0.0F;
     float y = 0.0F;
     float deltaX = 0.0F;

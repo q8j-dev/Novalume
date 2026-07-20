@@ -46,7 +46,7 @@ jobs:
             libavformat-dev libavcodec-dev libavutil-dev \
             libswscale-dev libswresample-dev \
             libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxi-dev \
-            libxfixes-dev libxss-dev libxkbcommon-dev libwayland-dev wayland-protocols \
+            libxfixes-dev libxss-dev libxtst-dev libxkbcommon-dev libwayland-dev wayland-protocols \
             libdecor-0-dev liburing-dev
 
       - name: Build pinned OpenSSL for the runner architecture

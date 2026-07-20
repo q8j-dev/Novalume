@@ -2,9 +2,12 @@
 
 #import <AppKit/AppKit.h>
 #import <ApplicationServices/ApplicationServices.h>
+#import <GameController/GameController.h>
 #import <QuartzCore/CAMetalLayer.h>
 
 #include <algorithm>
+#include <array>
+#include <cmath>
 #include <stdexcept>
 #include <utility>
 
@@ -134,6 +137,8 @@ public:
         [NSApp setDelegate:applicationDelegate_];
         [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
         [NSApp finishLaunching];
+        [GCController setShouldMonitorBackgroundEvents:YES];
+        [GCController startWirelessControllerDiscoveryWithCompletionHandler:nil];
         const NSRect rect = NSMakeRect(0, 0, static_cast<CGFloat>(width),
                                       static_cast<CGFloat>(height));
         window_ = [[NSWindow alloc]
@@ -169,6 +174,9 @@ public:
     }
 
     ~MacHost() override {
+        [GCController stopWirelessControllerDiscovery];
+        for (ControllerState& controller : controllers_)
+            [controller.controller release];
         setPointerLock(false);
         setCursorHidden(false);
         windowDelegate_->allowClose = YES;
@@ -277,6 +285,7 @@ public:
             }
             [NSApp sendEvent:event];
         }
+        pollGamepads();
         updatePointerLock();
         return !visible_ || [window_ isVisible];
     }
@@ -351,6 +360,17 @@ public:
     }
 
 private:
+    struct ControllerState final {
+        GCController* controller = nil;
+        std::array<bool, 14> buttons{};
+        float leftX = 0.0F;
+        float leftY = 0.0F;
+        float rightX = 0.0F;
+        float rightY = 0.0F;
+        float leftTrigger = 0.0F;
+        float rightTrigger = 0.0F;
+    };
+
     static void requestNativeClose(void* context) {
         MacHost* host = static_cast<MacHost*>(context);
         host->events_.push_back(InputEvent{
@@ -482,6 +502,132 @@ private:
             .modifiers = translateModifiers([event modifierFlags])});
     }
 
+    void enqueueGamepadButton(std::size_t index, InputEvent::GamepadControl control,
+                              bool down) {
+        events_.push_back(InputEvent{
+            .kind = down ? InputEvent::Kind::gamepadButtonDown
+                         : InputEvent::Kind::gamepadButtonUp,
+            .gamepadControl = control,
+            .gamepadIndex = static_cast<std::uint8_t>(index)});
+    }
+
+    void enqueueGamepadAxis(std::size_t index, InputEvent::GamepadControl control,
+                            float x, float y = 0.0F) {
+        events_.push_back(InputEvent{
+            .kind = InputEvent::Kind::gamepadAxis,
+            .gamepadControl = control,
+            .gamepadIndex = static_cast<std::uint8_t>(index),
+            .x = x,
+            .y = y});
+    }
+
+    void updateGamepadButton(std::size_t slot, std::size_t button,
+                             InputEvent::GamepadControl control, bool pressed) {
+        ControllerState& state = controllers_[slot];
+        if (state.buttons[button] == pressed)
+            return;
+        state.buttons[button] = pressed;
+        enqueueGamepadButton(slot, control, pressed);
+    }
+
+    void releaseGamepad(std::size_t slot) {
+        using Control = InputEvent::GamepadControl;
+        static constexpr std::array<Control, 14> controls{{
+            Control::buttonA, Control::buttonB, Control::buttonX, Control::buttonY,
+            Control::leftShoulder, Control::rightShoulder, Control::leftStick,
+            Control::rightStick, Control::start, Control::select, Control::dpadLeft,
+            Control::dpadRight, Control::dpadUp, Control::dpadDown}};
+        ControllerState& state = controllers_[slot];
+        for (std::size_t button = 0; button < controls.size(); ++button) {
+            if (state.buttons[button])
+                enqueueGamepadButton(slot, controls[button], false);
+        }
+        enqueueGamepadAxis(slot, Control::leftStick, 0.0F, 0.0F);
+        enqueueGamepadAxis(slot, Control::rightStick, 0.0F, 0.0F);
+        enqueueGamepadAxis(slot, Control::leftTrigger, 0.0F);
+        enqueueGamepadAxis(slot, Control::rightTrigger, 0.0F);
+        [state.controller release];
+        state = {};
+    }
+
+    void syncGamepads() {
+        NSArray<GCController*>* connected = [GCController controllers];
+        for (std::size_t slot = 0; slot < controllers_.size(); ++slot) {
+            GCController* controller = controllers_[slot].controller;
+            if (controller && ![connected containsObject:controller])
+                releaseGamepad(slot);
+        }
+        for (GCController* controller in connected) {
+            bool known = false;
+            for (const ControllerState& state : controllers_)
+                known |= state.controller == controller;
+            if (known)
+                continue;
+            for (ControllerState& state : controllers_) {
+                if (!state.controller) {
+                    state.controller = [controller retain];
+                    break;
+                }
+            }
+        }
+    }
+
+    void pollGamepads() {
+        syncGamepads();
+        using Control = InputEvent::GamepadControl;
+        for (std::size_t slot = 0; slot < controllers_.size(); ++slot) {
+            ControllerState& state = controllers_[slot];
+            GCExtendedGamepad* pad = [state.controller extendedGamepad];
+            if (!pad)
+                continue;
+            updateGamepadButton(slot, 0, Control::buttonA, [[pad buttonA] isPressed]);
+            updateGamepadButton(slot, 1, Control::buttonB, [[pad buttonB] isPressed]);
+            updateGamepadButton(slot, 2, Control::buttonX, [[pad buttonX] isPressed]);
+            updateGamepadButton(slot, 3, Control::buttonY, [[pad buttonY] isPressed]);
+            updateGamepadButton(slot, 4, Control::leftShoulder,
+                [[pad leftShoulder] isPressed]);
+            updateGamepadButton(slot, 5, Control::rightShoulder,
+                [[pad rightShoulder] isPressed]);
+            updateGamepadButton(slot, 6, Control::leftStick,
+                [[pad leftThumbstickButton] isPressed]);
+            updateGamepadButton(slot, 7, Control::rightStick,
+                [[pad rightThumbstickButton] isPressed]);
+            updateGamepadButton(slot, 8, Control::start, [[pad buttonMenu] isPressed]);
+            updateGamepadButton(slot, 9, Control::select, [[pad buttonOptions] isPressed]);
+            updateGamepadButton(slot, 10, Control::dpadLeft, [[[pad dpad] left] isPressed]);
+            updateGamepadButton(slot, 11, Control::dpadRight, [[[pad dpad] right] isPressed]);
+            updateGamepadButton(slot, 12, Control::dpadUp, [[[pad dpad] up] isPressed]);
+            updateGamepadButton(slot, 13, Control::dpadDown, [[[pad dpad] down] isPressed]);
+
+            const float leftX = [[[pad leftThumbstick] xAxis] value];
+            const float leftY = [[[pad leftThumbstick] yAxis] value];
+            if (std::abs(leftX - state.leftX) > 0.0001F ||
+                std::abs(leftY - state.leftY) > 0.0001F) {
+                state.leftX = leftX;
+                state.leftY = leftY;
+                enqueueGamepadAxis(slot, Control::leftStick, leftX, leftY);
+            }
+            const float rightX = [[[pad rightThumbstick] xAxis] value];
+            const float rightY = [[[pad rightThumbstick] yAxis] value];
+            if (std::abs(rightX - state.rightX) > 0.0001F ||
+                std::abs(rightY - state.rightY) > 0.0001F) {
+                state.rightX = rightX;
+                state.rightY = rightY;
+                enqueueGamepadAxis(slot, Control::rightStick, rightX, rightY);
+            }
+            const float leftTrigger = [[pad leftTrigger] value];
+            if (std::abs(leftTrigger - state.leftTrigger) > 0.0001F) {
+                state.leftTrigger = leftTrigger;
+                enqueueGamepadAxis(slot, Control::leftTrigger, leftTrigger);
+            }
+            const float rightTrigger = [[pad rightTrigger] value];
+            if (std::abs(rightTrigger - state.rightTrigger) > 0.0001F) {
+                state.rightTrigger = rightTrigger;
+                enqueueGamepadAxis(slot, Control::rightTrigger, rightTrigger);
+            }
+        }
+    }
+
     NSWindow* window_ = nil;
     RbxMacWindowDelegate* windowDelegate_ = nil;
     RbxMacApplicationDelegate* applicationDelegate_ = nil;
@@ -497,6 +643,7 @@ private:
     CGDirectDisplayID hiddenDisplay_ = 0;
     std::vector<InputEvent> events_;
     std::vector<std::filesystem::path> openedDocuments_;
+    std::array<ControllerState, 8> controllers_{};
 };
 
 } // namespace

@@ -12,10 +12,10 @@ handles use `uintptr_t`; bgfx performs API translation. Paths use
 `std::filesystem`, dimensions use fixed-width types, and density is explicit.
 The shared host contract now also owns local-document selection, queued
 application-open events, and confirmed document-session launch without
-exposing a native picker or process type. The macOS adapter implements the
-contract with NSOpenPanel, NSApplicationDelegate, and NSTask; equivalent
-Windows, Linux, mobile, and browser adapters remain required before their
-launcher builds can claim local-file parity.
+exposing a native picker or process type. AppKit, Win32, and SDL3 adapters now
+implement that desktop contract. The same neutral event vocabulary carries up
+to eight gamepads into `UserInputService` and `GamepadService`; AppKit uses
+GameController, Windows uses XInput, and Linux uses SDL3 mappings.
 The root build now selects the AppKit adapter only for Darwin instead of every
 Apple toolchain. An iPhoneOS configure therefore cannot accidentally compile
 the macOS window host; it fails honestly until the separate UIKit host target
@@ -23,8 +23,8 @@ is connected.
 
 | Target | Expected bring-up | Current follow-up |
 |---|---|---|
-| Windows x64/arm64 | VS 2022+, Windows SDK, Ninja/MSVC; the production Win32 host now owns DPI-aware windowing, input/raw pointer lock, clipboard, picker, drag/drop, and fresh document launch; select bgfx D3D11 initially and D3D12 after parity; package logical resources beside executable | Connect the portable runtime target, complete D3D11 Player packaging, and verify both native CI architectures |
-| Linux x64/arm64 | Clang/GCC, Ninja, X11 or Wayland development packages; implement SDL3/native host; select bgfx Vulkan with GL fallback only when explicitly supported | Connect the SDL3 X11/Wayland host and test case-sensitive resource mounts in the native CI matrix |
+| Windows x64/arm64 | VS 2022+, Windows SDK, Ninja/MSVC; the production Win32 host owns DPI-aware windowing, input/raw pointer lock, XInput controllers, clipboard, picker, drag/drop, fresh document launch, and the portable runtime; select bgfx D3D11 initially and D3D12 after parity; package logical resources beside executable | Complete and verify the D3D11 Player link/package in both native CI architectures |
+| Linux x64/arm64 | GCC/Ninja, pinned SDL3 with X11/Wayland, native surfaces, input/relative lock, mapped controllers, clipboard, picker, drag/drop, document launch, XDG paths, and the portable runtime; bgfx Vulkan with GL fallback only when explicitly supported | Complete and verify the Vulkan Player link/package and case-sensitive resource mounts in both native CI architectures |
 | iOS arm64 | Xcode/iOS SDK; preserve existing lifecycle/touch/IME/safe-area intent in Objective-C++ adapter; bgfx Metal; package resources in app bundle | Map existing iOS shell without sharing AppKit implementation |
 | Android arm64/x86_64 | Android SDK/NDK and Gradle only in a later authorized task; preserve JNI lifecycle/touch/surface recreation; bgfx Vulkan/GLES capability selection; density-specific assets | Reconcile old Android shell, ANativeWindow ownership, audio focus and memory pressure |
 | Web/Emscripten | Emscripten SDK, CMake/Ninja; browser host glue under `platform/web`; bgfx WebGPU with WebGL fallback policy; preload versioned resource package | Define persistent storage, threading/COOP-COEP, browser IME and asset streaming limits |

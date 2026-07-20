@@ -4,6 +4,7 @@
 #include <SDL3/SDL_dialog.h>
 
 #include <algorithm>
+#include <array>
 #include <cstdlib>
 #include <filesystem>
 #include <mutex>
@@ -121,6 +122,12 @@ public:
             throw std::runtime_error("failed to create the Linux Player window: " + error);
         }
         SDL_StartTextInput(window_);
+        int gamepadCount = 0;
+        if (SDL_JoystickID* gamepads = SDL_GetGamepads(&gamepadCount)) {
+            for (int index = 0; index < gamepadCount; ++index)
+                openGamepad(gamepads[index]);
+            SDL_free(gamepads);
+        }
         if (visible_)
             SDL_ShowWindow(window_);
     }
@@ -128,6 +135,10 @@ public:
     ~SdlHost() override
     {
         if (window_) {
+            for (Controller& controller : controllers_) {
+                if (controller.gamepad)
+                    SDL_CloseGamepad(controller.gamepad);
+            }
             SDL_SetWindowRelativeMouseMode(window_, false);
             SDL_StopTextInput(window_);
             SDL_DestroyWindow(window_);
@@ -277,6 +288,19 @@ public:
                 if (event.drop.data)
                     appendOpenedDocument(event.drop.data);
                 break;
+            case SDL_EVENT_GAMEPAD_ADDED:
+                openGamepad(event.gdevice.which);
+                break;
+            case SDL_EVENT_GAMEPAD_REMOVED:
+                closeGamepad(event.gdevice.which);
+                break;
+            case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+            case SDL_EVENT_GAMEPAD_BUTTON_UP:
+                enqueueGamepadButton(event.gbutton);
+                break;
+            case SDL_EVENT_GAMEPAD_AXIS_MOTION:
+                enqueueGamepadAxis(event.gaxis);
+                break;
             default:
                 break;
             }
@@ -334,6 +358,15 @@ public:
     }
 
 private:
+    struct Controller final {
+        SDL_JoystickID id = 0;
+        SDL_Gamepad* gamepad = nullptr;
+        float leftX = 0.0F;
+        float leftY = 0.0F;
+        float rightX = 0.0F;
+        float rightY = 0.0F;
+    };
+
     static void SDLCALL openDialogCallback(void* userdata, const char* const* files, int)
     {
         auto* self = static_cast<SdlHost*>(userdata);
@@ -353,6 +386,108 @@ private:
         SDL_SetWindowRelativeMouseMode(window_, pointerLockRequested_ && focused);
     }
 
+    void openGamepad(SDL_JoystickID id)
+    {
+        for (const Controller& controller : controllers_) {
+            if (controller.id == id)
+                return;
+        }
+        for (Controller& controller : controllers_) {
+            if (controller.gamepad)
+                continue;
+            if (SDL_Gamepad* gamepad = SDL_OpenGamepad(id)) {
+                controller = Controller{.id = id, .gamepad = gamepad};
+            }
+            return;
+        }
+    }
+
+    void closeGamepad(SDL_JoystickID id)
+    {
+        for (Controller& controller : controllers_) {
+            if (controller.id != id)
+                continue;
+            if (controller.gamepad)
+                SDL_CloseGamepad(controller.gamepad);
+            controller = {};
+            return;
+        }
+    }
+
+    std::size_t controllerIndex(SDL_JoystickID id) const
+    {
+        for (std::size_t index = 0; index < controllers_.size(); ++index) {
+            if (controllers_[index].id == id && controllers_[index].gamepad)
+                return index;
+        }
+        return controllers_.size();
+    }
+
+    void enqueueGamepadButton(const SDL_GamepadButtonEvent& nativeEvent)
+    {
+        const std::size_t index = controllerIndex(nativeEvent.which);
+        if (index == controllers_.size())
+            return;
+        using Control = InputEvent::GamepadControl;
+        Control control = Control::none;
+        switch (static_cast<SDL_GamepadButton>(nativeEvent.button)) {
+        case SDL_GAMEPAD_BUTTON_SOUTH: control = Control::buttonA; break;
+        case SDL_GAMEPAD_BUTTON_EAST: control = Control::buttonB; break;
+        case SDL_GAMEPAD_BUTTON_WEST: control = Control::buttonX; break;
+        case SDL_GAMEPAD_BUTTON_NORTH: control = Control::buttonY; break;
+        case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: control = Control::leftShoulder; break;
+        case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER: control = Control::rightShoulder; break;
+        case SDL_GAMEPAD_BUTTON_LEFT_STICK: control = Control::leftStick; break;
+        case SDL_GAMEPAD_BUTTON_RIGHT_STICK: control = Control::rightStick; break;
+        case SDL_GAMEPAD_BUTTON_START: control = Control::start; break;
+        case SDL_GAMEPAD_BUTTON_BACK: control = Control::select; break;
+        case SDL_GAMEPAD_BUTTON_DPAD_LEFT: control = Control::dpadLeft; break;
+        case SDL_GAMEPAD_BUTTON_DPAD_RIGHT: control = Control::dpadRight; break;
+        case SDL_GAMEPAD_BUTTON_DPAD_UP: control = Control::dpadUp; break;
+        case SDL_GAMEPAD_BUTTON_DPAD_DOWN: control = Control::dpadDown; break;
+        default: break;
+        }
+        if (control == Control::none)
+            return;
+        events_.push_back(InputEvent{
+            .kind = nativeEvent.down ? InputEvent::Kind::gamepadButtonDown
+                                     : InputEvent::Kind::gamepadButtonUp,
+            .gamepadControl = control,
+            .gamepadIndex = static_cast<std::uint8_t>(index)});
+    }
+
+    void enqueueGamepadAxis(const SDL_GamepadAxisEvent& nativeEvent)
+    {
+        const std::size_t index = controllerIndex(nativeEvent.which);
+        if (index == controllers_.size())
+            return;
+        Controller& controller = controllers_[index];
+        const float value = nativeEvent.value < 0
+            ? static_cast<float>(nativeEvent.value) / 32768.0F
+            : static_cast<float>(nativeEvent.value) / 32767.0F;
+        using Control = InputEvent::GamepadControl;
+        Control control = Control::none;
+        switch (static_cast<SDL_GamepadAxis>(nativeEvent.axis)) {
+        case SDL_GAMEPAD_AXIS_LEFTX: controller.leftX = value; control = Control::leftStick; break;
+        case SDL_GAMEPAD_AXIS_LEFTY: controller.leftY = -value; control = Control::leftStick; break;
+        case SDL_GAMEPAD_AXIS_RIGHTX: controller.rightX = value; control = Control::rightStick; break;
+        case SDL_GAMEPAD_AXIS_RIGHTY: controller.rightY = -value; control = Control::rightStick; break;
+        case SDL_GAMEPAD_AXIS_LEFT_TRIGGER: control = Control::leftTrigger; break;
+        case SDL_GAMEPAD_AXIS_RIGHT_TRIGGER: control = Control::rightTrigger; break;
+        default: break;
+        }
+        if (control == Control::none)
+            return;
+        const bool left = control == Control::leftStick;
+        const bool right = control == Control::rightStick;
+        events_.push_back(InputEvent{
+            .kind = InputEvent::Kind::gamepadAxis,
+            .gamepadControl = control,
+            .gamepadIndex = static_cast<std::uint8_t>(index),
+            .x = left ? controller.leftX : right ? controller.rightX : std::max(0.0F, value),
+            .y = left ? controller.leftY : right ? controller.rightY : 0.0F});
+    }
+
     SDL_Window* window_ = nullptr;
     bool visible_ = false;
     bool running_ = true;
@@ -360,6 +495,7 @@ private:
     std::vector<InputEvent> events_;
     std::mutex documentMutex_;
     std::vector<std::filesystem::path> openedDocuments_;
+    std::array<Controller, 8> controllers_{};
 };
 
 } // namespace

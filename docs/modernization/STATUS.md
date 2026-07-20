@@ -1035,6 +1035,13 @@ checkpoint is recorded in `docs/reverse-engineering/in-experience-ui.md`.
   close delivery, clipboard, native file selection, drag/drop, XDG data roots,
   and fresh Player document launch. It shares the same engine-neutral host
   contract as the AppKit and Win32 adapters.
+- Connected portable Windows and Linux runtime support and non-bundle resource
+  packaging, including native user/cache/log paths, process memory reporting,
+  UTF conversion, and an explicit portable replacement for the legacy
+  executable self-hash mechanism. Desktop controller events now cross the same
+  host boundary into `UserInputService`/`GamepadService`: GameController on
+  macOS, XInput on Windows, and SDL3 mappings on Linux support eight logical
+  gamepads, buttons, D-pads, triggers, and paired thumbstick axes.
 - Removed the Player entry point's Metal-only bootstrap assumption. Backend
   selection is now D3D11 on Windows, Metal on Apple, Vulkan on Linux/Android,
   and WebGPU on Emscripten, with renderer-specific packaged-payload validation.
