@@ -198,6 +198,7 @@ namespace RBX
 			static float runningKMoveP();
 			static float runningKMovePForPGS();
 			static float maxLinearGroundMoveForce()			{ return 500.0; }
+			PartMaterial getFloorMaterialForReflection() const { return floorMaterial; }
 
 		protected:
 			Assembly* filteringAssembly;

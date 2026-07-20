@@ -7,6 +7,7 @@
 namespace RBX {
 
 extern const char* const sCollectionService;
+class BindableEvent;
 class CollectionService
 	: public DescribedNonCreatable<CollectionService, Instance, sCollectionService>
 	, public Service
@@ -53,11 +54,15 @@ private:
 	typedef std::map<std::string, std::set<Instance*> > TaggedMap;
 	TaggedMap tagged;
 	std::map<std::string, size_t> tagCounts;
+	std::map<std::string, shared_ptr<BindableEvent> > instanceAddedSignals;
+	std::map<std::string, shared_ptr<BindableEvent> > instanceRemovedSignals;
 	rbx::signals::scoped_connection descendantAddedConnection;
 	rbx::signals::scoped_connection descendantRemovingConnection;
 
 	void onTaggedDescendantAdded(shared_ptr<Instance> instance);
 	void onTaggedDescendantRemoving(shared_ptr<Instance> instance);
+	void fireTaggedSignal(std::map<std::string, shared_ptr<BindableEvent> >& signals,
+		const std::string& tag, shared_ptr<Instance> instance);
 	bool isInProvider(const Instance* instance);
 
 };

@@ -200,6 +200,31 @@ int main()
             orientedBoundsSize.fuzzyEq(Vector3(7.0f, 4.0f, 6.0f)),
         "Model:GetBoundingBox must align its frame to PrimaryPart and bound rotated descendants in that frame");
 
+    boost::shared_ptr<ModelInstance> pivotModel =
+        Creatable<Instance>::create<ModelInstance>();
+    boost::shared_ptr<PartInstance> pivotPartA =
+        Creatable<Instance>::create<PartInstance>();
+    boost::shared_ptr<PartInstance> pivotPartB =
+        Creatable<Instance>::create<PartInstance>();
+    pivotPartA->setCoordinateFrame(CoordinateFrame(Vector3(2.0f, 0.0f, 0.0f)));
+    pivotPartB->setCoordinateFrame(CoordinateFrame(Vector3(6.0f, 0.0f, 0.0f)));
+    pivotPartA->setParent(pivotModel.get());
+    pivotPartB->setParent(pivotModel.get());
+    const CoordinateFrame authoredPivot(Matrix3::identity(), Vector3(4.0f, 0.0f, 0.0f));
+    pivotModel->setWorldPivot(authoredPivot);
+    const CoordinateFrame targetPivot(quarterTurn, Vector3(20.0f, 5.0f, -3.0f));
+    pivotModel->pivotTo(targetPivot);
+    require(pivotModel->getPivot().fuzzyEq(targetPivot) &&
+            pivotPartA->getCoordinateFrame().translation.fuzzyEq(
+                targetPivot.pointToWorldSpace(Vector3(-2.0f, 0.0f, 0.0f))) &&
+            pivotPartB->getCoordinateFrame().translation.fuzzyEq(
+                targetPivot.pointToWorldSpace(Vector3(2.0f, 0.0f, 0.0f))),
+        "PVInstance:PivotTo must preserve a Model's descendant offsets around its authored world pivot");
+    require(pivotModel->findFunctionDescriptor("GetPivot") != nullptr &&
+            pivotModel->findFunctionDescriptor("PivotTo") != nullptr &&
+            pivotModel->findPropertyDescriptor("WorldPivot") != nullptr,
+        "Model must expose the current inherited pivot methods and WorldPivot property");
+
     boost::shared_ptr<Decal> currentDecal = Creatable<Instance>::create<Decal>();
     require(currentDecal->getColor3() == Color3::white(),
         "Decal.Color3 must retain the current white default");
@@ -1689,6 +1714,18 @@ int main()
     require(fontLabel->getFont() == TextService::FONT_BUILDERSANS_BOLD &&
             fontLabel->getFontFace().getWeight() == FONT_WEIGHT_BOLD,
         "FontFace must select the matching shipped Builder Sans rendering face");
+    fontLabel->setFontFace(Font(
+        "rbxasset://fonts/families/Fondamento.json", FONT_WEIGHT_REGULAR));
+    require(fontLabel->getFont() == TextService::FONT_FONDAMENTO,
+        "FontFace must preserve the selected place's Fondamento rendering face");
+    fontLabel->setFontFace(Font(
+        "rbxasset://fonts/families/Merriweather.json", FONT_WEIGHT_SEMI_BOLD));
+    require(fontLabel->getFont() == TextService::FONT_MERRIWEATHER,
+        "FontFace must preserve the selected place's Merriweather rendering face");
+    fontLabel->setFontFace(Font(
+        "rbxasset://fonts/families/SpecialElite.json", FONT_WEIGHT_BOLD));
+    require(fontLabel->getFont() == TextService::FONT_SPECIALELITE,
+        "FontFace must preserve the selected place's Special Elite rendering face");
     std::auto_ptr<Reflection::Tuple> fontResult = scriptContext->executeInNewThread(
         Security::GameScript_, ProtectedString::fromTrustedSource(
             "local face = Font.new('rbxasset://fonts/families/BuilderSans.json', "

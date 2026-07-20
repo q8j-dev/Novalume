@@ -145,6 +145,9 @@ static const Reflection::PropDescriptor<Humanoid, float> propWalkAngleError("Wal
 static const Reflection::PropDescriptor<Humanoid, bool> propStrafe("Strafe", "Control", &Humanoid::getStrafe, &Humanoid::setStrafe, Reflection::PropertyDescriptor::REPLICATE_ONLY);
 
 static Reflection::EnumPropDescriptor<Humanoid, Humanoid::HumanoidRigType> propRigType("RigType", category_Data, &Humanoid::getRigType, &Humanoid::setRigType, Reflection::PropertyDescriptor::SCRIPTING);
+static Reflection::EnumPropDescriptor<Humanoid, PartMaterial> propFloorMaterial(
+    "FloorMaterial", category_State, &Humanoid::getFloorMaterial, NULL,
+    Reflection::PropertyDescriptor::SCRIPTING);
 static const Reflection::PropDescriptor<Humanoid, float> propCameraMinDistance("CameraMinDistance", category_Data, &Humanoid::getMinDistance, &Humanoid::setMinDistance, Reflection::PropertyDescriptor::REPLICATE_ONLY);
 static const Reflection::PropDescriptor<Humanoid, float> propCameraMaxDistance("CameraMaxDistance", category_Data, &Humanoid::getMaxDistance, &Humanoid::setMaxDistance, Reflection::PropertyDescriptor::REPLICATE_ONLY);
 static const Reflection::PropDescriptor<Humanoid, Vector3> propCameraOffset("CameraOffset", category_Data, &Humanoid::getCamearaOffset, &Humanoid::setCameraOffset, Reflection::PropertyDescriptor::SCRIPTING);
@@ -156,6 +159,9 @@ static Reflection::BoundFuncDesc<Humanoid, void(bool)> func_SetClickToWalkEnable
 static Reflection::BoundFuncDesc<Humanoid, void(Vector3, shared_ptr<Instance>)> func_MoveTo(&Humanoid::moveTo2, "MoveTo", "location", "part", shared_ptr<Instance>(), Security::None);
 static Reflection::BoundFuncDesc<Humanoid, void()> func_BuildRigFromAttachments(
 	&Humanoid::buildRigFromAttachments, "BuildRigFromAttachments", Security::None);
+static Reflection::BoundFuncDesc<Humanoid, void(shared_ptr<Instance>)>
+	func_ApplyDescription(&Humanoid::applyDescription, "ApplyDescription",
+	"humanoidDescription", Security::None);
 static Reflection::BoundFuncDesc<Humanoid, Humanoid::BodyPartR15(shared_ptr<Instance>)>
 	func_GetBodyPartR15(&Humanoid::getBodyPartR15, "GetBodyPartR15", "part",
 	Security::None);
@@ -211,6 +217,9 @@ static Reflection::EnumPropDescriptor<Humanoid, Humanoid::NameOcclusion> prop_Na
 static Reflection::EnumPropDescriptor<Humanoid, Humanoid::HumanoidDisplayDistanceType> prop_DisplayDistanceType("DisplayDistanceType", category_Data, &Humanoid::getDisplayDistanceType, &Humanoid::setDisplayDistanceType);
 static const Reflection::PropDescriptor<Humanoid, float> propNameDisplayDistance("NameDisplayDistance", category_Data, &Humanoid::getNameDisplayDistance, &Humanoid::setNameDisplayDistance);
 static const Reflection::PropDescriptor<Humanoid, float> propHealthDisplayDistance("HealthDisplayDistance", category_Data, &Humanoid::getHealthDisplayDistance, &Humanoid::setHealthDisplayDistance);
+static Reflection::PropDescriptor<Humanoid, bool> propBreakJointsOnDeath(
+	"BreakJointsOnDeath", category_Behavior,
+	&Humanoid::getBreakJointsOnDeath, &Humanoid::setBreakJointsOnDeath);
 
 static Reflection::BoundFuncDesc<Humanoid, bool(HUMAN::StateType)> desc_getStateTransitionEnabled(&Humanoid::getStateTransitionEnabled, "GetStateEnabled","state", Security::None);
     static Reflection::BoundFuncDesc<Humanoid, void(HUMAN::StateType, bool)> desc_setStateTransitionEnabled(&Humanoid::setStateTransitionEnabled, "SetStateEnabled","state", "enabled", Security::None);
@@ -353,6 +362,7 @@ Humanoid::Humanoid()
 , healthDisplayDistance(defaultDisplayDistance)
 , hadNeck(false)
 , hadHealth(false)
+, breakJointsOnDeathEnabled(true)
 , isWalking(false)
 , walkTimer(0)
 , displayText("")
@@ -492,6 +502,15 @@ void Humanoid::setDisplayDistanceType(HumanoidDisplayDistanceType value)
 	{
 		displayDistanceType = value;
 		raisePropertyChanged(prop_DisplayDistanceType);
+	}
+}
+
+void Humanoid::setBreakJointsOnDeath(bool value)
+{
+	if (breakJointsOnDeathEnabled != value)
+	{
+		breakJointsOnDeathEnabled = value;
+		raisePropertyChanged(propBreakJointsOnDeath);
 	}
 }
 
@@ -1059,6 +1078,11 @@ bool Humanoid::hasWalkToPoint(Vector3& worldPosition) const
         return true;
     }
 	return false;
+}
+
+PartMaterial Humanoid::getFloorMaterial() const
+{
+	return currentState ? currentState->getFloorMaterialForReflection() : AIR_MATERIAL;
 }
 
 HUMAN::StateType Humanoid::getCurrentStateType()
@@ -2052,6 +2076,52 @@ void Humanoid::connectAvatarScaleValue(DoubleValue* value)
 			*connection = value->valueChangedSignal.connect(
 				boost::bind(&Humanoid::refreshAvatarScale, this));
 	}
+}
+
+void Humanoid::applyDescription(shared_ptr<Instance> descriptionInstance)
+{
+	HumanoidDescription* description =
+		Instance::fastDynamicCast<HumanoidDescription>(descriptionInstance.get());
+	if (!description)
+		throw std::runtime_error(
+			"Humanoid:ApplyDescription expects a HumanoidDescription");
+	if (getRigType() != HUMANOID_RIG_TYPE_R15)
+		throw std::runtime_error(
+			"Humanoid:ApplyDescription requires an R15 Humanoid");
+
+	struct Scale
+	{
+		const char* name;
+		double value;
+	};
+	const Scale scales[] = {
+		{"BodyDepthScale", description->getDepthScale()},
+		{"BodyHeightScale", description->getHeightScale()},
+		{"BodyProportionScale", description->getProportionScale()},
+		{"BodyTypeScale", description->getBodyTypeScale()},
+		{"BodyWidthScale", description->getWidthScale()},
+		{"HeadScale", description->getHeadScale()},
+	};
+
+	for (const Scale& scale : scales)
+	{
+		DoubleValue* value = Instance::fastDynamicCast<DoubleValue>(
+			findFirstChildByName(scale.name));
+		if (!value)
+		{
+			shared_ptr<DoubleValue> created =
+				Creatable<Instance>::create<DoubleValue>();
+			created->setName(scale.name);
+			created->setValue(scale.value);
+			created->setParent(this);
+		}
+		else
+		{
+			value->setValue(scale.value);
+		}
+	}
+
+	refreshAvatarScale();
 }
 
 static double getAvatarScaleValue(const Humanoid& humanoid,

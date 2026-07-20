@@ -44,6 +44,20 @@ local GAMEPAD_INPUT_TYPES =
 	[Enum.UserInputType.Gamepad4] = true;
 }
 
+-- The shell is shared with the desktop Player.  Preserve the original Xbox
+-- any-button contract while accepting the equivalent desktop activation
+-- inputs when there is no gamepad in front of the user.
+local function isActivationInput(inputObject)
+	if GAMEPAD_INPUT_TYPES[inputObject.UserInputType] then
+		return ANY_KEY_CODES[inputObject.KeyCode] == true
+	end
+	if inputObject.UserInputType == Enum.UserInputType.Keyboard then
+		return inputObject.KeyCode == Enum.KeyCode.Return
+			or inputObject.KeyCode == Enum.KeyCode.Space
+	end
+	return inputObject.UserInputType == Enum.UserInputType.MouseButton1
+end
+
 local function CreateHomePane(parent)
 	local this = {}
 
@@ -149,11 +163,9 @@ local function CreateHomePane(parent)
 		Utility.DisconnectEvent(AnyButtonBeganConnection)
 		local anyButtonDown = {}
 		AnyButtonBeganConnection = UserInputService.InputBegan:connect(function(inputObject)
-			if GAMEPAD_INPUT_TYPES[inputObject.UserInputType] then
-				if ANY_KEY_CODES[inputObject.KeyCode] then
-					AnyButtonHint.TextColor3 = GlobalSettings.GreyTextColor
-					anyButtonDown[inputObject.KeyCode] = true
-				end
+			if isActivationInput(inputObject) then
+				AnyButtonHint.TextColor3 = GlobalSettings.GreyTextColor
+				anyButtonDown[inputObject.UserInputType] = inputObject.KeyCode
 			end
 		end)
 		Utility.DisconnectEvent(AnyButtonEndedConnection)
@@ -161,14 +173,13 @@ local function CreateHomePane(parent)
 		AnyButtonEndedConnection = UserInputService.InputEnded:connect(function(inputObject)
 			if isAuthenticating then return end
 			isAuthenticating = true
-			if GAMEPAD_INPUT_TYPES[inputObject.UserInputType] then
-				if ANY_KEY_CODES[inputObject.KeyCode] and anyButtonDown[inputObject.KeyCode] == true then
-					SoundManager:Play('ButtonPress')
-					onAnyButtonPressed(inputObject.UserInputType)
-				end
+			if isActivationInput(inputObject)
+				and anyButtonDown[inputObject.UserInputType] == inputObject.KeyCode then
+				SoundManager:Play('ButtonPress')
+				onAnyButtonPressed(inputObject.UserInputType)
 			end
 			isAuthenticating = false
-			anyButtonDown[inputObject.KeyCode] = false
+			anyButtonDown[inputObject.UserInputType] = nil
 		end)
 	end
 

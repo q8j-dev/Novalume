@@ -909,6 +909,19 @@ void SceneUpdater::computeLightingPrepare()
             if (1)
             {
                 lgrid->setLightShadows(lighting->getGlobalShadows());
+                const float exposure = std::pow(2.0f,
+                    lighting->getExposureCompensation());
+                // Future/Unified authoring uses the modern physically-based
+                // local-light scale.  The legacy voxel light grid stores an
+                // eight-bit irradiance value and otherwise interprets the
+                // same Brightness values far too dimly (notably in all-local
+                // indoor places whose Ambient and global Brightness are 0).
+                // Calibrate those technologies at the grid boundary so
+                // Compatibility/Voxel places retain their historical look.
+                const float modernLocalLightScale =
+                    lighting->getTechnology() >= Lighting::TECHNOLOGY_SHADOW_MAP
+                        ? 2.5f : 1.0f;
+                lgrid->setLightExposure(exposure * modernLocalLightScale);
 
                 if (lighting->getGlobalShadows())
                 {

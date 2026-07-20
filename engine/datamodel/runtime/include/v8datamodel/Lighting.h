@@ -21,7 +21,8 @@ public:
 		TECHNOLOGY_COMPATIBILITY = 0,
 		TECHNOLOGY_VOXEL = 1,
 		TECHNOLOGY_SHADOW_MAP = 2,
-		TECHNOLOGY_FUTURE = 3
+		TECHNOLOGY_FUTURE = 3,
+		TECHNOLOGY_UNIFIED = 4
 	};
 
 private:
@@ -44,6 +45,10 @@ private:
 	bool globalShadows;
 	Technology technology;
 	float shadowSoftness;
+	float exposureCompensation;
+	float environmentDiffuseScale;
+	float environmentSpecularScale;
+	bool prioritizeLightingQuality;
 
 	bool outlines;
 
@@ -114,6 +119,14 @@ public:
 	void setTechnology(Technology value);
 	float getShadowSoftness() const { return shadowSoftness; }
 	void setShadowSoftness(float value);
+	float getExposureCompensation() const { return exposureCompensation; }
+	void setExposureCompensation(float value);
+	float getEnvironmentDiffuseScale() const { return environmentDiffuseScale; }
+	void setEnvironmentDiffuseScale(float value);
+	float getEnvironmentSpecularScale() const { return environmentSpecularScale; }
+	void setEnvironmentSpecularScale(float value);
+	bool getPrioritizeLightingQuality() const { return prioritizeLightingQuality; }
+	void setPrioritizeLightingQuality(bool value);
 
 	bool getOutlines() const { return outlines; }
 

@@ -4,9 +4,12 @@
 #include "V8DataModel/Workspace.h"
 #include "V8World/Assembly.h"
 #include "V8World/Motor6DJoint.h"
+#include "V8World/MotorJoint.h"
 #include "V8World/RotateJoint.h"
 #include "V8World/Primitive.h"
 
+#include <algorithm>
+#include <cmath>
 #include <limits>
 
 namespace RBX
@@ -14,11 +17,82 @@ namespace RBX
 
 const char* const sAnimationConstraint = "AnimationConstraint";
 const char* const sBallSocketConstraint = "BallSocketConstraint";
+const char* const sHingeConstraint = "HingeConstraint";
 const char* const sNoCollisionConstraint = "NoCollisionConstraint";
 const char* const sWrapTarget = "WrapTarget";
 const char* const sFaceControls = "FaceControls";
+const char* const sHumanoidDescription = "HumanoidDescription";
+
+namespace Reflection
+{
+template<>
+EnumDesc<HingeConstraint::ActuatorType>::EnumDesc()
+    : EnumDescriptor("ActuatorType")
+{
+    addPair(HingeConstraint::ACTUATOR_NONE, "None");
+    addPair(HingeConstraint::ACTUATOR_MOTOR, "Motor");
+    addPair(HingeConstraint::ACTUATOR_SERVO, "Servo");
+}
+}
 
 REFLECTION_BEGIN();
+static Reflection::PropDescriptor<HumanoidDescription, std::string>
+    humanoidDescriptionBackAccessory("BackAccessory", category_Appearance,
+        &HumanoidDescription::getBackAccessory,
+        &HumanoidDescription::setBackAccessory);
+static Reflection::PropDescriptor<HumanoidDescription, std::string>
+    humanoidDescriptionFaceAccessory("FaceAccessory", category_Appearance,
+        &HumanoidDescription::getFaceAccessory,
+        &HumanoidDescription::setFaceAccessory);
+static Reflection::PropDescriptor<HumanoidDescription, std::string>
+    humanoidDescriptionFrontAccessory("FrontAccessory", category_Appearance,
+        &HumanoidDescription::getFrontAccessory,
+        &HumanoidDescription::setFrontAccessory);
+static Reflection::PropDescriptor<HumanoidDescription, std::string>
+    humanoidDescriptionHairAccessory("HairAccessory", category_Appearance,
+        &HumanoidDescription::getHairAccessory,
+        &HumanoidDescription::setHairAccessory);
+static Reflection::PropDescriptor<HumanoidDescription, std::string>
+    humanoidDescriptionHatAccessory("HatAccessory", category_Appearance,
+        &HumanoidDescription::getHatAccessory,
+        &HumanoidDescription::setHatAccessory);
+static Reflection::PropDescriptor<HumanoidDescription, std::string>
+    humanoidDescriptionNeckAccessory("NeckAccessory", category_Appearance,
+        &HumanoidDescription::getNeckAccessory,
+        &HumanoidDescription::setNeckAccessory);
+static Reflection::PropDescriptor<HumanoidDescription, std::string>
+    humanoidDescriptionShouldersAccessory("ShouldersAccessory", category_Appearance,
+        &HumanoidDescription::getShouldersAccessory,
+        &HumanoidDescription::setShouldersAccessory);
+static Reflection::PropDescriptor<HumanoidDescription, std::string>
+    humanoidDescriptionWaistAccessory("WaistAccessory", category_Appearance,
+        &HumanoidDescription::getWaistAccessory,
+        &HumanoidDescription::setWaistAccessory);
+static Reflection::PropDescriptor<HumanoidDescription, float>
+    humanoidDescriptionBodyTypeScale("BodyTypeScale", category_Appearance,
+        &HumanoidDescription::getBodyTypeScale,
+        &HumanoidDescription::setBodyTypeScale);
+static Reflection::PropDescriptor<HumanoidDescription, float>
+    humanoidDescriptionDepthScale("DepthScale", category_Appearance,
+        &HumanoidDescription::getDepthScale,
+        &HumanoidDescription::setDepthScale);
+static Reflection::PropDescriptor<HumanoidDescription, float>
+    humanoidDescriptionHeadScale("HeadScale", category_Appearance,
+        &HumanoidDescription::getHeadScale,
+        &HumanoidDescription::setHeadScale);
+static Reflection::PropDescriptor<HumanoidDescription, float>
+    humanoidDescriptionHeightScale("HeightScale", category_Appearance,
+        &HumanoidDescription::getHeightScale,
+        &HumanoidDescription::setHeightScale);
+static Reflection::PropDescriptor<HumanoidDescription, float>
+    humanoidDescriptionProportionScale("ProportionScale", category_Appearance,
+        &HumanoidDescription::getProportionScale,
+        &HumanoidDescription::setProportionScale);
+static Reflection::PropDescriptor<HumanoidDescription, float>
+    humanoidDescriptionWidthScale("WidthScale", category_Appearance,
+        &HumanoidDescription::getWidthScale,
+        &HumanoidDescription::setWidthScale);
+
 static Reflection::RefPropDescriptor<AnimationConstraint, Attachment>
     animationAttachment0("Attachment0", category_Data,
         &AnimationConstraint::getAttachment0, &AnimationConstraint::setAttachment0);
@@ -91,6 +165,71 @@ static Reflection::PropDescriptor<BallSocketConstraint, BrickColor>
     ballColor("Color", category_Appearance,
         &BallSocketConstraint::getColor, &BallSocketConstraint::setColor);
 
+static Reflection::RefPropDescriptor<HingeConstraint, Attachment>
+    hingeAttachment0("Attachment0", category_Data,
+        &HingeConstraint::getAttachment0, &HingeConstraint::setAttachment0);
+static Reflection::RefPropDescriptor<HingeConstraint, Attachment>
+    hingeAttachment1("Attachment1", category_Data,
+        &HingeConstraint::getAttachment1, &HingeConstraint::setAttachment1);
+static Reflection::PropDescriptor<HingeConstraint, bool>
+    hingeEnabled("Enabled", category_Behavior,
+        &HingeConstraint::getEnabled, &HingeConstraint::setEnabled);
+static Reflection::EnumPropDescriptor<HingeConstraint, HingeConstraint::ActuatorType>
+    hingeActuatorType("ActuatorType", category_Behavior,
+        &HingeConstraint::getActuatorType, &HingeConstraint::setActuatorType);
+static Reflection::PropDescriptor<HingeConstraint, bool>
+    hingeLimitsEnabled("LimitsEnabled", category_Behavior,
+        &HingeConstraint::getLimitsEnabled, &HingeConstraint::setLimitsEnabled);
+static Reflection::PropDescriptor<HingeConstraint, float>
+    hingeLowerAngle("LowerAngle", category_Data,
+        &HingeConstraint::getLowerAngle, &HingeConstraint::setLowerAngle);
+static Reflection::PropDescriptor<HingeConstraint, float>
+    hingeUpperAngle("UpperAngle", category_Data,
+        &HingeConstraint::getUpperAngle, &HingeConstraint::setUpperAngle);
+static Reflection::PropDescriptor<HingeConstraint, float>
+    hingeTargetAngle("TargetAngle", category_Data,
+        &HingeConstraint::getTargetAngle, &HingeConstraint::setTargetAngle);
+static Reflection::PropDescriptor<HingeConstraint, float>
+    hingeAngularSpeed("AngularSpeed", category_Data,
+        &HingeConstraint::getAngularSpeed, &HingeConstraint::setAngularSpeed);
+static Reflection::PropDescriptor<HingeConstraint, float>
+    hingeAngularVelocity("AngularVelocity", category_Data,
+        &HingeConstraint::getAngularVelocity, &HingeConstraint::setAngularVelocity);
+static Reflection::PropDescriptor<HingeConstraint, float>
+    hingeAngularResponsiveness("AngularResponsiveness", category_Data,
+        &HingeConstraint::getAngularResponsiveness,
+        &HingeConstraint::setAngularResponsiveness);
+static Reflection::PropDescriptor<HingeConstraint, float>
+    hingeMotorMaxAcceleration("MotorMaxAcceleration", category_Data,
+        &HingeConstraint::getMotorMaxAcceleration,
+        &HingeConstraint::setMotorMaxAcceleration);
+static Reflection::PropDescriptor<HingeConstraint, float>
+    hingeMotorMaxTorque("MotorMaxTorque", category_Data,
+        &HingeConstraint::getMotorMaxTorque, &HingeConstraint::setMotorMaxTorque);
+static Reflection::PropDescriptor<HingeConstraint, float>
+    hingeServoMaxTorque("ServoMaxTorque", category_Data,
+        &HingeConstraint::getServoMaxTorque, &HingeConstraint::setServoMaxTorque);
+static Reflection::PropDescriptor<HingeConstraint, bool>
+    hingeSoftlock("SoftlockServoUponReachingTarget", category_Behavior,
+        &HingeConstraint::getSoftlockServoUponReachingTarget,
+        &HingeConstraint::setSoftlockServoUponReachingTarget);
+static Reflection::PropDescriptor<HingeConstraint, float>
+    hingeRestitution("Restitution", category_Data,
+        &HingeConstraint::getRestitution, &HingeConstraint::setRestitution);
+static Reflection::PropDescriptor<HingeConstraint, float>
+    hingeRadius("Radius", category_Appearance,
+        &HingeConstraint::getRadius, &HingeConstraint::setRadius);
+static Reflection::PropDescriptor<HingeConstraint, bool>
+    hingeVisible("Visible", category_Appearance,
+        &HingeConstraint::getVisible, &HingeConstraint::setVisible);
+static Reflection::PropDescriptor<HingeConstraint, BrickColor>
+    hingeColor("Color", category_Appearance,
+        &HingeConstraint::getColor, &HingeConstraint::setColor);
+static Reflection::PropDescriptor<HingeConstraint, float>
+    hingeCurrentAngle("CurrentAngle", category_Data,
+        &HingeConstraint::getCurrentAngle, NULL,
+        Reflection::PropertyDescriptor::UI);
+
 static Reflection::RefPropDescriptor<NoCollisionConstraint, PartInstance>
     noCollisionPart0("Part0", category_Data,
         &NoCollisionConstraint::getPart0, &NoCollisionConstraint::setPart0);
@@ -132,6 +271,80 @@ static Reflection::PropDescriptor<FaceControls, std::string>
         &FaceControls::setInternalOverrideFACSData,
         Reflection::PropertyDescriptor::STREAMING);
 REFLECTION_END();
+
+HumanoidDescription::HumanoidDescription()
+    : bodyTypeScale(0.0f)
+    , depthScale(1.0f)
+    , headScale(1.0f)
+    , heightScale(1.0f)
+    , proportionScale(0.0f)
+    , widthScale(1.0f)
+{
+    setName(sHumanoidDescription);
+}
+
+#define RBX_DEFINE_HUMANOID_DESCRIPTION_STRING_SETTER(Name, member, descriptor) \
+    void HumanoidDescription::set##Name(const std::string& value) \
+    { \
+        if (member != value) \
+        { \
+            member = value; \
+            raisePropertyChanged(descriptor); \
+        } \
+    }
+
+RBX_DEFINE_HUMANOID_DESCRIPTION_STRING_SETTER(BackAccessory, backAccessory,
+    humanoidDescriptionBackAccessory)
+RBX_DEFINE_HUMANOID_DESCRIPTION_STRING_SETTER(FaceAccessory, faceAccessory,
+    humanoidDescriptionFaceAccessory)
+RBX_DEFINE_HUMANOID_DESCRIPTION_STRING_SETTER(FrontAccessory, frontAccessory,
+    humanoidDescriptionFrontAccessory)
+RBX_DEFINE_HUMANOID_DESCRIPTION_STRING_SETTER(HairAccessory, hairAccessory,
+    humanoidDescriptionHairAccessory)
+RBX_DEFINE_HUMANOID_DESCRIPTION_STRING_SETTER(HatAccessory, hatAccessory,
+    humanoidDescriptionHatAccessory)
+RBX_DEFINE_HUMANOID_DESCRIPTION_STRING_SETTER(NeckAccessory, neckAccessory,
+    humanoidDescriptionNeckAccessory)
+RBX_DEFINE_HUMANOID_DESCRIPTION_STRING_SETTER(ShouldersAccessory,
+    shouldersAccessory, humanoidDescriptionShouldersAccessory)
+RBX_DEFINE_HUMANOID_DESCRIPTION_STRING_SETTER(WaistAccessory, waistAccessory,
+    humanoidDescriptionWaistAccessory)
+
+#undef RBX_DEFINE_HUMANOID_DESCRIPTION_STRING_SETTER
+
+namespace
+{
+float finiteAvatarScale(float value, float fallback, float minimum, float maximum)
+{
+    return std::isfinite(value) ? std::max(minimum, std::min(maximum, value)) : fallback;
+}
+}
+
+#define RBX_DEFINE_HUMANOID_DESCRIPTION_SCALE_SETTER(Name, member, descriptor, fallback, minimum, maximum) \
+    void HumanoidDescription::set##Name(float value) \
+    { \
+        value = finiteAvatarScale(value, fallback, minimum, maximum); \
+        if (member != value) \
+        { \
+            member = value; \
+            raisePropertyChanged(descriptor); \
+        } \
+    }
+
+RBX_DEFINE_HUMANOID_DESCRIPTION_SCALE_SETTER(BodyTypeScale, bodyTypeScale,
+    humanoidDescriptionBodyTypeScale, 0.0f, 0.0f, 1.0f)
+RBX_DEFINE_HUMANOID_DESCRIPTION_SCALE_SETTER(DepthScale, depthScale,
+    humanoidDescriptionDepthScale, 1.0f, 0.05f, 100.0f)
+RBX_DEFINE_HUMANOID_DESCRIPTION_SCALE_SETTER(HeadScale, headScale,
+    humanoidDescriptionHeadScale, 1.0f, 0.05f, 100.0f)
+RBX_DEFINE_HUMANOID_DESCRIPTION_SCALE_SETTER(HeightScale, heightScale,
+    humanoidDescriptionHeightScale, 1.0f, 0.05f, 100.0f)
+RBX_DEFINE_HUMANOID_DESCRIPTION_SCALE_SETTER(ProportionScale, proportionScale,
+    humanoidDescriptionProportionScale, 0.0f, 0.0f, 1.0f)
+RBX_DEFINE_HUMANOID_DESCRIPTION_SCALE_SETTER(WidthScale, widthScale,
+    humanoidDescriptionWidthScale, 1.0f, 0.05f, 100.0f)
+
+#undef RBX_DEFINE_HUMANOID_DESCRIPTION_SCALE_SETTER
 
 AnimationConstraint::AnimationConstraint()
     : Super(new Motor6DJoint())
@@ -353,6 +566,160 @@ void BallSocketConstraint::onAncestorChanged(const AncestorChanged& event)
 	Super::onAncestorChanged(event);
 	if (event.newParent)
 		configureJoint();
+}
+
+HingeConstraint::HingeConstraint()
+    : Super(new MotorJoint())
+    , enabled(true)
+    , actuatorType(ACTUATOR_NONE)
+    , limitsEnabled(false)
+    , lowerAngle(0.0f)
+    , upperAngle(45.0f)
+    , targetAngle(0.0f)
+    , angularSpeed(0.0f)
+    , angularVelocity(0.0f)
+    , angularResponsiveness(45.0f)
+    , motorMaxAcceleration(500000.0f)
+    , motorMaxTorque(0.0f)
+    , servoMaxTorque(0.0f)
+    , softlockServoUponReachingTarget(false)
+    , restitution(0.0f)
+    , radius(0.15f)
+    , visible(false)
+    , color()
+{
+    setName(sHingeConstraint);
+}
+
+PartInstance* HingeConstraint::findOwningPart(Attachment* attachment)
+{
+    for (Instance* parent = attachment ? attachment->getParent() : NULL;
+         parent; parent = parent->getParent())
+        if (PartInstance* part = Instance::fastDynamicCast<PartInstance>(parent))
+            return part;
+    return NULL;
+}
+
+static CoordinateFrame hingeFrameInPart(PartInstance* part, Attachment* attachment)
+{
+    CoordinateFrame frame = part->getCoordinateFrame().toObjectSpace(
+        attachment->getFrameInWorld());
+    const Matrix3& rotation = frame.rotation;
+    // Roblox HingeConstraint rotates around Attachment.Axis (local X), while
+    // the engine revolute joint uses local Z.  A cyclic basis permutation
+    // preserves handedness and maps the authored axis onto the joint axis.
+    Matrix3 jointRotation;
+    jointRotation.setColumn(0, rotation.column(1));
+    jointRotation.setColumn(1, rotation.column(2));
+    jointRotation.setColumn(2, rotation.column(0));
+    frame.rotation = jointRotation;
+    return frame;
+}
+
+void HingeConstraint::configureJoint()
+{
+    PartInstance* first = findOwningPart(getAttachment0());
+    PartInstance* second = findOwningPart(getAttachment1());
+    if (!enabled || !first || !second || first == second)
+    {
+        setPart0(NULL);
+        setPart1(NULL);
+        return;
+    }
+
+    setC0(hingeFrameInPart(first, getAttachment0()));
+    setC1(hingeFrameInPart(second, getAttachment1()));
+    setPart0(first);
+    setPart1(second);
+    updateActuator();
+}
+
+void HingeConstraint::updateActuator()
+{
+    MotorJoint* motor = static_cast<MotorJoint*>(getJoint());
+    if (!enabled || actuatorType == ACTUATOR_NONE)
+    {
+        motor->desiredAngle = motor->getCurrentAngle();
+        motor->maxVelocity = 0.0f;
+        return;
+    }
+
+    float desiredDegrees = targetAngle;
+    float speedDegrees = std::abs(angularSpeed);
+    if (actuatorType == ACTUATOR_MOTOR)
+    {
+        speedDegrees = std::abs(angularVelocity);
+        if (limitsEnabled)
+            desiredDegrees = angularVelocity >= 0.0f ? upperAngle : lowerAngle;
+        else
+            desiredDegrees = angularVelocity >= 0.0f ? 1000000.0f : -1000000.0f;
+    }
+    else if (limitsEnabled)
+    {
+        desiredDegrees = std::max(lowerAngle,
+            std::min(upperAngle, desiredDegrees));
+    }
+
+    motor->desiredAngle = Math::degreesToRadians(desiredDegrees);
+    motor->maxVelocity = Math::degreesToRadians(speedDegrees) / 60.0f;
+}
+
+void HingeConstraint::setAttachment0(Attachment* value)
+{ if (attachment0.lock().get() != value) { attachment0 = shared_from(value); raisePropertyChanged(hingeAttachment0); configureJoint(); } }
+void HingeConstraint::setAttachment1(Attachment* value)
+{ if (attachment1.lock().get() != value) { attachment1 = shared_from(value); raisePropertyChanged(hingeAttachment1); configureJoint(); } }
+void HingeConstraint::setEnabled(bool value)
+{ if (enabled != value) { enabled = value; raisePropertyChanged(hingeEnabled); configureJoint(); } }
+void HingeConstraint::setActuatorType(ActuatorType value)
+{ if (actuatorType != value) { actuatorType = value; raisePropertyChanged(hingeActuatorType); updateActuator(); } }
+void HingeConstraint::setLimitsEnabled(bool value)
+{ if (limitsEnabled != value) { limitsEnabled = value; raisePropertyChanged(hingeLimitsEnabled); updateActuator(); } }
+void HingeConstraint::setLowerAngle(float value)
+{ if (lowerAngle != value) { lowerAngle = value; raisePropertyChanged(hingeLowerAngle); updateActuator(); } }
+void HingeConstraint::setUpperAngle(float value)
+{ if (upperAngle != value) { upperAngle = value; raisePropertyChanged(hingeUpperAngle); updateActuator(); } }
+void HingeConstraint::setTargetAngle(float value)
+{ if (targetAngle != value) { targetAngle = value; raisePropertyChanged(hingeTargetAngle); updateActuator(); } }
+void HingeConstraint::setAngularSpeed(float value)
+{ if (angularSpeed != value) { angularSpeed = value; raisePropertyChanged(hingeAngularSpeed); updateActuator(); } }
+void HingeConstraint::setAngularVelocity(float value)
+{ if (angularVelocity != value) { angularVelocity = value; raisePropertyChanged(hingeAngularVelocity); updateActuator(); } }
+void HingeConstraint::setAngularResponsiveness(float value)
+{ RBX_SET_SIMPLE(angularResponsiveness, value, hingeAngularResponsiveness); }
+void HingeConstraint::setMotorMaxAcceleration(float value)
+{ RBX_SET_SIMPLE(motorMaxAcceleration, value, hingeMotorMaxAcceleration); }
+void HingeConstraint::setMotorMaxTorque(float value)
+{ RBX_SET_SIMPLE(motorMaxTorque, value, hingeMotorMaxTorque); }
+void HingeConstraint::setServoMaxTorque(float value)
+{ RBX_SET_SIMPLE(servoMaxTorque, value, hingeServoMaxTorque); }
+void HingeConstraint::setSoftlockServoUponReachingTarget(bool value)
+{ RBX_SET_SIMPLE(softlockServoUponReachingTarget, value, hingeSoftlock); }
+void HingeConstraint::setRestitution(float value)
+{ RBX_SET_SIMPLE(restitution, value, hingeRestitution); }
+void HingeConstraint::setRadius(float value)
+{ RBX_SET_SIMPLE(radius, value, hingeRadius); }
+void HingeConstraint::setVisible(bool value)
+{ RBX_SET_SIMPLE(visible, value, hingeVisible); }
+void HingeConstraint::setColor(BrickColor value)
+{ RBX_SET_SIMPLE(color, value, hingeColor); }
+
+float HingeConstraint::getCurrentAngle() const
+{
+    return Math::radiansToDegrees(
+        static_cast<const MotorJoint*>(
+            const_cast<HingeConstraint*>(this)->getJoint())->getCurrentAngle());
+}
+
+void HingeConstraint::refreshJoint()
+{
+    configureJoint();
+}
+
+void HingeConstraint::onAncestorChanged(const AncestorChanged& event)
+{
+    Super::onAncestorChanged(event);
+    if (event.newParent)
+        configureJoint();
 }
 
 NoCollisionConstraint::NoCollisionConstraint() : enabled(true)

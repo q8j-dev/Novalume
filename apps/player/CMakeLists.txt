@@ -295,6 +295,13 @@ set_property(TARGET RobloxPlayerLegacy APPEND PROPERTY LINK_DEPENDS
     "${CMAKE_BINARY_DIR}/generated/shaders/shaders_bgfx-metal.pack"
     "${CMAKE_BINARY_DIR}/generated/shaders/shaders.json")
 
+file(GLOB_RECURSE RBX_DURANGO_LAUNCHER_FILES CONFIGURE_DEPENDS
+    "${CMAKE_SOURCE_DIR}/PlatformContent/durango/scripts/ui/*"
+    "${CMAKE_SOURCE_DIR}/PlatformContent/durango/textures/ui/*"
+    "${CMAKE_SOURCE_DIR}/PlatformContent/durango/sounds/ui/*")
+set_property(TARGET RobloxPlayer APPEND PROPERTY LINK_DEPENDS
+    ${RBX_DURANGO_LAUNCHER_FILES})
+
 add_custom_command(TARGET RobloxPlayer POST_BUILD
     COMMAND "${CMAKE_COMMAND}" -E copy_directory
         "${CMAKE_SOURCE_DIR}/content"
@@ -302,6 +309,15 @@ add_custom_command(TARGET RobloxPlayer POST_BUILD
     COMMAND "${CMAKE_COMMAND}" -E copy_directory
         "${CMAKE_SOURCE_DIR}/PlatformContent/pc"
         "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/PlatformContent/pc"
+    COMMAND "${CMAKE_COMMAND}" -E copy_directory
+        "${CMAKE_SOURCE_DIR}/PlatformContent/durango/scripts/ui"
+        "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/launcher/content/scripts"
+    COMMAND "${CMAKE_COMMAND}" -E copy_directory
+        "${CMAKE_SOURCE_DIR}/PlatformContent/durango/textures/ui"
+        "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/launcher/content/textures/ui"
+    COMMAND "${CMAKE_COMMAND}" -E copy_directory
+        "${CMAKE_SOURCE_DIR}/PlatformContent/durango/sounds/ui"
+        "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/launcher/content/sounds/ui"
     COMMAND "${CMAKE_COMMAND}" -E make_directory
         "$<TARGET_BUNDLE_CONTENT_DIR:RobloxPlayer>/Resources/places"
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different

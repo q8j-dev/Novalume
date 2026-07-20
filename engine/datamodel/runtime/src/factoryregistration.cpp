@@ -139,6 +139,7 @@
 #include "V8DataModel/WorldRoot.h"
 #include "V8DataModel/WorldModel.h"
 #include "V8DataModel/ViewportFrame.h"
+#include "V8DataModel/PostEffect.h"
 #include "V8DataModel/VideoFrame.h"
 #include "Util/Content.h"
 #include "Util/Font.h"
@@ -244,6 +245,7 @@
 
 #include "audio/Sound.h"
 #include "audio/SoundService.h"
+#include "audio/SoundGroups.h"
 #include "audio/AudioGraph.h"
 #include "util/UDim.h"
 #include "util/Faces.h"
@@ -390,6 +392,7 @@ RBX_REGISTER_CLASS(Hat);
 RBX_REGISTER_CLASS(Accessory);
 RBX_REGISTER_CLASS(Hint);
 RBX_REGISTER_CLASS(Humanoid);
+RBX_REGISTER_CLASS(HumanoidDescription);
 RBX_REGISTER_CLASS(StatusInstance);
 RBX_REGISTER_CLASS(RunService);
 RBX_REGISTER_CLASS(LegacyHopperService);
@@ -597,6 +600,7 @@ RBX_REGISTER_CLASS(Attachment);
 RBX_REGISTER_CLASS(Bone);
 RBX_REGISTER_CLASS(AnimationConstraint);
 RBX_REGISTER_CLASS(BallSocketConstraint);
+RBX_REGISTER_CLASS(HingeConstraint);
 RBX_REGISTER_CLASS(NoCollisionConstraint);
 RBX_REGISTER_CLASS(WrapTarget);
 RBX_REGISTER_CLASS(FaceControls);
@@ -719,6 +723,12 @@ RBX_REGISTER_CLASS(Light);
 RBX_REGISTER_CLASS(PointLight);
 RBX_REGISTER_CLASS(SpotLight);
 RBX_REGISTER_CLASS(SurfaceLight);
+RBX_REGISTER_CLASS(PostEffect);
+RBX_REGISTER_CLASS(BloomEffect);
+RBX_REGISTER_CLASS(SunRaysEffect);
+RBX_REGISTER_CLASS(DepthOfFieldEffect);
+RBX_REGISTER_CLASS(ColorCorrectionEffect);
+RBX_REGISTER_CLASS(Atmosphere);
 RBX_REGISTER_CLASS(LoginService);
 RBX_REGISTER_CLASS(ReplicatedStorage);
 RBX_REGISTER_CLASS(RobloxReplicatedStorage);
@@ -739,6 +749,8 @@ RBX_REGISTER_CLASS(UnionOperation);
 RBX_REGISTER_CLASS(NegateOperation);
 RBX_REGISTER_CLASS(Soundscape::SoundService);
 RBX_REGISTER_CLASS(Soundscape::SoundChannel);
+RBX_REGISTER_CLASS(Soundscape::SoundGroup);
+RBX_REGISTER_CLASS(Soundscape::EqualizerSoundEffect);
 RBX_REGISTER_CLASS(Soundscape::Wire);
 RBX_REGISTER_CLASS(Soundscape::AudioDeviceOutput);
 RBX_REGISTER_CLASS(Soundscape::AudioFader);
@@ -799,6 +811,7 @@ FactoryRegistrator::FactoryRegistrator()
 
 // Enum types
 RBX_REGISTER_ENUM(Enums::RunContext);
+RBX_REGISTER_ENUM(HingeConstraint::ActuatorType);
 RBX_REGISTER_ENUM(ChangeHistoryService::RuntimeUndoBehavior);
 RBX_REGISTER_ENUM(ProximityPrompt::Style);
 RBX_REGISTER_ENUM(ProximityPrompt::Exclusivity);
@@ -845,6 +858,7 @@ RBX_REGISTER_ENUM(Enums::AssetType);
 RBX_REGISTER_ENUM(Enums::AccessoryType);
 RBX_REGISTER_ENUM(FontWeight);
 RBX_REGISTER_ENUM(FontStyle);
+RBX_REGISTER_ENUM(ResamplerMode);
 RBX_REGISTER_ENUM(ScreenInsetsType);
 RBX_REGISTER_ENUM(SafeAreaCompatMode);
 RBX_REGISTER_ENUM(GuiObject::TweenEasingStyle);

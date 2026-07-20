@@ -690,7 +690,8 @@ bool RunService::isStudio()
 #if defined(RBX_STUDIO_BUILD)
 		return true;
 #else
-		return false;
+		const DataModel* dataModel = DataModel::get(this);
+		return dataModel && dataModel->isStudio();
 #endif
 	}
 	throw std::runtime_error("RunService::IsStudio() is not yet enabled");

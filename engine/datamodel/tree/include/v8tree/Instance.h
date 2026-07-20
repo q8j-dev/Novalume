@@ -10,6 +10,7 @@
 
 #include "rbx/Countable.h"
 #include "Util/Guid.h"
+#include "Util/BinaryString.h"
 
 #include <vector>
 #include <map>
@@ -139,6 +140,8 @@ public:
 	rbx::signal<void()> destroyingSignal;
 	rbx::signal<void(std::string)> attributeChangedSignal;
 	std::map<std::string, Reflection::Variant> attributes;
+	BinaryString serializedAttributes;
+	bool serializedAttributesDirty = false;
 	std::set<std::string> styleManagedProperties;
 	
 	struct ThreadWaitingForChild
@@ -329,6 +332,10 @@ public:
 	Reflection::Variant getAttribute(std::string attribute);
 	shared_ptr<const Reflection::ValueTable> getAttributes();
 	void setAttribute(std::string attribute, Reflection::Variant value);
+	BinaryString getSerializedAttributes() const;
+	void setSerializedAttributes(const BinaryString& value);
+	static Reflection::PropDescriptor<Instance, BinaryString>
+		propAttributesSerialize;
 	void resetPropertyToDefault(std::string propertyName);
 	Reflection::Variant getStyled(std::string propertyName, std::string selector = std::string());
 	int getAttributeChangedSignal(lua_State* state);

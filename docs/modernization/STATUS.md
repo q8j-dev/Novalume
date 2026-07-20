@@ -19,6 +19,18 @@ the final return; it is not replaced or treated as accepted while deferred.
   authored only as `q8j-dev`; no co-author attribution was added. Cross-platform
   Actions are intentionally not claimed complete until their native build
   configurations pass rather than publishing decorative or always-green jobs.
+- Promoted the authentic Durango AppHome corpus into the packaged Player's
+  default no-place launcher path. Its original background, logo, navigation,
+  pooled UI sounds, and looping music are mounted from PlatformContent rather
+  than recreated. The desktop adapter now accepts Return, Space, or a primary
+  click at the engagement screen while preserving every Xbox gamepad binding,
+  uses the local Player identity outside Xbox instead of calling unavailable
+  console account APIs, keeps the only background present in the supplied
+  corpus instead of requesting three nonexistent images, and leaves the mouse
+  visible on non-Xbox hosts. A signed 480-frame Metal proof enters HomePane by
+  keyboard, verifies all three authentic background-music voices, releases the
+  bitmap font atlas before renderer shutdown, and exits cleanly. Source changes
+  in the launcher corpus now invalidate the bundle packaging step.
 - Connected the replacement miniaudio engine to the packaged Player's normal
   `Sound`/`SoundChannel`/`SoundService` DataModel path. Headless verification
   now disables only the physical output device while retaining the same active
@@ -935,6 +947,36 @@ the final return; it is not replaced or treated as accepted while deferred.
   package with their legitimate place-owned Scriptable camera, 14/14 meshes,
   authentic wave, 300 frames, and 66 final draws. Strict deep code-signature
   verification passes, and no build or Player process remains running.
+
+## Selected 2026 place asset/render checkpoint (2026-07-19)
+
+- Fixed the current Studio `Color3uint8` XML wire alias. Modern BasePart colors
+  now deserialize through the public `Color` reflection property instead of
+  silently retaining the old constructor gray; the selected fixture contains
+  600 guarded warm/yellow parts after load.
+- Added the current non-creatable `PostEffect` base and authentic
+  `BloomEffect`, `SunRaysEffect`, `DepthOfFieldEffect`,
+  `ColorCorrectionEffect`, and `Atmosphere` reflection classes with bounded
+  properties and Lighting ownership. Lighting descendant changes now reach the
+  real scene configuration, and authored Bloom enables the existing owned
+  GBuffer/glow path rather than a fixture-specific substitute.
+- Fixed the package-backed texture delivery boundary. `ContentProvider`
+  correctly returned embedded asset IDs as local file streams, but
+  `TextureManager` discarded that stream and forwarded only HTTP memory bodies,
+  making every embedded PNG fail after a nominally successful request. The
+  callback now accepts both delivery forms. The selected RBXLP consequently
+  loads its exact 560x440 `rbxassetid://3255302920` wallpaper and visibly
+  renders the authored repeating pattern, ceiling grid, carpet, warm part
+  colors, Neon fixtures, and 2026 place geometry.
+- The guarded selected-place inventory is now 4,117 instances, 780 parts, 16
+  scripts, 2,381 Texture instances, 2,356 exact wallpaper references across
+  the authored side faces, 600 warm parts, three post effects, and one
+  Atmosphere. The packaged Metal proof completed 180 frames with 115 final
+  draws, a loaded 560x440 wallpaper, 2,608,437 warm pixels, 303,284 bright
+  pixels, 550 color buckets, 3.22 ms p50 and 3.99 ms p95 frame time, then shut
+  down with no Player or build process left running. The reviewed capture is
+  `/tmp/backrooms-wallpaper-fixed.png`; generated proof artifacts remain out of
+  Git.
 
 ## Not yet acceptance evidence
 

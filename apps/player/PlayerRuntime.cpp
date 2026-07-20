@@ -21,6 +21,7 @@
 #include "GfxRender/RenderView.h"
 #include "GfxRender/ViewportRenderer.h"
 #include "Script/LuaSettings.h"
+#include "Script/Script.h"
 #include "Script/ScriptContext.h"
 #include "Util/Http.h"
 #include "Util/Profiling.h"
@@ -80,8 +81,10 @@
 #include "V8DataModel/PhysicsSettings.h"
 #include "V8DataModel/PartInstance.h"
 #include "V8DataModel/PartCookie.h"
+#include "V8DataModel/PostEffect.h"
 #include "V8DataModel/PlayerGui.h"
 #include "V8DataModel/ScreenGui.h"
+#include "V8DataModel/ServerScriptService.h"
 #include "V8DataModel/Frame.h"
 #include "V8DataModel/Sky.h"
 #include "V8DataModel/TextChatService.h"
@@ -300,10 +303,11 @@ void configureLighting(RBX::Graphics::VisualEngine& visualEngine,
                        RBX::Lighting& lighting)
 {
     const G3D::LightingParameters& sky = lighting.getSkyParameters();
-    const RBX::Color3 ambient = lighting.getGlobalAmbient();
+    const float exposure = std::pow(2.0f, lighting.getExposureCompensation());
+    const RBX::Color3 ambient = lighting.getGlobalAmbient() * exposure;
     const RBX::Vector3 sunDirection = -sky.lightDirection.unit();
-    const RBX::Color3 sunColor = sky.lightColor *
-        G3D::clamp(lighting.getGlobalBrightness(), 0.05f, 5.0f);
+    const RBX::Color3 sunColor = sky.lightColor * exposure *
+        G3D::clamp(lighting.getGlobalBrightness(), 0.0f, 5.0f);
 
     RBX::Graphics::SceneManager* scene = visualEngine.getSceneManager();
     scene->setLighting(ambient, sunDirection, sunColor.min(RBX::Color3::white()),
@@ -311,6 +315,11 @@ void configureLighting(RBX::Graphics::VisualEngine& visualEngine,
     const bool usesShadowMap = lighting.getGlobalShadows() &&
         lighting.getTechnology() >= RBX::Lighting::TECHNOLOGY_SHADOW_MAP;
     scene->setShadowMapConfiguration(usesShadowMap, lighting.getShadowSoftness());
+    RBX::BloomEffect* bloom = lighting.findFirstChildOfType<RBX::BloomEffect>();
+    scene->setBloomConfiguration(bloom && bloom->getEnabled(),
+        bloom ? bloom->getIntensity() : 0.0f,
+        bloom ? bloom->getSize() : 0.0f,
+        bloom ? bloom->getThreshold() : 0.0f);
     scene->setFog(lighting.getFogColor(), lighting.getFogStart(), lighting.getFogEnd());
     RBX::Graphics::Sky* renderSky = scene->getSky();
     if (lighting.sky) {
@@ -466,6 +475,7 @@ struct PlayerRuntime::State final {
     std::unique_ptr<RBX::CommonVerbs> commonVerbs;
     std::unique_ptr<RBX::Graphics::VisualEngine> visualEngine;
     rbx::signals::scoped_connection scriptErrorConnection;
+    rbx::signals::scoped_connection serverScriptErrorConnection;
     rbx::signals::scoped_connection cameraFrameConnection;
     rbx::signals::scoped_connection inputUpdatedConnection;
     rbx::signals::scoped_connection offlineChatMountConnection;
@@ -505,6 +515,7 @@ struct PlayerRuntime::State final {
     bool usesR15Character = false;
     AvatarRigVariant avatarRig = AvatarRigVariant::R6;
     bool usesCurrentInExperienceUi = false;
+    bool usesDurangoLauncher = false;
     bool audioOutputDisabled = false;
     bool verifiesViewportRendering = false;
     bool verifiesVideoRendering = false;
@@ -522,6 +533,7 @@ struct PlayerRuntime::State final {
     bool verifiesSkybox = false;
     bool verifiesAudio = false;
     bool verifiesPlaceAudio = false;
+    bool verifiesPlaceVisual = false;
     boost::shared_ptr<RBX::BasicPartInstance> verificationAudioEmitter;
     boost::shared_ptr<RBX::Soundscape::SoundChannel> verificationSound;
     boost::shared_ptr<RBX::Soundscape::AudioEmitter> verificationGraphEmitter;
@@ -585,6 +597,7 @@ struct PlayerRuntime::State final {
     std::size_t placeAudioSampleCount = 0;
     RBX::Graphics::TextureRef baseplateSurfaceTexture;
     RBX::Graphics::TextureRef spawnSurfaceTexture;
+    RBX::Graphics::TextureRef wallpaperTexture;
     std::vector<std::uint8_t> shadowEnabledPixels;
     std::vector<std::uint8_t> shadowDisabledPixels;
     std::size_t shadowDarkenedPixels = 0;
@@ -614,12 +627,30 @@ struct PlayerRuntime::State final {
 
     ~State()
     {
+        // Script jobs may still report errors while a constructor failure is
+        // unwinding. Disconnect the callback that captures PlayerRuntime
+        // before either DataModel begins asynchronous shutdown.
+        scriptErrorConnection.disconnect();
+        serverScriptErrorConnection.disconnect();
         offlineChatMountConnection.disconnect();
         lightingChangedConnection.disconnect();
         if (!verificationCapturePath.empty())
         {
             std::error_code error;
             std::filesystem::remove(verificationCapturePath, error);
+        }
+        // TextService shares the renderer-owned typesetters so scripts can
+        // perform the same measurements as the draw path.  Release that
+        // service-side ownership before VisualEngine destroys its texture
+        // manager; otherwise a launcher that rendered bitmap shell text keeps
+        // fonts.dds alive through device shutdown.
+        if (dataModel)
+        {
+            RBX::DataModel::LegacyLock lock(
+                dataModel.get(), RBX::DataModelJob::Write);
+            if (RBX::TextService* textService =
+                    RBX::ServiceProvider::find<RBX::TextService>(dataModel.get()))
+                textService->clearTypesetters();
         }
         visualEngine.reset();
         commonVerbs.reset();
@@ -649,7 +680,8 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
     const std::filesystem::path& placePath, unsigned int renderWidth,
     unsigned int renderHeight, unsigned int logicalWidth,
     unsigned int logicalHeight, bool disableAudioOutput,
-    bool useCurrentInExperienceUi, AvatarRigVariant avatarRig,
+    bool useCurrentInExperienceUi, bool useDurangoLauncher,
+    AvatarRigVariant avatarRig,
     bool verifyViewportRendering,
     const std::filesystem::path& videoVerificationPath,
     bool verifyPeoplePage,
@@ -664,7 +696,8 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
     bool verifySkybox,
     bool verifyAudio,
     bool verifyPlaceAudio,
-    bool verifyTextRendering)
+    bool verifyTextRendering,
+    bool verifyPlaceVisual)
     : state(std::make_unique<State>())
 {
     if (!device || renderWidth == 0 || renderHeight == 0 ||
@@ -706,6 +739,25 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
     RBX::Soundscape::SoundService::outputDeviceDisabled = disableAudioOutput;
     const std::string contentPath = (resourceRoot / "content").string();
     RBX::ContentProvider::setAssetFolder(contentPath.c_str());
+    if (useDurangoLauncher)
+    {
+        const std::filesystem::path launcherContent =
+            resourceRoot / "launcher" / "content";
+        if (!std::filesystem::is_regular_file(
+                launcherContent / "scripts" / "XStarterScript.lua") ||
+            !std::filesystem::is_regular_file(
+                launcherContent / "textures" / "ui" / "Shell" /
+                "Background" / "Home_screen_01.png") ||
+            !std::filesystem::is_regular_file(
+                launcherContent / "sounds" / "ui" / "Shell" /
+                "RobloxMusic.ogg"))
+            throw std::runtime_error(
+                "packaged authentic Durango launcher resources are incomplete");
+        RBX::ContentProvider::addAssetOverlay(
+            launcherContent.string().c_str(), "durango-launcher", 1000);
+        RBX::ScriptContext::setAdminScriptPath(
+            (launcherContent / "scripts").string());
+    }
     const std::string avatarRuntimePath =
         (resourceRoot / "overlays" / "avatar-runtime" / "content").string();
     if (std::filesystem::is_directory(avatarRuntimePath))
@@ -718,6 +770,10 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
             studioRuntimePath.c_str(), "studio-runtime", 115);
     const std::filesystem::path materializedPackageRoot =
         placePath.parent_path().parent_path();
+    const bool localSoloMode =
+        placePath.parent_path().filename() == "place" &&
+        std::filesystem::is_regular_file(
+            materializedPackageRoot / "launch" / "local-solo");
     if (placePath.parent_path().filename() == "place" &&
         std::filesystem::is_directory(materializedPackageRoot / "assets") &&
         std::filesystem::is_regular_file(materializedPackageRoot / "manifest.json"))
@@ -752,6 +808,7 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
     state->verifiesSkybox = verifySkybox;
     state->verifiesAudio = verifyAudio;
     state->verifiesPlaceAudio = verifyPlaceAudio;
+    state->verifiesPlaceVisual = verifyPlaceVisual;
     if (verifyShadowMap) {
         state->renderSettings->setEnableFRM(false);
         state->renderSettings->setQualityLevel(RBX::CRenderSettings::QualityLevel15);
@@ -760,9 +817,11 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
     state->usesR15Character = useR15Character;
     state->avatarRig = avatarRig;
     state->usesCurrentInExperienceUi = useCurrentInExperienceUi;
+    state->usesDurangoLauncher = useDurangoLauncher;
     state->audioOutputDisabled = disableAudioOutput;
     state->dataModel = RBX::DataModel::createDataModel(
         true, new RBX::NullVerb(nullptr, ""), false);
+    state->dataModel->setIsStudio(localSoloMode);
 
     // Local files run as an actual loopback server/client pair.  A single
     // DataModel's historical Play Solo role is useful in Studio, but it makes
@@ -774,6 +833,7 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
     {
         state->serverDataModel = RBX::DataModel::createDataModel(
             true, new RBX::NullVerb(nullptr, ""), false);
+        state->serverDataModel->setIsStudio(localSoloMode);
         {
             RBX::Security::Impersonator permission(RBX::Security::COM);
             RBX::DataModel::LegacyLock serverLock(
@@ -782,8 +842,20 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
                 state->serverDataModel.get())->setBaseUrl("https://www.roblox.com/");
             RBX::ServiceProvider::create<RBX::ProximityPromptService>(
                 state->serverDataModel.get());
-            RBX::ServiceProvider::create<RBX::ScriptContext>(
-                state->serverDataModel.get());
+            RBX::ScriptContext* serverScriptContext =
+                RBX::ServiceProvider::create<RBX::ScriptContext>(
+                    state->serverDataModel.get());
+            state->serverScriptErrorConnection =
+                serverScriptContext->errorSignal.connect(
+                    [](std::string message, std::string stack,
+                       boost::shared_ptr<RBX::Instance> script) {
+                        std::cerr << "server script error "
+                                  << (script ? script->getFullName() : "<unknown>")
+                                  << ": " << message;
+                        if (!stack.empty())
+                            std::cerr << '\n' << stack;
+                        std::cerr << '\n';
+                    });
             state->serverDataModel->setAvatarRigVariant(dataModelRig);
 
             std::ifstream input(placePath, std::ios::binary);
@@ -814,6 +886,28 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
                 RBX::ServiceProvider::create<RBX::Network::Server>(
                     state->serverDataModel.get());
             state->localServer->start(0, 0);
+            // Execute the package bootstrap before RunService releases authored
+            // server Scripts. This gives an offline replacement for a live
+            // elevator handoff the same chance to observe CharacterAdded that
+            // the upstream matchmaking server has in production.
+            const std::filesystem::path localSoloBootstrap =
+                materializedPackageRoot / "launch" / "local-solo.lua";
+            if (localSoloMode && std::filesystem::is_regular_file(localSoloBootstrap)) {
+                std::ifstream bootstrapInput(localSoloBootstrap, std::ios::binary);
+                if (!bootstrapInput)
+                    throw std::runtime_error(
+                        "could not read local-solo server bootstrap");
+                std::string bootstrapSource(
+                    (std::istreambuf_iterator<char>(bootstrapInput)),
+                    std::istreambuf_iterator<char>());
+                if (bootstrapSource.empty() || bootstrapSource.size() > 1024U * 1024U)
+                    throw std::runtime_error(
+                        "local-solo server bootstrap is empty, unreadable, or too large");
+                serverScriptContext->executeInNewThread(
+                    RBX::Security::GameScript_,
+                    RBX::ProtectedString::fromTrustedSource(bootstrapSource),
+                    "RBXLPLocalSoloBootstrap");
+            }
             RBX::ServiceProvider::create<RBX::RunService>(
                 state->serverDataModel.get())->run();
         }
@@ -893,14 +987,15 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
             // ready. CoreScripts remain runnable while ScriptsDisabled is set.
             RBX::ScriptContext::propScriptsDisabled.setValue(
                 joinScriptContext, true);
+            State* runtimeState = state.get();
             state->scriptErrorConnection = joinScriptContext->errorSignal.connect(
-                [this](std::string message, std::string stack,
+                [runtimeState](std::string message, std::string stack,
                    boost::shared_ptr<RBX::Instance> script) {
-                    if (state->verifiesReport &&
+                    if (runtimeState->verifiesReport &&
                         (message.find("AbuseReport") != std::string::npos ||
                          message.find("OverlayNativeInput") != std::string::npos ||
                          message.find("CoreVoiceManager") != std::string::npos))
-                        state->reportFlowScriptError = true;
+                        runtimeState->reportFlowScriptError = true;
                     std::cerr << "script error "
                               << (script ? script->getFullName() : "<unknown>")
                               << ": " << message;
@@ -1008,6 +1103,62 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
             throw std::runtime_error(
                 "timed out receiving the local authoritative DataModel and character");
 
+        // The loaded marker can precede dynamically cloned StarterGui and
+        // StarterPlayer descendants on a large join. Starting LocalScripts at
+        // that boundary lets a parent execute before its ModuleScript children
+        // arrive. Keep game scripts held until the authoritative server has no
+        // new instances queued and the client has consumed the resulting
+        // packets for a short quiescent interval.
+        const auto replicationDrainDeadline =
+            std::chrono::steady_clock::now() + std::chrono::seconds(60);
+        auto quietSince = std::chrono::steady_clock::now();
+        bool initialInstancesDrained = false;
+        while (!failed && std::chrono::steady_clock::now() < replicationDrainDeadline)
+        {
+            bool processedPacket = false;
+            {
+                RBX::DataModel::LegacyLock clientLock(
+                    state->dataModel.get(), RBX::DataModelJob::Write);
+                if (RBX::Network::ClientReplicator* replicator =
+                        state->localClient->findFirstChildOfType<
+                            RBX::Network::ClientReplicator>())
+                {
+                    while (replicator->processNextIncomingPacket())
+                        processedPacket = true;
+                    if (!replicator->getLastPacketError().empty())
+                    {
+                        failureReason = replicator->getLastPacketError();
+                        failed = true;
+                    }
+                }
+            }
+            bool serverHasPendingInstances = true;
+            {
+                RBX::DataModel::LegacyLock serverLock(
+                    state->serverDataModel.get(), RBX::DataModelJob::Read);
+                if (RBX::Network::ServerReplicator* replicator =
+                        state->localServer->findFirstChildOfType<
+                            RBX::Network::ServerReplicator>())
+                    serverHasPendingInstances = replicator->hasPendingNewInstances();
+            }
+            if (processedPacket || serverHasPendingInstances)
+                quietSince = std::chrono::steady_clock::now();
+            else if (std::chrono::steady_clock::now() - quietSince >=
+                     std::chrono::milliseconds(250))
+            {
+                initialInstancesDrained = true;
+                break;
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+        if (failed)
+            throw std::runtime_error(
+                "local DataModel connection failed while draining instances: " +
+                failureReason);
+        if (!initialInstancesDrained)
+            throw std::runtime_error(
+                "timed out draining initial replicated instances before starting scripts");
+
         {
             RBX::DataModel::LegacyLock clientLock(
                 state->dataModel.get(), RBX::DataModelJob::Write);
@@ -1019,6 +1170,24 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
                     "local join lost its ScriptContext before releasing game scripts");
             RBX::ScriptContext::propScriptsDisabled.setValue(
                 joinedScriptContext, false);
+            const std::filesystem::path clientBootstrap =
+                materializedPackageRoot / "launch" / "client-local-solo.lua";
+            if (localSoloMode && std::filesystem::is_regular_file(clientBootstrap)) {
+                std::ifstream bootstrapInput(clientBootstrap, std::ios::binary);
+                if (!bootstrapInput)
+                    throw std::runtime_error(
+                        "could not read local-solo client bootstrap");
+                std::string bootstrapSource(
+                    (std::istreambuf_iterator<char>(bootstrapInput)),
+                    std::istreambuf_iterator<char>());
+                if (bootstrapSource.empty() || bootstrapSource.size() > 1024U * 1024U)
+                    throw std::runtime_error(
+                        "local-solo client bootstrap is empty, unreadable, or too large");
+                joinedScriptContext->executeInNewThread(
+                    RBX::Security::GameScript_,
+                    RBX::ProtectedString::fromTrustedSource(bootstrapSource),
+                    "RBXLPLocalSoloClientBootstrap");
+            }
         }
     }
 
@@ -1118,6 +1287,24 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
             localPlayer->loadCharacter(true, "");
         if (!localPlayer->getCharacter())
             throw std::runtime_error("local server did not replicate a player character");
+        if (verifyPlaceVisual) {
+            RBX::ModelInstance* character = localPlayer->getCharacter();
+            RBX::PartInstance* root = character->getPrimaryPartSetByUser();
+            if (!root)
+                root = character->findFirstChildByName("HumanoidRootPart")
+                    ? RBX::Instance::fastDynamicCast<RBX::PartInstance>(
+                        character->findFirstChildByName("HumanoidRootPart"))
+                    : nullptr;
+            if (!root)
+                throw std::runtime_error(
+                    "selected-place visual proof requires a character root");
+            // The authored spawn is an intentionally unlit edge corridor.
+            // Place the proof camera in the nearest authored fluorescent bay
+            // so the acceptance image exercises wallpaper, carpet, local
+            // PointLights, Neon fixtures, and BloomEffect together.
+            character->translateBy(RBX::Vector3(-82.5f, 3.0f, 102.0f) -
+                root->getCoordinateFrame().translation);
+        }
         if (verifyRespawn)
             state->initialRespawnCharacter = localPlayer->getCharacter();
 
@@ -1129,7 +1316,8 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
         // scene so the proof measures rendered avatar geometry rather than
         // content-request timing.
         const bool verifiesHeadlessMovement =
-            disableAudioOutput && !verifySurfaceTextures && !verifyShadowMap &&
+            disableAudioOutput && !useDurangoLauncher &&
+            !verifySurfaceTextures && !verifyShadowMap &&
             !verifySkybox;
         if (useR15Character && verifiesHeadlessMovement) {
             RBX::MeshContentProvider* meshContentProvider =
@@ -1901,7 +2089,8 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
                 throw std::runtime_error(
                     "Chrome product policy did not disable the Music integration");
 		}
-		state->dataModel->startCoreScripts(true);
+        state->dataModel->startCoreScripts(
+            true, useDurangoLauncher ? "XStarterScript" : std::string());
 		if (!useCurrentInExperienceUi)
 			localPlayer->setChatAvailabilityStatus("Enabled");
 
@@ -2034,6 +2223,18 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
                 RBX::TextService::FromTextFont(font),
                 state->visualEngine->getTypesetter(font));
         }
+    }
+    if (state->verifiesPlaceVisual) {
+        const auto fontRenders = [this](RBX::Text::Font font) {
+            const RBX::Vector2 bounds = state->visualEngine->getTypesetter(font)
+                ->measure("Backrooms", 24.0f, RBX::Vector2(300.0f, 80.0f));
+            return bounds.x > 0.0f && bounds.y > 0.0f;
+        };
+        if (!fontRenders(RBX::Text::FONT_FONDAMENTO) ||
+            !fontRenders(RBX::Text::FONT_MERRIWEATHER) ||
+            !fontRenders(RBX::Text::FONT_SPECIALELITE))
+            throw std::runtime_error(
+                "selected place custom font resources did not resolve to renderable faces");
     }
     if (state->verifiesTextRendering) {
         RBX::CoreGuiService* coreGui =
@@ -2170,6 +2371,26 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
         state->spawnSurfaceTexture = state->visualEngine->getTextureManager()->load(
             spawnTexture->getTexture(), RBX::Graphics::TextureManager::Fallback_BlackTransparent,
             spawnTexture->getFullName() + ".Texture verification");
+    }
+    if (state->verifiesPlaceVisual) {
+        RBX::DecalTexture* wallpaper = nullptr;
+        boost::shared_ptr<const RBX::Instances> descendants = workspace->getDescendants();
+        for (const boost::shared_ptr<RBX::Instance>& descendant : *descendants) {
+            RBX::DecalTexture* texture =
+                RBX::Instance::fastDynamicCast<RBX::DecalTexture>(descendant.get());
+            if (texture && texture->getTexture().toString() ==
+                    "rbxassetid://3255302920") {
+                wallpaper = texture;
+                break;
+            }
+        }
+        if (!wallpaper)
+            throw std::runtime_error(
+                "selected place is missing its authored Backrooms wallpaper Texture");
+        state->wallpaperTexture = state->visualEngine->getTextureManager()->load(
+            wallpaper->getTexture(),
+            RBX::Graphics::TextureManager::Fallback_BlackTransparent,
+            wallpaper->getFullName() + ".Texture verification");
     }
     RBX::Camera* camera = workspace->getCamera();
     state->visualEngine->setCamera(*camera, camera->getCameraFocus().translation);
@@ -3078,6 +3299,7 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
         }
         std::cout << "character children=" << (character ? character->numChildren() : 0U);
         RBX::PartInstance* verificationPart = nullptr;
+        RBX::PartInstance* characterHead = nullptr;
         RBX::MeshContentProvider* meshContentProvider =
             RBX::ServiceProvider::find<RBX::MeshContentProvider>(state->dataModel.get());
         std::size_t meshPartCount = 0;
@@ -3110,6 +3332,7 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
                               << " p=" << part->getCoordinateFrame().translation
                               << " a=" << part->alpha() << ']';
                     if (part->getName() == "Head") {
+                        characterHead = part;
                         std::cout << " cookie=" << part->getCookie();
                         for (std::size_t nested = 0; nested < part->numChildren(); ++nested) {
                             if (RBX::Decal* decal =
@@ -3127,6 +3350,19 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
             }
         }
         std::cout << '\n';
+        if (scriptableCamera && state->verifiesMovement) {
+            if (!characterHead)
+                throw std::runtime_error(
+                    "place-owned first-person camera has no character Head");
+            const float cameraHeadDistance =
+                (cameraFrame.translation -
+                    characterHead->getCoordinateFrame().translation).magnitude();
+            std::cout << "first-person camera head-distance="
+                      << cameraHeadDistance << '\n';
+            if (!std::isfinite(cameraHeadDistance) || cameraHeadDistance > 3.0f)
+                throw std::runtime_error(
+                    "place-owned Scriptable camera is not attached to the local player view");
+        }
         if (state->usesR15Character)
             std::cout << "R15 MeshParts=" << meshPartCount
                       << " loaded=" << loadedMeshPartCount
@@ -3815,6 +4051,8 @@ void PlayerRuntime::writeFrameProof(const std::filesystem::path& outputPath)
     std::size_t bucketCount = 0;
     std::size_t skyPixels = 0;
     std::size_t litSurfacePixels = 0;
+    std::size_t warmPlacePixels = 0;
+    std::size_t brightPlacePixels = 0;
     std::size_t viewportColoredPixels = 0;
     std::size_t viewportDarkPixels = 0;
     std::array<bool, 32768> viewportColorBuckets{};
@@ -3899,7 +4137,17 @@ void PlayerRuntime::writeFrameProof(const std::filesystem::path& outputPath)
         skyPixels += blue > red + 24U && blue > green + 16U;
         const std::uint8_t lowest = std::min({red, green, blue});
         const std::uint8_t highest = std::max({red, green, blue});
-        litSurfacePixels += lowest > 48U && highest - lowest < 64U;
+        // A real modern place can be intentionally monochromatic or strongly
+        // color-graded (the selected Backrooms fixture is warm yellow). Treat
+        // any non-crushed surface as lit; color variety is independently
+        // guarded by the bucket count above.
+        litSurfacePixels += highest > 48U &&
+            static_cast<unsigned int>(red) + green + blue > 120U;
+        if (state->verifiesPlaceVisual) {
+            warmPlacePixels += red > blue + 18U && green > blue + 8U &&
+                red > 55U;
+            brightPlacePixels += lowest > 180U;
+        }
         if (state->verifiesSkybox) {
             const std::size_t pixelIndex = index / 4U;
             const unsigned int x = static_cast<unsigned int>(pixelIndex % state->width);
@@ -4020,7 +4268,16 @@ void PlayerRuntime::writeFrameProof(const std::filesystem::path& outputPath)
     const std::size_t pixelCount = pixels.size() / 4U;
     if (bucketCount < 32U || litSurfacePixels < pixelCount / 10U) {
         throw std::runtime_error(
-            "render proof is missing the textured, lit baseplate scene");
+            "render proof is missing a textured, lit 3D scene");
+    }
+    if (state->verifiesPlaceVisual) {
+        std::cout << "selected place visual warm=" << warmPlacePixels
+                  << " bright=" << brightPlacePixels
+                  << " buckets=" << bucketCount << '\n';
+        if (warmPlacePixels < pixelCount / 8U ||
+            brightPlacePixels < pixelCount / 10000U)
+            throw std::runtime_error(
+                "selected place is missing its warm materials or fluorescent lighting");
     }
     if (state->verifiesSurfaceTextures) {
         std::cout << "surface texture pixels Baseplate grid-contrast="
@@ -4032,6 +4289,18 @@ void PlayerRuntime::writeFrameProof(const std::filesystem::path& outputPath)
         if (spawnTextureDarkPixels < pixelCount / 3000U)
             throw std::runtime_error(
                 "SpawnLocation texture is loaded but not visibly rendered");
+    }
+    if (state->verifiesPlaceVisual) {
+        const RBX::Graphics::ImageInfo& wallpaperInfo =
+            state->wallpaperTexture.getInfo();
+        std::cout << "selected-place wallpaper status="
+                  << state->wallpaperTexture.getStatus() << " size="
+                  << wallpaperInfo.width << 'x' << wallpaperInfo.height << '\n';
+        if (state->wallpaperTexture.getStatus() !=
+                RBX::Graphics::TextureRef::Status_Loaded ||
+            wallpaperInfo.width != 560 || wallpaperInfo.height != 440)
+            throw std::runtime_error(
+                "selected place authored wallpaper did not load from its embedded asset");
     }
     if (state->verifiesSkybox) {
         std::cout << "skybox pixels samples=" << skyboxSamplePixels
@@ -4098,6 +4367,85 @@ void PlayerRuntime::writeFrameProof(const std::filesystem::path& outputPath)
 
 void PlayerRuntime::finishVerification()
 {
+    if (state->verifiesPlaceVisual)
+    {
+        RBX::DataModel::LegacyLock lock(
+            state->dataModel.get(), RBX::DataModelJob::Write);
+        unsigned int fondamentoLabels = 0;
+        unsigned int merriweatherLabels = 0;
+        unsigned int specialEliteLabels = 0;
+        const auto inspectFontFace = [&](const RBX::Font& face,
+                                         RBX::TextService::Font resolvedFont) {
+            const std::string& family = face.getFamily();
+            if (family.find("Fondamento.json") != std::string::npos) {
+                ++fondamentoLabels;
+                if (resolvedFont != RBX::TextService::FONT_FONDAMENTO)
+                    throw std::runtime_error(
+                        "selected place Fondamento FontFace fell back to Source Sans");
+            } else if (family.find("Merriweather.json") != std::string::npos) {
+                ++merriweatherLabels;
+                if (resolvedFont != RBX::TextService::FONT_MERRIWEATHER)
+                    throw std::runtime_error(
+                        "selected place Merriweather FontFace fell back to Source Sans");
+            } else if (family.find("SpecialElite.json") != std::string::npos) {
+                ++specialEliteLabels;
+                if (resolvedFont != RBX::TextService::FONT_SPECIALELITE)
+                    throw std::runtime_error(
+                        "selected place Special Elite FontFace fell back to Source Sans");
+            }
+        };
+        boost::shared_ptr<const RBX::Instances> descendants =
+            state->dataModel->getDescendants();
+        for (const boost::shared_ptr<RBX::Instance>& descendant : *descendants) {
+            if (RBX::TextLabel* label =
+                    RBX::Instance::fastDynamicCast<RBX::TextLabel>(descendant.get()))
+                inspectFontFace(label->getFontFace(), label->getFont());
+            else if (RBX::TextBox* textBox =
+                    RBX::Instance::fastDynamicCast<RBX::TextBox>(descendant.get()))
+                inspectFontFace(textBox->getFontFace(), textBox->getFont());
+        }
+        std::cout << "selected-place fonts Fondamento=" << fondamentoLabels
+                  << " Merriweather=" << merriweatherLabels
+                  << " SpecialElite=" << specialEliteLabels << '\n';
+        if (fondamentoLabels < 2 || merriweatherLabels < 1 ||
+            specialEliteLabels < 3)
+            throw std::runtime_error(
+                "selected place FontFace values did not survive network replication");
+    }
+    if (state->usesDurangoLauncher)
+    {
+        RBX::DataModel::LegacyLock lock(
+            state->dataModel.get(), RBX::DataModelJob::Write);
+        RBX::CoreGuiService* coreGui =
+            RBX::ServiceProvider::find<RBX::CoreGuiService>(
+                state->dataModel.get());
+        RBX::Instance* robloxGui = coreGui
+            ? coreGui->findFirstChildByName("RobloxGui") : nullptr;
+        RBX::Instance* appHome = robloxGui
+            ? robloxGui->findFirstChildByName("AppHomeContainer") : nullptr;
+        RBX::Instance* engagement = appHome
+            ? appHome->findFirstChildByNameRecursive("EngagementScreen") : nullptr;
+        RBX::Instance* logo = engagement
+            ? engagement->findFirstChildByNameRecursive("RobloxLogo") : nullptr;
+        RBX::Instance* hub = appHome
+            ? appHome->findFirstChildByNameRecursive("HubContainer") : nullptr;
+        RBX::Instance* homePane = hub
+            ? hub->findFirstChildByNameRecursive("HomePane") : nullptr;
+        RBX::Soundscape::SoundService* soundService =
+            RBX::ServiceProvider::find<RBX::Soundscape::SoundService>(
+                state->dataModel.get());
+        RBX::Instance* shellSounds = soundService
+            ? soundService->findFirstChildByName("AppShellSounds") : nullptr;
+        RBX::Instance* backgroundLoop = shellSounds
+            ? shellSounds->findFirstChildByName("BackgroundLoop") : nullptr;
+        if (!appHome || !engagement || !logo || !hub || !homePane || !shellSounds ||
+            !backgroundLoop || backgroundLoop->numChildren() != 3)
+            throw std::runtime_error(
+                "authentic Durango launcher did not complete desktop activation into its shell");
+        std::cout << "Durango launcher mounted AppHome, engagement logo, and "
+                  << backgroundLoop->numChildren()
+                  << " pooled background-music voices; keyboard activation opened HomePane\n";
+    }
     if (state->verifiesAudio) {
         RBX::DataModel::LegacyLock lock(
             state->dataModel.get(), RBX::DataModelJob::Write);

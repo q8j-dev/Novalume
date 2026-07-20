@@ -14,6 +14,7 @@ local Players = game:GetService('Players')
 local HttpService = game:GetService('HttpService')
 local PlatformService = nil
 pcall(function() PlatformService = game:GetService('PlatformService') end)
+local UserInputService = game:GetService('UserInputService')
 
 local AccountManager = require(Modules:FindFirstChild('AccountManager'))
 local Http = require(Modules:FindFirstChild('Http'))
@@ -71,7 +72,8 @@ function UserData:Initialize()
 
 	currentUserData = {}
 
-	if UserSettings().GameSettings:InStudioMode() then
+	if UserSettings().GameSettings:InStudioMode()
+		or UserInputService:GetPlatform() ~= Enum.Platform.XBoxOne then
 		local localPlayer = getLocalPlayer()
 		currentUserData["Gamertag"] = "InStudioNoGamertag"
 		currentUserData["RbxUid"] = localPlayer.userId

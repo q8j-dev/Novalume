@@ -221,6 +221,8 @@ void Animator::onStepped(const Stepped& event)
 	float gameTime = getGameTime();
 	for(std::list<shared_ptr<AnimationTrackState> >::iterator iter = activeAnimations.begin(); iter != activeAnimations.end();) {
 		if(!(*iter)->getKeyframeSequence() || (*iter)->isStopped(gameTime)) {
+			if (shared_ptr<AnimationTrack> track = (*iter)->getAnimationTrack())
+				track->fireEnded();
 			activeAnimations.erase(iter++);
 			continue;
 		}

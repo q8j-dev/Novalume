@@ -28,7 +28,7 @@
 
 LOGGROUP(Graphics)
 
-FASTFLAGVARIABLE(GlowEnabled, false)
+FASTFLAGVARIABLE(GlowEnabled, true)
 
 FASTFLAG(RenderVR)
 
@@ -136,6 +136,7 @@ public:
 
     bool valid() { return data.get() != NULL; }
     float getGlowIntensity() { return glowStrength; }
+    void setGlowIntensity(float value) { glowStrength = value; }
 
 	void update(unsigned width, unsigned height, bool gBufferExists)
 	{
@@ -406,7 +407,13 @@ private:
 
         Device* device = visualEngine->getDevice();
 
-        data->intermediateTex = device->createTexture(Texture::Type_2D, Texture::Format_RGBA8, width, height, 1, 1, Texture::Usage_Static);
+        // This texture is the destination of copyFramebuffer before it is
+        // sampled by ImageProcessFS.  Metal requires framebuffer-copy
+        // resources to carry renderbuffer usage; Usage_Static happened to work
+        // on the legacy GL/D3D paths but is not copy-compatible on Metal.
+        data->intermediateTex = device->createTexture(Texture::Type_2D,
+            Texture::Format_RGBA8, width, height, 1, 1,
+            Texture::Usage_Renderbuffer);
 
         data->width = width;
         data->height = height;
@@ -537,6 +544,7 @@ SceneManager::SceneManager(VisualEngine* visualEngine)
 , shadowMapEnabled(true)
 , shadowMapSoftness(0.5f)
 , shadowCascadeCount(0)
+, bloomEnabled(false)
 , gbufferError(false)
 , msaaError(false)
 , postProcessSettings(PostProcessSettings())
@@ -687,7 +695,7 @@ void SceneManager::renderBegin(DeviceContext* context, const RenderCamera& camer
 	visualEngine->getEmitterSharedState()->flush();
 
 	// Update glow targets if we need them
-	if (FFlag::GlowEnabled)
+	if (bloomEnabled)
     {
         glow->update(viewWidth, viewHeight, gbuffer.get() != NULL);
         globalShaderData.FadeDistance_GlowFactor.w = glow->valid() ? 1 : glow->getGlowIntensity();
@@ -809,7 +817,8 @@ void SceneManager::renderView(DeviceContext* context, Framebuffer* mainFramebuff
     renderObjects(context, renderQueue->getGroup(RenderQueue::Id_TransparentCasters), RenderQueueGroup::Sort_Distance, stats->passScene, "Id_TransparentCasters");
     restoreShadows(context, shadowValues);
 
-	if (FFlag::GlowEnabled && glow->valid() && gbuffer && renderQueue->getFeatures() & RenderQueue::Features_Glow)
+	if (bloomEnabled && glow->valid() && gbuffer &&
+		(renderQueue->getFeatures() & RenderQueue::Features_Glow))
 	{
         RBXPROFILER_SCOPE("Render", "Glow");
 		RBXPROFILER_SCOPE("GPU", "Glow");
@@ -1022,6 +1031,18 @@ void SceneManager::setShadowMapConfiguration(bool enabled, float softness)
     shadowMapSoftness = G3D::clamp(softness, 0.0f, 1.0f);
 }
 
+void SceneManager::setBloomConfiguration(bool enabled, float intensity,
+    float size, float threshold)
+{
+    bloomEnabled = enabled && intensity > 0 && size > 0;
+    // The owned legacy bloom path already uses a quarter-resolution,
+    // multi-pass Gaussian with the same 24-pixel default footprint. Preserve
+    // the authored intensity directly; size and threshold still participate in
+    // enablement and are retained by the DataModel for backend refinements.
+    glow->setGlowIntensity(G3D::clamp(intensity, 0.0f, 10.0f));
+    (void)threshold;
+}
+
 void SceneManager::setPostProcess(float brightness, float contrast, float grayscaleLevel, float blurIntensity, const Color3& tintColor)
 {
     postProcessSettings.brightness = brightness;
@@ -1035,6 +1056,18 @@ void SceneManager::updateMSAA(unsigned width, unsigned height)
 {
 	if (msaaError)
 		return;
+	const bool imageProcessing = postProcessSettings.brightness != 0 ||
+		postProcessSettings.contrast != 0 ||
+		postProcessSettings.grayscaleLevel != 0 ||
+		postProcessSettings.tintColor != Color3::white();
+	// The legacy post-process pass needs a sampleable single-sample scene
+	// target.  Resolve through GBuffer below instead of rendering directly into
+	// an MSAA target that cannot be copied on Metal.
+	if (imageProcessing)
+	{
+		msaa.reset();
+		return;
+	}
 	if (device->getCaps().maxSamples <= 1)
 		return;
 
@@ -1076,7 +1109,11 @@ void SceneManager::updateGBuffer(unsigned width, unsigned height)
     }
 
     FrameRateManager* frm = visualEngine->getFrameRateManager();
-    if (!frm->getGBufferSetting())
+    const bool imageProcessing = postProcessSettings.brightness != 0 ||
+        postProcessSettings.contrast != 0 ||
+        postProcessSettings.grayscaleLevel != 0 ||
+        postProcessSettings.tintColor != Color3::white();
+    if (!frm->getGBufferSetting() && !bloomEnabled && !imageProcessing)
     {
         // gbuffer is not required, kill it and bail out
 		gbuffer.reset();

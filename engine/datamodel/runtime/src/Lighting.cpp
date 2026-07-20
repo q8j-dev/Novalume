@@ -1,6 +1,7 @@
 
 #include "v8datamodel/lighting.h"
 #include "v8datamodel/sky.h"
+#include "v8datamodel/PostEffect.h"
 
 #include "Util/RobloxGoogleAnalytics.h"
 
@@ -20,6 +21,7 @@ EnumDesc<Lighting::Technology>::EnumDesc()
 	addPair(Lighting::TECHNOLOGY_VOXEL, "Voxel");
 	addPair(Lighting::TECHNOLOGY_SHADOW_MAP, "ShadowMap");
 	addPair(Lighting::TECHNOLOGY_FUTURE, "Future");
+	addPair(Lighting::TECHNOLOGY_UNIFIED, "Unified");
 }
 
 template<>
@@ -60,6 +62,10 @@ static Reflection::PropDescriptor<Lighting, float> desc_FogEnd("FogEnd", "Fog", 
 static Reflection::PropDescriptor<Lighting, bool> desc_GlobalShadows("GlobalShadows", category_Appearance, &Lighting::getGlobalShadows, &Lighting::setGlobalShadows);
 static Reflection::EnumPropDescriptor<Lighting, Lighting::Technology> desc_Technology("Technology", category_Appearance, &Lighting::getTechnology, &Lighting::setTechnology);
 static Reflection::PropDescriptor<Lighting, float> desc_ShadowSoftness("ShadowSoftness", category_Appearance, &Lighting::getShadowSoftness, &Lighting::setShadowSoftness);
+static Reflection::PropDescriptor<Lighting, float> desc_ExposureCompensation("ExposureCompensation", category_Appearance, &Lighting::getExposureCompensation, &Lighting::setExposureCompensation);
+static Reflection::PropDescriptor<Lighting, float> desc_EnvironmentDiffuseScale("EnvironmentDiffuseScale", category_Appearance, &Lighting::getEnvironmentDiffuseScale, &Lighting::setEnvironmentDiffuseScale);
+static Reflection::PropDescriptor<Lighting, float> desc_EnvironmentSpecularScale("EnvironmentSpecularScale", category_Appearance, &Lighting::getEnvironmentSpecularScale, &Lighting::setEnvironmentSpecularScale);
+static Reflection::PropDescriptor<Lighting, bool> desc_PrioritizeLightingQuality("PrioritizeLightingQuality", category_Appearance, &Lighting::getPrioritizeLightingQuality, &Lighting::setPrioritizeLightingQuality);
 
 Reflection::BoundProp<float> Lighting::desc_GlobalBrightness("Brightness", category_Appearance, &Lighting::globalBrightness, &Lighting::onPropChanged);
 Reflection::BoundProp<G3D::Color3> Lighting::desc_TopColorShift("ColorShift_Top", category_Appearance, &Lighting::topColorShift, &Lighting::onPropChanged);
@@ -93,6 +99,10 @@ Lighting::Lighting(void)
 ,globalShadows(false)
 ,technology(TECHNOLOGY_COMPATIBILITY)
 ,shadowSoftness(0.5f)
+,exposureCompensation(0.0f)
+,environmentDiffuseScale(1.0f)
+,environmentSpecularScale(1.0f)
+,prioritizeLightingQuality(false)
 ,globalOutdoorAmbient(G3D::Color3(0.5,0.5,0.5))
 ,outlines(true)
 {
@@ -197,7 +207,9 @@ void Lighting::setGeographicLatitude(float value)
 
 bool Lighting::askAddChild(const Instance* instance) const
 {
-	return Instance::fastDynamicCast<Sky>(instance)!=0;
+	return Instance::fastDynamicCast<Sky>(instance) != 0 ||
+		Instance::fastDynamicCast<PostEffect>(instance) != 0 ||
+		Instance::fastDynamicCast<Atmosphere>(instance) != 0;
 }
 
 void Lighting::fireLightingChanged(bool skyboxChanged)
@@ -264,6 +276,49 @@ void Lighting::setShadowSoftness(float value)
 	}
 }
 
+void Lighting::setExposureCompensation(float value)
+{
+	value = G3D::clamp(value, -3.0f, 3.0f);
+	if (value != exposureCompensation)
+	{
+		exposureCompensation = value;
+		this->raisePropertyChanged(desc_ExposureCompensation);
+		fireLightingChanged(false);
+	}
+}
+
+void Lighting::setEnvironmentDiffuseScale(float value)
+{
+	value = G3D::clamp(value, 0.0f, 1.0f);
+	if (value != environmentDiffuseScale)
+	{
+		environmentDiffuseScale = value;
+		this->raisePropertyChanged(desc_EnvironmentDiffuseScale);
+		fireLightingChanged(false);
+	}
+}
+
+void Lighting::setEnvironmentSpecularScale(float value)
+{
+	value = G3D::clamp(value, 0.0f, 1.0f);
+	if (value != environmentSpecularScale)
+	{
+		environmentSpecularScale = value;
+		this->raisePropertyChanged(desc_EnvironmentSpecularScale);
+		fireLightingChanged(false);
+	}
+}
+
+void Lighting::setPrioritizeLightingQuality(bool value)
+{
+	if (value != prioritizeLightingQuality)
+	{
+		prioritizeLightingQuality = value;
+		this->raisePropertyChanged(desc_PrioritizeLightingQuality);
+		fireLightingChanged(false);
+	}
+}
+
 
 void Lighting::setFogColor(const G3D::Color3& value)
 {
@@ -325,6 +380,11 @@ void Lighting::onChildRemoving(Instance* child)
 		sky.reset();
 		fireLightingChanged(true);
 	}
+	else if (Instance::fastDynamicCast<PostEffect>(child) ||
+		Instance::fastDynamicCast<Atmosphere>(child))
+	{
+		fireLightingChanged(false);
+	}
 	Super::onChildRemoving(child);
 }
 
@@ -336,6 +396,11 @@ void Lighting::onChildAdded(Instance* child)
 		this->sky = shared_from(sky);
 		fireLightingChanged(true);
 	}
+	else if (Instance::fastDynamicCast<PostEffect>(child) ||
+		Instance::fastDynamicCast<Atmosphere>(child))
+	{
+		fireLightingChanged(false);
+	}
 }
 
 void Lighting::onChildChanged(Instance* instance, const PropertyChanged& event)
@@ -343,4 +408,7 @@ void Lighting::onChildChanged(Instance* instance, const PropertyChanged& event)
 	Super::onChildChanged(instance, event);
 	if (sky.get()==instance)
 		fireLightingChanged(true);
+	else if (Instance::fastDynamicCast<PostEffect>(instance) ||
+		Instance::fastDynamicCast<Atmosphere>(instance))
+		fireLightingChanged(false);
 }

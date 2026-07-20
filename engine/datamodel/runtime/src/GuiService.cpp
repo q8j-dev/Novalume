@@ -89,7 +89,8 @@ namespace RBX
 
 	static Reflection::BoundFuncDesc<GuiService, void()> func_toggleFullscreen(&GuiService::toggleFullscreen, "ToggleFullscreen", Security::RobloxScript);
 
-	static Reflection::BoundFuncDesc<GuiService, bool()> func_isTenFootInterface(&GuiService::isTenFootInterface, "IsTenFootInterface", Security::RobloxScript);
+	static Reflection::BoundFuncDesc<GuiService, bool()> func_isTenFootInterface(
+		&GuiService::isTenFootInterface, "IsTenFootInterface", Security::None);
 
 	static Reflection::BoundFuncDesc<GuiService, void(std::string, shared_ptr<Instance>)> func_addSelectionGroup(&GuiService::addSelectionGroup, "AddSelectionParent", "selectionName", "selectionParent", Security::None);
 	static Reflection::BoundFuncDesc<GuiService, void(std::string, shared_ptr<const Reflection::Tuple>)> func_addSelectionGroupTuple(&GuiService::addSelectionGroup, "AddSelectionTuple", "selectionName", "selections", Security::None);

@@ -30,6 +30,7 @@
 #include "V8DataModel/Hopper.h"
 #include "V8DataModel/InsertService.h"
 #include "V8DataModel/Modelinstance.h"
+#include "V8DataModel/ModernAvatar.h"
 #include "V8DataModel/PlayerGui.h"
 #include "V8DataModel/SafeChat.h"
 #include "V8DataModel/Stats.h"
@@ -152,6 +153,10 @@ static Reflection::BoundYieldFuncDesc<Players, int(std::string)> func_getUserIdF
 static Reflection::BoundYieldFuncDesc<Players, std::string(int)> func_getNameFromUserId(&Players::getNameFromUserId, "GetNameFromUserIdAsync", "userId", Security::None);
 static Reflection::BoundYieldFuncDesc<Players, shared_ptr<Instance>(int)> func_getFriends(&Players::getFriends, "GetFriendsAsync", "userId", Security::None);
 static Reflection::BoundYieldFuncDesc<Players, shared_ptr<Instance>(int)> func_getCharacterAppearance(&Players::getCharacterAppearance, "GetCharacterAppearanceAsync", "userId", Security::None);
+static Reflection::BoundYieldFuncDesc<Players, shared_ptr<Instance>(int)>
+    func_getHumanoidDescriptionFromUserId(
+        &Players::getHumanoidDescriptionFromUserId,
+        "GetHumanoidDescriptionFromUserId", "userId", Security::None);
 static Reflection::BoundFuncDesc<Players, shared_ptr<Instance>(int)> func_getPlayerByUserId(&Players::getPlayerInstanceByID, "GetPlayerByUserId", "userId", Security::None);
 
 Reflection::RemoteEventDesc<Players, void(int)> Players::event_requestCloudEditKick(
@@ -172,6 +177,40 @@ MemHashConfigs Players::goldMemHashes;
 boost::mutex Players::goldMemHashesMutex;
 
 namespace {
+	void finishLocalCharacterAppearanceLoad(
+		AsyncHttpQueue::RequestResult result,
+		shared_ptr<Instances> instances,
+		shared_ptr<std::exception> exception,
+		boost::function<void (shared_ptr<Instance>)> resumeFunction,
+		boost::function<void (std::string)> errorFunction)
+	{
+		if (result != AsyncHttpQueue::Succeeded || !instances || instances->size() != 1)
+		{
+			const std::string detail = exception ? exception->what() :
+				"the packaged R15 character asset did not contain exactly one root";
+			errorFunction(format(
+				"Players:GetCharacterAppearanceAsync() could not load the local character appearance: %s",
+				detail.c_str()));
+			return;
+		}
+
+		shared_ptr<ModelInstance> model =
+			Instance::fastSharedDynamicCast<ModelInstance>(instances->front());
+		if (!model)
+		{
+			errorFunction(
+				"Players:GetCharacterAppearanceAsync() packaged R15 character asset root is not a Model");
+			return;
+		}
+
+		// Local-solo sessions deliberately have no authenticated avatar endpoint.
+		// Return the same authentic packaged R15 model used by Player::LoadCharacter,
+		// rather than making a production request or fabricating appearance objects.
+		// Callers that only need a snapshot may parent or inspect this detached model;
+		// Player::LoadCharacter independently loads its own instance of the asset.
+		resumeFunction(model);
+	}
+
 	shared_ptr<RBX::Network::PacketBuffer> buildBasicChatBitStream(
 			const Instance* sender, const Instance* receiver, unsigned char chatType) {
 		// serialize our data, changing the message to the filtered message
@@ -414,22 +453,60 @@ void Players::makeAccoutrementRequests(std::string *response, std::exception *er
 
 void Players::getCharacterAppearance(int userId, boost::function<void (shared_ptr<Instance>)> resumeFunction, boost::function<void (std::string)> errorFunction)
 {
-	if (!DFFlag::GetCharacterAppearanceEnabled)
-	{
-		errorFunction("Players:GetCharacterAppearanceAsync() is not yet enabled!");
-		return;
-	}
-
 	if (userId <= 0)
 	{
 		errorFunction("Players:GetCharacterAppearanceAsync() got negative userId");
 		return;
 	}
-	std::string characterAppearance = format("%sAsset/CharacterFetch.ashx?userId=%d", ServiceProvider::create<ContentProvider>(this)->getBaseUrl().c_str(), userId);
+
+	DataModel* dataModel = DataModel::get(this);
+	ContentProvider* contentProvider = ServiceProvider::create<ContentProvider>(this);
+	if (dataModel && dataModel->isStudio() && dataModel->getPlaceID() == 0)
+	{
+		contentProvider->loadContent(
+			ContentId::fromAssets("avatar/characterR15.rbxm"),
+			ContentProvider::PRIORITY_DEFAULT,
+			boost::bind(&finishLocalCharacterAppearanceLoad, _1, _2, _3,
+				resumeFunction, errorFunction),
+			AsyncHttpQueue::AsyncWrite);
+		return;
+	}
+
+	if (!DFFlag::GetCharacterAppearanceEnabled)
+	{
+		errorFunction("Players:GetCharacterAppearanceAsync() is not yet enabled!");
+		return;
+	}
+	std::string characterAppearance = format("%sAsset/CharacterFetch.ashx?userId=%d", contentProvider->getBaseUrl().c_str(), userId);
 
 	shared_ptr<ModelInstance> model = ModelInstance::createInstance();
 	weak_ptr<DataModel> dm(shared_from(Instance::fastDynamicCast<DataModel>(this->getRootAncestor())));
 	RBX::Http(characterAppearance).get(boost::bind(&makeAccoutrementRequests, _1, _2, boost::weak_ptr<DataModel>(dm), model, resumeFunction, errorFunction));	
+}
+
+void Players::getHumanoidDescriptionFromUserId(int userId,
+	boost::function<void (shared_ptr<Instance>)> resumeFunction,
+	boost::function<void (std::string)> errorFunction)
+{
+	if (userId <= 0)
+	{
+		errorFunction("Players:GetHumanoidDescriptionFromUserId() got invalid userId");
+		return;
+	}
+
+	DataModel* dataModel = DataModel::get(this);
+	if (!dataModel || !dataModel->isStudio() || dataModel->getPlaceID() != 0)
+	{
+		errorFunction(
+			"Players:GetHumanoidDescriptionFromUserId() requires the avatar service outside local-solo sessions");
+		return;
+	}
+
+	// The packaged local player uses the unmodified supplied Studio R15 rig.
+	// Its matching description has no catalog accessories and Roblox's default
+	// R15 scale values.  Keeping this as a real HumanoidDescription means the
+	// same ApplyDescription path is exercised by offline places.
+	resumeFunction(Creatable<Instance>::create<HumanoidDescription>());
 }
 
 void Players::onReceivedRawGetUserNameSuccess(weak_ptr<DataModel> weakDataModel, std::string response, boost::function<void(std::string)> resumeFunction, boost::function<void(std::string)> errorFunction)
@@ -2324,4 +2401,3 @@ bool StringConverter<Players::PlayerChatType>::convertToValue(const std::string&
 	return Reflection::EnumDesc<Players::PlayerChatType>::singleton().convertToValue(text.c_str(),value);
 }
 }//namespace RBX
-

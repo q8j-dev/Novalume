@@ -93,6 +93,12 @@ def main() -> int:
     parser.add_argument("--output", type=pathlib.Path, required=True)
     parser.add_argument("--allow-missing", action="store_true",
                         help="record inaccessible assets instead of rejecting the package")
+    parser.add_argument("--local-solo", action="store_true",
+                        help="run the packaged place as an offline Play Solo session")
+    parser.add_argument("--bootstrap-script", type=pathlib.Path,
+                        help="trusted server bootstrap used only by a local-solo package")
+    parser.add_argument("--client-bootstrap-script", type=pathlib.Path,
+                        help="trusted client bootstrap used only by a local-solo package")
     args = parser.parse_args()
 
     place = args.place.resolve()
@@ -101,6 +107,21 @@ def main() -> int:
     embedded, missing = archived_assets(args.archive.resolve())
     if missing and not args.allow_missing:
         parser.error("archive is incomplete; missing asset IDs: " + ", ".join(missing))
+    bootstrap_script = None
+    if args.bootstrap_script:
+        if not args.local_solo:
+            parser.error("--bootstrap-script requires --local-solo")
+        bootstrap_script = args.bootstrap_script.resolve()
+        if not bootstrap_script.is_file() or bootstrap_script.suffix.lower() != ".lua":
+            parser.error("--bootstrap-script must be an existing Lua file")
+    client_bootstrap_script = None
+    if args.client_bootstrap_script:
+        if not args.local_solo:
+            parser.error("--client-bootstrap-script requires --local-solo")
+        client_bootstrap_script = args.client_bootstrap_script.resolve()
+        if (not client_bootstrap_script.is_file() or
+                client_bootstrap_script.suffix.lower() != ".lua"):
+            parser.error("--client-bootstrap-script must be an existing Lua file")
 
     place_name = "place/main" + place.suffix.lower()
     asset_entries = [(f"assets/{asset_id}{payload.suffix.lower()}", payload)
@@ -112,11 +133,21 @@ def main() -> int:
         "embeddedAssetCount": len(asset_entries),
         "missingAssetIds": missing,
         "assets": [name for name, _ in asset_entries],
+        "executionMode": "local-solo" if args.local_solo else "player",
+        "serverBootstrap": "launch/local-solo.lua" if bootstrap_script else None,
+        "clientBootstrap": ("launch/client-local-solo.lua"
+                            if client_bootstrap_script else None),
     }
     metadata_bytes = (json.dumps(metadata, sort_keys=True, separators=(",", ":")) + "\n").encode()
     entries: list[tuple[str, pathlib.Path | bytes]] = [
         ("manifest.json", metadata_bytes),
         (place_name, place),
+        *([("launch/local-solo", b"RBXLP local-solo v1\n")]
+          if args.local_solo else []),
+        *([("launch/local-solo.lua", bootstrap_script)]
+          if bootstrap_script else []),
+        *([("launch/client-local-solo.lua", client_bootstrap_script)]
+          if client_bootstrap_script else []),
         *asset_entries,
     ]
 

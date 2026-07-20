@@ -266,15 +266,6 @@ namespace RBX {
 	{
 		DataModel* dm = DataModel::get(this);
 
-		if (dm->getPlaceID() == 0) {
-			if (DFFlag::GetGlobalDataStorePcallFix)
-			{
-				throw std::runtime_error("Place has to be opened with Edit button to access DataStores");
-			}
-			StandardOut::singleton()->print(MESSAGE_ERROR, "Place has to be opened with Edit button to access DataStores");
-			return shared_ptr<Instance>();
-		}
-
 		if (!backendProcessing)
 			throw std::runtime_error("DataStore can't be accessed from client");
 

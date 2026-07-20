@@ -132,6 +132,8 @@ static Reflection::BoundFuncDesc<Player, void(shared_ptr<Instance>)> func_revoke
 static Reflection::RemoteEventDesc<Player, void(bool,int)> desc_remoteFriendServiceSignal(&Player::remoteFriendServiceSignal, "RemoteFriendServiceSignal", "makeFriends", "userId", Security::RobloxScript, Reflection::RemoteEventCommon::REPLICATE_ONLY, Reflection::RemoteEventCommon::CLIENT_SERVER);
 
 static Reflection::BoundFuncDesc<Player, shared_ptr<Instance>()> func_getMouse(&Player::getMouseInstance, "GetMouse", Security::None);
+static Reflection::BoundFuncDesc<Player, shared_ptr<const Reflection::ValueTable>()>
+	func_getJoinData(&Player::getJoinData, "GetJoinData", Security::None);
 
 static Reflection::BoundFuncDesc<Player, std::string(std::string)>    func_loadString(&Player::loadString, "LoadString", "key", Security::None);
 static Reflection::BoundFuncDesc<Player, void(std::string, std::string)>    func_saveString(&Player::saveString, "SaveString", "key", "value", Security::None);
@@ -2174,6 +2176,21 @@ void Player::loadCharacterInternal(bool inGame,
 		}
 	}
 
+	// Studio's current authored R15 rig files are stored as anchored preview
+	// models. Character assembly, like the official Player's RigBuilder path,
+	// must turn those preview parts into one simulated jointed assembly before
+	// the model enters Workspace. Leaving only HumanoidRootPart dynamic tears the
+	// character apart as soon as a game unanchors its spawn hold.
+	if (useR15 && pModel)
+	{
+		for (std::size_t index = 0; index < pModel->numChildren(); ++index)
+		{
+			if (PartInstance* part = Instance::fastDynamicCast<PartInstance>(
+					pModel->getChild(index)))
+				part->setAnchored(false);
+		}
+	}
+
 
 	Humanoid* humanoid = Humanoid::modelIsCharacter(pModel);
 	if (!DFFlag::UseStarterPlayerCharacter && !humanoid){
@@ -2841,6 +2858,28 @@ void Player::revokeFriendship(shared_ptr<Instance> instance)
 	desc_remoteFriendServiceSignal.fireAndReplicateEvent(this, false, player->getUserID());
 	
 }
+
+shared_ptr<const Reflection::ValueTable> Player::getJoinData()
+{
+	shared_ptr<Reflection::ValueTable> result(new Reflection::ValueTable());
+	const bool arrivedFromTeleport = TeleportService::didTeleport();
+
+	// Local/offline sessions have no source universe.  Preserve the same table
+	// shape as a network join so current place scripts can distinguish a normal
+	// launch from a teleport without requiring a production endpoint.
+	(*result)["SourcePlaceId"] = arrivedFromTeleport
+		? TeleportService::getPreviousPlaceId()
+		: 0;
+	(*result)["SourceGameId"] = 0;
+	(*result)["TeleportData"] = arrivedFromTeleport
+		? TeleportService::getDataTable()
+		: Reflection::Variant();
+	(*result)["LaunchData"] = std::string();
+	(*result)["Members"] = shared_ptr<const Reflection::ValueArray>(
+		new Reflection::ValueArray());
+	return result;
+}
+
 void Player::onFriendStatusChanged(shared_ptr<Instance> player, FriendService::FriendStatus friendStatus)
 {
 	friendStatusChangedSignal(player, friendStatus);

@@ -2182,22 +2182,29 @@ bool RBX::Reflection::TypedPropertyDescriptor<RBX::Content>::setStringValue(
     return true;
 }
 
+static const Name& tag_FontFamily = Name::declare("Family");
+static const Name& tag_FontUrl = Name::declare("url");
+static const Name& tag_FontWeight = Name::declare("Weight");
+static const Name& tag_FontStyle = Name::declare("Style");
+static const Name& tag_FontCachedFaceId = Name::declare("CachedFaceId");
+
 template<>
 void RBX::Reflection::TypedPropertyDescriptor<RBX::Font>::readValue(
     DescribedBase* instance, const XmlElement* element, IReferenceBinder&) const
 {
     if (element->isXsiNil())
         return;
-    const Name& familyTag = Name::declare("Family");
-    const Name& weightTag = Name::declare("Weight");
-    const Name& styleTag = Name::declare("Style");
-    const XmlElement* familyElement = element->findFirstChildByTag(familyTag);
-    const XmlElement* weightElement = element->findFirstChildByTag(weightTag);
-    const XmlElement* styleElement = element->findFirstChildByTag(styleTag);
+    const XmlElement* familyElement = element->findFirstChildByTag(tag_FontFamily);
+    const XmlElement* weightElement = element->findFirstChildByTag(tag_FontWeight);
+    const XmlElement* styleElement = element->findFirstChildByTag(tag_FontStyle);
     ContentId family;
     int weight = FONT_WEIGHT_REGULAR;
     std::string styleName = "Normal";
-    if (familyElement && familyElement->getValue(family) && !family.toString().empty())
+    const XmlElement* familyValue = familyElement
+        ? familyElement->findFirstChildByTag(tag_FontUrl) : NULL;
+    if (!familyValue)
+        familyValue = familyElement;
+    if (familyValue && familyValue->getValue(family) && !family.toString().empty())
     {
         if (weightElement)
             weightElement->getValue(weight);
@@ -2213,17 +2220,13 @@ template<>
 void RBX::Reflection::TypedPropertyDescriptor<RBX::Font>::writeValue(
     const DescribedBase* instance, XmlElement* element) const
 {
-    const Name& familyTag = Name::declare("Family");
-    const Name& weightTag = Name::declare("Weight");
-    const Name& styleTag = Name::declare("Style");
-    const Name& cachedFaceTag = Name::declare("CachedFaceId");
     const Font& value = getValue(instance);
-    element->addChild(familyTag)->setValue(ContentId(value.getFamily()));
-    element->addChild(weightTag)->setValue(static_cast<int>(value.getWeight()));
+    element->addChild(tag_FontFamily)->addChild(tag_FontUrl)->setValue(ContentId(value.getFamily()));
+    element->addChild(tag_FontWeight)->setValue(static_cast<int>(value.getWeight()));
     const Reflection::EnumDescriptor::Item* style =
         Reflection::EnumDesc<FontStyle>::singleton().convertToItem(value.getStyle());
-    element->addChild(styleTag)->setValue(style ? style->name.toString() : std::string("Normal"));
-    element->addChild(cachedFaceTag)->setValue(ContentId(value.getFamily()));
+    element->addChild(tag_FontStyle)->setValue(style ? style->name.toString() : std::string("Normal"));
+    element->addChild(tag_FontCachedFaceId)->addChild(tag_FontUrl)->setValue(ContentId(value.getFamily()));
 }
 
 template<>

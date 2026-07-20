@@ -16,6 +16,8 @@
 #include "StringConv.h"
 #include "rbx/Profiler.h"
 
+#include <sstream>
+
 LOGGROUP(Graphics)
 
 FASTINTVARIABLE(RenderTextureManagerBudget, 0)
@@ -49,10 +51,35 @@ static void logError(const ContentId& id, const std::string& context, const char
 
 static void httpCallback(AsyncHttpQueue::RequestResult result, std::istream* stream, const boost::shared_ptr<const std::string>& content, boost::function<void (boost::shared_ptr<const std::string>)> callback)
 {
-	if (result == AsyncHttpQueue::Succeeded)
-        callback(content);
-	else
+	if (result != AsyncHttpQueue::Succeeded)
+    {
         callback(boost::shared_ptr<const std::string>());
+        return;
+    }
+
+    // Package-backed asset IDs are delivered by ContentProvider as a local
+    // file stream.  The historical texture callback only forwarded the
+    // in-memory HTTP body, turning every embedded PNG into a successful
+    // request with a null payload.  Preserve both ContentProvider delivery
+    // forms so RBXLP textures use the exact same decoder path as remote ones.
+    if (content)
+    {
+        callback(content);
+        return;
+    }
+    if (!stream)
+    {
+        callback(boost::shared_ptr<const std::string>());
+        return;
+    }
+
+    std::ostringstream bytes;
+    bytes << stream->rdbuf();
+    if (!*stream && !stream->eof())
+        callback(boost::shared_ptr<const std::string>());
+    else
+        callback(boost::shared_ptr<const std::string>(
+            new std::string(bytes.str())));
 }
 
 static unsigned int getTextureSize(const std::shared_ptr<Texture>& tex)

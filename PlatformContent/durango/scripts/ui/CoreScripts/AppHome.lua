@@ -38,9 +38,6 @@ local CROSSFADE_DURATION = 1.5
 local BACKGROUND_ASSETS =
 {
 	'Home_screen_01.png';
-	'Home_screen_02.png';
-	'Home_screen_03.png';
-	'Home_screen_04.png';
 }
 
 local AppHomeContainer = Utility.Create'Frame'
@@ -131,6 +128,9 @@ else
 	spawn(function()
 
 		CameraManager:StartTransitionScreenEffect()
+		if #BACKGROUND_ASSETS < 2 then
+			return
+		end
 
 		while true do
 			wait(TIME_BETWEEN_BACKGROUND_TRANSITIONS)
@@ -334,5 +334,5 @@ EventHub:addEventListener(EventHub.Notifications["AuthenticationSuccess"], "auth
 -- 	end);
 ScreenManager:OpenScreen(EngagementScreen)
 
-UserInputService.MouseIconEnabled = false
-
+UserInputService.MouseIconEnabled =
+	UserInputService:GetPlatform() ~= Enum.Platform.XBoxOne

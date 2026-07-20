@@ -29,6 +29,12 @@ namespace RBX {
 	RBX_REGISTER_CLASS(DataStorePages);
 
 	const char* const sGlobalDataStore = "GlobalDataStore";
+
+	static bool isLocalDataStoreSession(const DataStore* store)
+	{
+		const DataModel* dataModel = DataModel::get(store);
+		return dataModel && dataModel->getPlaceID() == 0;
+	}
 	
     REFLECTION_BEGIN();
 	static Reflection::BoundYieldFuncDesc<DataStore, Reflection::Variant(std::string)> func_getAsync(&DataStore::getAsync, "GetAsync", "key", Security::None);
@@ -135,6 +141,13 @@ namespace RBX {
 
 		FASTLOGS(FLog::DataStore, "GetAsync on key %s", key);
 		CachedKeys::iterator it = cachedKeys.find(key);
+		if (isLocalDataStoreSession(this))
+		{
+			if (it == cachedKeys.end())
+				updateCachedKey(key, Reflection::Variant());
+			resumeFunction(cachedKeys[key].getVariant());
+			return;
+		}
 
 		Time now = Time::nowFast();
 
@@ -194,6 +207,13 @@ namespace RBX {
 			return;
 		}
 
+		if (isLocalDataStoreSession(this))
+		{
+			updateCachedKey(key, value);
+			resumeFunction();
+			return;
+		}
+
 		if (!checkStudioApiAccess(errorFunction))
 			return;
 
@@ -228,6 +248,25 @@ namespace RBX {
 		if (!checkAccess(key, &errorFunction))
 			return;
 
+		if (isLocalDataStoreSession(this))
+		{
+			double value = 0.0;
+			CachedKeys::iterator iterator = cachedKeys.find(key);
+			if (iterator != cachedKeys.end() && !iterator->second.getVariant(false).isVoid())
+			{
+				if (!iterator->second.getVariant(false).isNumber())
+				{
+					errorFunction("Cannot increment a non-number DataStore value");
+					return;
+				}
+				value = iterator->second.getVariant(false).get<double>();
+			}
+			Reflection::Variant result(value + delta);
+			updateCachedKey(key, result);
+			resumeFunction(result);
+			return;
+		}
+
 		if (!checkStudioApiAccess(errorFunction))
 			return;
 
@@ -259,6 +298,12 @@ namespace RBX {
 		CachedKeys::iterator it = cachedKeys.find(key);
 		if (it == cachedKeys.end())
 		{
+			if (isLocalDataStoreSession(this))
+			{
+				updateCachedKey(key, Reflection::Variant());
+				runTransformFunction(key, transform, resumeFunction, errorFunction);
+				return;
+			}
 			DataStoreService::HttpRequest request;
 			createFetchNewKeyRequest(key, boost::bind(&DataStore::runTransformFunction, shared_from(this), key, transform, resumeFunction, errorFunction), errorFunction,
 				request);
@@ -326,6 +371,15 @@ namespace RBX {
 		if((int)newValue.size() > DFInt::DataStoreMaxValueSize)
 		{
 			errorFunction("Value is too large");
+			return;
+		}
+
+		if (isLocalDataStoreSession(this))
+		{
+			updateCachedKey(key, result->at(0));
+			shared_ptr<Reflection::Tuple> values(new Reflection::Tuple());
+			values->values.push_back(result->at(0));
+			resumeFunction(values);
 			return;
 		}
 
@@ -732,6 +786,11 @@ namespace RBX {
 
 		if (cachedKeys.find(key) == cachedKeys.end())
 		{
+			if (isLocalDataStoreSession(this))
+			{
+				updateCachedKey(key, Reflection::Variant());
+				return conn;
+			}
 			DataStoreService::HttpRequest request;
 			createFetchNewKeyRequest(key, dummyAction, dummyError, request);
 			request.requestType = DataStoreService::HttpRequest::RequestType::GET_ASYNC;

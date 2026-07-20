@@ -49,6 +49,9 @@ namespace RBX {
 
 		boost::optional<CoordinateFrame> modelCoordinateFrame;
 		boost::optional<Extents> primaryPartSpaceExtents;
+		boost::optional<CoordinateFrame> worldPivotData;
+		boost::optional<CoordinateFrame> pivotInPrimary;
+		weak_ptr<PartInstance> pivotPrimaryPart;
 
 		CoordinateFrame modelCFrame;
 		Vector3 modelSize;
@@ -86,6 +89,7 @@ namespace RBX {
 		/*override*/ void onChildAdded(Instance* child);
 		/*override*/ void onChildRemoving(Instance* child);
 		/*override*/ void onChildChanged(Instance* instance, const PropertyChanged& event);
+		/*override*/ void readProperty(const XmlElement* propertyElement, IReferenceBinder& binder);
 
 		// PVInstance
 		/*override*/ bool hitTestImpl(const class RBX::RbxRay& worldRay, G3D::Vector3& worldHitPoint);
@@ -107,6 +111,10 @@ namespace RBX {
 
 		Vector3 calculateModelSize();
 		CoordinateFrame calculateModelCFrame();
+		/*override*/ CoordinateFrame getPivot();
+		/*override*/ void pivotTo(CoordinateFrame targetCFrame);
+		CoordinateFrame getWorldPivot() const { return const_cast<ModelInstance*>(this)->getPivot(); }
+		void setWorldPivot(CoordinateFrame value);
 		void setIdentityOrientation();
 		void resetOrientationToIdentity();
 

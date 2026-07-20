@@ -2,6 +2,8 @@
 #include "V8DataModel/Folder.h"
 #include "V8DataModel/DataModel.h"
 #include "V8DataModel/PartInstance.h"
+#include "V8DataModel/Decal.h"
+#include "V8DataModel/PostEffect.h"
 #include "V8DataModel/BasicPartInstance.h"
 #include "V8DataModel/ProximityPrompt.h"
 #include "V8DataModel/TextBox.h"
@@ -32,6 +34,15 @@ struct Inventory
     std::size_t scripts = 0;
     std::size_t prompts = 0;
     std::size_t fontFaces = 0;
+    std::size_t fondamentoFaces = 0;
+    std::size_t merriweatherFaces = 0;
+    std::size_t specialEliteFaces = 0;
+    std::size_t textures = 0;
+    std::size_t wallpaperTextures = 0;
+    unsigned int wallpaperFaces = 0;
+    std::size_t yellowParts = 0;
+    std::size_t postEffects = 0;
+    std::size_t atmospheres = 0;
     float promptHoldDuration = -1;
     float promptActivationDistance = -1;
     int promptKeyboardKey = -1;
@@ -44,6 +55,22 @@ Inventory inventory(RBX::DataModel& dataModel)
     const auto inspect = [&result](const boost::shared_ptr<RBX::Instance>& instance) {
         ++result.instances;
         if (instance->isA<RBX::PartInstance>()) ++result.parts;
+        if (RBX::PartInstance* part =
+                RBX::Instance::fastDynamicCast<RBX::PartInstance>(instance.get())) {
+            const G3D::Color3 color = part->getColor().color3();
+            if (color.r > color.b * 1.5f && color.g > color.b * 1.2f)
+                ++result.yellowParts;
+        }
+        if (RBX::DecalTexture* texture =
+                RBX::Instance::fastDynamicCast<RBX::DecalTexture>(instance.get())) {
+            ++result.textures;
+            if (texture->getTexture().toString() == "rbxassetid://3255302920") {
+                ++result.wallpaperTextures;
+                result.wallpaperFaces |= 1U << static_cast<unsigned int>(texture->getFace());
+            }
+        }
+        if (instance->isA<RBX::PostEffect>()) ++result.postEffects;
+        if (instance->isA<RBX::Atmosphere>()) ++result.atmospheres;
         if (instance->isA<RBX::BaseScript>()) ++result.scripts;
         if (RBX::ProximityPrompt* prompt =
                 RBX::Instance::fastDynamicCast<RBX::ProximityPrompt>(instance.get())) {
@@ -60,7 +87,15 @@ Inventory inventory(RBX::DataModel& dataModel)
             font = &text->getFontFace();
         else if (RBX::TextBox* text = RBX::Instance::fastDynamicCast<RBX::TextBox>(instance.get()))
             font = &text->getFontFace();
-        if (font && !font->getFamily().empty()) ++result.fontFaces;
+        if (font && !font->getFamily().empty()) {
+            ++result.fontFaces;
+            if (font->getFamily().find("Fondamento.json") != std::string::npos)
+                ++result.fondamentoFaces;
+            else if (font->getFamily().find("Merriweather.json") != std::string::npos)
+                ++result.merriweatherFaces;
+            else if (font->getFamily().find("SpecialElite.json") != std::string::npos)
+                ++result.specialEliteFaces;
+        }
     };
     dataModel.visitDescendants(inspect);
     return result;
@@ -85,6 +120,14 @@ Inventory addedInventory(const Inventory& after, const Inventory& before)
     result.scripts -= before.scripts;
     result.prompts -= before.prompts;
     result.fontFaces -= before.fontFaces;
+    result.fondamentoFaces -= before.fondamentoFaces;
+    result.merriweatherFaces -= before.merriweatherFaces;
+    result.specialEliteFaces -= before.specialEliteFaces;
+    result.textures -= before.textures;
+    result.wallpaperTextures -= before.wallpaperTextures;
+    result.yellowParts -= before.yellowParts;
+    result.postEffects -= before.postEffects;
+    result.atmospheres -= before.atmospheres;
     return result;
 }
 
@@ -117,6 +160,12 @@ int main(int argc, char** argv)
     const Inventory binary = addedInventory(afterBinary, baseline);
     if (binary.instances < 4000 || binary.parts < 700 || binary.scripts < 10 ||
         binary.prompts != 1 || binary.fontFaces < 10 ||
+        binary.fondamentoFaces != 2 || binary.merriweatherFaces != 2 ||
+        binary.specialEliteFaces != 3 ||
+        binary.textures < 2000 || binary.wallpaperTextures < 100 ||
+        (binary.wallpaperFaces & 0x2dU) != 0x2dU ||
+        binary.yellowParts < 500 ||
+        binary.postEffects != 3 || binary.atmospheres != 1 ||
         binary.promptHoldDuration != 1.0f ||
         binary.promptActivationDistance != 5.0f ||
         binary.promptKeyboardKey != RBX::SDLK_e ||
@@ -739,6 +788,15 @@ int main(int argc, char** argv)
     std::cout << "inventory instances=" << binary.instances
               << " parts=" << binary.parts << " scripts=" << binary.scripts
               << " prompts=" << binary.prompts << " fontFaces=" << binary.fontFaces
+              << " Fondamento=" << binary.fondamentoFaces
+              << " Merriweather=" << binary.merriweatherFaces
+              << " SpecialElite=" << binary.specialEliteFaces
+              << " textures=" << binary.textures
+              << " wallpaperTextures=" << binary.wallpaperTextures
+              << " wallpaperFaces=" << binary.wallpaperFaces
+              << " yellowParts=" << binary.yellowParts
+              << " postEffects=" << binary.postEffects
+              << " atmospheres=" << binary.atmospheres
               << '\n';
     return 0;
 }

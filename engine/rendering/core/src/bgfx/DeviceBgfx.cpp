@@ -998,10 +998,15 @@ public:
     }
     void clearFramebuffer(unsigned int mask, const float color[4], float depth,
                           unsigned int stencil) override {
-        const auto rgba = (static_cast<std::uint32_t>(color[0] * 255.0F) << 24U) |
-                          (static_cast<std::uint32_t>(color[1] * 255.0F) << 16U) |
-                          (static_cast<std::uint32_t>(color[2] * 255.0F) << 8U) |
-                          static_cast<std::uint32_t>(color[3] * 255.0F);
+        std::uint32_t rgba = 0;
+        if ((mask & Buffer_Color) != 0U) {
+            if (!color)
+                throw std::invalid_argument("color framebuffer clear requires a color");
+            rgba = (static_cast<std::uint32_t>(color[0] * 255.0F) << 24U) |
+                   (static_cast<std::uint32_t>(color[1] * 255.0F) << 16U) |
+                   (static_cast<std::uint32_t>(color[2] * 255.0F) << 8U) |
+                   static_cast<std::uint32_t>(color[3] * 255.0F);
+        }
         std::uint16_t clear = 0;
         if ((mask & Buffer_Color) != 0U) clear |= BGFX_CLEAR_COLOR;
         if ((mask & Buffer_Depth) != 0U) clear |= BGFX_CLEAR_DEPTH;
@@ -1052,11 +1057,6 @@ public:
         if (stage >= 32) throw std::out_of_range("texture stage exceeds GfxCore limit");
         auto* value = dynamic_cast<TextureBgfx*>(texture);
         if (texture && !value) throw std::invalid_argument("attempted to bind a non-bgfx texture");
-        const bgfx::UniformHandle uniform = requireProgram().sampler(stage);
-        // The shared render stream binds its default texture for both textured
-        // and solid-color UI programs.  Solid programs legitimately optimize
-        // the sampler away, so there is no binding to submit for that stage.
-        if (!bgfx::isValid(uniform)) return;
         std::uint32_t flags = 0;
         if (sampler.getFilter() == SamplerState::Filter_Point)
             flags |= BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIP_POINT;
@@ -1064,9 +1064,12 @@ public:
             flags |= BGFX_SAMPLER_MIN_ANISOTROPIC | BGFX_SAMPLER_MAG_ANISOTROPIC;
         if (sampler.getAddress() == SamplerState::Address_Clamp)
             flags |= BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP;
-        bgfx::TextureHandle handle = BGFX_INVALID_HANDLE;
-        if (value) handle = value->getHandle();
-        bgfx::setTexture(static_cast<std::uint8_t>(stage), uniform, handle, flags);
+        if (value)
+            textureBindings[stage].handle = value->getHandle();
+        else
+            textureBindings[stage].handle = BGFX_INVALID_HANDLE;
+        textureBindings[stage].flags = flags;
+        textureBindings[stage].assigned = true;
     }
     void setRasterizerState(const RasterizerState& value) override {
         state &= ~(BGFX_STATE_CULL_CW | BGFX_STATE_CULL_CCW);
@@ -1183,6 +1186,21 @@ private:
     }
     void submit(Geometry::Primitive primitive) {
         requireProgram().setGlobalConstants(globalBindings, globalData);
+        // GfxCore texture state is persistent, while bgfx discards encoder
+        // bindings after every submit. Reapply the cached state exactly once
+        // per draw. Deferring it until here also prevents repeated legacy
+        // bindTexture calls before a draw from setting the same sampler
+        // uniform twice, which bgfx correctly rejects in debug builds.
+        for (std::size_t stage = 0; stage < textureBindings.size(); ++stage) {
+            const TextureBinding& binding = textureBindings[stage];
+            if (!binding.assigned)
+                continue;
+            const bgfx::UniformHandle uniform = requireProgram().sampler(
+                static_cast<unsigned int>(stage));
+            if (bgfx::isValid(uniform))
+                bgfx::setTexture(static_cast<std::uint8_t>(stage), uniform,
+                                 binding.handle, binding.flags);
+        }
         if (scissorEnabled)
             bgfx::setScissor(scissor[0], scissor[1], scissor[2], scissor[3]);
         else
@@ -1195,6 +1213,12 @@ private:
         bgfx::submit(view, requireProgram().getHandle());
     }
     unsigned int anisotropy = 1;
+    struct TextureBinding final {
+        bgfx::TextureHandle handle = BGFX_INVALID_HANDLE;
+        std::uint32_t flags = 0;
+        bool assigned = false;
+    };
+    std::array<TextureBinding, 32> textureBindings{};
     bgfx::ViewId view = 0;
     FramebufferBgfx* mainFramebuffer = nullptr;
     FramebufferBgfx* framebuffer = nullptr;

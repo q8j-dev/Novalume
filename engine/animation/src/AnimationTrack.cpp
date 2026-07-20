@@ -48,6 +48,7 @@ const Reflection::EnumPropDescriptor<AnimationTrack, KeyframeSequence::Priority>
 
 static Reflection::EventDesc<AnimationTrack, void(std::string)> event_Keyframe(&AnimationTrack::keyframeReachedSignal, "KeyframeReached", "keyframeName");
 static Reflection::EventDesc<AnimationTrack, void()> event_Stopped(&AnimationTrack::stoppedSignal, "Stopped");
+static Reflection::EventDesc<AnimationTrack, void()> event_Ended(&AnimationTrack::endedSignal, "Ended");
 static Reflection::EventDesc<AnimationTrack, void()> event_DidLoop(&AnimationTrack::didLoopSignal, "DidLoop");
 REFLECTION_END();
 

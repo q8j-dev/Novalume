@@ -88,6 +88,14 @@ EnumDesc<RBX::GuiObject::ImageScale>::EnumDesc()
 }
 
 template<>
+EnumDesc<RBX::ResamplerMode>::EnumDesc()
+:EnumDescriptor("ResamplerMode")
+{
+	addPair(RBX::RESAMPLER_MODE_DEFAULT, "Default");
+	addPair(RBX::RESAMPLER_MODE_PIXELATED, "Pixelated");
+}
+
+template<>
 EnumDesc<RBX::AutomaticSize>::EnumDesc()
 :EnumDescriptor("AutomaticSize")
 {

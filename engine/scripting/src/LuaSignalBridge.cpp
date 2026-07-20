@@ -431,7 +431,16 @@ static int connectEvent(lua_State* L, bool oneShot)
 		{
 			wrapper->slot.setWeakSelf(wrapper);
 		}
-		connection = ei.descriptor->connectGeneric(source.get(), wrapper);
+		try
+		{
+			connection = ei.descriptor->connectGeneric(source.get(), wrapper);
+		}
+		catch (const std::exception& exception)
+		{
+			throw RBX::runtime_error("Could not connect %s.%s: %s",
+				ei.descriptor->owner.name.c_str(), ei.descriptor->name.c_str(),
+				exception.what());
+		}
 		wrapper->slot.assignConnection(connection);
 	}
 

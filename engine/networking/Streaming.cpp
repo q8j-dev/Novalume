@@ -18,6 +18,7 @@
 #include "Replicator.h"
 #include "util/VarInt.h"
 #include "util/PhysicalProperties.h"
+#include "Util/Font.h"
 
 #include "v8datamodel/NumberSequence.h"
 #include "v8datamodel/NumberRange.h"
@@ -319,12 +320,15 @@ RBX::Network::PacketBuffer& operator >> (RBX::Network::PacketBuffer& stream, std
 	return stream;
 }
 
-#define MAX_BINARY_STRING_SIZE 512000
+// Current places can contain protected script and shared-string payloads well
+// above the historical 500 KiB ceiling. Keep the per-value allocation bounded
+// below PacketBuffer's packet limit, but allow production-sized place content.
+static constexpr uint32_t MaxBinaryStringSize = 16 * 1024 * 1024;
 
 RBX::Network::PacketBuffer& operator << (RBX::Network::PacketBuffer& stream, const BinaryString& value)
 {
 	uint32_t size = static_cast<uint32_t>(value.value().size());
-	if (size > MAX_BINARY_STRING_SIZE)
+	if (size > MaxBinaryStringSize)
 		throw RBX::network_stream_exception(RBX::format("BitStream string write: BinaryString too long: %u", size));
 
 	stream.AlignWriteToByteBoundary();
@@ -344,13 +348,13 @@ RBX::Network::PacketBuffer& operator >> (RBX::Network::PacketBuffer& stream, Bin
 	if (!stream.Read(size))
 		throw RBX::network_stream_exception("BitStream >> BinaryString: failed to read length");
 
-	if (size > MAX_BINARY_STRING_SIZE)
+	if (size > MaxBinaryStringSize)
 		throw RBX::network_stream_exception("BitStream >> BinaryString: Bad string length");
 
-	char* buffer = (char*)alloca(size+1);
-
-    stream.Read(buffer, size);
-    value.set(buffer, size);
+	std::string buffer(size, '\0');
+	if (size && !stream.Read(buffer.data(), size))
+		throw RBX::network_stream_exception("BitStream >> BinaryString: Unable to read payload");
+	value.set(buffer.data(), size);
 	return stream;
 }
 
@@ -857,6 +861,29 @@ RBX::Network::PacketBuffer& operator >> (RBX::Network::PacketBuffer& stream, RBX
 }
 
 //////////////////////////////////////////////////////////////////////////
+
+RBX::Network::PacketBuffer& operator<<(RBX::Network::PacketBuffer& stream,
+                                       const Font& font)
+{
+    return stream << font.getFamily()
+                  << static_cast<unsigned short>(font.getWeight())
+                  << static_cast<unsigned char>(font.getStyle());
+}
+
+RBX::Network::PacketBuffer& operator>>(RBX::Network::PacketBuffer& stream,
+                                       Font& font)
+{
+    std::string family;
+    unsigned short weight;
+    unsigned char style;
+    stream >> family >> weight >> style;
+    if (weight < FONT_WEIGHT_THIN || weight > FONT_WEIGHT_HEAVY ||
+        style > FONT_STYLE_ITALIC)
+        throw std::runtime_error("invalid replicated Font value");
+    font = Font(family, static_cast<FontWeight>(weight),
+                static_cast<FontStyle>(style));
+    return stream;
+}
 
 
 RBX::Network::PacketBuffer& operator<<( RBX::Network::PacketBuffer& stream, const NumberSequenceKeypoint& p )

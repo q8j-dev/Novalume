@@ -43,10 +43,10 @@ namespace RBX {
 
 		World* computeWorld();
 
-		void handleWorldChanged();
-
 	protected:
 		Joint* joint;
+		void handleWorldChanged();
+		virtual bool jointEnabledForWorld() const { return true; }
 
 		// Instance
 		/*override*/ bool askSetParent(const Instance* instance) const;
@@ -284,6 +284,8 @@ namespace RBX {
 		Motor6DJoint* getMotorJoint();
 		const Motor6DJoint* getMotorJoint() const;
 		void renderJointCylinder(Adorn* adorn, int i);
+		bool enabled;
+		bool jointEnabledForWorld() const override { return enabled; }
 	public:
 		Motor6D();
 		Motor6D(Joint* joint);
@@ -300,6 +302,9 @@ namespace RBX {
 		
 		/*IAnimatableJoint*/
 		/*override*/ void applyPose(const CachedPose& cframe);
+
+		bool getEnabled() const { return enabled; }
+		void setEnabled(bool value);
 	};
 
 } // namespace

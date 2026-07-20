@@ -252,6 +252,9 @@ namespace Network {
 		static void doMakeAccoutrementRequests(std::string response, weak_ptr<DataModel> dataModel, shared_ptr<ModelInstance> model, boost::function<void (shared_ptr<Instance>)> resumeFunction, boost::function<void (std::string)> errorFunction);
 		static void makeAccoutrementRequests(std::string *response, std::exception *err, weak_ptr<DataModel> dataModel, shared_ptr<ModelInstance> model, boost::function<void (shared_ptr<Instance>)> resumeFunction, boost::function<void (std::string)> errorFunction);
 		void getCharacterAppearance(int userId, boost::function<void (shared_ptr<Instance>)> resumeFunction, boost::function<void (std::string)> errorFunction);
+		void getHumanoidDescriptionFromUserId(int userId,
+			boost::function<void (shared_ptr<Instance>)> resumeFunction,
+			boost::function<void (std::string)> errorFunction);
 
 		int getMaxPlayers() const;
 		int getPreferredPlayers() const;

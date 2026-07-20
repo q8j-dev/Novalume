@@ -46,6 +46,9 @@ static Reflection::BoundFuncDesc<ModelInstance, void(CoordinateFrame)> model_set
 static Reflection::BoundFuncDesc<ModelInstance, shared_ptr<const Reflection::Tuple>()> model_getBoundingBox(&ModelInstance::getBoundingBox, "GetBoundingBox", Security::None);
 
 static Reflection::BoundFuncDesc<ModelInstance, void(G3D::Vector3)> model_moveFunction(&ModelInstance::moveToPointAndJoin, "MoveTo", "position", Security::None);
+static Reflection::PropDescriptor<ModelInstance, CoordinateFrame> model_worldPivot(
+	"WorldPivot", category_Data, &ModelInstance::getWorldPivot,
+	&ModelInstance::setWorldPivot, Reflection::PropertyDescriptor::SCRIPTING);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Deprecated Functions
@@ -99,6 +102,53 @@ static void Translate(shared_ptr<Instance> instance, const Vector3* offset)
 		cframe.translation += (*offset);
 		part->setCoordinateFrame(cframe);
 	}
+}
+
+static float getPivotComponent(const XmlElement* element, const XmlTag& tag)
+{
+	float value = 0.0f;
+	if (const XmlElement* child = element->findFirstChildByTag(tag))
+		child->getValue(value);
+	return value;
+}
+
+void ModelInstance::readProperty(const XmlElement* propertyElement, IReferenceBinder& binder)
+{
+	std::string propertyName;
+	if (propertyElement->findAttributeValue(name_name, propertyName) &&
+		propertyName == "WorldPivotData")
+	{
+		const XmlElement* cframe = propertyElement->findFirstChildByTag(
+			Name::declare("CFrame"));
+		if (!cframe)
+		{
+			worldPivotData.reset();
+			pivotInPrimary.reset();
+			pivotPrimaryPart.reset();
+			return;
+		}
+
+		CoordinateFrame value;
+		value.translation = Vector3(getPivotComponent(cframe, tag_X),
+			getPivotComponent(cframe, tag_Y), getPivotComponent(cframe, tag_Z));
+		value.rotation[0][0] = getPivotComponent(cframe, tag_R00);
+		value.rotation[0][1] = getPivotComponent(cframe, tag_R01);
+		value.rotation[0][2] = getPivotComponent(cframe, tag_R02);
+		value.rotation[1][0] = getPivotComponent(cframe, tag_R10);
+		value.rotation[1][1] = getPivotComponent(cframe, tag_R11);
+		value.rotation[1][2] = getPivotComponent(cframe, tag_R12);
+		value.rotation[2][0] = getPivotComponent(cframe, tag_R20);
+		value.rotation[2][1] = getPivotComponent(cframe, tag_R21);
+		value.rotation[2][2] = getPivotComponent(cframe, tag_R22);
+		if (!value.rotation.isOrthonormal())
+			value.rotation.orthonormalize();
+		worldPivotData = value;
+		pivotInPrimary.reset();
+		pivotPrimaryPart.reset();
+		return;
+	}
+
+	Super::readProperty(propertyElement, binder);
 }
 void ModelInstance::translateBy(Vector3 offset)
 {
@@ -242,8 +292,57 @@ void ModelInstance::setPrimaryPartSetByUser(PartInstance* set)
 		return;
 
 	primaryPartSetByUser = shared_from(set);
+	pivotInPrimary.reset();
+	pivotPrimaryPart.reset();
 	setExtentsDirty();
 	raiseChanged(desc_primaryPartSetByUserProp);
+}
+
+CoordinateFrame ModelInstance::getPivot()
+{
+	if (PartInstance* primaryPart = getPrimaryPartSetByUser())
+	{
+		if (pivotPrimaryPart.lock().get() != primaryPart || !pivotInPrimary)
+		{
+			pivotInPrimary = primaryPart->getCoordinateFrame().inverse() *
+				(worldPivotData ? worldPivotData.get() : primaryPart->getCoordinateFrame());
+			pivotPrimaryPart = shared_from(primaryPart);
+		}
+		return primaryPart->getCoordinateFrame() * pivotInPrimary.get();
+	}
+
+	if (worldPivotData)
+		return worldPivotData.get();
+
+	return calculateModelCFrame();
+}
+
+static void pivotModelPart(shared_ptr<Instance> instance,
+	const CoordinateFrame& delta)
+{
+	if (PartInstance* part = Instance::fastDynamicCast<PartInstance>(instance.get()))
+		part->setCoordinateFrame(delta * part->getCoordinateFrame());
+}
+
+void ModelInstance::pivotTo(CoordinateFrame targetCFrame)
+{
+	if (!targetCFrame.rotation.isOrthonormal())
+		targetCFrame.rotation.orthonormalize();
+
+	const CoordinateFrame delta = targetCFrame * getPivot().inverse();
+	visitDescendants(boost::bind(&pivotModelPart, _1, boost::cref(delta)));
+	worldPivotData = targetCFrame;
+	setExtentsDirty();
+}
+
+void ModelInstance::setWorldPivot(CoordinateFrame value)
+{
+	if (!value.rotation.isOrthonormal())
+		value.rotation.orthonormalize();
+	worldPivotData = value;
+	pivotInPrimary.reset();
+	pivotPrimaryPart.reset();
+	raisePropertyChanged(model_worldPivot);
 }
 
 PartInstance* ModelInstance::getPrimaryPartSetByUser() const 

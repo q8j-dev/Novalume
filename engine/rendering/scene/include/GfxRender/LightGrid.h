@@ -130,6 +130,7 @@ public:
     
     void setLightShadows(bool value);
     void setLightDirection(const Vector3& value);
+    void setLightExposure(float value);
     void setSkyAmbient(const Color3uint8& value);
     
     void invalidateAll(unsigned int status);
@@ -243,6 +244,7 @@ private:
     
     bool lightShadows;
     Vector3 lightDirection;
+    float lightExposure;
     Color3uint8 skyAmbient;
     
     Vector3int32 dirtyCursor;

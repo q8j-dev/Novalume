@@ -232,6 +232,7 @@ public:
 	
 	bool isSerializePending(const Instance* instance) const;
 	bool isPropertyChangedPending(const RBX::Reflection::ConstProperty& property) const;
+	bool hasPendingNewInstances() const;
 
 	virtual void requestCharacter() { throw std::runtime_error(""); }
 	virtual void requestInstances() { throw std::runtime_error(""); } // overwrite in client replicator

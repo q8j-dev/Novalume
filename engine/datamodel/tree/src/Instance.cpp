@@ -12,6 +12,10 @@
 #include "v8datamodel/NumberSequence.h"
 #include "v8datamodel/ColorSequence.h"
 #include "util/Font.h"
+#include <cmath>
+#include <cstdint>
+#include <cstring>
+#include <limits>
 #if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
 #include "VMProtect/VMProtectSDK.h"
 #endif
@@ -52,6 +56,10 @@ const char* const sInstance = "Instance";
 
 REFLECTION_BEGIN();
 Reflection::PropDescriptor<Instance, bool> Instance::propArchivable("Archivable", category_Behavior, &Instance::getIsArchivable,  &Instance::setIsArchivable, Reflection::PropertyDescriptor::SCRIPTING);
+Reflection::PropDescriptor<Instance, BinaryString>
+	Instance::propAttributesSerialize("AttributesSerialize", category_Data,
+		&Instance::getSerializedAttributes, &Instance::setSerializedAttributes,
+		Reflection::PropertyDescriptor::STREAMING);
 Reflection::PropDescriptor<Instance, bool> propArchivableDeprecated("archivable", category_Behavior, &Instance::getIsArchivable,  &Instance::setIsArchivable, Reflection::PropertyDescriptor::LEGACY_SCRIPTING);
 static Reflection::BoundFuncDesc<Instance, bool(std::string)> func_isA(&Instance::isA, "IsA",  "className", Security::None);
 static Reflection::BoundFuncDesc<Instance, bool(std::string)> func_isA_deprecated(&Instance::isA, "isA",  "className", Security::None);
@@ -274,6 +282,193 @@ bool attributesEqual(const Reflection::Variant& left, const Reflection::Variant&
 		equalIfType<ColorSequence>(left, right) || equalIfType<Font>(left, right);
 }
 
+class AttributeReader
+{
+public:
+	explicit AttributeReader(const std::string& bytes)
+		: cursor(reinterpret_cast<const unsigned char*>(bytes.data()))
+		, end(cursor + bytes.size())
+	{
+	}
+
+	template<typename T>
+	bool read(T& value)
+	{
+		if (static_cast<std::size_t>(end - cursor) < sizeof(T))
+			return false;
+		std::memcpy(&value, cursor, sizeof(T));
+		cursor += sizeof(T);
+		return true;
+	}
+
+	bool readString(std::string& value)
+	{
+		std::uint32_t length = 0;
+		if (!read(length) || static_cast<std::size_t>(end - cursor) < length)
+			return false;
+		value.assign(reinterpret_cast<const char*>(cursor), length);
+		cursor += length;
+		return true;
+	}
+
+	bool finished() const { return cursor == end; }
+
+private:
+	const unsigned char* cursor;
+	const unsigned char* end;
+};
+
+template<typename T>
+void appendAttributeScalar(std::string& bytes, const T& value)
+{
+	const char* begin = reinterpret_cast<const char*>(&value);
+	bytes.append(begin, sizeof(T));
+}
+
+void appendAttributeString(std::string& bytes, const std::string& value)
+{
+	if (value.size() > std::numeric_limits<std::uint32_t>::max())
+		throw runtime_error("Attribute string exceeds the serialized size limit");
+	appendAttributeScalar(bytes, static_cast<std::uint32_t>(value.size()));
+	bytes.append(value);
+}
+
+bool decodeSerializedAttributes(const BinaryString& serialized,
+	std::map<std::string, Reflection::Variant>& attributes)
+{
+	AttributeReader reader(serialized.value());
+	std::uint32_t count = 0;
+	if (!reader.read(count) || count > 1000000U)
+		return serialized.value().empty();
+
+	std::map<std::string, Reflection::Variant> decoded;
+	for (std::uint32_t index = 0; index < count; ++index)
+	{
+		std::string name;
+		std::uint8_t type = 0;
+		if (!reader.readString(name) || !isValidAttributeName(name) ||
+			!reader.read(type))
+			return false;
+
+		switch (type)
+		{
+		case 2: // String
+		{
+			std::string value;
+			if (!reader.readString(value))
+				return false;
+			decoded[name] = value;
+			break;
+		}
+		case 3: // Boolean
+		{
+			std::uint8_t value = 0;
+			if (!reader.read(value) || value > 1)
+				return false;
+			decoded[name] = value != 0;
+			break;
+		}
+		case 5: // Integer-valued Number
+		{
+			std::int32_t value = 0;
+			if (!reader.read(value))
+				return false;
+			decoded[name] = static_cast<double>(value);
+			break;
+		}
+		case 6: // Number
+		{
+			double value = 0.0;
+			if (!reader.read(value) || !std::isfinite(value))
+				return false;
+			decoded[name] = value;
+			break;
+		}
+		case 15: // Color3
+		{
+			float red = 0.0f;
+			float green = 0.0f;
+			float blue = 0.0f;
+			if (!reader.read(red) || !reader.read(green) || !reader.read(blue) ||
+				!std::isfinite(red) || !std::isfinite(green) || !std::isfinite(blue))
+				return false;
+			decoded[name] = G3D::Color3(red, green, blue);
+			break;
+		}
+		case 17: // Vector3
+		{
+			float x = 0.0f;
+			float y = 0.0f;
+			float z = 0.0f;
+			if (!reader.read(x) || !reader.read(y) || !reader.read(z) ||
+				!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(z))
+				return false;
+			decoded[name] = G3D::Vector3(x, y, z);
+			break;
+		}
+		default:
+			return false;
+		}
+	}
+
+	if (!reader.finished())
+		return false;
+	attributes.swap(decoded);
+	return true;
+}
+
+BinaryString encodeSerializedAttributes(
+	const std::map<std::string, Reflection::Variant>& attributes)
+{
+	if (attributes.size() > std::numeric_limits<std::uint32_t>::max())
+		throw runtime_error("Attribute count exceeds the serialized size limit");
+	std::string bytes;
+	appendAttributeScalar(bytes, static_cast<std::uint32_t>(attributes.size()));
+	for (const auto& entry : attributes)
+	{
+		appendAttributeString(bytes, entry.first);
+		const Reflection::Variant& value = entry.second;
+		if (value.isType<std::string>())
+		{
+			appendAttributeScalar(bytes, static_cast<std::uint8_t>(2));
+			appendAttributeString(bytes, value.cast<std::string>());
+		}
+		else if (value.isType<bool>())
+		{
+			appendAttributeScalar(bytes, static_cast<std::uint8_t>(3));
+			appendAttributeScalar(bytes,
+				static_cast<std::uint8_t>(value.cast<bool>() ? 1 : 0));
+		}
+		else if (value.isType<double>())
+		{
+			appendAttributeScalar(bytes, static_cast<std::uint8_t>(6));
+			appendAttributeScalar(bytes, value.cast<double>());
+		}
+		else if (value.isType<G3D::Color3>())
+		{
+			appendAttributeScalar(bytes, static_cast<std::uint8_t>(15));
+			const G3D::Color3 color = value.cast<G3D::Color3>();
+			appendAttributeScalar(bytes, color.r);
+			appendAttributeScalar(bytes, color.g);
+			appendAttributeScalar(bytes, color.b);
+		}
+		else if (value.isType<G3D::Vector3>())
+		{
+			appendAttributeScalar(bytes, static_cast<std::uint8_t>(17));
+			const G3D::Vector3 vector = value.cast<G3D::Vector3>();
+			appendAttributeScalar(bytes, vector.x);
+			appendAttributeScalar(bytes, vector.y);
+			appendAttributeScalar(bytes, vector.z);
+		}
+		else
+		{
+			throw runtime_error("Unsupported attribute type %s for serialization",
+				value.type().name.c_str());
+		}
+	}
+	return BinaryString(bytes);
+}
+
 } // namespace
 
 Reflection::Variant Instance::getAttribute(std::string attribute)
@@ -314,7 +509,39 @@ void Instance::setAttribute(std::string attribute, Reflection::Variant value)
 			return;
 		data->attributes[attribute] = value;
 	}
+	data->serializedAttributesDirty = true;
 	data->attributeChangedSignal(attribute);
+	raisePropertyChanged(propAttributesSerialize);
+}
+
+BinaryString Instance::getSerializedAttributes() const
+{
+	const OnDemandInstance* data = onDemandRead();
+	if (!data)
+		return BinaryString();
+	if (!data->serializedAttributesDirty)
+		return data->serializedAttributes;
+	return encodeSerializedAttributes(data->attributes);
+}
+
+void Instance::setSerializedAttributes(const BinaryString& value)
+{
+	if (value.value().empty() && !onDemandRead())
+		return;
+	OnDemandInstance* data = onDemandWrite();
+	std::map<std::string, Reflection::Variant> decoded;
+	if (!decodeSerializedAttributes(value, decoded))
+	{
+		StandardOut::singleton()->printf(MESSAGE_WARNING,
+			"Ignoring malformed or unsupported AttributesSerialize on %s",
+			getFullName().c_str());
+		data->serializedAttributes = value;
+		data->serializedAttributesDirty = false;
+		return;
+	}
+	data->attributes.swap(decoded);
+	data->serializedAttributes = value;
+	data->serializedAttributesDirty = false;
 }
 
 void Instance::resetPropertyToDefault(std::string propertyName)
@@ -408,7 +635,16 @@ void Instance::readProperty(const XmlElement* propertyElement, IReferenceBinder&
 	std::string name;
 	if (propertyElement->findAttributeValue(name_name, name))
 	{
-		if (Reflection::PropertyDescriptor* desc = this->findPropertyDescriptor(name.c_str()))
+		Reflection::PropertyDescriptor* desc = this->findPropertyDescriptor(name.c_str());
+		// Current Studio serializes BasePart.Color under its historical wire
+		// name, Color3uint8, even though the public reflection property remains
+		// Color.  Older clients looked up only the public name and silently left
+		// every modern place part at the constructor's medium-gray default.
+		// Resolve the wire alias through reflection so this remains independent
+		// of the concrete BasePart implementation and also covers derived parts.
+		if (!desc && name == "Color3uint8")
+			desc = this->findPropertyDescriptor("Color");
+		if (desc)
 			if (!desc->isReadOnly())
 				Reflection::Property(*desc, this).read(propertyElement, binder);
 	}

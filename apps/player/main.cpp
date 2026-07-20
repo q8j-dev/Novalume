@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
         struct HttpShutdownGuard {
             ~HttpShutdownGuard() { RBX::Http::shutdown(); }
         } httpShutdownGuard;
-        constexpr bool useCurrentInExperienceUi = RBX_LEGACY_UI_TEST == 0;
+        bool useCurrentInExperienceUi = RBX_LEGACY_UI_TEST == 0;
         bool headlessVerify = false;
         bool verifyPlayerList = false;
         bool verifyChromeInteraction = false;
@@ -47,6 +47,8 @@ int main(int argc, char** argv) {
         bool verifyAudio = false;
         bool verifyPlaceAudio = false;
         bool verifyTextRendering = false;
+        bool verifyLauncher = false;
+        bool verifyPlaceVisual = false;
         rbx::player::AvatarRigVariant avatarRig =
             rbx::player::AvatarRigVariant::R15;
         std::optional<std::filesystem::path> videoVerificationPath;
@@ -72,6 +74,8 @@ int main(int argc, char** argv) {
             verifyAudio |= argument == "--verify-audio";
             verifyPlaceAudio |= argument == "--verify-place-audio";
             verifyTextRendering |= argument == "--verify-text-rendering";
+            verifyLauncher |= argument == "--verify-launcher";
+            verifyPlaceVisual |= argument == "--verify-place-visual";
             if (argument == "--r15")
                 avatarRig = rbx::player::AvatarRigVariant::R15;
 			else if (argument == "--r15-plus")
@@ -94,6 +98,10 @@ int main(int argc, char** argv) {
                 placePath = argv[index];
             }
         }
+        const bool useDurangoLauncher = verifyLauncher ||
+            (!headlessVerify && !placePath.has_value());
+        useCurrentInExperienceUi = useCurrentInExperienceUi &&
+            !useDurangoLauncher;
         verifyChromeInteraction |= verifyChromeLeaderboard;
         verifyChromeInteraction |= verifyReport;
         verifyChromeInteraction |= verifyRespawn;
@@ -186,14 +194,11 @@ int main(int argc, char** argv) {
         std::cout << rbx::core::BuildInfo::productName << " renderer="
                   << device->getAPIName() << '/' << device->getFeatureLevel() << '\n';
 
-        const char* home = std::getenv("HOME");
-        if (!home && !placePath)
-            throw std::runtime_error("HOME is unavailable for the default 2026 Baseplate place");
         const std::filesystem::path runtimePlace = resolvedPlacePath
             ? *resolvedPlacePath
-            : std::filesystem::path(home) / "Downloads" / "Baseplate.rbxlx";
+            : resources / "places" / "Baseplate.rbxl";
         if (!std::filesystem::is_regular_file(runtimePlace))
-            throw std::runtime_error("default 2026 Baseplate.rbxlx is missing: " +
+            throw std::runtime_error("packaged default Baseplate.rbxl is missing: " +
                                      runtimePlace.string());
         std::cout << "place=" << runtimePlace << '\n';
         const auto runtimeLoadStart = std::chrono::steady_clock::now();
@@ -201,12 +206,14 @@ int main(int argc, char** argv) {
             host->existingClientSettingsRoot(), runtimePlace,
             surface.width, surface.height, surface.logicalWidth,
             surface.logicalHeight, headlessVerify, useCurrentInExperienceUi,
+            useDurangoLauncher,
             avatarRig, verifyViewportRendering,
             videoVerificationPath.value_or(std::filesystem::path()),
             verifyPeoplePage, verifyExperienceChat, verifyCaptureGallery,
             verifyChromeLeaderboard, verifyReport, verifyRespawn,
             verifySwitchAvatar, verifySurfaceTextures, verifyShadowMap,
-            verifySkybox, verifyAudio, verifyPlaceAudio, verifyTextRendering);
+            verifySkybox, verifyAudio, verifyPlaceAudio, verifyTextRendering,
+            verifyPlaceVisual);
         const double runtimeLoadMilliseconds =
             std::chrono::duration<double, std::milli>(
                 std::chrono::steady_clock::now() - runtimeLoadStart).count();
@@ -222,15 +229,23 @@ int main(int argc, char** argv) {
             for (const auto& event : host->takeInputEvents())
                 runtime.handleInput(event);
             host->setPointerLock(runtime.wantsPointerLock());
-            if (headlessVerify && !verifySurfaceTextures && !verifyShadowMap &&
-                !verifySkybox && !verifyTextRendering &&
+            if (headlessVerify && verifyLauncher && frame == 100) {
+                runtime.handleInput(rbx::platform::InputEvent{
+                    .kind = rbx::platform::InputEvent::Kind::keyDown,
+                    .key = rbx::platform::InputEvent::Key::enter});
+            } else if (headlessVerify && verifyLauncher && frame == 101) {
+                runtime.handleInput(rbx::platform::InputEvent{
+                    .kind = rbx::platform::InputEvent::Kind::keyUp,
+                    .key = rbx::platform::InputEvent::Key::enter});
+            } else if (headlessVerify && !verifyLauncher && !verifySurfaceTextures && !verifyShadowMap &&
+                !verifySkybox && !verifyTextRendering && !verifyPlaceVisual &&
                 (frame == 60 || frame == 70 || frame == 80 || frame == 90)) {
                 runtime.handleInput(rbx::platform::InputEvent{
                     .kind = rbx::platform::InputEvent::Kind::keyDown,
                     .key = rbx::platform::InputEvent::Key::w,
                     .text = 'w'});
-            } else if (headlessVerify && !verifySurfaceTextures && !verifyShadowMap &&
-                       !verifySkybox && !verifyTextRendering && frame == 100) {
+            } else if (headlessVerify && !verifyLauncher && !verifySurfaceTextures && !verifyShadowMap &&
+                       !verifySkybox && !verifyTextRendering && !verifyPlaceVisual && frame == 100) {
                 runtime.handleInput(rbx::platform::InputEvent{
                     .kind = rbx::platform::InputEvent::Kind::keyUp,
                     .key = rbx::platform::InputEvent::Key::w,
@@ -239,15 +254,15 @@ int main(int argc, char** argv) {
                     .kind = rbx::platform::InputEvent::Kind::keyDown,
                     .key = rbx::platform::InputEvent::Key::d,
                     .text = 'd'});
-            } else if (headlessVerify && !verifySurfaceTextures && !verifyShadowMap &&
-                       !verifySkybox && !verifyTextRendering &&
+            } else if (headlessVerify && !verifyLauncher && !verifySurfaceTextures && !verifyShadowMap &&
+                       !verifySkybox && !verifyTextRendering && !verifyPlaceVisual &&
                        (frame == 110 || frame == 120 || frame == 130)) {
                 runtime.handleInput(rbx::platform::InputEvent{
                     .kind = rbx::platform::InputEvent::Kind::keyDown,
                     .key = rbx::platform::InputEvent::Key::d,
                     .text = 'd'});
-            } else if (headlessVerify && !verifySurfaceTextures && !verifyShadowMap &&
-                       !verifySkybox && !verifyTextRendering && frame == 140) {
+            } else if (headlessVerify && !verifyLauncher && !verifySurfaceTextures && !verifyShadowMap &&
+                       !verifySkybox && !verifyTextRendering && !verifyPlaceVisual && frame == 140) {
                 runtime.handleInput(rbx::platform::InputEvent{
                     .kind = rbx::platform::InputEvent::Kind::keyUp,
                     .key = rbx::platform::InputEvent::Key::d,
@@ -256,16 +271,16 @@ int main(int argc, char** argv) {
                     .kind = rbx::platform::InputEvent::Kind::keyDown,
                     .key = rbx::platform::InputEvent::Key::s,
                     .text = 's'});
-            } else if (headlessVerify && !verifySurfaceTextures && !verifyShadowMap &&
-                       !verifySkybox && !verifyTextRendering &&
+            } else if (headlessVerify && !verifyLauncher && !verifySurfaceTextures && !verifyShadowMap &&
+                       !verifySkybox && !verifyTextRendering && !verifyPlaceVisual &&
                        (frame == 150 || frame == 160 || frame == 170 ||
                         frame == 181 || frame == 201 || frame == 221)) {
                 runtime.handleInput(rbx::platform::InputEvent{
                     .kind = rbx::platform::InputEvent::Kind::keyDown,
                     .key = rbx::platform::InputEvent::Key::s,
                     .text = 's'});
-            } else if (headlessVerify && !verifySurfaceTextures && !verifyShadowMap &&
-                       !verifySkybox && !verifyTextRendering && frame == 230) {
+            } else if (headlessVerify && !verifyLauncher && !verifySurfaceTextures && !verifyShadowMap &&
+                       !verifySkybox && !verifyTextRendering && !verifyPlaceVisual && frame == 230) {
                 runtime.handleInput(rbx::platform::InputEvent{
                     .kind = rbx::platform::InputEvent::Kind::keyUp,
                     .key = rbx::platform::InputEvent::Key::s,
@@ -417,12 +432,12 @@ int main(int argc, char** argv) {
                     .kind = rbx::platform::InputEvent::Kind::pointerUp,
                     .button = rbx::platform::InputEvent::PointerButton::primary,
                     .x = 170.0F, .y = 264.0F});
-            } else if (headlessVerify && frame == 185) {
+            } else if (headlessVerify && !verifyLauncher && frame == 185) {
                 runtime.handleInput(rbx::platform::InputEvent{
                     .kind = rbx::platform::InputEvent::Kind::pointerDown,
                     .button = rbx::platform::InputEvent::PointerButton::secondary,
                     .x = 640.0F, .y = 360.0F});
-            } else if (headlessVerify && frame > 185 && frame <= 235) {
+            } else if (headlessVerify && !verifyLauncher && frame > 185 && frame <= 235) {
                 runtime.handleInput(rbx::platform::InputEvent{
                     .kind = rbx::platform::InputEvent::Kind::pointerMove,
                     // Preserve both halves of the desktop pointer contract:
@@ -433,30 +448,34 @@ int main(int argc, char** argv) {
                     .x = 640.0F + static_cast<float>(frame - 185) * 8.0F,
                     .y = 360.0F,
                     .deltaX = 8.0F, .deltaY = 0.0F});
-            } else if (headlessVerify && frame == 236) {
+            } else if (headlessVerify && !verifyLauncher && frame == 236) {
                 runtime.handleInput(rbx::platform::InputEvent{
                     .kind = rbx::platform::InputEvent::Kind::pointerUp,
                     .button = rbx::platform::InputEvent::PointerButton::secondary,
                     .x = 640.0F, .y = 360.0F});
-            } else if (headlessVerify && !verifyPlayerList &&
-                       !verifyChromeInteraction && frame == 245) {
+            } else if (headlessVerify && !verifyLauncher && !verifyPlayerList &&
+                       !verifyChromeInteraction && !verifyPlaceVisual &&
+                       !placePath && frame == 245) {
                 runtime.handleInput(rbx::platform::InputEvent{
                     .kind = rbx::platform::InputEvent::Kind::keyDown,
                     .key = rbx::platform::InputEvent::Key::escape});
-            } else if (headlessVerify && !verifyPlayerList &&
-                       !verifyChromeInteraction && frame == 246) {
+            } else if (headlessVerify && !verifyLauncher && !verifyPlayerList &&
+                       !verifyChromeInteraction && !verifyPlaceVisual &&
+                       !placePath && frame == 246) {
                 runtime.handleInput(rbx::platform::InputEvent{
                     .kind = rbx::platform::InputEvent::Kind::keyUp,
                     .key = rbx::platform::InputEvent::Key::escape});
-            } else if (headlessVerify && !verifyPlayerList &&
-                       !verifyChromeInteraction && !verifyPeoplePage && frame == 275) {
+            } else if (headlessVerify && !verifyLauncher && !verifyPlayerList &&
+                       !verifyChromeInteraction && !verifyPeoplePage &&
+                       !verifyPlaceVisual && !placePath && frame == 275) {
                 // Select the genuine Settings tab after its opening tween.
                 runtime.handleInput(rbx::platform::InputEvent{
                     .kind = rbx::platform::InputEvent::Kind::pointerDown,
                     .button = rbx::platform::InputEvent::PointerButton::primary,
                     .x = 340.0F, .y = 105.0F});
-            } else if (headlessVerify && !verifyPlayerList &&
-                       !verifyChromeInteraction && !verifyPeoplePage && frame == 276) {
+            } else if (headlessVerify && !verifyLauncher && !verifyPlayerList &&
+                       !verifyChromeInteraction && !verifyPeoplePage &&
+                       !verifyPlaceVisual && !placePath && frame == 276) {
                 runtime.handleInput(rbx::platform::InputEvent{
                     .kind = rbx::platform::InputEvent::Kind::pointerUp,
                     .button = rbx::platform::InputEvent::PointerButton::primary,

@@ -26,6 +26,7 @@ namespace RBX
     class NumberSequenceKeypoint;
     class ColorSequenceKeypoint;
 	class PhysicalProperties;
+	class Font;
 
 	namespace StreamRegion {
 		class Id;
@@ -78,6 +79,8 @@ namespace RBX
     RBX::Network::PacketBuffer& operator << (RBX::Network::PacketBuffer& stream, const ColorSequenceKeypoint& value);
 	RBX::Network::PacketBuffer& operator << (RBX::Network::PacketBuffer& stream, const Rect2D& value);
     RBX::Network::PacketBuffer& operator << (RBX::Network::PacketBuffer& stream, const PhysicalProperties& value);
+    RBX::Network::PacketBuffer& operator << (RBX::Network::PacketBuffer& stream, const Font& value);
+    RBX::Network::PacketBuffer& operator >> (RBX::Network::PacketBuffer& stream, Font& value);
         
 }
 

@@ -129,10 +129,13 @@ private:
 protected:
 	BrickColor color;
 	std::string collisionGroupName;
+	std::string materialVariant;
 	float transparency;
 	float reflectance;
 	float localTransparencyModifier;
 	bool castShadow;
+	bool canTouch;
+	bool canQuery;
 	bool cachedNetworkOwnerIsSomeoneElse;
 	bool locked;
 	CompactEnum<FormFactor, uint8_t> formFactor;
@@ -166,10 +169,13 @@ public:
 	static const Reflection::PropDescriptor<PartInstance, float> prop_Transparency;
 	static const Reflection::PropDescriptor<PartInstance, float> prop_LocalTransparencyModifier;
 	static const Reflection::EnumPropDescriptor<PartInstance, PartMaterial> prop_renderMaterial;
+	static const Reflection::PropDescriptor<PartInstance, std::string> prop_MaterialVariant;
 	static const Reflection::PropDescriptor<PartInstance, float> prop_Reflectance;
 	static const Reflection::PropDescriptor<PartInstance, bool> prop_CastShadow;
 	static const Reflection::PropDescriptor<PartInstance, bool> prop_Locked;
 	static const Reflection::PropDescriptor<PartInstance, bool> prop_CanCollide;
+	static const Reflection::PropDescriptor<PartInstance, bool> prop_CanTouch;
+	static const Reflection::PropDescriptor<PartInstance, bool> prop_CanQuery;
 	static const Reflection::PropDescriptor<PartInstance, std::string> prop_CollisionGroup;
 	static const Reflection::PropDescriptor<PartInstance, int> prop_CollisionGroupId;
 	static const Reflection::PropDescriptor<PartInstance, bool> prop_Anchored;
@@ -438,6 +444,10 @@ public:
 
 	bool getCanCollide() const;
 	virtual void setCanCollide(bool value);
+	bool getCanTouch() const { return canTouch; }
+	void setCanTouch(bool value);
+	bool getCanQuery() const { return canQuery; }
+	void setCanQuery(bool value);
 	std::string getCollisionGroup() const;
 	void setCollisionGroup(const std::string& name);
 	int getCollisionGroupId() const;
@@ -485,6 +495,8 @@ public:
 
 	PartMaterial getRenderMaterial() const;
 	virtual void setRenderMaterial(PartMaterial value);
+	const std::string& getMaterialVariant() const { return materialVariant; }
+	void setMaterialVariant(const std::string& value);
 
 	void setNetworkOwnershipManualReplicate(bool value);
 	const bool getNetworkOwnershipManualReplicate() const;

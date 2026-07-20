@@ -3465,7 +3465,7 @@ int Bridge<G3D::CoordinateFrame>::on_index(const G3D::CoordinateFrame& object, c
 		lua_pushcclosure(L, CoordinateFrameBridge::on_toEulerAnglesYXZ, 1);
 		return 1;
 	}
-	if (strcmp(name,"ToAxisAngle")==0)
+	if (strcmp(name,"toAxisAngle")==0 || strcmp(name,"ToAxisAngle")==0)
 	{
 		lua_pushvalue(L, -1);
 		lua_pushcclosure(L, CoordinateFrameBridge::on_toAxisAngle, 1);

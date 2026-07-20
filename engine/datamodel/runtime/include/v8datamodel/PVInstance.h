@@ -67,6 +67,11 @@ public:
 
 	void moveToPointNoJoin(Vector3 point);	
 
+	// Current PVInstance pivot contract.  Concrete model implementations retain
+	// their authored model pivot while BaseParts use their world CFrame.
+	virtual CoordinateFrame getPivot();
+	virtual void pivotTo(CoordinateFrame targetCFrame);
+
 	bool hitTest(const RBX::RbxRay& worldRay, Vector3& worldHitPoint) {
 		return hitTestImpl(worldRay, worldHitPoint);
 	}

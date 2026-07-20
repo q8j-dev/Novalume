@@ -64,6 +64,9 @@ namespace Soundscape
 REFLECTION_BEGIN();
 static Reflection::PropDescriptor<SoundChannel, SoundId> sound_desc_SoundId("SoundId", category_Data, &SoundChannel::getSoundId, &SoundChannel::setSoundId);
 static Reflection::PropDescriptor<SoundChannel, float> sound_desc_Volume("Volume", category_Data, &SoundChannel::getVolume, &SoundChannel::setVolume);
+static Reflection::RefPropDescriptor<SoundChannel, SoundGroup> sound_desc_SoundGroup(
+	"SoundGroup", category_Data, &SoundChannel::getSoundGroup,
+	&SoundChannel::setSoundGroup);
 static Reflection::PropDescriptor<SoundChannel, float> sound_desc_Pitch("Pitch", category_Data, &SoundChannel::getPitch, &SoundChannel::setPitch);
 static Reflection::PropDescriptor<SoundChannel, float> sound_desc_PlaybackSpeed("PlaybackSpeed", category_Data, &SoundChannel::getPlaybackSpeed, &SoundChannel::setPlaybackSpeed);
 static Reflection::PropDescriptor<SoundChannel, float> sound_desc_MinDistance("MinDistance", category_Data, &SoundChannel::getMinDistance, &SoundChannel::setMinDistance);
@@ -617,7 +620,7 @@ void SoundChannel::setSoundPosition(double value, bool setFromLua)
 	}
 }
 
-void SoundChannel::setVolume(float value)
+	void SoundChannel::setVolume(float value)
 {
 	value = G3D::clamp(value, 0.0f, 1.0f);
 	if (DFLog::SoundTrace)
@@ -638,6 +641,14 @@ void SoundChannel::setVolume(float value)
 
 		raiseChanged(sound_desc_Volume);
 	}
+}
+
+void SoundChannel::setSoundGroup(SoundGroup* value)
+{
+	if (getSoundGroup() == value)
+		return;
+	soundGroup = value ? weak_from(value) : weak_ptr<SoundGroup>();
+	raisePropertyChanged(sound_desc_SoundGroup);
 }
 
 float SoundChannel::getPitch() const

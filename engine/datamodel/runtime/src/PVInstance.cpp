@@ -3,6 +3,7 @@
 #include "V8DataModel/PVInstance.h"
 #include "V8DataModel/UserController.h"
 #include "V8DataModel/Workspace.h"
+#include "V8DataModel/PartInstance.h"
 #include "Util/Math.h"
 #include "Util/Action.h"
 #include "rbx/Debug.h"
@@ -21,6 +22,10 @@ const char *const sPVInstance = "PVInstance";
 
 REFLECTION_BEGIN();
 static const Reflection::PropDescriptor<PVInstance, CoordinateFrame> desc_CoordFrame("CoordinateFrame", category_Data, NULL, &PVInstance::setPVGridOffsetLegacy, Reflection::PropertyDescriptor::UI);
+static const Reflection::BoundFuncDesc<PVInstance, CoordinateFrame()> desc_GetPivot(
+	&PVInstance::getPivot, "GetPivot", Security::None);
+static const Reflection::BoundFuncDesc<PVInstance, void(CoordinateFrame)> desc_PivotTo(
+	&PVInstance::pivotTo, "PivotTo", "targetCFrame", Security::None);
 REFLECTION_END();
 
 PVInstance::PVInstance(const char* name) :
@@ -48,6 +53,20 @@ void PVInstance::moveToPointNoJoin(Vector3 point)
 	if (Workspace* workspace = Workspace::findWorkspace(this)) {
 		workspace->moveToPoint(this, point, DRAG::UNJOIN_NO_JOIN);
 	}
+}
+
+CoordinateFrame PVInstance::getPivot()
+{
+	return getLocation();
+}
+
+void PVInstance::pivotTo(CoordinateFrame targetCFrame)
+{
+	if (!targetCFrame.rotation.isOrthonormal())
+		targetCFrame.rotation.orthonormalize();
+
+	if (PartInstance* part = Instance::fastDynamicCast<PartInstance>(this))
+		part->setCoordinateFrame(targetCFrame);
 }
 
 void PVInstance::readProperty(const XmlElement* propertyElement, IReferenceBinder& binder)

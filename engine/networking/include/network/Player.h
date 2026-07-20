@@ -216,6 +216,7 @@ namespace Network {
 
 		void requestFriendship(shared_ptr<Instance> player);
 		void revokeFriendship(shared_ptr<Instance> player);
+		shared_ptr<const Reflection::ValueTable> getJoinData();
 
 		// Keyboard/Mouse input API
 		shared_ptr<Mouse> getMouse() { return mouse; }

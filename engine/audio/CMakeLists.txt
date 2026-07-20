@@ -15,11 +15,13 @@ add_library(rbx-audio-datamodel STATIC EXCLUDE_FROM_ALL
     src/AudioPlayer.cpp
     src/Sound.cpp
     src/SoundChannel.cpp
+    src/SoundGroups.cpp
     src/SoundService.cpp
     src/SoundWorld.cpp
     include/audio/AudioGraph.h
     include/audio/Sound.h
     include/audio/SoundChannel.h
+    include/audio/SoundGroups.h
     include/audio/SoundService.h
     include/audio/SoundWorld.h)
 add_library(Roblox::AudioDataModel ALIAS rbx-audio-datamodel)

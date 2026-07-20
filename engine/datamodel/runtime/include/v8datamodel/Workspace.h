@@ -272,6 +272,8 @@ public:
 		G3D::Vector3 size, OverlapParams params = OverlapParams());
 	shared_ptr<const Instances> getPartBoundsInRadius(G3D::Vector3 position,
 		float radius, OverlapParams params = OverlapParams());
+	shared_ptr<const Instances> getPartsInPart(shared_ptr<Instance> part,
+		OverlapParams params = OverlapParams());
 
 
 	boost::shared_ptr<IAdornableCollector>& getAdornableCollector() { return adornableCollector; }

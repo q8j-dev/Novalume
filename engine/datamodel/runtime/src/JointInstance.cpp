@@ -45,6 +45,8 @@ static const PropDescriptor<Motor, float/**/> prop_MaxVelocity("MaxVelocity", ca
 static const PropDescriptor<Motor, float/**/> prop_DesiredAngle("DesiredAngle", category_Data, &Motor::getDesiredAngle, &Motor::setDesiredAngle);
 static BoundFuncDesc<Motor, void(float)> func_SetDesiredAngle(&Motor::setDesiredAngleUi, "SetDesiredAngle", "value", Security::None);	// Non replicating local function
 static const PropDescriptor<Motor, float/**/> prop_CurrentAngle("CurrentAngle", category_Data, &Motor::getCurrentAngle, &Motor::setCurrentAngleUi, PropertyDescriptor::UI);
+static const PropDescriptor<Motor6D, bool> prop_Motor6DEnabled(
+	"Enabled", category_Behavior, &Motor6D::getEnabled, &Motor6D::setEnabled);
 REFLECTION_END();
 
 
@@ -194,6 +196,9 @@ bool JointInstance::askSetParent(const Instance* instance) const
 
 World* JointInstance::computeWorld()
 {
+	if (!jointEnabledForWorld())
+		return NULL;
+
 	// Case #1 - Joint is in the JointService - parallel to world
 	if (getParent() && getParent()->getDescriptor() == JointsService::classDescriptor()) {
 		if (Workspace* workspace = ServiceProvider::find<Workspace>(this)) {
@@ -810,6 +815,7 @@ void Motor::setCurrentAngleUi(float value)		// note - setting this is a "command
 
 Motor6D::Motor6D(Joint* joint)
 	:DescribedCreatable<Motor6D, Motor, sMotor6D>(joint, 1)
+	, enabled(true)
 {
 	RBXASSERT(joint->getJointType() == Joint::MOTOR_6D_JOINT);
 	RBXASSERT(0);	// creating a motor by AutoJoin
@@ -818,6 +824,7 @@ Motor6D::Motor6D(Joint* joint)
 
 Motor6D::Motor6D()
 	:DescribedCreatable<Motor6D, Motor, sMotor6D>(new Motor6DJoint(), 1)
+	, enabled(true)
 {
 	this->setName("Motor6D");
 }
@@ -883,6 +890,16 @@ void Motor6D::setCurrentAngleUi(float value)		// note - setting this is a "comma
 	{
 		getMotorJoint()->setCurrentZAngle(value);
 		raiseChanged(prop_CurrentAngle);
+	}
+}
+
+void Motor6D::setEnabled(bool value)
+{
+	if (enabled != value)
+	{
+		enabled = value;
+		handleWorldChanged();
+		raiseChanged(prop_Motor6DEnabled);
 	}
 }
 

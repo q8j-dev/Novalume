@@ -141,5 +141,6 @@ template<> const Type& Type::getSingleton<RBX::Font>()
     static TType<RBX::Font> type("Font");
     return type;
 }
+
 } // namespace Reflection
 } // namespace RBX

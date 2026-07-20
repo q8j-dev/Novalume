@@ -284,7 +284,7 @@ public:
         const unsigned int groupId = primitive->getCollisionGroupId();
         const bool groupsCollide = groupId < 32 &&
             (collisionMask & (1u << groupId)) != 0;
-        if (!included || !groupsCollide ||
+        if (!included || !groupsCollide || !part->getCanQuery() ||
             (params.respectCanCollide && !part->getCanCollide()))
             return IGNORE_PRIM;
         return INCLUDE_PRIM;
@@ -315,7 +315,8 @@ bool overlapIncludes(const PartInstance& part, const OverlapParams& params,
     const bool included = params.filterType == Enums::RAYCAST_FILTER_INCLUDE
         ? listed : !listed;
     const unsigned int groupId = static_cast<unsigned int>(part.getCollisionGroupId());
-    return included && groupId < 32 && (collisionMask & (1u << groupId)) != 0 &&
+    return included && part.getCanQuery() && groupId < 32 &&
+        (collisionMask & (1u << groupId)) != 0 &&
         (!params.respectCanCollide || part.getCanCollide());
 }
 
@@ -355,6 +356,10 @@ static Reflection::BoundFuncDesc<Workspace,
     shared_ptr<const Instances>(G3D::Vector3, float, OverlapParams)>
     workspace_GetPartBoundsInRadius(&Workspace::getPartBoundsInRadius,
         "GetPartBoundsInRadius", "position", "radius", "overlapParams", OverlapParams(), Security::None);
+static Reflection::BoundFuncDesc<Workspace,
+    shared_ptr<const Instances>(shared_ptr<Instance>, OverlapParams)>
+    workspace_GetPartsInPart(&Workspace::getPartsInPart,
+        "GetPartsInPart", "part", "overlapParams", OverlapParams(), Security::None);
 
 static Reflection::RefPropDescriptor<Workspace, Instance> workspace_Terrain("Terrain", category_Behavior, &Workspace::getTerrain, NULL, Reflection::PropertyDescriptor::UI, Security::None);
 
@@ -627,6 +632,40 @@ shared_ptr<const Instances> Workspace::getPartBoundsInRadius(
             G3D::clamp(local.z, -half.z, half.z));
         if ((local - closest).squaredMagnitude() <= radiusSquared)
             result->push_back(instance);
+    });
+    if (params.maxParts > 0 && result->size() > static_cast<std::size_t>(params.maxParts))
+        result->resize(static_cast<std::size_t>(params.maxParts));
+    return result;
+}
+
+shared_ptr<const Instances> Workspace::getPartsInPart(
+    shared_ptr<Instance> queryInstance, OverlapParams params)
+{
+    PartInstance* queryPart = queryInstance
+        ? Instance::fastDynamicCast<PartInstance>(queryInstance.get()) : NULL;
+    if (!queryPart)
+        throw runtime_error("Workspace:GetPartsInPart requires a BasePart");
+    if (!queryPart->getCoordinateFrame().translation.isFinite() ||
+        !queryPart->getPartSizeUi().isFinite())
+        throw runtime_error("Workspace:GetPartsInPart requires a finite BasePart");
+    PhysicsService* physicsService = ServiceProvider::find<PhysicsService>(this);
+    if (!physicsService)
+        throw runtime_error("Workspace:GetPartsInPart requires PhysicsService");
+    const unsigned int groupId = static_cast<unsigned int>(
+        physicsService->getCollisionGroupId(params.collisionGroup));
+    const unsigned int collisionMask = physicsService->getCollisionGroupMask(groupId);
+    const G3D::Box query = partBounds(*queryPart);
+    shared_ptr<Instances> result(new Instances());
+    visitDescendants([&](shared_ptr<Instance> instance) {
+        PartInstance* part = Instance::fastDynamicCast<PartInstance>(instance.get());
+        if (!part || part == queryPart ||
+            !overlapIncludes(*part, params, collisionMask))
+            return;
+        if (G3D::CollisionDetection::fixedSolidBoxIntersectsFixedSolidBox(
+                query, partBounds(*part)))
+        {
+            result->push_back(instance);
+        }
     });
     if (params.maxParts > 0 && result->size() > static_cast<std::size_t>(params.maxParts))
         result->resize(static_cast<std::size_t>(params.maxParts));
@@ -1383,6 +1422,8 @@ float Workspace::physicsStep(bool longStep, float timeInterval, int numThreads)
 	for (int i = 0; i < size; ++i) 
 	{
 		const TouchPair& info = touchReportingParts[i];
+		if (!info.p1->getCanTouch() || !info.p2->getCanTouch())
+			continue;
 
 		if (info.type == TouchPair::Touch)
 		{

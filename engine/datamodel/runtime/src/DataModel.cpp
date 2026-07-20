@@ -92,6 +92,7 @@
 
 #include "Script/luainstancebridge.h"
 #include "Script/scriptcontext.h"
+#include "Script/ThreadRef.h"
 #include "Script/Script.h"
 #include "Script/CoreScript.h"
 
@@ -117,6 +118,8 @@
 #include "AppDraw/DrawPrimitives.h"
 
 #include "g3d/format.h"
+
+#include <atomic>
 
 #include "RbxG3D/RbxTime.h"
 
@@ -177,6 +180,16 @@ DYNAMIC_FASTFLAG(UseR15Character)
 DYNAMIC_LOGVARIABLE(R15Character, 0)
 
 namespace RBX {
+
+namespace Lua
+{
+void callAsyncCallback(
+	WeakFunctionRef function,
+	shared_ptr<const Reflection::Tuple> args,
+	Reflection::AsyncCallbackDescriptor::ResumeFunction resumeFunction,
+	Reflection::AsyncCallbackDescriptor::ErrorFunction errorFunction,
+	boost::intrusive_ptr<WeakThreadRef> cachedCallbackThread);
+}
 
 static void dummyLoader(RBX::DataModel*) {}
 int DataModel::LegacyLock::mainThreadId = ~0;
@@ -300,6 +313,8 @@ static Reflection::BoundFuncDesc<DataModel, void()> writeStatSettingsFunction(&D
 
 static Reflection::BoundAsyncCallbackDesc<
 	DataModel, shared_ptr<const Reflection::Tuple>(void)> callback_onClose("OnClose", &DataModel::onCloseCallback, &DataModel::onCloseCallbackChanged);
+static Reflection::BoundFuncDesc<DataModel, void(Lua::WeakFunctionRef)>
+	func_bindToClose(&DataModel::bindToClose, "BindToClose", "function", Security::None);
 
 static Reflection::PropDescriptor<DataModel, std::string> desc_VIPServerId("VIPServerId", category_Data, &DataModel::getVIPServerId, NULL);
 static Reflection::BoundFuncDesc<DataModel, void(std::string)> func_setVIPServerId(&DataModel::setVIPServerId, "SetVIPServerId", "newId", Security::LocalUser);
@@ -975,6 +990,93 @@ void DataModel::onCloseCallbackChanged(const CloseCallback& oldValue)
 	{
 		onCloseCallback = oldValue;
 		throw RBX::runtime_error("OnClose is already set");
+	}
+}
+
+namespace
+{
+class BoundCloseInvocation
+{
+public:
+	BoundCloseInvocation(std::size_t count,
+		Reflection::AsyncCallbackDescriptor::ResumeFunction continuation)
+		: remaining(count)
+		, continuation(continuation)
+	{
+	}
+
+	void succeeded(shared_ptr<const Reflection::Tuple>)
+	{
+		finishOne();
+	}
+
+	void failed(const std::string& message)
+	{
+		StandardOut::singleton()->printf(MESSAGE_ERROR,
+			"BindToClose callback failed: %s", message.c_str());
+		finishOne();
+	}
+
+private:
+	void finishOne()
+	{
+		if (remaining.fetch_sub(1) == 1)
+			continuation(shared_ptr<const Reflection::Tuple>(
+				new Reflection::Tuple()));
+	}
+
+	std::atomic<std::size_t> remaining;
+	Reflection::AsyncCallbackDescriptor::ResumeFunction continuation;
+};
+}
+
+void DataModel::bindToClose(Lua::WeakFunctionRef callback)
+{
+	if (!callback.lock())
+		throw RBX::runtime_error("BindToClose requires a live function");
+
+	if (boundCloseCallbacks.empty())
+	{
+		if (onCloseCallback)
+			throw RBX::runtime_error("OnClose is already set");
+		onCloseCallback = boost::bind(
+			&DataModel::invokeBoundCloseCallbacks, this, _1, _2);
+	}
+
+	boundCloseCallbacks.push_back(
+		shared_ptr<Lua::WeakFunctionRef>(new Lua::WeakFunctionRef(callback)));
+}
+
+void DataModel::invokeBoundCloseCallbacks(
+	Reflection::AsyncCallbackDescriptor::ResumeFunction resumeFunction,
+	Reflection::AsyncCallbackDescriptor::ErrorFunction errorFunction)
+{
+	(void)errorFunction;
+	if (boundCloseCallbacks.empty())
+	{
+		resumeFunction(shared_ptr<const Reflection::Tuple>(
+			new Reflection::Tuple()));
+		return;
+	}
+
+	shared_ptr<BoundCloseInvocation> invocation(new BoundCloseInvocation(
+		boundCloseCallbacks.size(), resumeFunction));
+	shared_ptr<const Reflection::Tuple> arguments(new Reflection::Tuple());
+
+	for (std::vector<shared_ptr<Lua::WeakFunctionRef> >::const_iterator iterator =
+		boundCloseCallbacks.begin(); iterator != boundCloseCallbacks.end(); ++iterator)
+	{
+		try
+		{
+			Lua::callAsyncCallback(**iterator, arguments,
+				boost::bind(&BoundCloseInvocation::succeeded, invocation, _1),
+				boost::bind(&BoundCloseInvocation::failed, invocation, _1),
+				boost::intrusive_ptr<Lua::WeakThreadRef>(new Lua::WeakThreadRef()));
+		}
+		catch (const std::exception& exception)
+		{
+			invocation->failed(exception.what());
+		}
 	}
 }
 
@@ -3013,7 +3115,6 @@ void DataModel::clearContents(bool resettingSimulation)
 		{
 			FASTLOG(FLog::CloseDataModel, "Closing Script Context");
 			sc->closeStates(resettingSimulation);
-			ScriptContext::propScriptsDisabled.setValue(sc, false);
 		}
 		else
 		{
@@ -3124,7 +3225,6 @@ void DataModel::clearContents(bool resettingSimulation)
 	{
 		FASTLOG(FLog::CloseDataModel, "Closing Script Context");
 		sc->closeStates(resettingSimulation);
-		ScriptContext::propScriptsDisabled.setValue(sc, false);
 	}
 }
 

@@ -11,6 +11,10 @@ local PlatformService = nil
 pcall(function() PlatformService = game:GetService('PlatformService') end)
 local UserInputService = game:GetService('UserInputService')
 
+local function usesLocalLauncherIdentity()
+	return UserInputService:GetPlatform() ~= Enum.Platform.XBoxOne
+end
+
 local Http = require(Modules:FindFirstChild('Http'))
 
 local AccountManager = {}
@@ -78,7 +82,7 @@ end
 	-- Success of authentication, with authentication state
 function AccountManager:BeginAuthenticationAsync(inputObject)
 	local result = nil
-	if UserSettings().GameSettings:InStudioMode() then
+	if UserSettings().GameSettings:InStudioMode() or usesLocalLauncherIdentity() then
 		result = authenticateStudio()
 	elseif PlatformService and UserInputService:GetPlatform() == Enum.Platform.XBoxOne then
 		result = authenticateXBox(inputObject)
@@ -141,7 +145,7 @@ function AccountManager:UnlinkAccountAsync()
 end
 
 function AccountManager:HasLinkedAccountAsync()
-	if UserSettings().GameSettings:InStudioMode() then
+	if UserSettings().GameSettings:InStudioMode() or usesLocalLauncherIdentity() then
 		return AccountManager.AuthResults.Success
 	end
 
@@ -158,7 +162,7 @@ function AccountManager:HasLinkedAccountAsync()
 end
 
 function AccountManager:HasRobloxCredentialsAsync()
-	if UserSettings().GameSettings:InStudioMode() then
+	if UserSettings().GameSettings:InStudioMode() or usesLocalLauncherIdentity() then
 		return AccountManager.AuthResults.Success
 	end
 

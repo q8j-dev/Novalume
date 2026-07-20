@@ -4,6 +4,7 @@
 #include "g3d/GImage.h"
 #include "g3d/BinaryOutput.h"
 #include "V8DataModel/Lighting.h"
+#include "V8DataModel/PostEffect.h"
 #include "V8DataModel/Decal.h"
 #include "V8DataModel/PartInstance.h"
 #include "V8DataModel/Workspace.h"
@@ -498,6 +499,12 @@ void RenderView::updateFog()
 void RenderView::updateLighting(Lighting* lighting)
 {
     SceneManager* smgr = visualEngine->getSceneManager();
+
+    BloomEffect* bloom = lighting->findFirstChildOfType<BloomEffect>();
+    smgr->setBloomConfiguration(bloom && bloom->getEnabled(),
+        bloom ? bloom->getIntensity() : 0.0f,
+        bloom ? bloom->getSize() : 0.0f,
+        bloom ? bloom->getThreshold() : 0.0f);
 
 	if (!lightingValid)
 	{
@@ -1541,12 +1548,21 @@ void RenderView::presetLighting(RBX::Lighting* l, const RBX::Color3& extraAmbien
 	float topShiftBase = (topColorShift.r+topColorShift.g+topColorShift.b)*0.3333f;
 	Color3 topAdjustment = topColorShift - Color3(topShiftBase,topShiftBase, topShiftBase);
 
-	float globalBrightness = G3D::clamp(l->getGlobalBrightness(), 0.05f, 5.0f);
+	const float exposure = std::pow(2.0f, l->getExposureCompensation());
+	float globalBrightness = G3D::clamp(l->getGlobalBrightness(), 0.0f, 5.0f) * exposure;
 
 	Vector3 sunDirection = -skyParameters.lightDirection.unit();
 	Color3 sunColor = skyParameters.lightColor * 0.9f;
 
-	Color3 ambientColor = l->getGlobalAmbient() + extraAmbient;
+	Color3 ambientColor = (l->getGlobalAmbient() + extraAmbient) * exposure;
+	if (l->getTechnology() >= Lighting::TECHNOLOGY_SHADOW_MAP)
+	{
+		// Modern ShadowMap/Future/Unified output is tone-mapped and retains a
+		// small readable indirect floor even when an indoor place authors black
+		// Ambient.  The legacy forward path has no tone mapper, so without this
+		// compensation dark materials collapse to black between local lights.
+		ambientColor = ambientColor.max(Color3(0.12f, 0.12f, 0.12f));
+	}
 	
 	Color3 keyLightColor = sunColor * globalBrightness;
 	keyLightColor += topAdjustment * keyLightColor.length();

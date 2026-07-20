@@ -110,6 +110,8 @@ namespace RBX
 		//Properties
 		bool getDisabled() const { return disabled; }
 		void setDisabled(bool value);
+		bool getEnabled() const { return !disabled; }
+		void setEnabled(bool value) { setDisabled(!value); }
 		Enums::RunContext getRunContext() const { return runContext; }
 		void setRunContext(Enums::RunContext value);
 

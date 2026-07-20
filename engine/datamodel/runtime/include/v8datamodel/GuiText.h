@@ -77,6 +77,13 @@ public:
 	{
 		fontFace = value;
 		const std::string& family = value.getFamily();
+		const std::size_t nameBegin = family.find_last_of('/');
+		const std::size_t nameEnd = family.find_last_of('.');
+		const std::string familyName = family.substr(
+			nameBegin == std::string::npos ? 0 : nameBegin + 1,
+			nameEnd == std::string::npos || nameEnd <= nameBegin
+				? std::string::npos
+				: nameEnd - (nameBegin == std::string::npos ? 0 : nameBegin + 1));
 		if (family.find("BuilderIcons-Filled") != std::string::npos)
 			font = TextService::FONT_BUILDER_ICONS_FILLED;
 		else if (family.find("BuilderIcons") != std::string::npos)
@@ -92,8 +99,59 @@ public:
 			else
 				font = TextService::FONT_BUILDERSANS;
 		}
+		else if (familyName == "Fondamento") font = TextService::FONT_FONDAMENTO;
+		else if (familyName == "Merriweather") font = TextService::FONT_MERRIWEATHER;
+		else if (familyName == "SpecialElite") font = TextService::FONT_SPECIALELITE;
+		else if (familyName == "AccanthisADFStd") font = TextService::FONT_BODONI;
+		else if (familyName == "Guru") font = TextService::FONT_GARAMOND;
+		else if (familyName == "ComicNeueAngular") font = TextService::FONT_CARTOON;
+		else if (familyName == "Inconsolata") font = TextService::FONT_CODE;
+		else if (familyName == "HighwayGothic") font = TextService::FONT_HIGHWAY;
+		else if (familyName == "Zekton") font = TextService::FONT_SCIFI;
+		else if (familyName == "PressStart2P") font = TextService::FONT_ARCADE;
+		else if (familyName == "Balthazar") font = TextService::FONT_FANTASY;
+		else if (familyName == "RomanAntique") font = TextService::FONT_ANTIQUE;
+		else if (familyName == "AmaticSC") font = TextService::FONT_AMATICSC;
+		else if (familyName == "Bangers") font = TextService::FONT_BANGERS;
+		else if (familyName == "Creepster") font = TextService::FONT_CREEPSTER;
+		else if (familyName == "DenkOne") font = TextService::FONT_DENKONE;
+		else if (familyName == "FredokaOne") font = TextService::FONT_FREDOKAONE;
+		else if (familyName == "GrenzeGotisch") font = TextService::FONT_GRENZEGOTISCH;
+		else if (familyName == "IndieFlower") font = TextService::FONT_INDIEFLOWER;
+		else if (familyName == "JosefinSans") font = TextService::FONT_JOSEFINSANS;
+		else if (familyName == "Jura") font = TextService::FONT_JURA;
+		else if (familyName == "Kalam") font = TextService::FONT_KALAM;
+		else if (familyName == "LuckiestGuy") font = TextService::FONT_LUCKIESTGUY;
+		else if (familyName == "Michroma") font = TextService::FONT_MICHROMA;
+		else if (familyName == "Nunito") font = TextService::FONT_NUNITO;
+		else if (familyName == "Oswald") font = TextService::FONT_OSWALD;
+		else if (familyName == "PatrickHand") font = TextService::FONT_PATRICKHAND;
+		else if (familyName == "PermanentMarker") font = TextService::FONT_PERMANENTMARKER;
+		else if (familyName == "RobotoCondensed") font = TextService::FONT_ROBOTOCONDENSED;
+		else if (familyName == "RobotoMono") font = TextService::FONT_ROBOTOMONO;
+		else if (familyName == "Roboto") font = TextService::FONT_ROBOTO;
+		else if (familyName == "Sarpanch") font = TextService::FONT_SARPANCH;
+		else if (familyName == "TitilliumWeb") font = TextService::FONT_TITILLIUMWEB;
+		else if (familyName == "Ubuntu") font = TextService::FONT_UBUNTU;
+		else if (familyName == "Arimo")
+			font = value.getWeight() >= FONT_WEIGHT_BOLD
+				? TextService::FONT_ARIMOBOLD : TextService::FONT_ARIMO;
+		else if (familyName == "Montserrat")
+		{
+			if (value.getWeight() >= FONT_WEIGHT_HEAVY) font = TextService::FONT_GOTHAMBLACK;
+			else if (value.getWeight() >= FONT_WEIGHT_BOLD) font = TextService::FONT_GOTHAMBOLD;
+			else if (value.getWeight() >= FONT_WEIGHT_MEDIUM) font = TextService::FONT_GOTHAMMEDIUM;
+			else font = TextService::FONT_GOTHAM;
+		}
+		else if (familyName == "Arial" || familyName == "LegacyArial")
+			font = value.getWeight() >= FONT_WEIGHT_BOLD
+				? TextService::FONT_ARIALBOLD : TextService::FONT_ARIAL;
 		else if (value.getStyle() == FONT_STYLE_ITALIC)
 			font = TextService::FONT_SOURCESANSITALIC;
+		else if (familyName == "SourceSansPro" &&
+			value.getWeight() >= FONT_WEIGHT_SEMI_BOLD &&
+			value.getWeight() < FONT_WEIGHT_BOLD)
+			font = TextService::FONT_SOURCESANSSEMIBOLD;
 		else if (value.getWeight() >= FONT_WEIGHT_BOLD)
 			font = TextService::FONT_SOURCESANSBOLD;
 		else if (value.getWeight() <= FONT_WEIGHT_LIGHT)

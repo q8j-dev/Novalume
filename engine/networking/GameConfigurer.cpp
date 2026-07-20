@@ -1020,10 +1020,10 @@ void StudioConfigurer::configure(RBX::Security::Identities identity, DataModel* 
 
 		if (Network::Players::frontendProcessing(dataModel)) 
 		{
-			starterScript = "StarterScript";
+			if (starterScript.empty())
+				starterScript = "StarterScript";
 			scriptContext->addCoreScriptLocal(starterScript, shared_ptr<Instance>());
 		}
 	}
 } 
-
 

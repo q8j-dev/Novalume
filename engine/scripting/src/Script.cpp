@@ -31,6 +31,9 @@ using namespace RBX;
 const Reflection::PropDescriptor<Script, ProtectedString> Script::prop_EmbeddedSourceCode("Source", category_Data, &Script::getEmbeddedCodeSafe, &Script::setEmbeddedCode, Reflection::PropertyDescriptor::STANDARD, Security::Plugin );
 const Reflection::PropDescriptor<BaseScript, ScriptId> BaseScript::prop_SourceCodeId("LinkedSource", category_Data, &BaseScript::getScriptId, &BaseScript::setScriptId);
 const Reflection::PropDescriptor<BaseScript, bool> BaseScript::prop_Disabled("Disabled", category_Behavior, &BaseScript::getDisabled, &BaseScript::setDisabled);
+static const Reflection::PropDescriptor<BaseScript, bool> prop_Enabled(
+	"Enabled", category_Behavior, &BaseScript::getEnabled, &BaseScript::setEnabled,
+	Reflection::PropertyDescriptor::SCRIPTING);
 static Reflection::EnumPropDescriptor<BaseScript, Enums::RunContext> prop_RunContext(
 	"RunContext", category_Behavior, &BaseScript::getRunContext,
 	&BaseScript::setRunContext);
@@ -110,7 +113,12 @@ bool BaseScript::hasCoreScriptReplacements()
 
 	fs::path testPath(adminScriptsPath);
 #if !ENABLE_XBOX_STUDIO_BUILD
-	testPath /= "StarterScript.lua";
+	// A host-selected shell may intentionally provide the authentic Durango
+	// XStarterScript without replacing the normal in-experience starter.  Treat
+	// either explicit entry point as a complete replacement root; the caller's
+	// selected starter still determines which script is executed.
+	return fs::exists(testPath / "StarterScript.lua") ||
+		fs::exists(testPath / "XStarterScript.lua");
 #else
     testPath /= "XStarterScript.lua";
 #endif

@@ -110,13 +110,15 @@ namespace RBX
 	};
 
 	class TweenService
-		: public DescribedNonCreatable<TweenService, Instance, sTweenService>
+		: public DescribedCreatable<TweenService, Instance, sTweenService,
+			Reflection::ClassDescriptor::INTERNAL_LOCAL>
 		, public Service
 		, public HeartbeatInstance
 		, public IStepped
 	{
 	private:
-		typedef DescribedNonCreatable<TweenService, Instance, sTweenService> Super;
+		typedef DescribedCreatable<TweenService, Instance, sTweenService,
+			Reflection::ClassDescriptor::INTERNAL_LOCAL> Super;
 	public:
 		TweenService();
 		shared_ptr<Instance> createTween(shared_ptr<Instance> instance,

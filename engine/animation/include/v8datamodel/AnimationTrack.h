@@ -67,7 +67,9 @@ namespace RBX {
 
 		rbx::signal<void(std::string)> keyframeReachedSignal;
 		rbx::signal<void()> stoppedSignal;
+		rbx::signal<void()> endedSignal;
 		rbx::signal<void()> didLoopSignal;
+		void fireEnded() { endedSignal(); }
 	};
 
 } // namespace

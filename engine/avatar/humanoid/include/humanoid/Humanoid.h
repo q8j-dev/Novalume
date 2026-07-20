@@ -169,6 +169,7 @@ namespace RBX {
 		// hack - easiest place to update is on query of had neck
 		bool hadNeck;							// has this humanoid ever had a neck?  Only break joints on death if so
 		bool hadHealth;							// has this humanoid ever had health > 0?  Only break joints on death if so
+		bool breakJointsOnDeathEnabled;
 
 		Vector3 pos0; // for looking for movement spikes
 		Vector3 pos1;
@@ -344,6 +345,7 @@ namespace RBX {
 
 		HumanoidDisplayDistanceType getDisplayDistanceType() const { return displayDistanceType; }
 		void setDisplayDistanceType(HumanoidDisplayDistanceType value);
+		void applyDescription(shared_ptr<Instance> description);
 
 		static Humanoid* humanoidFromBodyPart(Instance* bodyPart);
 		static const Humanoid* constHumanoidFromBodyPart(const Instance* bodyPart);
@@ -384,6 +386,7 @@ namespace RBX {
         rbx::signal<void(RBX::HUMAN::StateType, RBX::HUMAN::StateType)> stateChangedSignal;
         rbx::signal<void(RBX::HUMAN::StateType, bool)> stateEnabledChangedSignal;
 		RBX::HUMAN::StateType getCurrentStateType();
+		PartMaterial getFloorMaterial() const;
 		RBX::HUMAN::StateType getPreviousStateType() { return previousState; };
 		void setPreviousStateType(RBX::HUMAN::StateType newState);
 		void changeState(RBX::HUMAN::StateType state);
@@ -511,7 +514,9 @@ namespace RBX {
 		bool getDead() const;
 
 		void setHadNeck() {hadNeck = true;}
-		bool breakJointsOnDeath() const {return hadNeck && hadHealth;}
+		bool breakJointsOnDeath() const {return breakJointsOnDeathEnabled && hadNeck && hadHealth;}
+		bool getBreakJointsOnDeath() const { return breakJointsOnDeathEnabled; }
+		void setBreakJointsOnDeath(bool value);
 
 		void setTargetPoint(const Vector3& value);
 		void setTargetPointLocal(const Vector3& value);	// does not replicate

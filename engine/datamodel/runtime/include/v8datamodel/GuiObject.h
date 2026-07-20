@@ -17,6 +17,11 @@ namespace RBX
 {
 	enum AutomaticSize : int;
 	enum GuiState : int;
+	enum ResamplerMode : int
+	{
+		RESAMPLER_MODE_DEFAULT = 0,
+		RESAMPLER_MODE_PIXELATED = 1,
+	};
 	class GuiDrawImage;
 	class TweenService;
 	class UserInputService;

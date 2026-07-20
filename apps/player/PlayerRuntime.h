@@ -29,6 +29,7 @@ public:
                   unsigned int renderWidth, unsigned int renderHeight,
                   unsigned int logicalWidth, unsigned int logicalHeight,
                   bool disableAudioOutput, bool useCurrentInExperienceUi,
+                  bool useDurangoLauncher = false,
                   AvatarRigVariant avatarRig = AvatarRigVariant::R15,
                   bool verifyViewportRendering = false,
                   const std::filesystem::path& videoVerificationPath = {},
@@ -44,7 +45,8 @@ public:
                   bool verifySkybox = false,
                   bool verifyAudio = false,
                   bool verifyPlaceAudio = false,
-                  bool verifyTextRendering = false);
+                  bool verifyTextRendering = false,
+                  bool verifyPlaceVisual = false);
     ~PlayerRuntime();
 
     PlayerRuntime(const PlayerRuntime&) = delete;

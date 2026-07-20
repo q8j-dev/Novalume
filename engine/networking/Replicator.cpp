@@ -46,6 +46,7 @@
 #include "Util/Faces.h"
 #include "Util/Axes.h"
 #include "util/PhysicalProperties.h"
+#include "Util/Font.h"
 #include "V8DataModel/Teams.h"
 #include "v8datamodel/MegaCluster.h"
 #include "V8DataModel/TouchTransmitter.h"
@@ -671,9 +672,19 @@ void Replicator::clusterOutStep()
 	{
 		sendClusterPacket();
 	}
+	catch (const std::exception& error)
+	{
+		lastPacketError = RBX::format(
+			"Exception during cluster replication: %s", error.what());
+		std::fprintf(stderr, "%s\n", lastPacketError.c_str());
+		requestDisconnectWithSignal(DisconnectReason_SendPacketError);
+		throw;
+	}
 	catch (...)
 	{
 		FASTLOG(FLog::Network, "Exception during cluster out step, request disconnect");
+		lastPacketError = "Unknown exception during cluster replication";
+		std::fprintf(stderr, "%s\n", lastPacketError.c_str());
 		requestDisconnectWithSignal(DisconnectReason_SendPacketError);
 		throw;
 	}
@@ -687,9 +698,19 @@ void Replicator::dataOutStep()
 	{
 		sendItemsPacket();
 	}
+	catch (const std::exception& error)
+	{
+		lastPacketError = RBX::format(
+			"Exception during instance replication: %s", error.what());
+		std::fprintf(stderr, "%s\n", lastPacketError.c_str());
+		requestDisconnectWithSignal(DisconnectReason_SendPacketError);
+		throw;
+	}
 	catch (...)
 	{
 		FASTLOG(FLog::Network, "Exception during data out step, request disconnect");	
+		lastPacketError = "Unknown exception during instance replication";
+		std::fprintf(stderr, "%s\n", lastPacketError.c_str());
 		requestDisconnectWithSignal(DisconnectReason_SendPacketError);
 		throw;
 	}
@@ -784,7 +805,10 @@ void Replicator::addTopReplicationContainers(ServiceProvider* newProvider)
 	addTopReplicationContainer(ServiceProvider::create<ReplicatedFirst>(newProvider), false, isCloudEdit(), replicationMethodFunc);
 	
 	addTopReplicationContainer(ServiceProvider::create<RBX::Lighting>(newProvider), true, true, replicationMethodFunc);
-	addTopReplicationContainer(ServiceProvider::create<RBX::Soundscape::SoundService>(newProvider), true, false, replicationMethodFunc);
+	// Modern places parent SoundGroup and sound-effect instances under
+	// SoundService. They are authored game state and must be present before
+	// LocalScripts start, just like Lighting descendants.
+	addTopReplicationContainer(ServiceProvider::create<RBX::Soundscape::SoundService>(newProvider), true, true, replicationMethodFunc);
 	addTopReplicationContainer(ServiceProvider::create<RBX::StarterPackService>(newProvider), false, true, replicationMethodFunc);
 	addTopReplicationContainer(ServiceProvider::create<RBX::StarterGuiService>(newProvider), isCloudEdit(), true, replicationMethodFunc);
 	addTopReplicationContainer(ServiceProvider::create<RBX::StarterPlayerService>(newProvider), isCloudEdit(), true, replicationMethodFunc);
@@ -1379,6 +1403,10 @@ bool Replicator::serializeValue(const Reflection::Type& type, const Reflection::
             serializeVariant(it->second, outBitStream);
         }
 	}
+	else if (type == Reflection::Type::singleton<Font>())
+    {
+        serializeGeneric<Font>(value, outBitStream);
+    }
 	else if (type == Reflection::Type::singleton<NumberSequence>())
     {
         serializeGeneric<NumberSequence>(value, outBitStream);
@@ -1560,6 +1588,10 @@ void Replicator::serializePropertyValue(const Reflection::ConstProperty& propert
 		else
 			outBitStream << property.getValue<RBX::SystemAddress>();
 	}
+    else if (property.getDescriptor().type == Reflection::Type::singleton<Font>())
+    {
+        serialize<Font>(property, outBitStream);
+    }
     else if (property.getDescriptor().type == Reflection::Type::singleton<NumberSequence>())
     {
         serialize<NumberSequence>(property, outBitStream);
@@ -1794,6 +1826,10 @@ bool Replicator::deserializeValue(RBX::Network::PacketBuffer& inBitStream, const
         
         value = shared_ptr<const Reflection::ValueMap>(data);
 	}
+    else if (type == Reflection::Type::singleton<Font>())
+    {
+        deserializeGeneric<Font>(value, inBitStream);
+    }
     else if (type == Reflection::Type::singleton<NumberSequence>())
     {
         deserializeGeneric<NumberSequence>(value, inBitStream);
@@ -2051,6 +2087,10 @@ void Replicator::deserializePropertyValue(RBX::Network::PacketBuffer& inBitStrea
 			*outValue = value;
 
 	}
+    else if (property.getDescriptor().type == Reflection::Type::singleton<Font>())
+    {
+        outValue ? deserializeGeneric<Font>(*outValue, inBitStream) : deserialize<Font>(property, inBitStream);
+    }
     else if (property.getDescriptor().type == Reflection::Type::singleton<NumberSequence>())
     {
         outValue ? deserializeGeneric<NumberSequence>(*outValue, inBitStream) : deserialize<NumberSequence>(property, inBitStream);
@@ -2432,6 +2472,12 @@ bool Replicator::isSerializePending(const Instance* instance) const
 	return pendingNewInstances.find(instance) != pendingNewInstances.end();
 }
 
+bool Replicator::hasPendingNewInstances() const
+{
+	RBX::mutex::scoped_lock lock(pendingInstancesMutex);
+	return !pendingNewInstances.empty();
+}
+
 bool Replicator::isPropertyChangedPending(const RBX::Reflection::ConstProperty& property) const
 {
 	if (pendingChangedPropertyItems.find(property) != pendingChangedPropertyItems.end())
@@ -2654,8 +2700,14 @@ void Replicator::logPacketError(Packet* packet, const std::string& type, const s
 	std::string errorMessage = RBX::format("Error while processing packet: %s (packet id: %d, packet length: %d)", message.c_str(), packet->data[0], packet->length);
 	lastPacketError = errorMessage;
 
-	RBX::StandardOut::singleton()->print(RBX::MESSAGE_ERROR, "Error while processing packet.");
+	// Packet stream failures happen on the background deserializer and normally
+	// disconnect the peer immediately.  Preserve the actionable context in the
+	// ordinary error channel as well as the sensitive diagnostic channel so a
+	// standalone Player without a Log sink does not reduce the failure to an
+	// unexplained disconnect.
+	RBX::StandardOut::singleton()->print(RBX::MESSAGE_ERROR, errorMessage.c_str());
 	RBX::StandardOut::singleton()->print(RBX::MESSAGE_SENSITIVE, errorMessage.c_str());
+	std::fprintf(stderr, "%s\n", errorMessage.c_str());
 
 	Analytics::InfluxDb::Points p;
 	p.addPoint("Type", type.c_str());
@@ -4900,6 +4952,10 @@ void Replicator::OnInternalPacket(InternalPacket *internalPacket, unsigned frame
 void Replicator::requestDisconnect(DisconnectReason reason)
 {
 	lastDisconnectReason = static_cast<int>(reason);
+	std::fprintf(stderr, "%s replicator requested disconnect reason %d%s%s\n",
+		isServerReplicator() ? "server" : "client", lastDisconnectReason,
+		lastPacketError.empty() ? "" : ": ",
+		lastPacketError.empty() ? "" : lastPacketError.c_str());
 	{
         // (security) all of these messages appear in the client and can give info
         // on what security feature are in use.

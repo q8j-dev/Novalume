@@ -465,6 +465,7 @@ LightGrid::LightGrid(VisualEngine* visualEngine, const shared_ptr<Texture>& text
 
     lightShadows = false;
     lightDirection = Vector3(0, -1, 0);
+    lightExposure = 1.0f;
     skyAmbient = Color3uint8(0, 0, 0);
     
     dirtyCursor = Vector3int32(0,0,0);
@@ -812,6 +813,16 @@ void LightGrid::setLightDirection(const Vector3& value)
         dirtyCursorDirection = Vector3int32(lightDirection.x < 0 ? -1 : 1, lightDirection.y < 0 ? -1 : 1, lightDirection.z < 0 ? -1 : 1);
         
         invalidateAll(LightGridChunk::Dirty_LightingGlobal);
+    }
+}
+
+void LightGrid::setLightExposure(float value)
+{
+    value = G3D::clamp(value, 0.125f, 8.0f);
+    if (value != lightExposure)
+    {
+        lightExposure = value;
+        invalidateAll(LightGridChunk::Dirty_LightingLocal);
     }
 }
 
@@ -1569,7 +1580,7 @@ void LightGrid::lightingUpdateLightScratch(const LightGridChunk& chunk, const Ex
     // Convert light data into chunk-local space
     Vector3 position = (lobj->getPosition() - chunkExtents.min()) / 4.f;
     Color3uint8 color = transformColor(Color3uint8(lobj->getColor()));
-	float intensity = lobj->getBrightness();
+	float intensity = lobj->getBrightness() * lightExposure;
 	float range = lobj->getRange() / 4;
 
     // Compute light extents in terms of a chunk with an extra 1-cell wide border

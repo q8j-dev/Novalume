@@ -17,6 +17,7 @@ namespace RBX
 			: imageTransparency(0)
 			, imageColor(Color3::white())
 			, imageScale(GuiObject::SCALE_STRETCH)
+			, resampleMode(RESAMPLER_MODE_DEFAULT)
 			, sliceCenter(Rect2D())
 			, sliceScale(1.0f)
 		{
@@ -36,6 +37,7 @@ namespace RBX
 		float getSliceScale() const { return sliceScale; }
 
 		GuiObject::ImageScale getImageScale() const { return imageScale; }
+		ResamplerMode getResampleMode() const { return resampleMode; }
 
 	protected:
 		TextureId image;
@@ -47,6 +49,7 @@ namespace RBX
 		Rect2D sliceCenter;
 		float sliceScale;
 		GuiObject::ImageScale imageScale;
+		ResamplerMode resampleMode;
 	};
 
 	template<class Class>
@@ -141,6 +144,7 @@ namespace RBX
 		void setSliceCenter(Rect2D value);			\
 		void setSliceScale(float value);			\
 		void setImageScale(ImageScale value);		\
+		void setResampleMode(ResamplerMode value);	\
 		void renderStretched(Adorn* adorn);			\
 		void renderSliced(Adorn* adorn);			\
 		void renderImage(Adorn* adorn);
@@ -155,6 +159,7 @@ namespace RBX
 		static const Reflection::PropDescriptor<Class, Rect2D> prop_SliceCenter("SliceCenter", category_Image, &Class::getSliceCenter, &Class::setSliceCenter); \
 		static const Reflection::PropDescriptor<Class, float> prop_SliceScale("SliceScale", category_Image, &Class::getSliceScale, &Class::setSliceScale); \
 		static const Reflection::EnumPropDescriptor<Class, GuiObject::ImageScale> prop_ImageScale("ScaleType", category_Image, &Class::getImageScale, &Class::setImageScale); \
+		static const Reflection::EnumPropDescriptor<Class, ResamplerMode> prop_ResampleMode("ResampleMode", category_Image, &Class::getResampleMode, &Class::setResampleMode); \
 		void Class::setImage(TextureId value)				\
 		{													\
 			if(image != value){								\
@@ -232,6 +237,14 @@ namespace RBX
 			if(imageScale != value){						\
 				imageScale = value;							\
 				raisePropertyChanged(prop_ImageScale);		\
+			}												\
+		}													\
+															\
+		void Class::setResampleMode(ResamplerMode value)	\
+		{													\
+			if (resampleMode != value) {					\
+				resampleMode = value;						\
+				raisePropertyChanged(prop_ResampleMode);		\
 			}												\
 		}													\
 															\

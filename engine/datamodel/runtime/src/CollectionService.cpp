@@ -1,5 +1,6 @@
 
 #include "V8DataModel/CollectionService.h"
+#include "V8DataModel/Bindable.h"
 #include "V8DataModel/Configuration.h"
 #include "V8DataModel/StyleSheet.h"
 #include "Script/LuaSignalBridge.h"
@@ -55,16 +56,37 @@ std::string readCollectionTag(lua_State* state)
 
 int CollectionService::getInstanceAddedSignal(lua_State* state)
 {
-	Lua::EventInstance event = { getInstanceAddedEventDescriptor(), shared_from(this), readCollectionTag(state) };
+	const std::string tag = readCollectionTag(state);
+	shared_ptr<BindableEvent>& source = instanceAddedSignals[tag];
+	if (!source)
+		source = Creatable<Instance>::create<BindableEvent>();
+	Lua::EventInstance event = { source->findSignalDescriptor("Event"), source, std::string() };
 	Lua::EventBridge::pushNewObject(state, event);
 	return 1;
 }
 
 int CollectionService::getInstanceRemovedSignal(lua_State* state)
 {
-	Lua::EventInstance event = { getInstanceRemovedEventDescriptor(), shared_from(this), readCollectionTag(state) };
+	const std::string tag = readCollectionTag(state);
+	shared_ptr<BindableEvent>& source = instanceRemovedSignals[tag];
+	if (!source)
+		source = Creatable<Instance>::create<BindableEvent>();
+	Lua::EventInstance event = { source->findSignalDescriptor("Event"), source, std::string() };
 	Lua::EventBridge::pushNewObject(state, event);
 	return 1;
+}
+
+void CollectionService::fireTaggedSignal(
+	std::map<std::string, shared_ptr<BindableEvent> >& signals,
+	const std::string& tag, shared_ptr<Instance> instance)
+{
+	const std::map<std::string, shared_ptr<BindableEvent> >::iterator found =
+		signals.find(tag);
+	if (found == signals.end())
+		return;
+	shared_ptr<Reflection::Tuple> arguments(new Reflection::Tuple());
+	arguments->values.push_back(instance);
+	found->second->fire(arguments);
 }
 
 void CollectionService::onServiceProvider(ServiceProvider* oldProvider, ServiceProvider* newProvider)
@@ -90,7 +112,10 @@ void CollectionService::onTaggedDescendantAdded(shared_ptr<Instance> instance)
 {
 	for (const std::string& tag : instance->getTagsInternal())
 		if (tagged[tag].insert(instance.get()).second)
+		{
 			taggedInstanceAddedSignal(tag, instance);
+			fireTaggedSignal(instanceAddedSignals, tag, instance);
+		}
 }
 
 void CollectionService::onTaggedDescendantRemoving(shared_ptr<Instance> instance)
@@ -99,7 +124,10 @@ void CollectionService::onTaggedDescendantRemoving(shared_ptr<Instance> instance
 	{
 		TaggedMap::iterator found = tagged.find(tag);
 		if (found != tagged.end() && found->second.erase(instance.get()))
+		{
 			taggedInstanceRemovedSignal(tag, instance);
+			fireTaggedSignal(instanceRemovedSignals, tag, instance);
+		}
 	}
 }
 
@@ -112,7 +140,10 @@ void CollectionService::addTag(shared_ptr<Instance> instance, std::string tag)
 	if (++tagCounts[tag] == 1)
 		tagAddedSignal(tag);
 	if (isInProvider(instance.get()) && tagged[tag].insert(instance.get()).second)
+	{
 		taggedInstanceAddedSignal(tag, instance);
+		fireTaggedSignal(instanceAddedSignals, tag, instance);
+	}
 	applyResolvedStyles(instance.get());
 }
 
@@ -122,7 +153,10 @@ void CollectionService::removeTag(shared_ptr<Instance> instance, std::string tag
 		return;
 	TaggedMap::iterator found = tagged.find(tag);
 	if (found != tagged.end() && found->second.erase(instance.get()))
+	{
 		taggedInstanceRemovedSignal(tag, instance);
+		fireTaggedSignal(instanceRemovedSignals, tag, instance);
+	}
 	std::map<std::string, size_t>::iterator count = tagCounts.find(tag);
 	if (count != tagCounts.end() && --count->second == 0)
 	{

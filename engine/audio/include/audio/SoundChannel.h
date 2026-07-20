@@ -5,6 +5,7 @@
 #include "v8tree/Instance.h"
 #include "Reflection/Event.h"
 #include "audio/Sound.h"
+#include "audio/SoundGroups.h"
 #include "Util/RunStateOwner.h"
 #include "v8datamodel/NumberRange.h"
 
@@ -59,6 +60,7 @@ namespace RBX {
 			int playCount;		// actual number of how many times this sound has played
 			int reqPlayCount;	// requested number of play calls.      Hack to get play() and pause() to replicate  (-1 stopped, 0 paused, 1+ play)
 			mutable bool invalidChannel : 1;
+			weak_ptr<SoundGroup> soundGroup;
 
 			PartInstance* part;	// The Part (if any) that this sound is attached to
 
@@ -114,6 +116,8 @@ namespace RBX {
 
 			float getVolume() const;
 			void setVolume(float value);
+			SoundGroup* getSoundGroup() const { return soundGroup.lock().get(); }
+			void setSoundGroup(SoundGroup* value);
 
 			float getPitch() const;
 			void setPitch(float value);

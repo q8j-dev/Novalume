@@ -25,6 +25,8 @@ class XmlElement;
 
 namespace RBX {
 
+namespace Lua { class WeakFunctionRef; }
+
 class Fonts;
 class GuiRoot;
 class GuiItem;
@@ -441,6 +443,11 @@ public:
 	typedef boost::function<void(Reflection::AsyncCallbackDescriptor::ResumeFunction, Reflection::AsyncCallbackDescriptor::ErrorFunction)> CloseCallback;
 	CloseCallback onCloseCallback;
 	void onCloseCallbackChanged(const CloseCallback&);
+	void bindToClose(Lua::WeakFunctionRef callback);
+	void invokeBoundCloseCallbacks(
+		Reflection::AsyncCallbackDescriptor::ResumeFunction resumeFunction,
+		Reflection::AsyncCallbackDescriptor::ErrorFunction errorFunction);
+	std::vector<shared_ptr<Lua::WeakFunctionRef> > boundCloseCallbacks;
 
 	//Returns true if the shutdown is being handled by Lua, false to use the System Level Prompts
 	RequestShutdownResult requestShutdown(bool useLuaShutdownForSave=true);

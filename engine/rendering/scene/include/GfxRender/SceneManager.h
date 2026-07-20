@@ -95,6 +95,8 @@ public:
     void setFog(const Color3& color, float rangeBegin, float rangeEnd);
     void setLighting(const Color3& ambient, const Vector3& keyDirection, const Color3& keyColor, const Color3& fillColor);
     void setShadowMapConfiguration(bool enabled, float softness);
+    void setBloomConfiguration(bool enabled, float intensity, float size,
+        float threshold);
     bool isShadowMapEnabled() const { return shadowMapEnabled; }
     float getShadowMapSoftness() const { return shadowMapSoftness; }
     unsigned int getShadowCascadeCount() const { return shadowCascadeCount; }
@@ -166,6 +168,7 @@ private:
     bool shadowMapEnabled;
     float shadowMapSoftness;
     unsigned int shadowCascadeCount;
+    bool bloomEnabled;
     TextureRef shadowMask;
 	TextureRef shadowMapTexture;
 

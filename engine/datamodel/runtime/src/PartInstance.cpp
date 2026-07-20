@@ -134,6 +134,7 @@ REFLECTION_BEGIN();
 const PropDescriptor<PartInstance, CoordinateFrame> PartInstance::prop_CFrame("CFrame", category_Data, &PartInstance::getCoordinateFrame, &PartInstance::setCoordinateFrameRoot);
 static const PropDescriptor<PartInstance, Vector3> prop_PositionUi("Position", category_Data, &PartInstance::getTranslationUi, &PartInstance::setTranslationUi, PropertyDescriptor::UI);
 static const PropDescriptor<PartInstance, Vector3> prop_RotationUi("Rotation", category_Data, &PartInstance::getRotationUi, &PartInstance::setRotationUi, PropertyDescriptor::UI);
+static const PropDescriptor<PartInstance, Vector3> prop_OrientationUi("Orientation", category_Data, &PartInstance::getRotationUi, &PartInstance::setRotationUi, PropertyDescriptor::UI);
 const PropDescriptor<PartInstance, Vector3> PartInstance::prop_Velocity("Velocity", category_Data, &PartInstance::getLinearVelocity, &PartInstance::setLinearVelocity);
 const PropDescriptor<PartInstance, Vector3> PartInstance::prop_RotVelocity("RotVelocity", category_Data, &PartInstance::getRotationalVelocity, &PartInstance::setRotationalVelocityRoot);
 static const PropDescriptor<PartInstance, float> prop_Density("SpecificGravity", category_Data, &PartInstance::getSpecificGravity, NULL, Reflection::PropertyDescriptor::UI);
@@ -249,6 +250,7 @@ const PropDescriptor<PartInstance, Color3> PartInstance::prop_Color("Color", cat
 const PropDescriptor<PartInstance, BrickColor> PartInstance::prop_BrickColor("BrickColor", category_Appearance, &PartInstance::getColor, &PartInstance::setColor);
 const PropDescriptor<PartInstance, BrickColor> prop_BrickColorDep("brickColor", category_Appearance, &PartInstance::getColor, &PartInstance::setColor, PropertyDescriptor::Attributes::deprecated(PartInstance::prop_BrickColor));
 const EnumPropDescriptor<PartInstance, PartMaterial> PartInstance::prop_renderMaterial("Material", category_Appearance, &PartInstance::getRenderMaterial, &PartInstance::setRenderMaterial);
+const PropDescriptor<PartInstance, std::string> PartInstance::prop_MaterialVariant("MaterialVariant", category_Appearance, &PartInstance::getMaterialVariant, &PartInstance::setMaterialVariant);
 const PropDescriptor<PartInstance, float> PartInstance::prop_Transparency("Transparency", category_Appearance, &PartInstance::getTransparencyXml, &PartInstance::setTransparency);
 // DFFlagNetworkOwnershipRuleReplicates
 // Temporary Hack that allows use to Replicate Network Ownerhip
@@ -262,6 +264,8 @@ const PropDescriptor<PartInstance, bool> PartInstance::prop_CastShadow("CastShad
 const PropDescriptor<PartInstance, bool> PartInstance::prop_Locked("Locked", category_Behavior, &PartInstance::getPartLocked, &PartInstance::setPartLocked);
 const PropDescriptor<PartInstance, bool> PartInstance::prop_Anchored("Anchored", category_Behavior, &PartInstance::getAnchored, &PartInstance::setAnchored);
 const PropDescriptor<PartInstance, bool> PartInstance::prop_CanCollide("CanCollide", category_Behavior, &PartInstance::getCanCollide, &PartInstance::setCanCollide);
+const PropDescriptor<PartInstance, bool> PartInstance::prop_CanTouch("CanTouch", category_Behavior, &PartInstance::getCanTouch, &PartInstance::setCanTouch);
+const PropDescriptor<PartInstance, bool> PartInstance::prop_CanQuery("CanQuery", category_Behavior, &PartInstance::getCanQuery, &PartInstance::setCanQuery);
 const PropDescriptor<PartInstance, std::string> PartInstance::prop_CollisionGroup("CollisionGroup", category_Behavior, &PartInstance::getCollisionGroup, &PartInstance::setCollisionGroup, PropertyDescriptor::STANDARD_NO_REPLICATE);
 const PropDescriptor<PartInstance, int> PartInstance::prop_CollisionGroupId("CollisionGroupId", category_Behavior, &PartInstance::getCollisionGroupId, &PartInstance::setCollisionGroupId, PropertyDescriptor::STANDARD_NO_REPLICATE);
 
@@ -430,10 +434,13 @@ PartInstance::PartInstance(const Vector3& initialSize)
 	, cookie(0)
 	, color(BrickColor::defaultColor())
 	, collisionGroupName("Default")
+	, materialVariant()
 	, transparency(0.0f)
 	, reflectance(0.0f)
 	, localTransparencyModifier(0.0)
 	, castShadow(true)
+	, canTouch(true)
+	, canQuery(true)
 	, locked(false)
 	, cachedNetworkOwnerIsSomeoneElse(false)
 	, formFactor(BRICK)
@@ -461,6 +468,15 @@ PartInstance::~PartInstance()
 	RBXASSERT(getPartPrimitive());
 	RBXASSERT(getPartPrimitive()->getClump()==NULL);
 	RBXASSERT(getPartPrimitive()->getWorld() == NULL);
+}
+
+void PartInstance::setMaterialVariant(const std::string& value)
+{
+	if (materialVariant != value)
+	{
+		materialVariant = value;
+		raiseChanged(prop_MaterialVariant);
+	}
 }
 
 OnDemandInstance* PartInstance::initOnDemand()
@@ -918,6 +934,18 @@ void PartInstance::updatePrimitiveState()
 		}
 		else
 		{
+			// Legacy/current XML writes CollisionGroupId while the instance is
+			// still detached. Preserve that numeric wire value until the authored
+			// CollisionGroup name can be resolved against PhysicsService.
+			if (collisionGroupName == "Default" &&
+				getPartPrimitive()->getCollisionGroupId() != 0)
+				collisionGroupName = service->getCollisionGroupName(
+					static_cast<int>(getPartPrimitive()->getCollisionGroupId()));
+			// Current exports can retain an obsolete group name with the -1
+			// numeric sentinel. Studio loads those parts into Default until game
+			// code assigns a registered group; match that tolerant load behavior.
+			if (!service->isCollisionGroupRegistered(collisionGroupName))
+				collisionGroupName = "Default";
 			const unsigned int groupId = static_cast<unsigned int>(
 				service->getCollisionGroupId(collisionGroupName));
 			getPartPrimitive()->setCollisionGroup(groupId,
@@ -2042,6 +2070,24 @@ void PartInstance::setCanCollide(bool value)
 	}
 }
 
+void PartInstance::setCanTouch(bool value)
+{
+	if (canTouch != value)
+	{
+		canTouch = value;
+		raiseChanged(prop_CanTouch);
+	}
+}
+
+void PartInstance::setCanQuery(bool value)
+{
+	if (canQuery != value)
+	{
+		canQuery = value;
+		raiseChanged(prop_CanQuery);
+	}
+}
+
 std::string PartInstance::getCollisionGroup() const
 {
 	const unsigned int id = getConstPartPrimitive()->getCollisionGroupId();
@@ -2072,12 +2118,21 @@ int PartInstance::getCollisionGroupId() const
 
 void PartInstance::setCollisionGroupId(int id)
 {
+	// Current Studio uses -1 as an unresolved legacy-id sentinel when the
+	// authoritative CollisionGroup name is serialized alongside it.
+	if (id == -1)
+		return;
 	PhysicsService* service = ServiceProvider::find<PhysicsService>(this);
 	if (!service)
 	{
-		if (id != 0)
-			throw runtime_error("Collision group id %d cannot be assigned outside a DataModel", id);
-		setCollisionGroupInternal(0, 0xffffffffu);
+		if (id < 0 || id >= 32)
+			throw runtime_error("Collision group id %d is out of range", id);
+		// Deserialization populates properties before parenting. The named
+		// CollisionGroup property wins when present; otherwise retain this
+		// legacy numeric id on the detached primitive for updatePrimitiveState.
+		if (collisionGroupName == "Default")
+			getPartPrimitive()->setCollisionGroup(
+				static_cast<unsigned int>(id), 0xffffffffu);
 		return;
 	}
 	service->getCollisionGroupName(id);
