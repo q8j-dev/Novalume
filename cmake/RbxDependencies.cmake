@@ -17,6 +17,7 @@ set(RBX_DRACO_REVISION "8786740086a9f4d83f44aa83badfbea4dce7a1b5") # 1.5.7
 set(RBX_FREETYPE_REVISION "0a0221a1347e2f1e07c395263540026e9a0aa7c7") # 2.14.3
 set(RBX_HARFBUZZ_REVISION "56feae4035bdd48f62ba2b8d8c16232d4d89b3a4") # 14.2.1
 set(RBX_SHEENBIDI_REVISION "cfe430e7375a7845b679adae9d51dac6deaa8858") # 3.0.0
+set(RBX_SDL_REVISION "8e37db5e797b6167f3a00d697d816a684bd259c7") # 3.4.10
 
 # VideoFrame uses the LGPL libav demux/decode/conversion libraries.  Keep GPL
 # and nonfree codec add-ons out of the dependency contract; distributable
@@ -201,6 +202,22 @@ set(protobuf_INSTALL OFF CACHE BOOL "" FORCE)
 set(protobuf_WITH_ZLIB OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(rbx_bx rbx_bimg rbx_bgfx rbx_miniaudio rbx_abseil rbx_protobuf)
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    # The native Linux shell uses SDL3's runtime-selected X11/Wayland path.
+    # Keep it static and exclude SDL's examples/tests from the engine graph.
+    set(SDL_SHARED OFF CACHE BOOL "" FORCE)
+    set(SDL_STATIC ON CACHE BOOL "" FORCE)
+    set(SDL_TEST_LIBRARY OFF CACHE BOOL "" FORCE)
+    set(SDL_TESTS OFF CACHE BOOL "" FORCE)
+    set(SDL_EXAMPLES OFF CACHE BOOL "" FORCE)
+    set(SDL_INSTALL OFF CACHE BOOL "" FORCE)
+    FetchContent_Declare(rbx_sdl
+        GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+        GIT_TAG ${RBX_SDL_REVISION}
+        GIT_SHALLOW FALSE)
+    FetchContent_MakeAvailable(rbx_sdl)
+endif()
 
 set(RBX_PROTOBUF_SOURCE_DIR "${rbx_protobuf_SOURCE_DIR}" CACHE INTERNAL "")
 set(RBX_PROTOBUF_BINARY_DIR "${rbx_protobuf_BINARY_DIR}" CACHE INTERNAL "")

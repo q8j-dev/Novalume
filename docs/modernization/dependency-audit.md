@@ -1,7 +1,7 @@
 # Dependency modernization audit
 
 The named engine graph now includes bgfx/bx/bimg, miniaudio, FreeType,
-HarfBuzz, utf8proc, SheenBidi, GameNetworkingSockets, protobuf, Abseil, and the platform crypto provider. It
+HarfBuzz, utf8proc, SheenBidi, SDL, GameNetworkingSockets, protobuf, Abseil, and the platform crypto provider. It
 does not link the historical FMOD, RakNet, VMProtect, Qt, XULRunner, libwww,
 CAB/DirectX SDK, Mesa, old VR SDK, or Breakpad trees. The foundation Player
 executable still does not link every named engine archive, so this statement is
@@ -23,6 +23,7 @@ about the active engine build graph, not completed Player integration.
 | protobuf | Included from immutable commit `35cd01f9fe9afbeea38cc7b979a3b6bfcde82c03` (35.1) | BSD-3-Clause; GNS wire-schema dependency; cross-builds require host protoc 35.1 |
 | Abseil | Included from immutable commit `76bb24329e8bf5f39704eb10d21b9a80befa7c81` (20250512.1) | Apache-2.0; explicitly pinned protobuf dependency |
 | OpenSSL / BCrypt | OpenSSL 3.5.7 LTS is pinned to commit `8cf17aaeb4599f8af87fefd810b5b5fee90fe69e`; Windows selects Windows SDK BCrypt | Non-Windows builds require an explicit target-architecture OpenSSL root; the checked-in builder is verified for macOS arm64 and iOS arm64 |
+| SDL | Linux host only, pinned to SDL 3.4.10 commit `8e37db5e797b6167f3a00d697d816a684bd259c7` | Zlib-licensed window, native-surface, input, clipboard, drag/drop, and file-dialog adapter; Apple and Windows retain native hosts |
 
 Package `otool -L` currently shows Apple system frameworks and system C++/
 Objective-C runtimes only. This is build-graph evidence for the foundation

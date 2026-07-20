@@ -18,6 +18,7 @@ expanded as audio, text, serialization, and other replacements are integrated.
 | HarfBuzz 14.2.1 | `56feae4035bdd48f62ba2b8d8c16232d4d89b3a4` | MIT | OpenType text shaping |
 | utf8proc 2.11.3 | `e5e799221b45bbb90f5fdc5c69b6b8dfbf017e78` | MIT | Unicode 17 normalization and properties |
 | SheenBidi 3.0.0 | `cfe430e7375a7845b679adae9d51dac6deaa8858` | Apache-2.0 | Unicode Bidirectional Algorithm and visual run ordering |
+| SDL 3.4.10 | `8e37db5e797b6167f3a00d697d816a684bd259c7` | Zlib | native Linux window, input, clipboard, and document-dialog host |
 | Windows BCrypt | Windows SDK | LicenseRef-Microsoft-Windows-SDK | Windows GameNetworkingSockets cryptography |
 
 License texts are supplied by their fetched upstream source trees and will be

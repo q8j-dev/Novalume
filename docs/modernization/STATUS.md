@@ -1030,6 +1030,11 @@ checkpoint is recorded in `docs/reverse-engineering/in-experience-ui.md`.
   picker, Explorer drag/drop, per-user data/settings roots, and confirmed fresh
   Player document launch. It is included in the Windows engine graph while the
   remaining portable runtime and executable packaging are connected.
+- Added the pinned SDL 3.4.10 Linux host with X11/Wayland native surfaces,
+  high-density sizing and safe areas, keyboard/mouse/relative input, focus and
+  close delivery, clipboard, native file selection, drag/drop, XDG data roots,
+  and fresh Player document launch. It shares the same engine-neutral host
+  contract as the AppKit and Win32 adapters.
 - Removed the Player entry point's Metal-only bootstrap assumption. Backend
   selection is now D3D11 on Windows, Metal on Apple, Vulkan on Linux/Android,
   and WebGPU on Emscripten, with renderer-specific packaged-payload validation.

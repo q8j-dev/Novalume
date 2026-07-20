@@ -44,7 +44,10 @@ jobs:
           sudo apt-get install --yes --no-install-recommends \
             build-essential cmake ninja-build pkg-config python3 \
             libavformat-dev libavcodec-dev libavutil-dev \
-            libswscale-dev libswresample-dev
+            libswscale-dev libswresample-dev \
+            libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxi-dev \
+            libxfixes-dev libxkbcommon-dev libwayland-dev wayland-protocols \
+            libdecor-0-dev liburing-dev
 
       - name: Build pinned OpenSSL for the runner architecture
         run: tools/dependencies/build-openssl.sh linux-${{ matrix.arch }}

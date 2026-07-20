@@ -149,6 +149,16 @@
       "licenseConcluded": "Apache-2.0",
       "licenseDeclared": "Apache-2.0",
       "copyrightText": "Copyright 2014-2026 Muhammad Tayyab Akram"
+    },
+    {
+      "name": "SDL",
+      "SPDXID": "SPDXRef-SDL",
+      "versionInfo": "3.4.10+8e37db5e797b6167f3a00d697d816a684bd259c7",
+      "downloadLocation": "https://github.com/libsdl-org/SDL.git",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Zlib",
+      "licenseDeclared": "Zlib",
+      "copyrightText": "Copyright 1997-2026 Sam Lantinga"
     }
   ],
   "relationships": [
@@ -165,6 +175,7 @@
     {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-FreeType"},
     {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-HarfBuzz"},
     {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-utf8proc"},
-    {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-SheenBidi"}
+    {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-SheenBidi"},
+    {"spdxElementId": "SPDXRef-SDL", "relationshipType": "BUILD_DEPENDENCY_OF", "relatedSpdxElement": "SPDXRef-RobloxPlayer"}
   ]
 }
