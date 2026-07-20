@@ -58,6 +58,7 @@ cd "$source"
 ./Configure "$configure_target" \
     --prefix="$prefix" \
     --openssldir="$prefix/ssl" \
+    --libdir=lib \
     no-apps no-docs no-dso no-module no-shared no-tests
 if command -v nproc >/dev/null 2>&1; then
     build_jobs=$(nproc)
