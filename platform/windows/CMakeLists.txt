@@ -1,7 +1,7 @@
 add_library(rbx-platform-windows STATIC WinHost.cpp)
 add_library(Roblox::PlatformHost ALIAS rbx-platform-windows)
 target_link_libraries(rbx-platform-windows
-    PUBLIC Roblox::PlatformContract
+    PUBLIC Roblox::PlatformContract Roblox::PlatformRecentDocuments
     PRIVATE user32 shell32 ole32 shcore xinput9_1_0)
 target_compile_features(rbx-platform-windows PUBLIC cxx_std_20)
 target_compile_definitions(rbx-platform-windows PRIVATE

@@ -1,4 +1,5 @@
 #include "rbx/platform/MacHost.h"
+#include "rbx/platform/RecentDocuments.h"
 
 #import <AppKit/AppKit.h>
 #import <ApplicationServices/ApplicationServices.h>
@@ -317,6 +318,10 @@ public:
         return result;
     }
 
+    std::vector<std::filesystem::path> recentDocuments() const override {
+        return loadRecentDocuments(writableDataRoot());
+    }
+
     bool launchDocument(const std::filesystem::path& path) override {
         if (!std::filesystem::is_regular_file(path))
             return false;
@@ -341,6 +346,8 @@ public:
                 [error localizedDescription]);
         [task release];
         [document release];
+        if (launched)
+            recordRecentDocument(writableDataRoot(), path);
         return launched == YES;
     }
 

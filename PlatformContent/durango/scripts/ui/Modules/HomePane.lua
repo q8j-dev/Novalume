@@ -308,6 +308,64 @@ local function CreateHomePane(parent)
 				openDocument:Fire()
 			end
 		end)
+
+		local recentDocuments = CoreGui:FindFirstChild('LocalRecentDocuments')
+		if recentDocuments then
+			for index, recent in ipairs(recentDocuments:GetChildren()) do
+				if index > 4 then break end
+				local path = recent.Value
+				local fileName = string.match(path, '([^/\\]+)$') or path
+				local recentButton = Utility.Create'ImageButton'
+				{
+					Name = 'RecentLocalDocument' .. tostring(index);
+					Size = UDim2.new(0, 500, 0, 82);
+					Position = UDim2.new(0, 0, 0, 148 + (index - 1) * 92);
+					BackgroundColor3 = GlobalSettings.GreyButtonColor;
+					BackgroundTransparency = 0.15;
+					BorderSizePixel = 0;
+					AutoButtonColor = false;
+					Parent = SortsContainer;
+					Utility.Create'TextLabel'
+					{
+						Name = 'Title';
+						Size = UDim2.new(1, -32, 0, 34);
+						Position = UDim2.new(0, 16, 0, 8);
+						BackgroundTransparency = 1;
+						Text = fileName;
+						TextColor3 = GlobalSettings.WhiteTextColor;
+						TextXAlignment = 'Left';
+						Font = GlobalSettings.BoldFont;
+						FontSize = GlobalSettings.DescriptionSize;
+					};
+					Utility.Create'TextLabel'
+					{
+						Name = 'Path';
+						Size = UDim2.new(1, -32, 0, 25);
+						Position = UDim2.new(0, 16, 0, 45);
+						BackgroundTransparency = 1;
+						Text = path;
+						TextColor3 = GlobalSettings.GreyTextColor;
+						TextXAlignment = 'Left';
+						Font = GlobalSettings.RegularFont;
+						FontSize = GlobalSettings.SmallTitleSize;
+					};
+				}
+				local function updateRecentSelection()
+					recentButton.BackgroundColor3 =
+						GuiService.SelectedCoreObject == recentButton and
+						GlobalSettings.GreySelectedButtonColor or GlobalSettings.GreyButtonColor
+				end
+				recentButton.SelectionGained:connect(updateRecentSelection)
+				recentButton.SelectionLost:connect(updateRecentSelection)
+				recentButton.MouseButton1Click:connect(function()
+					local openDocument = CoreGui:FindFirstChild('OpenLocalDocument')
+					if openDocument then
+						SoundManager:Play('ButtonPress')
+						openDocument:Fire(path)
+					end
+				end)
+			end
+		end
 	end
 
 	local populateSortsDebounce = false

@@ -256,7 +256,7 @@ int main(int argc, char** argv) {
             verifyChromeLeaderboard, verifyReport, verifyRespawn,
             verifySwitchAvatar, verifySurfaceTextures, verifyShadowMap,
             verifySkybox, verifyAudio, verifyPlaceAudio, verifyTextRendering,
-            verifyPlaceVisual);
+            verifyPlaceVisual, host->recentDocuments());
         const double runtimeLoadMilliseconds =
             std::chrono::duration<double, std::milli>(
                 std::chrono::steady_clock::now() - runtimeLoadStart).count();
@@ -284,17 +284,30 @@ int main(int argc, char** argv) {
             }
             for (const auto& event : host->takeInputEvents())
                 runtime.handleInput(event);
+            if (const auto recent = runtime.takeRecentDocumentRequest()) {
+                if (!isSupportedDocument(*recent))
+                    throw std::runtime_error(
+                        "recent Roblox document is no longer available: " +
+                        recent->string());
+                if (!host->launchDocument(*recent))
+                    throw std::runtime_error(
+                        "unable to start recent Roblox document: " + recent->string());
+                std::cout << "launched recent document=" << *recent << '\n';
+                return 0;
+            }
             if (runtime.takeOpenDocumentRequest())
                 host->requestOpenDocument();
             host->setPointerLock(runtime.wantsPointerLock());
             if (headlessVerify && verifyLauncher && frame == 100) {
                 runtime.handleInput(rbx::platform::InputEvent{
-                    .kind = rbx::platform::InputEvent::Kind::keyDown,
-                    .key = rbx::platform::InputEvent::Key::enter});
+                    .kind = rbx::platform::InputEvent::Kind::gamepadButtonDown,
+                    .gamepadControl =
+                        rbx::platform::InputEvent::GamepadControl::buttonA});
             } else if (headlessVerify && verifyLauncher && frame == 101) {
                 runtime.handleInput(rbx::platform::InputEvent{
-                    .kind = rbx::platform::InputEvent::Kind::keyUp,
-                    .key = rbx::platform::InputEvent::Key::enter});
+                    .kind = rbx::platform::InputEvent::Kind::gamepadButtonUp,
+                    .gamepadControl =
+                        rbx::platform::InputEvent::GamepadControl::buttonA});
             } else if (headlessVerify && !verifyLauncher && !verifySurfaceTextures && !verifyShadowMap &&
                 !verifySkybox && !verifyTextRendering && !verifyPlaceVisual &&
                 (frame == 60 || frame == 70 || frame == 80 || frame == 90)) {

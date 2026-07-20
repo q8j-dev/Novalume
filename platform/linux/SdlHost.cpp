@@ -1,4 +1,5 @@
 #include "rbx/platform/Host.h"
+#include "rbx/platform/RecentDocuments.h"
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_dialog.h>
@@ -332,6 +333,11 @@ public:
         return result;
     }
 
+    std::vector<std::filesystem::path> recentDocuments() const override
+    {
+        return loadRecentDocuments(writableDataRoot());
+    }
+
     bool launchDocument(const std::filesystem::path& path) override
     {
         const std::string executable = executablePath().string();
@@ -342,7 +348,11 @@ public:
             const_cast<char*>(document.c_str()),
             nullptr};
         pid_t process = 0;
-        return posix_spawn(&process, executable.c_str(), nullptr, nullptr, arguments, environ) == 0;
+        const bool launched =
+            posix_spawn(&process, executable.c_str(), nullptr, nullptr, arguments, environ) == 0;
+        if (launched)
+            recordRecentDocument(writableDataRoot(), path);
+        return launched;
     }
 
     void setClipboardText(std::string_view text) override

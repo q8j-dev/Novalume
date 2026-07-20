@@ -195,6 +195,8 @@ public:
     virtual void requestOpenDocument() = 0;
     [[nodiscard]] virtual std::vector<std::filesystem::path>
         takeOpenedDocuments() = 0;
+    [[nodiscard]] virtual std::vector<std::filesystem::path>
+        recentDocuments() const = 0;
     // Starts the selected document in a fresh Player session. The launcher
     // exits only after the platform confirms that the session was created.
     virtual bool launchDocument(const std::filesystem::path& path) = 0;

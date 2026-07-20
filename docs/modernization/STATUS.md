@@ -45,6 +45,13 @@ the final return; it is not replaced or treated as accepted while deferred.
   consecutive-login, avatar-thumbnail, package, friend, and sort requests are
   no longer issued by a desktop local identity; the shell truthfully shows an
   offline/empty state instead of fabricating service data.
+- Added shared, bounded recent-local-document persistence behind the platform
+  host. Successful launches are recorded most-recent-first with deduplication,
+  stale paths are pruned, quoted and space-containing paths round-trip, and
+  AppKit/Win32/SDL hosts expose the same list. HomePane renders up to four
+  controller/keyboard/mouse-selectable recent entries in its existing Durango
+  style and launches them through the same validated fresh-process bridge. A
+  focused persistence contract and the signed 480-frame launcher run pass.
 - Connected the replacement miniaudio engine to the packaged Player's normal
   `Sound`/`SoundChannel`/`SoundService` DataModel path. Headless verification
   now disables only the physical output device while retaining the same active
@@ -1041,7 +1048,10 @@ checkpoint is recorded in `docs/reverse-engineering/in-experience-ui.md`.
   executable self-hash mechanism. Desktop controller events now cross the same
   host boundary into `UserInputService`/`GamepadService`: GameController on
   macOS, XInput on Windows, and SDL3 mappings on Linux support eight logical
-  gamepads, buttons, D-pads, triggers, and paired thumbstick axes.
+  gamepads, buttons, D-pads, triggers, and paired thumbstick axes. The signed
+  480-frame launcher acceptance now enters HomePane through a synthesized
+  Gamepad1/ButtonA begin/end pair, reaches the real local-document bridge, and
+  exits without leaving a Player or build process running.
 - Removed the Player entry point's Metal-only bootstrap assumption. Backend
   selection is now D3D11 on Windows, Metal on Apple, Vulkan on Linux/Android,
   and WebGPU on Emscripten, with renderer-specific packaged-payload validation.

@@ -1,4 +1,5 @@
 #include "rbx/platform/Host.h"
+#include "rbx/platform/RecentDocuments.h"
 
 #ifndef NOMINMAX
 #define NOMINMAX
@@ -268,6 +269,11 @@ public:
         return result;
     }
 
+    std::vector<std::filesystem::path> recentDocuments() const override
+    {
+        return loadRecentDocuments(writableDataRoot());
+    }
+
     bool launchDocument(const std::filesystem::path& path) override
     {
         if (!std::filesystem::is_regular_file(path))
@@ -283,6 +289,7 @@ public:
         if (launched) {
             CloseHandle(process.hThread);
             CloseHandle(process.hProcess);
+            recordRecentDocument(writableDataRoot(), path);
         }
         return launched != FALSE;
     }

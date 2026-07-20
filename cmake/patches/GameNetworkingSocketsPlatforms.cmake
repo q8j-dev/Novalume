@@ -1,6 +1,17 @@
 function(rbx_patch_gamenetworkingsockets_platforms source_dir)
     set(cmake_file "${source_dir}/CMakeLists.txt")
     file(READ "${cmake_file}" contents)
+    if(NOT contents MATCHES "RBX static crypto private dependencies")
+        string(REPLACE
+            "\t\tset(CMAKE_REQUIRED_LIBRARIES OpenSSL::Crypto)"
+            "\t\tset(CMAKE_REQUIRED_LIBRARIES OpenSSL::Crypto)\n\t\t# RBX static crypto private dependencies\n\t\tlist(APPEND CMAKE_REQUIRED_LIBRARIES Threads::Threads \${CMAKE_DL_LIBS})"
+            crypto_patched "${contents}")
+        if(crypto_patched STREQUAL contents)
+            message(FATAL_ERROR "Pinned GameNetworkingSockets static-crypto probe patch no longer applies; audit the new upstream revision")
+        endif()
+        set(contents "${crypto_patched}")
+        file(WRITE "${cmake_file}" "${contents}")
+    endif()
     if(NOT contents MATCHES "PUBLIC OSX IOS")
         string(REPLACE
             "elseif(CMAKE_SYSTEM_NAME MATCHES Darwin)\n\t\ttarget_compile_definitions(\${TGT} PUBLIC OSX)"

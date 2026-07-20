@@ -3,6 +3,12 @@ target_link_libraries(rbx-gfxcore-contract-tests PRIVATE Roblox::GfxCoreContract
 rbx_enable_warnings(rbx-gfxcore-contract-tests)
 add_test(NAME gfxcore-contract COMMAND rbx-gfxcore-contract-tests)
 
+add_executable(rbx-recent-documents-tests unit/RecentDocumentsTests.cpp)
+target_link_libraries(rbx-recent-documents-tests PRIVATE
+    Roblox::PlatformRecentDocuments)
+rbx_enable_warnings(rbx-recent-documents-tests)
+add_test(NAME recent-documents-contract COMMAND rbx-recent-documents-tests)
+
 add_executable(rbx-thumbnail-texture-provider-tests
     unit/ThumbnailTextureProviderTests.cpp)
 target_link_libraries(rbx-thumbnail-texture-provider-tests PRIVATE

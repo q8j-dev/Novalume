@@ -98,6 +98,7 @@
 #include "V8World/Primitive.h"
 #include "V8DataModel/VideoFrame.h"
 #include "V8DataModel/VideoCaptureService.h"
+#include "V8DataModel/value.h"
 #include "Util/Content.h"
 #include "V8DataModel/WorldModel.h"
 #include "V8DataModel/PlayerScripts.h"
@@ -626,6 +627,8 @@ struct PlayerRuntime::State final {
     std::vector<RBX::Vector3> cameraChangesThisFrame;
     std::vector<RBX::Vector3> mouseChangesThisFrame;
     std::atomic<bool> openDocumentRequested{false};
+    std::mutex recentDocumentMutex;
+    std::optional<std::filesystem::path> recentDocumentRequested;
 
     ~State()
     {
@@ -700,7 +703,8 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
     bool verifyAudio,
     bool verifyPlaceAudio,
     bool verifyTextRendering,
-    bool verifyPlaceVisual)
+    bool verifyPlaceVisual,
+    const std::vector<std::filesystem::path>& recentDocuments)
     : state(std::make_unique<State>())
 {
     if (!device || renderWidth == 0 || renderHeight == 0 ||
@@ -2100,9 +2104,27 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
                 RBX::Creatable<RBX::Instance>::create<RBX::BindableEvent>();
             openDocument->setName("OpenLocalDocument");
             openDocument->setParent(coreGui);
+            boost::shared_ptr<RBX::Folder> recentFolder =
+                RBX::Creatable<RBX::Instance>::create<RBX::Folder>();
+            recentFolder->setName("LocalRecentDocuments");
+            recentFolder->setParent(coreGui);
+            for (std::size_t index = 0; index < recentDocuments.size(); ++index) {
+                boost::shared_ptr<RBX::StringValue> recent =
+                    RBX::Creatable<RBX::Instance>::create<RBX::StringValue>();
+                recent->setName("RecentDocument" + std::to_string(index + 1));
+                recent->setValue(recentDocuments[index].string());
+                recent->setParent(recentFolder.get());
+            }
             State* runtimeState = state.get();
             state->openDocumentConnection = openDocument->event.connect(
-                [runtimeState](boost::shared_ptr<const RBX::Reflection::Tuple>) {
+                [runtimeState](boost::shared_ptr<const RBX::Reflection::Tuple> arguments) {
+                    if (arguments && arguments->values.size() == 1 &&
+                        arguments->values.front().isType<std::string>()) {
+                        std::scoped_lock lock(runtimeState->recentDocumentMutex);
+                        runtimeState->recentDocumentRequested =
+                            arguments->values.front().cast<std::string>();
+                        return;
+                    }
                     runtimeState->openDocumentRequested.store(
                         true, std::memory_order_release);
                 });
@@ -2635,6 +2657,14 @@ bool PlayerRuntime::wantsPointerLock() const
 bool PlayerRuntime::takeOpenDocumentRequest()
 {
     return state->openDocumentRequested.exchange(false, std::memory_order_acq_rel);
+}
+
+std::optional<std::filesystem::path> PlayerRuntime::takeRecentDocumentRequest()
+{
+    std::scoped_lock lock(state->recentDocumentMutex);
+    std::optional<std::filesystem::path> result;
+    result.swap(state->recentDocumentRequested);
+    return result;
 }
 
 void PlayerRuntime::renderFrame(unsigned long frameNumber)
@@ -4523,7 +4553,7 @@ void PlayerRuntime::finishVerification()
                 "Durango launcher local-document bridge did not reach the Player host");
         std::cout << "Durango launcher mounted AppHome, engagement logo, and "
                   << backgroundLoop->numChildren()
-                  << " pooled background-music voices; keyboard activation opened HomePane "
+                  << " pooled background-music voices; controller activation opened HomePane "
                      "and its local-document action reached the Player host\n";
     }
     if (state->verifiesAudio) {

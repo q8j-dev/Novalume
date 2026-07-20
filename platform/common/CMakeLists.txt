@@ -3,6 +3,12 @@ add_library(Roblox::PlatformContract ALIAS rbx-platform-contract)
 target_include_directories(rbx-platform-contract INTERFACE include)
 target_compile_features(rbx-platform-contract INTERFACE cxx_std_20)
 
+add_library(rbx-platform-recent-documents STATIC src/RecentDocuments.cpp)
+add_library(Roblox::PlatformRecentDocuments ALIAS rbx-platform-recent-documents)
+target_link_libraries(rbx-platform-recent-documents PUBLIC Roblox::PlatformContract)
+target_compile_features(rbx-platform-recent-documents PUBLIC cxx_std_20)
+rbx_enable_warnings(rbx-platform-recent-documents)
+
 if(NOT APPLE AND NOT WIN32 AND NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
     add_library(rbx-platform-clipboard STATIC src/ClipboardStub.cpp)
     add_library(Roblox::PlatformClipboard ALIAS rbx-platform-clipboard)

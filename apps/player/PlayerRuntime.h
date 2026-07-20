@@ -2,6 +2,8 @@
 
 #include <filesystem>
 #include <memory>
+#include <optional>
+#include <vector>
 
 #include "rbx/platform/Host.h"
 
@@ -46,7 +48,8 @@ public:
                   bool verifyAudio = false,
                   bool verifyPlaceAudio = false,
                   bool verifyTextRendering = false,
-                  bool verifyPlaceVisual = false);
+                  bool verifyPlaceVisual = false,
+                  const std::vector<std::filesystem::path>& recentDocuments = {});
     ~PlayerRuntime();
 
     PlayerRuntime(const PlayerRuntime&) = delete;
@@ -56,6 +59,8 @@ public:
     void handleInput(const rbx::platform::InputEvent& event);
     [[nodiscard]] bool wantsPointerLock() const;
     [[nodiscard]] bool takeOpenDocumentRequest();
+    [[nodiscard]] std::optional<std::filesystem::path>
+        takeRecentDocumentRequest();
     void writeFrameProof(const std::filesystem::path& outputPath);
     void finishVerification();
 
