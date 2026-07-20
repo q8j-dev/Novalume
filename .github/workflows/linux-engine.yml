@@ -1,0 +1,66 @@
+name: Linux engine bring-up
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/linux-engine.yml'
+      - 'CMakeLists.txt'
+      - 'cmake/**'
+      - 'engine/**'
+      - 'platform/common/**'
+      - 'shaders/**'
+      - 'third_party/**'
+      - 'tools/dependencies/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: linux-engine-${{ github.ref }}-${{ matrix.arch }}
+  cancel-in-progress: true
+
+jobs:
+  engine:
+    name: Ubuntu 26.04 ${{ matrix.arch }} shared engine
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: ubuntu-26.04
+          - arch: arm64
+            runner: ubuntu-26.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install native build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            build-essential cmake ninja-build pkg-config python3 \
+            libavformat-dev libavcodec-dev libavutil-dev \
+            libswscale-dev libswresample-dev
+
+      - name: Build pinned OpenSSL for the runner architecture
+        run: tools/dependencies/build-openssl.sh linux-${{ matrix.arch }}
+
+      - name: Configure the shared engine
+        run: >-
+          cmake -S . -B out/build/linux-${{ matrix.arch }}-release -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DRBX_BUILD_PLAYER=OFF
+          -DRBX_BUILD_TESTS=OFF
+          -DRBX_ENABLE_LEGACY_BUILD=OFF
+          -DRBX_ENABLE_LEGACY_RENDERERS=OFF
+          -DRBX_OPENSSL_ROOT=${{ github.workspace }}/out/dependencies/openssl-3.5.7/linux-${{ matrix.arch }}/install
+
+      - name: Build the actual shared engine graph
+        run: cmake --build out/build/linux-${{ matrix.arch }}-release --parallel 2
+
+      - name: Enforce application-engine-platform boundaries
+        run: cmake --build out/build/linux-${{ matrix.arch }}-release --target check-dependency-boundaries
