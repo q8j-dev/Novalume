@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.28)
 
 project(Novalume VERSION 0.1.0 LANGUAGES C CXX)
 
+if(WIN32)
+    enable_language(RC)
+endif()
+
 option(RBX_BUILD_PLAYER "Build the shared RobloxPlayer runtime" ON)
 option(RBX_BUILD_TESTS "Build modernization tests" ON)
 option(RBX_FETCH_DEPENDENCIES "Fetch pinned open-source dependencies into the build tree" ON)
@@ -15,6 +19,10 @@ set(RBX_ARCHIVED_AVATAR_ASSET_ROOT "" CACHE PATH
     "Build-time path to the authorized, hash-pinned avatar asset archive")
 set(RBX_APK_REFERENCE_PATH "" CACHE FILEPATH
     "Build-time path to the supplied Android APK for static mobile inventory verification")
+set(RBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE "" CACHE FILEPATH
+    "Build-time path to a private, hash-verified generated Player runtime resource bundle")
+set(RBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE_SHA256 "" CACHE STRING
+    "Required SHA-256 pin for RBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE")
 
 if(RBX_ENABLE_LEGACY_BUILD)
     include(cmake/LegacyRoot.cmake)
@@ -90,6 +98,21 @@ endif()
 if(RBX_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
+endif()
+
+if(RBX_BUILD_PLAYER AND
+   (CMAKE_SYSTEM_NAME STREQUAL "Linux" OR WIN32))
+    set(CPACK_PACKAGE_NAME "Novalume-RobloxPlayer")
+    set(CPACK_PACKAGE_VENDOR "q8j-dev")
+    set(CPACK_PACKAGE_VERSION "0.1.0")
+    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
+        "Cross-platform Roblox Player with the authentic Durango launcher")
+    if(WIN32)
+        set(CPACK_GENERATOR "ZIP")
+    else()
+        set(CPACK_GENERATOR "TGZ")
+    endif()
+    include(CPack)
 endif()
 
 add_custom_target(check-dependency-boundaries

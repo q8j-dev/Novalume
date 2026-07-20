@@ -1,0 +1,250 @@
+name: Desktop Player package bring-up
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/desktop-player.yml'
+      - 'CMakeLists.txt'
+      - 'cmake/**'
+      - 'apps/player/**'
+      - 'engine/**'
+      - 'platform/**'
+      - 'shaders/**'
+      - 'content/**'
+      - 'PlatformContent/**'
+      - 'third_party/**'
+      - 'tools/dependencies/**'
+
+permissions:
+  contents: read
+
+env:
+  RBX_RUNTIME_RESOURCE_TAG: runtime-resources-2026.07.19
+  RBX_RUNTIME_RESOURCE_ASSET: novalume-runtime-resources-2026.07.19.zip
+  RBX_RUNTIME_RESOURCE_SHA256: e3c431e904f3c1add2eb26f1b16b13882fe6fbb49af68e484b4657f1b2487fda
+
+concurrency:
+  group: desktop-player-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    name: Ubuntu 26.04 ${{ matrix.arch }} Player package
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: ubuntu-26.04
+          - arch: arm64
+            runner: ubuntu-26.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download the private hash-pinned Player runtime resources
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p out/runtime-inputs
+          gh release download "$RBX_RUNTIME_RESOURCE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --pattern "$RBX_RUNTIME_RESOURCE_ASSET" \
+            --dir out/runtime-inputs
+          printf '%s  %s\n' "$RBX_RUNTIME_RESOURCE_SHA256" \
+            "out/runtime-inputs/$RBX_RUNTIME_RESOURCE_ASSET" | sha256sum --check --strict
+
+      - name: Restore pinned source dependency builds
+        uses: actions/cache@v4
+        with:
+          path: |
+            out/build/linux-${{ matrix.arch }}-release/_deps
+            out/dependencies/openssl-3.5.7/linux-${{ matrix.arch }}
+          key: linux-engine-deps-${{ matrix.arch }}-${{ hashFiles('cmake/RbxDependencies.cmake', 'cmake/patches/**', 'tools/dependencies/build-openssl.sh') }}
+
+      - name: Install native build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            build-essential cmake ninja-build pkg-config python3 \
+            libavformat-dev libavcodec-dev libavutil-dev \
+            libswscale-dev libswresample-dev \
+            libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxi-dev \
+            libxfixes-dev libxss-dev libxtst-dev libxkbcommon-dev libwayland-dev wayland-protocols \
+            libdecor-0-dev liburing-dev
+
+      - name: Build pinned OpenSSL for the runner architecture
+        run: |
+          if [ ! -f "out/dependencies/openssl-3.5.7/linux-${{ matrix.arch }}/install/lib/libcrypto.a" ]; then
+            tools/dependencies/build-openssl.sh linux-${{ matrix.arch }}
+          fi
+
+      - name: Configure the Player
+        run: >-
+          cmake -S . -B out/build/linux-${{ matrix.arch }}-release -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DRBX_BUILD_PLAYER=ON
+          -DRBX_BUILD_TESTS=OFF
+          -DRBX_ENABLE_LEGACY_BUILD=OFF
+          -DRBX_ENABLE_LEGACY_RENDERERS=OFF
+          -DRBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE="$GITHUB_WORKSPACE/out/runtime-inputs/$RBX_RUNTIME_RESOURCE_ASSET"
+          -DRBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE_SHA256="$RBX_RUNTIME_RESOURCE_SHA256"
+          -DRBX_OPENSSL_ROOT=${{ github.workspace }}/out/dependencies/openssl-3.5.7/linux-${{ matrix.arch }}/install
+
+      - name: Build the actual shared Player
+        run: cmake --build out/build/linux-${{ matrix.arch }}-release --target RobloxPlayer --parallel 2
+
+      - name: Create the relocatable Linux package
+        run: >-
+          cpack --config out/build/linux-${{ matrix.arch }}-release/CPackConfig.cmake
+          -G TGZ -B out/packages/linux-${{ matrix.arch }}
+
+      - name: Enforce application-engine-platform boundaries
+        run: cmake --build out/build/linux-${{ matrix.arch }}-release --target check-dependency-boundaries
+
+      - name: Upload the Linux Player package
+        uses: actions/upload-artifact@v4
+        with:
+          name: Novalume-RobloxPlayer-linux-${{ matrix.arch }}
+          path: out/packages/linux-${{ matrix.arch }}/*.tar.gz
+          if-no-files-found: error
+          retention-days: 7
+
+  windows:
+    name: ${{ matrix.label }} Player package
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Windows 2025 x64
+            runner: windows-2025
+            triplet: x64-windows
+            build_dir: windows-x64-release
+            msvc_arch: x64
+          - label: Windows 11 ARM64
+            runner: windows-11-vs2026-arm
+            triplet: arm64-windows
+            build_dir: windows-arm64-release
+            msvc_arch: arm64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download the private hash-pinned Player runtime resources
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $inputDirectory = Join-Path $env:GITHUB_WORKSPACE "out/runtime-inputs"
+          New-Item -ItemType Directory -Force -Path $inputDirectory | Out-Null
+          gh release download $env:RBX_RUNTIME_RESOURCE_TAG `
+            --repo $env:GITHUB_REPOSITORY `
+            --pattern $env:RBX_RUNTIME_RESOURCE_ASSET `
+            --dir $inputDirectory
+          $bundle = Join-Path $inputDirectory $env:RBX_RUNTIME_RESOURCE_ASSET
+          $actual = (Get-FileHash -Algorithm SHA256 $bundle).Hash.ToLowerInvariant()
+          if ($actual -ne $env:RBX_RUNTIME_RESOURCE_SHA256) {
+            throw "Private runtime resource bundle SHA-256 mismatch: $actual"
+          }
+
+      - name: Restore pinned source dependency builds
+        uses: actions/cache@v4
+        with:
+          path: out/build/${{ matrix.build_dir }}/_deps
+          key: windows-engine-deps-${{ matrix.triplet }}-${{ hashFiles('cmake/RbxDependencies.cmake', 'cmake/patches/**') }}
+
+      - name: Restore vcpkg binary packages
+        id: vcpkg-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/vcpkg-binary-cache
+          key: vcpkg-ffmpeg-${{ runner.os }}-${{ matrix.triplet }}-full-v1
+          restore-keys: vcpkg-ffmpeg-${{ runner.os }}-${{ matrix.triplet }}-
+
+      - name: Install pkg-config and FFmpeg development libraries
+        shell: pwsh
+        run: |
+          $env:VCPKG_BINARY_SOURCES = "clear;files,$env:RUNNER_TEMP\vcpkg-binary-cache,readwrite"
+          choco install pkgconfiglite --yes --no-progress
+          & "$env:VCPKG_INSTALLATION_ROOT\vcpkg.exe" install `
+            "zlib:${{ matrix.triplet }}" `
+            "ffmpeg[avcodec,avformat,swresample,swscale]:${{ matrix.triplet }}"
+
+      - name: Save vcpkg binary packages before the engine build
+        if: steps.vcpkg-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/vcpkg-binary-cache
+          key: vcpkg-ffmpeg-${{ runner.os }}-${{ matrix.triplet }}-full-v1
+
+      - name: Select the native MSVC toolchain
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
+        with:
+          arch: ${{ matrix.msvc_arch }}
+
+      - name: Configure the Player
+        shell: pwsh
+        run: |
+          $installed = "$env:VCPKG_INSTALLATION_ROOT\installed\${{ matrix.triplet }}"
+          $bundle = Join-Path $env:GITHUB_WORKSPACE "out/runtime-inputs/$env:RBX_RUNTIME_RESOURCE_ASSET"
+          $compiler = (Get-Command cl.exe -ErrorAction Stop).Source
+          $resourceCompiler = (Get-Command rc.exe -ErrorAction Stop).Source
+          $env:PKG_CONFIG_PATH = "$installed\lib\pkgconfig;$installed\share\pkgconfig"
+          cmake -S . -B "out/build/${{ matrix.build_dir }}" -G Ninja `
+            -DCMAKE_BUILD_TYPE=Release `
+            "-DCMAKE_C_COMPILER=$compiler" `
+            "-DCMAKE_CXX_COMPILER=$compiler" `
+            "-DCMAKE_RC_COMPILER=$resourceCompiler" `
+            -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT\scripts\buildsystems\vcpkg.cmake" `
+            -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }} `
+            -DRBX_BUILD_PLAYER=ON `
+            -DRBX_BUILD_TESTS=OFF `
+            -DRBX_ENABLE_LEGACY_BUILD=OFF `
+            -DRBX_ENABLE_LEGACY_RENDERERS=OFF `
+            "-DRBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE=$bundle" `
+            "-DRBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE_SHA256=$env:RBX_RUNTIME_RESOURCE_SHA256"
+
+      - name: Build the actual shared Player
+        run: cmake --build out/build/${{ matrix.build_dir }} --target RobloxPlayer --parallel 2
+
+      - name: Create the runnable Windows package
+        shell: pwsh
+        run: |
+          $packageDirectory = "out/packages/${{ matrix.build_dir }}"
+          cpack --config "out/build/${{ matrix.build_dir }}/CPackConfig.cmake" `
+            -G ZIP -B $packageDirectory
+          $archive = Get-ChildItem $packageDirectory -Filter *.zip -File | Select-Object -First 1
+          if (-not $archive) {
+            throw "CPack did not create a Windows Player ZIP"
+          }
+          $verificationRoot = Join-Path $packageDirectory "verify"
+          Expand-Archive -LiteralPath $archive.FullName -DestinationPath $verificationRoot
+          $player = Get-ChildItem $verificationRoot -Filter RobloxPlayer.exe -File -Recurse |
+            Select-Object -First 1
+          if (-not $player) {
+            throw "Windows Player package has no RobloxPlayer.exe"
+          }
+          $resources = Join-Path $player.Directory.FullName "Resources/resource-manifest.json"
+          if (-not (Test-Path -LiteralPath $resources -PathType Leaf)) {
+            throw "Windows Player package has no adjacent Resources payload"
+          }
+          foreach ($runtime in @("avformat*.dll", "avcodec*.dll", "avutil*.dll", "swscale*.dll", "swresample*.dll")) {
+            if (-not (Get-ChildItem $player.Directory.FullName -Filter $runtime -File)) {
+              throw "Windows Player package is missing runtime dependency $runtime"
+            }
+          }
+
+      - name: Enforce application-engine-platform boundaries
+        run: cmake --build out/build/${{ matrix.build_dir }} --target check-dependency-boundaries
+
+      - name: Upload the Windows Player package
+        uses: actions/upload-artifact@v4
+        with:
+          name: Novalume-RobloxPlayer-${{ matrix.triplet }}
+          path: out/packages/${{ matrix.build_dir }}/*.zip
+          if-no-files-found: error
+          retention-days: 7

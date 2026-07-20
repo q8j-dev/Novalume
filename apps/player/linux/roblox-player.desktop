@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Roblox Player
+Comment=Open local Roblox places and models in the Durango launcher
+Exec=RobloxPlayer --place %f
+Icon=roblox-player
+Terminal=false
+Categories=Game;
+MimeType=application/x-roblox-place;application/x-roblox-place-xml;application/x-roblox-model;application/x-roblox-model-xml;application/x-roblox-place-package;
+StartupNotify=true

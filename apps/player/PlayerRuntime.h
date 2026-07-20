@@ -55,6 +55,9 @@ public:
     PlayerRuntime(const PlayerRuntime&) = delete;
     PlayerRuntime& operator=(const PlayerRuntime&) = delete;
 
+    void resize(unsigned int renderWidth, unsigned int renderHeight,
+                unsigned int logicalWidth, unsigned int logicalHeight,
+                float pixelDensity);
     void renderFrame(unsigned long frameNumber);
     void handleInput(const rbx::platform::InputEvent& event);
     [[nodiscard]] bool wantsPointerLock() const;

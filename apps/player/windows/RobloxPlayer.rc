@@ -1,0 +1,5 @@
+#include <windows.h>
+#include "RobloxPlayerResources.h"
+
+1 ICON RBX_PLAYER_ICON_FILE
+1 RT_MANIFEST RBX_PLAYER_MANIFEST_FILE

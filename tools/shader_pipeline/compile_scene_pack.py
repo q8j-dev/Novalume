@@ -6,7 +6,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import shutil
 import struct
 import subprocess
 import tempfile
@@ -15,6 +14,18 @@ from pathlib import Path
 
 HEADER = struct.Struct("<4sI")
 ENTRY = struct.Struct("<64s16sII8s")
+
+# The archived GLSL pack predates the current clip-depth shadow path and does
+# not contain the terrain shadow vertex shaders at all.  Keep these programs
+# in portable bgfx shader source so every host can build the complete pack
+# without executing the historical x86_64-only ShaderCompiler binary.
+GLSL_SOURCE_OVERRIDES = {
+    "DefaultShadowStaticVS": "vs_default_shadow_static.sc",
+    "DefaultShadowSkinnedVS": "vs_default_shadow_skinned.sc",
+    "DefaultShadowFS": "fs_default_shadow.sc",
+    "MegaClusterShadowVS": "vs_mega_cluster_shadow.sc",
+    "SmoothClusterShadowVS": "vs_smooth_cluster_shadow.sc",
+}
 
 
 def expand_hlsl(path: Path, source_root: Path, stack: tuple[Path, ...] = ()) -> str:
@@ -136,8 +147,11 @@ def compile_shader(
     platform: str,
     profile: str,
     preprocessor: Path | None,
+    raw: bool,
+    varying_def: Path | None,
+    include_paths: list[Path],
 ) -> bytes:
-    source_path = directory / f"{name}.glsl"
+    source_path = directory / f"{name}{'.glsl' if raw else '.sc'}"
     output_path = directory / f"{name}.bin"
     source_path.write_bytes(source)
     hlsl_backend = (
@@ -157,54 +171,34 @@ def compile_shader(
             raise RuntimeError(f"preprocessing failed for {name}:\n{details}")
         preprocessed_path.write_bytes(process.stdout)
         source_path = preprocessed_path
-    process = subprocess.run(
-        [
-            str(shaderc),
-            "-f",
-            str(source_path),
-            "-o",
-            str(output_path),
-            "--type",
-            stage,
-            "--platform",
-            platform,
-            "--profile",
-            profile,
-            "--raw",
-        ],
-        capture_output=True,
-        text=True,
-    )
+    command = [
+        str(shaderc),
+        "-f",
+        str(source_path),
+        "-o",
+        str(output_path),
+        "--type",
+        stage,
+        "--platform",
+        platform,
+        "--profile",
+        profile,
+    ]
+    if raw:
+        command.append("--raw")
+    else:
+        if varying_def is None:
+            raise ValueError(
+                f"portable GLSL shader {name} requires a varying definition"
+            )
+        command.extend(("--varyingdef", str(varying_def)))
+        for include_path in include_paths:
+            command.extend(("-i", str(include_path)))
+    process = subprocess.run(command, capture_output=True, text=True)
     if process.returncode:
         details = process.stderr.strip() or process.stdout.strip()
         raise RuntimeError(f"shaderc failed for {name}:\n{details}")
     return output_path.read_bytes()
-
-
-def translate_missing_shader(
-    translator: Path, source_root: Path, description: dict[str, str], directory: Path
-) -> bytes:
-    local_translator = directory / "ShaderCompiler"
-    if not local_translator.exists():
-        shutil.copyfile(translator, local_translator)
-        local_translator.chmod(0o700)
-    command = [
-        "/usr/bin/arch",
-        "-x86_64",
-        str(local_translator),
-        description["source"],
-        f"/T{description['target']}",
-        f"/E{description['entrypoint']}",
-        "/DGLSL3",
-    ]
-    command.extend(f"/D{define}" for define in description.get("defines", "").split())
-    process = subprocess.run(command, capture_output=True, cwd=source_root)
-    if process.returncode:
-        raise RuntimeError(
-            f"GLSL translation failed for {description['name']}:\n"
-            + process.stderr.decode("utf-8", errors="replace")
-        )
-    return process.stdout
 
 
 def write_pack(path: Path, entries: list[tuple[str, bytes]]) -> None:
@@ -236,8 +230,9 @@ def main() -> int:
     parser.add_argument("--source-pack", required=True, type=Path)
     parser.add_argument("--shader-db", required=True, type=Path)
     parser.add_argument("--shaderc", required=True, type=Path)
-    parser.add_argument("--translator", required=True, type=Path)
     parser.add_argument("--source-root", required=True, type=Path)
+    parser.add_argument("--varying-def", type=Path)
+    parser.add_argument("--bgfx-include", action="append", default=[], type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--platform", default="osx")
     parser.add_argument("--profile", default="140")
@@ -261,27 +256,32 @@ def main() -> int:
                     hlsl_for_backend(
                         arguments.source_root, description, arguments.profile
                     ),
+                    True,
                 )
                 for description in descriptions
             ]
         else:
-            source_entries = read_pack(arguments.source_pack)
-            source_names = {name for name, _ in source_entries}
-            complete_entries = list(source_entries)
+            source_entries = dict(read_pack(arguments.source_pack))
+            complete_entries = []
             for description in descriptions:
-                if description["name"] not in source_names:
-                    complete_entries.append(
-                        (
-                            description["name"],
-                            translate_missing_shader(
-                                arguments.translator,
-                                arguments.source_root,
-                                description,
-                                directory,
-                            ),
+                name = description["name"]
+                override = GLSL_SOURCE_OVERRIDES.get(name)
+                if override is not None:
+                    source_path = arguments.source_root / override
+                    if not source_path.is_file():
+                        raise ValueError(
+                            f"portable GLSL override for {name} is absent: "
+                            f"{source_path}"
                         )
+                    complete_entries.append((name, source_path.read_bytes(), False))
+                elif name in source_entries:
+                    complete_entries.append((name, source_entries[name], True))
+                else:
+                    raise ValueError(
+                        f"archived GLSL pack has no {name} entry and no portable "
+                        "source override is registered"
                     )
-        for name, source in complete_entries:
+        for name, source, raw in complete_entries:
             try:
                 stage = stages[name]
             except KeyError as error:
@@ -298,6 +298,9 @@ def main() -> int:
                         arguments.platform,
                         arguments.profile,
                         arguments.preprocessor,
+                        raw,
+                        arguments.varying_def,
+                        arguments.bgfx_include,
                     ),
                 )
             )

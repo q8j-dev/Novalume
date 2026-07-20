@@ -1,8 +1,10 @@
 #include "PlayerRuntime.h"
+#include "PlayerMain.h"
 #include "rbx/core/BuildInfo.h"
 #include "rbx/assets/AssetMountTable.h"
 #include "rbx/assets/PlacePackage.h"
 #include "rbx/platform/Host.h"
+#include "rbx/platform/Utf8Path.h"
 #include "GfxCore/Device.h"
 #include "V8DataModel/LocalStorageService.h"
 #include "util/Http.h"
@@ -29,7 +31,7 @@ namespace {
 
 bool isSupportedDocument(const std::filesystem::path& path)
 {
-    std::string extension = path.extension().string();
+    std::string extension = rbx::platform::pathToUtf8(path.extension());
     std::transform(extension.begin(), extension.end(), extension.begin(),
         [](unsigned char value) { return static_cast<char>(std::tolower(value)); });
     return std::filesystem::is_regular_file(path) &&
@@ -66,7 +68,7 @@ constexpr RendererBootstrap rendererBootstrap()
 
 } // namespace
 
-int main(int argc, char** argv) {
+int rbxPlayerMain(int argc, char** argv) {
     try {
         struct HttpShutdownGuard {
             ~HttpShutdownGuard() { RBX::Http::shutdown(); }
@@ -127,17 +129,17 @@ int main(int argc, char** argv) {
             else if (argument == "--rthro-slender")
                 avatarRig = rbx::player::AvatarRigVariant::RthroSlender;
             if (argument == "--place" && index + 1 < argc) {
-                placePath = argv[++index];
+                placePath = rbx::platform::pathFromUtf8(argv[++index]);
             } else if (argument == "--render-proof" && index + 1 < argc) {
-                renderProofPath = argv[++index];
+                renderProofPath = rbx::platform::pathFromUtf8(argv[++index]);
             } else if (argument == "--frame-limit" && index + 1 < argc) {
                 requestedFrameLimit = std::stoi(argv[++index]);
                 if (*requestedFrameLimit <= 0)
                     throw std::runtime_error("--frame-limit requires a positive integer");
             } else if (argument == "--verify-video-rendering" && index + 1 < argc) {
-                videoVerificationPath = argv[++index];
+                videoVerificationPath = rbx::platform::pathFromUtf8(argv[++index]);
             } else if (!argument.starts_with('-')) {
-                placePath = argv[index];
+                placePath = rbx::platform::pathFromUtf8(argv[index]);
             }
         }
         const bool useDurangoLauncher = verifyLauncher ||
@@ -210,7 +212,7 @@ int main(int argc, char** argv) {
         if (materializedPlace)
             assetMounts.addMount("embedded-place", materializedPlace->root, 1000);
 
-        const auto surface = host->nativeSurface();
+        auto surface = host->nativeSurface();
         const auto playerListImage = assetMounts.resolve(
             "rbxasset://textures/ui/PlayerList/ViewAvatar.png", surface.pixelDensity);
         if (useCurrentInExperienceUi &&
@@ -239,11 +241,16 @@ int main(int argc, char** argv) {
 
         const std::filesystem::path runtimePlace = resolvedPlacePath
             ? *resolvedPlacePath
-            : resources / "places" / "Baseplate.rbxl";
+            : useDurangoLauncher
+                ? resources / "launcher" / "content" / "ScaledWorldv4.7.rbxl"
+                : resources / "places" / "Baseplate.rbxl";
         if (!std::filesystem::is_regular_file(runtimePlace))
-            throw std::runtime_error("packaged default Baseplate.rbxl is missing: " +
-                                     runtimePlace.string());
-        std::cout << "place=" << runtimePlace << '\n';
+            throw std::runtime_error("packaged default place is missing: " +
+                                     rbx::platform::pathToUtf8(runtimePlace));
+        std::cout << "place=" << rbx::platform::pathToUtf8(runtimePlace) << '\n';
+        auto recentDocuments = host->recentDocuments();
+        if (headlessVerify && verifyLauncher && recentDocuments.empty())
+            recentDocuments.push_back(runtimePlace);
         const auto runtimeLoadStart = std::chrono::steady_clock::now();
         rbx::player::PlayerRuntime runtime(device.get(), resources,
             host->existingClientSettingsRoot(), runtimePlace,
@@ -256,7 +263,7 @@ int main(int argc, char** argv) {
             verifyChromeLeaderboard, verifyReport, verifyRespawn,
             verifySwitchAvatar, verifySurfaceTextures, verifyShadowMap,
             verifySkybox, verifyAudio, verifyPlaceAudio, verifyTextRendering,
-            verifyPlaceVisual, host->recentDocuments());
+            verifyPlaceVisual, recentDocuments);
         const double runtimeLoadMilliseconds =
             std::chrono::duration<double, std::milli>(
                 std::chrono::steady_clock::now() - runtimeLoadStart).count();
@@ -269,17 +276,32 @@ int main(int argc, char** argv) {
                 std::min(frameLimit, 245) - 60));
         while (host->pumpEvents() && (frameLimit < 0 || frame < frameLimit)) {
             const auto frameStart = std::chrono::steady_clock::now();
+            const auto currentSurface = host->nativeSurface();
+            if (currentSurface.width != 0 && currentSurface.height != 0 &&
+                currentSurface.logicalWidth != 0 &&
+                currentSurface.logicalHeight != 0 &&
+                (currentSurface.width != surface.width ||
+                 currentSurface.height != surface.height ||
+                 currentSurface.logicalWidth != surface.logicalWidth ||
+                 currentSurface.logicalHeight != surface.logicalHeight ||
+                 currentSurface.pixelDensity != surface.pixelDensity)) {
+                runtime.resize(currentSurface.width, currentSurface.height,
+                    currentSurface.logicalWidth, currentSurface.logicalHeight,
+                    currentSurface.pixelDensity);
+                surface = currentSurface;
+            }
             for (const auto& document : host->takeOpenedDocuments()) {
                 if (!isSupportedDocument(document)) {
                     std::cerr << "RobloxPlayer: ignored unsupported document: "
-                              << document << '\n';
+                              << rbx::platform::pathToUtf8(document) << '\n';
                     continue;
                 }
                 if (!host->launchDocument(document))
                     throw std::runtime_error(
                         "unable to start selected Roblox document: " +
-                        document.string());
-                std::cout << "launched document=" << document << '\n';
+                        rbx::platform::pathToUtf8(document));
+                std::cout << "launched document="
+                          << rbx::platform::pathToUtf8(document) << '\n';
                 return 0;
             }
             for (const auto& event : host->takeInputEvents())
@@ -288,11 +310,13 @@ int main(int argc, char** argv) {
                 if (!isSupportedDocument(*recent))
                     throw std::runtime_error(
                         "recent Roblox document is no longer available: " +
-                        recent->string());
+                        rbx::platform::pathToUtf8(*recent));
                 if (!host->launchDocument(*recent))
                     throw std::runtime_error(
-                        "unable to start recent Roblox document: " + recent->string());
-                std::cout << "launched recent document=" << *recent << '\n';
+                        "unable to start recent Roblox document: " +
+                        rbx::platform::pathToUtf8(*recent));
+                std::cout << "launched recent document="
+                          << rbx::platform::pathToUtf8(*recent) << '\n';
                 return 0;
             }
             if (runtime.takeOpenDocumentRequest())
@@ -626,8 +650,19 @@ int main(int argc, char** argv) {
         }
         runtime.finishVerification();
         return 0;
+    } catch (...) {
+        throw;
+    }
+}
+
+#if !defined(_WIN32)
+int main(int argc, char** argv)
+{
+    try {
+        return rbxPlayerMain(argc, argv);
     } catch (const std::exception& error) {
         std::cerr << "RobloxPlayer: " << error.what() << '\n';
         return 1;
     }
 }
+#endif

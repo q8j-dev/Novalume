@@ -553,6 +553,9 @@ find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter)
 add_test(NAME reference-resource-inventory
     COMMAND "${Python3_EXECUTABLE}"
         "${CMAKE_SOURCE_DIR}/tests/unit/test_reference_inventory.py")
+add_test(NAME runtime-resource-bundle
+    COMMAND "${Python3_EXECUTABLE}"
+        "${CMAKE_SOURCE_DIR}/tests/unit/test_runtime_resource_bundle.py")
 add_test(NAME in-game-ui-import
     COMMAND "${Python3_EXECUTABLE}"
         "${CMAKE_SOURCE_DIR}/tests/unit/test_in_game_ui_import.py")

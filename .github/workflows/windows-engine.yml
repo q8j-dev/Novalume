@@ -2,16 +2,6 @@ name: Windows engine bring-up
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/windows-engine.yml'
-      - 'CMakeLists.txt'
-      - 'cmake/**'
-      - 'engine/**'
-      - 'platform/**'
-      - 'shaders/**'
-      - 'third_party/**'
 
 permissions:
   contents: read
@@ -31,35 +21,62 @@ jobs:
             runner: windows-2025
             triplet: x64-windows
             build_dir: windows-x64-release
+            msvc_arch: x64
           - label: Windows 11 ARM64
             runner: windows-11-vs2026-arm
             triplet: arm64-windows
             build_dir: windows-arm64-release
+            msvc_arch: arm64
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
 
-      - name: Restore vcpkg binary packages
+      - name: Restore pinned source dependency builds
         uses: actions/cache@v4
         with:
+          path: out/build/${{ matrix.build_dir }}/_deps
+          key: windows-engine-deps-${{ matrix.triplet }}-${{ hashFiles('cmake/RbxDependencies.cmake', 'cmake/patches/**') }}
+
+      - name: Restore vcpkg binary packages
+        id: vcpkg-cache
+        uses: actions/cache/restore@v4
+        with:
           path: ${{ runner.temp }}/vcpkg-binary-cache
-          key: vcpkg-ffmpeg-${{ runner.os }}-${{ matrix.triplet }}-${{ hashFiles('.github/workflows/windows-engine.yml') }}
+          key: vcpkg-ffmpeg-${{ runner.os }}-${{ matrix.triplet }}-full-v1
+          restore-keys: vcpkg-ffmpeg-${{ runner.os }}-${{ matrix.triplet }}-
 
       - name: Install pkg-config and FFmpeg development libraries
         shell: pwsh
         run: |
           $env:VCPKG_BINARY_SOURCES = "clear;files,$env:RUNNER_TEMP\vcpkg-binary-cache,readwrite"
           choco install pkgconfiglite --yes --no-progress
-          & "$env:VCPKG_INSTALLATION_ROOT\vcpkg.exe" install "ffmpeg[avcodec,avformat,swresample,swscale]:${{ matrix.triplet }}"
+          & "$env:VCPKG_INSTALLATION_ROOT\vcpkg.exe" install `
+            "zlib:${{ matrix.triplet }}" `
+            "ffmpeg[avcodec,avformat,swresample,swscale]:${{ matrix.triplet }}"
+
+      - name: Save vcpkg binary packages before the engine build
+        if: steps.vcpkg-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/vcpkg-binary-cache
+          key: vcpkg-ffmpeg-${{ runner.os }}-${{ matrix.triplet }}-full-v1
+
+      - name: Select the native MSVC toolchain
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
+        with:
+          arch: ${{ matrix.msvc_arch }}
 
       - name: Configure the shared engine
         shell: pwsh
         run: |
           $installed = "$env:VCPKG_INSTALLATION_ROOT\installed\${{ matrix.triplet }}"
+          $compiler = (Get-Command cl.exe -ErrorAction Stop).Source
           $env:PKG_CONFIG_PATH = "$installed\lib\pkgconfig;$installed\share\pkgconfig"
           cmake -S . -B "out/build/${{ matrix.build_dir }}" -G Ninja `
             -DCMAKE_BUILD_TYPE=Release `
+            "-DCMAKE_C_COMPILER=$compiler" `
+            "-DCMAKE_CXX_COMPILER=$compiler" `
             -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT\scripts\buildsystems\vcpkg.cmake" `
             -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }} `
             -DRBX_BUILD_PLAYER=OFF `

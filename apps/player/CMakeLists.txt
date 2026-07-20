@@ -6,6 +6,7 @@ add_subdirectory(shared/client)
 
 add_executable(RobloxPlayer MACOSX_BUNDLE
     main.cpp
+    PlayerMain.h
     LocalPlayerThumbnailProvider.cpp
     LocalPlayerThumbnailProvider.h
     PlayerRuntime.cpp
@@ -30,8 +31,9 @@ target_compile_options(RobloxPlayer PRIVATE
     $<$<COMPILE_LANG_AND_ID:CXX,AppleClang>:-Wno-enum-constexpr-conversion>)
 rbx_enable_warnings(RobloxPlayer)
 
-add_executable(RobloxPlayerLegacy MACOSX_BUNDLE
+add_executable(RobloxPlayerLegacy MACOSX_BUNDLE EXCLUDE_FROM_ALL
     main.cpp
+    PlayerMain.h
     LocalPlayerThumbnailProvider.cpp
     LocalPlayerThumbnailProvider.h
     PlayerRuntime.cpp
@@ -56,6 +58,45 @@ target_compile_definitions(RobloxPlayerLegacy PRIVATE
 target_compile_options(RobloxPlayerLegacy PRIVATE
     $<$<COMPILE_LANG_AND_ID:CXX,AppleClang>:-Wno-enum-constexpr-conversion>)
 rbx_enable_warnings(RobloxPlayerLegacy)
+
+if(WIN32)
+    set(RBX_PLAYER_ICON_FILE
+        "${CMAKE_CURRENT_SOURCE_DIR}/windows/source/Roblox.ico")
+    set(RBX_PLAYER_MANIFEST_FILE
+        "${CMAKE_CURRENT_SOURCE_DIR}/windows/RobloxPlayer.manifest")
+    configure_file(
+        windows/RobloxPlayerResources.h.in
+        "${CMAKE_CURRENT_BINARY_DIR}/windows/RobloxPlayerResources.h"
+        @ONLY)
+    set(RBX_PLAYER_RC_DEPENDENCIES
+        "${CMAKE_CURRENT_BINARY_DIR}/windows/RobloxPlayerResources.h"
+        "${RBX_PLAYER_ICON_FILE}"
+        "${RBX_PLAYER_MANIFEST_FILE}")
+    set_source_files_properties(windows/RobloxPlayer.rc PROPERTIES
+        OBJECT_DEPENDS "${RBX_PLAYER_RC_DEPENDENCIES}")
+    target_sources(RobloxPlayer PRIVATE
+        windows/PlayerEntrypoint.cpp
+        windows/RobloxPlayer.rc)
+    target_sources(RobloxPlayerLegacy PRIVATE
+        windows/PlayerEntrypoint.cpp
+        windows/RobloxPlayer.rc)
+    target_include_directories(RobloxPlayer PRIVATE
+        "${CMAKE_CURRENT_BINARY_DIR}/windows")
+    target_include_directories(RobloxPlayerLegacy PRIVATE
+        "${CMAKE_CURRENT_BINARY_DIR}/windows")
+    target_compile_definitions(RobloxPlayer PRIVATE
+        NOMINMAX WIN32_LEAN_AND_MEAN UNICODE _UNICODE)
+    target_compile_definitions(RobloxPlayerLegacy PRIVATE
+        NOMINMAX WIN32_LEAN_AND_MEAN UNICODE _UNICODE)
+    set_target_properties(RobloxPlayer RobloxPlayerLegacy PROPERTIES
+        WIN32_EXECUTABLE TRUE)
+    target_link_options(RobloxPlayer PRIVATE
+        $<$<CXX_COMPILER_ID:MSVC>:/MANIFEST:NO>)
+    target_link_options(RobloxPlayerLegacy PRIVATE
+        $<$<CXX_COMPILER_ID:MSVC>:/MANIFEST:NO>)
+    target_link_libraries(RobloxPlayer PRIVATE shell32)
+    target_link_libraries(RobloxPlayerLegacy PRIVATE shell32)
+endif()
 
 set_target_properties(RobloxPlayer PROPERTIES
     MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in"
@@ -100,7 +141,75 @@ set(RBX_UI_OVERLAY_ROOT "")
 set(RBX_AVATAR_RUNTIME_ROOT "")
 set(RBX_STUDIO_RUNTIME_ROOT "")
 set(RBX_CURRENT_PLAYER_SCRIPTS_MODEL "")
-if(RBX_STUDIO_REFERENCE_ROOT)
+set(RBX_CURRENT_PLAYER_SCRIPTS_MANIFEST "")
+set(RBX_IN_EXPERIENCE_MODEL_ROOT "")
+set(RBX_PLAYER_CJK_FONT "")
+set(RBX_PREBUILT_RUNTIME_RESOURCE_ROOT "")
+if(RBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE)
+    if(NOT EXISTS "${RBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE}" OR
+       IS_DIRECTORY "${RBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE}")
+        message(FATAL_ERROR
+            "RBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE is not a private runtime bundle file")
+    endif()
+    string(LENGTH "${RBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE_SHA256}"
+        RBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE_SHA256_LENGTH)
+    if(NOT RBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE_SHA256 MATCHES "^[0-9a-fA-F]+$" OR
+       NOT RBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE_SHA256_LENGTH EQUAL 64)
+        message(FATAL_ERROR
+            "RBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE_SHA256 must pin the private runtime bundle")
+    endif()
+    file(SHA256 "${RBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE}"
+        RBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE_ACTUAL_SHA256)
+    string(TOLOWER "${RBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE_SHA256}"
+        RBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE_EXPECTED_SHA256)
+    if(NOT RBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE_ACTUAL_SHA256 STREQUAL
+       RBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE_EXPECTED_SHA256)
+        message(FATAL_ERROR "Private runtime resource bundle SHA-256 does not match its pin")
+    endif()
+    find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter)
+    set(RBX_PREBUILT_RUNTIME_RESOURCE_ROOT
+        "${CMAKE_BINARY_DIR}/generated/resources/prebuilt-runtime")
+    execute_process(
+        COMMAND "${Python3_EXECUTABLE}"
+            "${CMAKE_SOURCE_DIR}/tools/resource_importer/runtime_resource_bundle.py"
+            verify
+            --bundle "${RBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE}"
+            --extract "${RBX_PREBUILT_RUNTIME_RESOURCE_ROOT}"
+        RESULT_VARIABLE RBX_RUNTIME_BUNDLE_RESULT
+        OUTPUT_VARIABLE RBX_RUNTIME_BUNDLE_OUTPUT
+        ERROR_VARIABLE RBX_RUNTIME_BUNDLE_ERROR)
+    if(NOT RBX_RUNTIME_BUNDLE_RESULT EQUAL 0)
+        message(FATAL_ERROR
+            "Private runtime resource bundle verification failed: ${RBX_RUNTIME_BUNDLE_ERROR}")
+    endif()
+    message(STATUS "Verified private Player runtime resources: ${RBX_RUNTIME_BUNDLE_OUTPUT}")
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+        "${RBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE}"
+        "${CMAKE_SOURCE_DIR}/tools/resource_importer/runtime_resource_bundle.py")
+    set(RBX_UI_OVERLAY_ROOT
+        "${RBX_PREBUILT_RUNTIME_RESOURCE_ROOT}/overlays/player-2026")
+    set(RBX_AVATAR_RUNTIME_ROOT
+        "${RBX_PREBUILT_RUNTIME_RESOURCE_ROOT}/overlays/avatar-runtime")
+    set(RBX_STUDIO_RUNTIME_ROOT
+        "${RBX_PREBUILT_RUNTIME_RESOURCE_ROOT}/overlays/studio-runtime")
+    set(RBX_CURRENT_PLAYER_SCRIPTS_MODEL
+        "${RBX_PREBUILT_RUNTIME_RESOURCE_ROOT}/content/scripts/PlayerScripts.rbxmx")
+    set(RBX_CURRENT_PLAYER_SCRIPTS_MANIFEST
+        "${RBX_PREBUILT_RUNTIME_RESOURCE_ROOT}/content/scripts/PlayerScripts.manifest.json")
+    set(RBX_IN_EXPERIENCE_MODEL_ROOT
+        "${RBX_PREBUILT_RUNTIME_RESOURCE_ROOT}/models/InExperience")
+    set(RBX_PLAYER_CJK_FONT
+        "${RBX_PREBUILT_RUNTIME_RESOURCE_ROOT}/PlatformContent/pc/fonts/NotoSansCJKjp-Regular.otf")
+    set_property(TARGET RobloxPlayer APPEND PROPERTY LINK_DEPENDS
+        "${RBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE}")
+    set_property(TARGET RobloxPlayerLegacy APPEND PROPERTY LINK_DEPENDS
+        "${RBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE}")
+endif()
+
+if(RBX_PREBUILT_RUNTIME_RESOURCE_ROOT)
+    # All generated roots were extracted and verified above.  The generic
+    # packaging rules below copy the exact same layout as a local reference build.
+elseif(RBX_STUDIO_REFERENCE_ROOT)
     if(NOT IS_DIRECTORY "${RBX_STUDIO_REFERENCE_ROOT}")
         message(FATAL_ERROR "RBX_STUDIO_REFERENCE_ROOT is not the supplied Studio directory")
     endif()
@@ -204,10 +313,13 @@ if(RBX_STUDIO_REFERENCE_ROOT)
         "${RBX_CURRENT_PLAYER_SCRIPTS_MANIFEST}")
 else()
     message(WARNING
-        "Supplied Studio path is not configured; authentic R15 assets will not be packaged")
+        "Neither a private runtime bundle nor a supplied Studio path is configured; authentic R15 assets will not be packaged")
 endif()
 
-if(RBX_PLAYER_REFERENCE_ROOT AND RBX_APK_REFERENCE_PATH)
+if(RBX_PREBUILT_RUNTIME_RESOURCE_ROOT)
+    # The UI overlay, InExperience patch, and CJK font were verified together
+    # by the private bundle importer above.
+elseif(RBX_PLAYER_REFERENCE_ROOT AND RBX_APK_REFERENCE_PATH)
     if(NOT IS_DIRECTORY "${RBX_PLAYER_REFERENCE_ROOT}")
         message(FATAL_ERROR "RBX_PLAYER_REFERENCE_ROOT is not the supplied Player directory")
     endif()
@@ -292,7 +404,7 @@ if(RBX_PLAYER_REFERENCE_ROOT AND RBX_APK_REFERENCE_PATH)
     endif()
 else()
     message(WARNING
-        "Supplied Player/APK paths are not configured; authentic in-game UI overlay will not be packaged")
+        "Neither a private runtime bundle nor supplied Player/APK paths are configured; authentic in-game UI overlay will not be packaged")
 endif()
 
 add_dependencies(RobloxPlayer rbx-player-shaders rbx-resource-manifest)
@@ -318,8 +430,11 @@ set_property(TARGET RobloxPlayerLegacy APPEND PROPERTY LINK_DEPENDS
 
 file(GLOB_RECURSE RBX_DURANGO_LAUNCHER_FILES CONFIGURE_DEPENDS
     "${CMAKE_SOURCE_DIR}/PlatformContent/durango/scripts/ui/*"
-    "${CMAKE_SOURCE_DIR}/PlatformContent/durango/textures/ui/*"
+    "${CMAKE_SOURCE_DIR}/PlatformContent/durango/textures/*"
+    "${CMAKE_SOURCE_DIR}/PlatformContent/durango/terrain/*"
     "${CMAKE_SOURCE_DIR}/PlatformContent/durango/sounds/ui/*")
+list(APPEND RBX_DURANGO_LAUNCHER_FILES
+    "${CMAKE_SOURCE_DIR}/PlatformContent/durango/ScaledWorldv4.7.rbxl")
 set_property(TARGET RobloxPlayer APPEND PROPERTY LINK_DEPENDS
     ${RBX_DURANGO_LAUNCHER_FILES})
 
@@ -334,11 +449,17 @@ add_custom_command(TARGET RobloxPlayer POST_BUILD
         "${CMAKE_SOURCE_DIR}/PlatformContent/durango/scripts/ui"
         "${RBX_PLAYER_RESOURCE_DIR}/launcher/content/scripts"
     COMMAND "${CMAKE_COMMAND}" -E copy_directory
-        "${CMAKE_SOURCE_DIR}/PlatformContent/durango/textures/ui"
-        "${RBX_PLAYER_RESOURCE_DIR}/launcher/content/textures/ui"
+        "${CMAKE_SOURCE_DIR}/PlatformContent/durango/textures"
+        "${RBX_PLAYER_RESOURCE_DIR}/launcher/content/textures"
+    COMMAND "${CMAKE_COMMAND}" -E copy_directory
+        "${CMAKE_SOURCE_DIR}/PlatformContent/durango/terrain"
+        "${RBX_PLAYER_RESOURCE_DIR}/launcher/content/terrain"
     COMMAND "${CMAKE_COMMAND}" -E copy_directory
         "${CMAKE_SOURCE_DIR}/PlatformContent/durango/sounds/ui"
         "${RBX_PLAYER_RESOURCE_DIR}/launcher/content/sounds/ui"
+    COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+        "${CMAKE_SOURCE_DIR}/PlatformContent/durango/ScaledWorldv4.7.rbxl"
+        "${RBX_PLAYER_RESOURCE_DIR}/launcher/content/ScaledWorldv4.7.rbxl"
     COMMAND "${CMAKE_COMMAND}" -E make_directory
         "${RBX_PLAYER_RESOURCE_DIR}/places"
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
@@ -518,4 +639,43 @@ if(APPLE)
         DEPENDS RobloxPlayerLegacy
         COMMENT "Installing the legacy UI test Player outside protected Desktop storage"
         VERBATIM)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    include(GNUInstallDirs)
+    install(TARGETS RobloxPlayer
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+    install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Resources/"
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/novalume")
+    install(FILES linux/roblox-player.desktop
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/applications")
+    install(FILES linux/roblox-player.xml
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/mime/packages")
+    install(FILES "${CMAKE_SOURCE_DIR}/content/textures/loading/robloxlogo.png"
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/icons/hicolor/256x256/apps"
+        RENAME roblox-player.png)
+endif()
+
+if(WIN32)
+    if(NOT VCPKG_INSTALLED_DIR OR NOT VCPKG_TARGET_TRIPLET)
+        message(FATAL_ERROR
+            "Windows Player packaging requires the configured vcpkg install tree and triplet")
+    endif()
+    set(RBX_PLAYER_RUNTIME_SEARCH_DIRECTORY
+        "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin")
+    install(TARGETS RobloxPlayer
+        RUNTIME_DEPENDENCIES
+            DIRECTORIES "${RBX_PLAYER_RUNTIME_SEARCH_DIRECTORY}"
+            PRE_EXCLUDE_REGEXES
+                "api-ms-.*"
+                "ext-ms-.*"
+            POST_EXCLUDE_REGEXES
+                ".*[Ww]indows[/\\\\][Ss]ystem32[/\\\\].*"
+        RUNTIME DESTINATION ".")
+    install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Resources/"
+        DESTINATION "Resources")
+
+    set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION ".")
+    set(CMAKE_INSTALL_SYSTEM_RUNTIME_COMPONENT Player)
+    include(InstallRequiredSystemLibraries)
 endif()

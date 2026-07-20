@@ -1,4 +1,5 @@
 #include "rbx/platform/RecentDocuments.h"
+#include "rbx/platform/Utf8Path.h"
 
 #include <algorithm>
 #include <fstream>
@@ -32,7 +33,7 @@ void saveRecentDocuments(const std::filesystem::path& writableRoot,
             return;
         output << "RBXREC1\n";
         for (const auto& document : documents)
-            output << std::quoted(document.string()) << '\n';
+            output << std::quoted(pathToUtf8(document)) << '\n';
         if (!output)
             return;
     }
@@ -57,7 +58,12 @@ std::vector<std::filesystem::path> loadRecentDocuments(
     std::vector<std::filesystem::path> result;
     std::string value;
     while (result.size() < kMaximumRecentDocuments && input >> std::quoted(value)) {
-        std::filesystem::path document(value);
+        std::filesystem::path document;
+        try {
+            document = pathFromUtf8(value);
+        } catch (const std::filesystem::filesystem_error&) {
+            continue;
+        }
         std::error_code error;
         if (!std::filesystem::is_regular_file(document, error) || error)
             continue;

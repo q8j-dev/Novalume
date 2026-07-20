@@ -1,13 +1,13 @@
 function(rbx_patch_gamenetworkingsockets_platforms source_dir)
     set(cmake_file "${source_dir}/CMakeLists.txt")
     file(READ "${cmake_file}" contents)
-    if(NOT contents MATCHES "RBX static crypto private dependencies")
+    if(NOT contents MATCHES "RBX pinned OpenSSL version gate")
         string(REPLACE
-            "\t\tset(CMAKE_REQUIRED_LIBRARIES OpenSSL::Crypto)"
-            "\t\tset(CMAKE_REQUIRED_LIBRARIES OpenSSL::Crypto)\n\t\t# RBX static crypto private dependencies\n\t\tlist(APPEND CMAKE_REQUIRED_LIBRARIES Threads::Threads \${CMAKE_DL_LIBS})"
+            "\t\tcheck_symbol_exists(EVP_MD_CTX_free openssl/evp.h OPENSSL_NEW_ENOUGH)"
+            "\t\t# RBX pinned OpenSSL version gate\n\t\t# The product has already required an exact target-architecture OpenSSL\n\t\t# build. CMake 4.4's link-based symbol probe fails for the Linux arm64\n\t\t# static archive even though that exact archive exports the symbol; use\n\t\t# FindOpenSSL's package version here and let the real GNS link validate\n\t\t# the complete static-library dependency closure.\n\t\tif(DEFINED OpenSSL_VERSION)\n\t\t\tset(_rbx_openssl_version \"\${OpenSSL_VERSION}\")\n\t\telse()\n\t\t\tset(_rbx_openssl_version \"\${OPENSSL_VERSION}\")\n\t\tendif()\n\t\tif(_rbx_openssl_version VERSION_LESS \"1.1.0\")\n\t\t\tset(OPENSSL_NEW_ENOUGH FALSE)\n\t\telse()\n\t\t\tset(OPENSSL_NEW_ENOUGH TRUE)\n\t\tendif()\n\t\tunset(_rbx_openssl_version)"
             crypto_patched "${contents}")
         if(crypto_patched STREQUAL contents)
-            message(FATAL_ERROR "Pinned GameNetworkingSockets static-crypto probe patch no longer applies; audit the new upstream revision")
+            message(FATAL_ERROR "Pinned GameNetworkingSockets OpenSSL version-gate patch no longer applies; audit the new upstream revision")
         endif()
         set(contents "${crypto_patched}")
         file(WRITE "${cmake_file}" "${contents}")

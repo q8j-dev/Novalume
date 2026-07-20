@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-roblox-place">
+    <comment>Roblox binary place</comment>
+    <glob pattern="*.rbxl"/>
+  </mime-type>
+  <mime-type type="application/x-roblox-place-xml">
+    <comment>Roblox XML place</comment>
+    <glob pattern="*.rbxlx"/>
+  </mime-type>
+  <mime-type type="application/x-roblox-model">
+    <comment>Roblox binary model</comment>
+    <glob pattern="*.rbxm"/>
+  </mime-type>
+  <mime-type type="application/x-roblox-model-xml">
+    <comment>Roblox XML model</comment>
+    <glob pattern="*.rbxmx"/>
+  </mime-type>
+  <mime-type type="application/x-roblox-place-package">
+    <comment>Roblox offline place package</comment>
+    <glob pattern="*.rbxlp"/>
+  </mime-type>
+</mime-info>

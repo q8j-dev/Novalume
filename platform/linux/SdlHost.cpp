@@ -140,7 +140,8 @@ public:
                 if (controller.gamepad)
                     SDL_CloseGamepad(controller.gamepad);
             }
-            SDL_SetWindowRelativeMouseMode(window_, false);
+            pointerLockRequested_ = false;
+            updatePointerLock();
             SDL_StopTextInput(window_);
             SDL_DestroyWindow(window_);
         }
@@ -196,8 +197,16 @@ public:
     std::filesystem::path resourceRoot() const override
     {
         const char* base = SDL_GetBasePath();
-        return base ? std::filesystem::path(base) / "Resources"
-                    : executablePath().parent_path() / "Resources";
+        const std::filesystem::path executableDirectory = base
+            ? std::filesystem::path(base) : executablePath().parent_path();
+        const std::filesystem::path portableResources =
+            executableDirectory / "Resources";
+        if (std::filesystem::is_directory(portableResources))
+            return portableResources;
+
+        // Linux packages keep immutable data under the normal prefix share
+        // directory while portable build artifacts retain the adjacent layout.
+        return executableDirectory.parent_path() / "share" / "novalume";
     }
 
     std::filesystem::path writableDataRoot() const override
@@ -236,7 +245,7 @@ public:
                 break;
             case SDL_EVENT_WINDOW_FOCUS_LOST:
                 events_.push_back(InputEvent{.kind = InputEvent::Kind::focusLost});
-                SDL_SetWindowRelativeMouseMode(window_, false);
+                updatePointerLock();
                 break;
             case SDL_EVENT_KEY_DOWN:
             case SDL_EVENT_KEY_UP: {
@@ -393,7 +402,20 @@ private:
     void updatePointerLock()
     {
         const bool focused = (SDL_GetWindowFlags(window_) & SDL_WINDOW_INPUT_FOCUS) != 0;
-        SDL_SetWindowRelativeMouseMode(window_, pointerLockRequested_ && focused);
+        const bool shouldLock = pointerLockRequested_ && focused;
+        if (shouldLock == pointerLocked_)
+            return;
+        if (shouldLock) {
+            SDL_GetGlobalMouseState(&savedPointerX_, &savedPointerY_);
+            savedPointerPositionValid_ = true;
+        }
+        if (!SDL_SetWindowRelativeMouseMode(window_, shouldLock))
+            return;
+        pointerLocked_ = shouldLock;
+        if (!shouldLock && savedPointerPositionValid_) {
+            SDL_WarpMouseGlobal(savedPointerX_, savedPointerY_);
+            savedPointerPositionValid_ = false;
+        }
     }
 
     void openGamepad(SDL_JoystickID id)
@@ -502,6 +524,10 @@ private:
     bool visible_ = false;
     bool running_ = true;
     bool pointerLockRequested_ = false;
+    bool pointerLocked_ = false;
+    bool savedPointerPositionValid_ = false;
+    float savedPointerX_ = 0.0F;
+    float savedPointerY_ = 0.0F;
     std::vector<InputEvent> events_;
     std::mutex documentMutex_;
     std::vector<std::filesystem::path> openedDocuments_;

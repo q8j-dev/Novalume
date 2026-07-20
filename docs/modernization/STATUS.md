@@ -1052,6 +1052,17 @@ checkpoint is recorded in `docs/reverse-engineering/in-experience-ui.md`.
   480-frame launcher acceptance now enters HomePane through a synthesized
   Gamepad1/ButtonA begin/end pair, reaches the real local-document bridge, and
   exits without leaving a Player or build process running.
+- Kept the Durango AppHome corpus as the single default launcher while adding
+  product-native packaging around it. Windows now has a Unicode GUI entry
+  point, the preserved Roblox application icon, a PerMonitorV2/long-path-aware
+  manifest, and UTF-16-to-UTF-8 document arguments without opening a console
+  shell. Linux now carries shared-mime-info registrations for RBXL, RBXLX,
+  RBXM, RBXMX, and RBXLP, a freedesktop desktop entry that opens those files
+  through the same Player, an authentic packaged icon, conventional prefix
+  resource lookup, and a CPack TGZ install layout. Native Windows/Linux package
+  builds remain pending their active CI bring-up; the refactored signed macOS
+  app passed the 480-frame Durango launcher/controller/picker/recent-document
+  proof and strict code-sign verification.
 - Removed the Player entry point's Metal-only bootstrap assumption. Backend
   selection is now D3D11 on Windows, Metal on Apple, Vulkan on Linux/Android,
   and WebGPU on Emscripten, with renderer-specific packaged-payload validation.

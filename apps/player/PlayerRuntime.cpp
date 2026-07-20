@@ -1,5 +1,6 @@
 #include "PlayerRuntime.h"
 #include "LocalPlayerThumbnailProvider.h"
+#include "rbx/platform/Utf8Path.h"
 
 #include "GfxBase/RenderSettings.h"
 #include "GfxBase/FrameRateManager.h"
@@ -753,6 +754,10 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
         if (!std::filesystem::is_regular_file(
                 launcherContent / "scripts" / "XStarterScript.lua") ||
             !std::filesystem::is_regular_file(
+                launcherContent / "ScaledWorldv4.7.rbxl") ||
+            !std::filesystem::is_regular_file(
+                launcherContent / "terrain" / "materials.json") ||
+            !std::filesystem::is_regular_file(
                 launcherContent / "textures" / "ui" / "Shell" /
                 "Background" / "Home_screen_01.png") ||
             !std::filesystem::is_regular_file(
@@ -923,6 +928,7 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
         std::atomic<bool> receivedGlobals{false};
         std::atomic<bool> gameLoaded{false};
         std::atomic<bool> characterReplicated{false};
+        const bool requiresReplicatedCharacter = !useDurangoLauncher;
         std::atomic<bool> failed{false};
         std::string failureReason;
         rbx::signals::scoped_connection acceptedConnection;
@@ -1054,7 +1060,8 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
 
         const auto connectionDeadline =
             std::chrono::steady_clock::now() + std::chrono::seconds(60);
-        while ((!receivedGlobals || !gameLoaded || !characterReplicated) && !failed &&
+        while ((!receivedGlobals || !gameLoaded ||
+                (requiresReplicatedCharacter && !characterReplicated)) && !failed &&
                std::chrono::steady_clock::now() < connectionDeadline)
         {
             {
@@ -1106,7 +1113,8 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
         if (failed)
             throw std::runtime_error(
                 "local DataModel connection failed: " + failureReason);
-        if (!accepted || !receivedGlobals || !gameLoaded || !characterReplicated)
+        if (!accepted || !receivedGlobals || !gameLoaded ||
+            (requiresReplicatedCharacter && !characterReplicated))
             throw std::runtime_error(
                 "timed out receiving the local authoritative DataModel and character");
 
@@ -1292,7 +1300,7 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
         localPlayer->setCanLoadCharacterAppearance(false);
         if (placePath.empty())
             localPlayer->loadCharacter(true, "");
-        if (!localPlayer->getCharacter())
+        if (!localPlayer->getCharacter() && !useDurangoLauncher)
             throw std::runtime_error("local server did not replicate a player character");
         if (verifyPlaceVisual) {
             RBX::ModelInstance* character = localPlayer->getCharacter();
@@ -2112,7 +2120,8 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
                 boost::shared_ptr<RBX::StringValue> recent =
                     RBX::Creatable<RBX::Instance>::create<RBX::StringValue>();
                 recent->setName("RecentDocument" + std::to_string(index + 1));
-                recent->setValue(recentDocuments[index].string());
+                recent->setValue(
+                    rbx::platform::pathToUtf8(recentDocuments[index]));
                 recent->setParent(recentFolder.get());
             }
             State* runtimeState = state.get();
@@ -2122,7 +2131,8 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
                         arguments->values.front().isType<std::string>()) {
                         std::scoped_lock lock(runtimeState->recentDocumentMutex);
                         runtimeState->recentDocumentRequested =
-                            arguments->values.front().cast<std::string>();
+                            rbx::platform::pathFromUtf8(
+                                arguments->values.front().cast<std::string>());
                         return;
                     }
                     runtimeState->openDocumentRequested.store(
@@ -2462,6 +2472,35 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
 }
 
 PlayerRuntime::~PlayerRuntime() = default;
+
+void PlayerRuntime::resize(unsigned int renderWidth, unsigned int renderHeight,
+    unsigned int logicalWidth, unsigned int logicalHeight, float pixelDensity)
+{
+    if (renderWidth == 0 || renderHeight == 0 ||
+        logicalWidth == 0 || logicalHeight == 0)
+        throw std::invalid_argument("PlayerRuntime resize requires a nonzero viewport");
+
+    RBX::DataModel::LegacyLock lock(
+        state->dataModel.get(), RBX::DataModelJob::Write);
+    state->device->resize(renderWidth, renderHeight, pixelDensity);
+    state->width = renderWidth;
+    state->height = renderHeight;
+    state->logicalWidth = logicalWidth;
+    state->logicalHeight = logicalHeight;
+    state->visualEngine->setViewport(
+        static_cast<int>(logicalWidth), static_cast<int>(logicalHeight));
+    if (RBX::Camera* camera = state->dataModel->getWorkspace()->getCamera())
+        camera->setViewport(RBX::Vector2int16(
+            static_cast<std::int16_t>(logicalWidth),
+            static_cast<std::int16_t>(logicalHeight)));
+    const unsigned int horizontalScale =
+        (renderWidth + logicalWidth / 2U) / logicalWidth;
+    const unsigned int verticalScale =
+        (renderHeight + logicalHeight / 2U) / logicalHeight;
+    RBX::ServiceProvider::create<RBX::GuiService>(state->dataModel.get())
+        ->setResolutionScale(static_cast<int>(std::clamp(
+            std::max(horizontalScale, verticalScale), 1U, 3U)));
+}
 
 void PlayerRuntime::handleInput(const rbx::platform::InputEvent& event)
 {
@@ -4535,6 +4574,13 @@ void PlayerRuntime::finishVerification()
         RBX::Instance* openDocumentButton = homePane
             ? homePane->findFirstChildByNameRecursive("OpenLocalDocumentButton")
             : nullptr;
+        RBX::Instance* recentDocumentButton = homePane
+            ? homePane->findFirstChildByNameRecursive("RecentLocalDocument1")
+            : nullptr;
+        RBX::StringValue* recentDocument = coreGui
+            ? RBX::Instance::fastDynamicCast<RBX::StringValue>(
+                coreGui->findFirstChildByNameRecursive("RecentDocument1"))
+            : nullptr;
         RBX::Soundscape::SoundService* soundService =
             RBX::ServiceProvider::find<RBX::Soundscape::SoundService>(
                 state->dataModel.get());
@@ -4543,10 +4589,21 @@ void PlayerRuntime::finishVerification()
         RBX::Instance* backgroundLoop = shellSounds
             ? shellSounds->findFirstChildByName("BackgroundLoop") : nullptr;
         if (!appHome || !engagement || !logo || !hub || !homePane ||
-            !openDocument || !openDocumentButton || !shellSounds ||
+            !openDocument || !openDocumentButton || !recentDocumentButton ||
+            !recentDocument || !shellSounds ||
             !backgroundLoop || backgroundLoop->numChildren() != 3)
             throw std::runtime_error(
                 "authentic Durango launcher did not complete desktop activation into its shell");
+        boost::shared_ptr<RBX::Reflection::Tuple> recentArguments =
+            boost::make_shared<RBX::Reflection::Tuple>();
+        recentArguments->values.push_back(
+            RBX::Reflection::Variant(recentDocument->getValue()));
+        openDocument->fire(recentArguments);
+        const auto requestedRecent = takeRecentDocumentRequest();
+        if (!requestedRecent ||
+            requestedRecent->string() != recentDocument->getValue())
+            throw std::runtime_error(
+                "Durango launcher recent-document action did not reach the Player host");
         openDocument->fire(boost::make_shared<RBX::Reflection::Tuple>());
         if (!takeOpenDocumentRequest())
             throw std::runtime_error(
@@ -4554,7 +4611,7 @@ void PlayerRuntime::finishVerification()
         std::cout << "Durango launcher mounted AppHome, engagement logo, and "
                   << backgroundLoop->numChildren()
                   << " pooled background-music voices; controller activation opened HomePane "
-                     "and its local-document action reached the Player host\n";
+                     "and its picker/recent-document actions reached the Player host\n";
     }
     if (state->verifiesAudio) {
         RBX::DataModel::LegacyLock lock(

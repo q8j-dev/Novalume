@@ -343,8 +343,10 @@ private:
                 .style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC,
                 .lpfnWndProc = windowProcedure,
                 .hInstance = GetModuleHandleW(nullptr),
+                .hIcon = LoadIconW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(1)),
                 .hCursor = LoadCursorW(nullptr, IDC_ARROW),
-                .lpszClassName = windowClassName()};
+                .lpszClassName = windowClassName(),
+                .hIconSm = LoadIconW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(1))};
             if (!RegisterClassExW(&descriptor) &&
                 GetLastError() != ERROR_CLASS_ALREADY_EXISTS)
                 throw std::runtime_error("failed to register the Windows Player window class");
@@ -526,6 +528,8 @@ private:
             .hwndTarget = shouldLock ? window_ : nullptr};
         RegisterRawInputDevices(&device, 1, sizeof(device));
         if (shouldLock) {
+            savedCursorPositionValid_ =
+                GetCursorPos(&savedCursorPosition_) != FALSE;
             RECT clip{};
             GetClientRect(window_, &clip);
             POINT topLeft{clip.left, clip.top};
@@ -535,9 +539,18 @@ private:
             clip = {topLeft.x, topLeft.y, bottomRight.x, bottomRight.y};
             ClipCursor(&clip);
             while (ShowCursor(FALSE) >= 0) {}
+            // Suppress the synthetic center-warp WM_MOUSEMOVE. Gameplay sees
+            // only raw relative deltas while locked.
+            pointerLocked_ = true;
+            SetCursorPos((topLeft.x + bottomRight.x) / 2,
+                (topLeft.y + bottomRight.y) / 2);
         } else {
             ClipCursor(nullptr);
             while (ShowCursor(TRUE) < 0) {}
+            if (savedCursorPositionValid_) {
+                SetCursorPos(savedCursorPosition_.x, savedCursorPosition_.y);
+                savedCursorPositionValid_ = false;
+            }
         }
         pointerLocked_ = shouldLock;
     }
@@ -655,6 +668,8 @@ private:
     bool focused_ = true;
     bool pointerLockRequested_ = false;
     bool pointerLocked_ = false;
+    POINT savedCursorPosition_{};
+    bool savedCursorPositionValid_ = false;
     std::vector<InputEvent> events_;
     std::vector<std::filesystem::path> openedDocuments_;
     std::array<GamepadState, XUSER_MAX_COUNT> gamepads_{};

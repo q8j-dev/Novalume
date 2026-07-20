@@ -1,5 +1,7 @@
 set(RBX_SHADER_OUTPUT_DIR "${CMAKE_BINARY_DIR}/generated/shaders")
 set(RBX_VARYING_DEF "${CMAKE_CURRENT_SOURCE_DIR}/varying/player_ui.def.sc")
+set(RBX_SCENE_VARYING_DEF
+    "${CMAKE_CURRENT_SOURCE_DIR}/varying/scene_shadow.def.sc")
 set(RBX_SCENE_SHADER_PACK "${RBX_SHADER_OUTPUT_DIR}/shaders_bgfx-glsl.pack")
 set(RBX_METAL_SCENE_SHADER_PACK "${RBX_SHADER_OUTPUT_DIR}/shaders_bgfx-metal.pack")
 set(RBX_SPIRV_SCENE_SHADER_PACK "${RBX_SHADER_OUTPUT_DIR}/shaders_bgfx-spirv.pack")
@@ -8,7 +10,18 @@ set(RBX_WGSL_SCENE_SHADER_PACK "${RBX_SHADER_OUTPUT_DIR}/shaders_bgfx-wgsl.pack"
 
 file(GLOB RBX_SCENE_SHADER_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/source/*.hlsl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/source/*.h")
+    "${CMAKE_CURRENT_SOURCE_DIR}/source/*.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/source/*.sc")
+
+if(EMSCRIPTEN)
+    set(RBX_SCENE_GLSL_PLATFORM "asm.js")
+elseif(WIN32)
+    set(RBX_SCENE_GLSL_PLATFORM "windows")
+elseif(UNIX AND NOT APPLE)
+    set(RBX_SCENE_GLSL_PLATFORM "linux")
+else()
+    set(RBX_SCENE_GLSL_PLATFORM "osx")
+endif()
 
 find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter)
 
@@ -19,8 +32,10 @@ add_custom_command(
         --source-pack "${CMAKE_CURRENT_SOURCE_DIR}/shaders_glsl3.pack"
         --shader-db "${CMAKE_CURRENT_SOURCE_DIR}/shaders.json"
         --shaderc "$<TARGET_FILE:shaderc>"
-        --translator "${CMAKE_SOURCE_DIR}/Rendering/ShaderCompiler/ShaderCompiler"
         --source-root "${CMAKE_CURRENT_SOURCE_DIR}/source"
+        --varying-def "${RBX_SCENE_VARYING_DEF}"
+        --bgfx-include "${BGFX_DIR}/src"
+        --platform "${RBX_SCENE_GLSL_PLATFORM}"
         --output "${RBX_SCENE_SHADER_PACK}"
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
         "${CMAKE_CURRENT_SOURCE_DIR}/shaders.json"
@@ -30,7 +45,7 @@ add_custom_command(
         "${CMAKE_SOURCE_DIR}/tools/shader_pipeline/compile_scene_pack.py"
         "${CMAKE_CURRENT_SOURCE_DIR}/shaders_glsl3.pack"
         "${CMAKE_CURRENT_SOURCE_DIR}/shaders.json"
-        "${CMAKE_SOURCE_DIR}/Rendering/ShaderCompiler/ShaderCompiler"
+        "${RBX_SCENE_VARYING_DEF}"
         ${RBX_SCENE_SHADER_SOURCES}
     COMMENT "Compiling the complete scene shader pack for bgfx OpenGL"
     VERBATIM)
@@ -43,7 +58,6 @@ if(WIN32)
             --source-pack "${CMAKE_CURRENT_SOURCE_DIR}/shaders_glsl3.pack"
             --shader-db "${CMAKE_CURRENT_SOURCE_DIR}/shaders.json"
             --shaderc "$<TARGET_FILE:shaderc>"
-            --translator "${CMAKE_SOURCE_DIR}/Rendering/ShaderCompiler/ShaderCompiler"
             --source-root "${CMAKE_CURRENT_SOURCE_DIR}/source"
             --platform windows
             --profile s_5_0
@@ -52,7 +66,6 @@ if(WIN32)
         DEPENDS
             shaderc
             "${CMAKE_SOURCE_DIR}/tools/shader_pipeline/compile_scene_pack.py"
-            "${CMAKE_SOURCE_DIR}/Rendering/ShaderCompiler/ShaderCompiler"
             "${CMAKE_CURRENT_SOURCE_DIR}/shaders_glsl3.pack"
             "${CMAKE_CURRENT_SOURCE_DIR}/shaders.json"
             ${RBX_SCENE_SHADER_SOURCES}
@@ -68,7 +81,6 @@ if(EMSCRIPTEN)
             --source-pack "${CMAKE_CURRENT_SOURCE_DIR}/shaders_glsl3.pack"
             --shader-db "${CMAKE_CURRENT_SOURCE_DIR}/shaders.json"
             --shaderc "$<TARGET_FILE:shaderc>"
-            --translator "${CMAKE_SOURCE_DIR}/Rendering/ShaderCompiler/ShaderCompiler"
             --source-root "${CMAKE_CURRENT_SOURCE_DIR}/source"
             --platform asm.js
             --profile wgsl
@@ -77,7 +89,6 @@ if(EMSCRIPTEN)
         DEPENDS
             shaderc
             "${CMAKE_SOURCE_DIR}/tools/shader_pipeline/compile_scene_pack.py"
-            "${CMAKE_SOURCE_DIR}/Rendering/ShaderCompiler/ShaderCompiler"
             "${CMAKE_CURRENT_SOURCE_DIR}/shaders_glsl3.pack"
             "${CMAKE_CURRENT_SOURCE_DIR}/shaders.json"
             ${RBX_SCENE_SHADER_SOURCES}
@@ -92,7 +103,6 @@ add_custom_command(
         --source-pack "${CMAKE_CURRENT_SOURCE_DIR}/shaders_glsl3.pack"
         --shader-db "${CMAKE_CURRENT_SOURCE_DIR}/shaders.json"
         --shaderc "$<TARGET_FILE:shaderc>"
-        --translator "${CMAKE_SOURCE_DIR}/Rendering/ShaderCompiler/ShaderCompiler"
         --source-root "${CMAKE_CURRENT_SOURCE_DIR}/source"
         --platform linux
         --profile spirv
@@ -101,7 +111,6 @@ add_custom_command(
     DEPENDS
         shaderc
         "${CMAKE_SOURCE_DIR}/tools/shader_pipeline/compile_scene_pack.py"
-        "${CMAKE_SOURCE_DIR}/Rendering/ShaderCompiler/ShaderCompiler"
         "${CMAKE_CURRENT_SOURCE_DIR}/shaders_glsl3.pack"
         "${CMAKE_CURRENT_SOURCE_DIR}/shaders.json"
         ${RBX_SCENE_SHADER_SOURCES}
