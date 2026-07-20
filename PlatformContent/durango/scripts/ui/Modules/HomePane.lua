@@ -159,7 +159,7 @@ local function CreateHomePane(parent)
 
 		local rbxuid = UserData:GetRbxUserId()
 
-		if rbxuid then
+		if rbxuid and game:GetService('UserInputService'):GetPlatform() == Enum.Platform.XBoxOne then
 			if existingThumbnailLoader then
 				existingThumbnailLoader:Cancel()
 			end
@@ -257,8 +257,64 @@ local function CreateHomePane(parent)
 		Parent = HomePaneContainer;
 	}
 
+	local OpenLocalDocumentButton = nil
+	if game:GetService('UserInputService'):GetPlatform() ~= Enum.Platform.XBoxOne then
+		OpenLocalDocumentButton = Utility.Create'ImageButton'
+		{
+			Name = 'OpenLocalDocumentButton';
+			Size = UDim2.new(0, 500, 0, 132);
+			Position = UDim2.new(0, 0, 0, 0);
+			BackgroundColor3 = GlobalSettings.GreyButtonColor;
+			BackgroundTransparency = 0.15;
+			BorderSizePixel = 0;
+			AutoButtonColor = false;
+			Parent = SortsContainer;
+			Utility.Create'TextLabel'
+			{
+				Name = 'Title';
+				Size = UDim2.new(1, -40, 0, 60);
+				Position = UDim2.new(0, 20, 0, 14);
+				BackgroundTransparency = 1;
+				Text = 'OPEN LOCAL PLACE';
+				TextColor3 = GlobalSettings.WhiteTextColor;
+				TextXAlignment = 'Left';
+				Font = GlobalSettings.BoldFont;
+				FontSize = GlobalSettings.HeaderSize;
+			};
+			Utility.Create'TextLabel'
+			{
+				Name = 'Hint';
+				Size = UDim2.new(1, -40, 0, 36);
+				Position = UDim2.new(0, 20, 0, 78);
+				BackgroundTransparency = 1;
+				Text = 'RBXL, RBXLX, RBXM, RBXMX OR RBXLP  ·  COMMAND-O';
+				TextColor3 = GlobalSettings.GreyTextColor;
+				TextXAlignment = 'Left';
+				Font = GlobalSettings.RegularFont;
+				FontSize = GlobalSettings.DescriptionSize;
+			};
+		}
+		local function updateOpenButtonSelection()
+			OpenLocalDocumentButton.BackgroundColor3 =
+				GuiService.SelectedCoreObject == OpenLocalDocumentButton and
+				GlobalSettings.GreySelectedButtonColor or GlobalSettings.GreyButtonColor
+		end
+		OpenLocalDocumentButton.SelectionGained:connect(updateOpenButtonSelection)
+		OpenLocalDocumentButton.SelectionLost:connect(updateOpenButtonSelection)
+		OpenLocalDocumentButton.MouseButton1Click:connect(function()
+			local openDocument = CoreGui:FindFirstChild('OpenLocalDocument')
+			if openDocument then
+				SoundManager:Play('ButtonPress')
+				openDocument:Fire()
+			end
+		end)
+	end
+
 	local populateSortsDebounce = false
 	local function PopulateSorts()
+		if game:GetService('UserInputService'):GetPlatform() ~= Enum.Platform.XBoxOne then
+			return
+		end
 		if populateSortsDebounce then return end
 		populateSortsDebounce = true
 		local function loadGameSorts()
@@ -400,7 +456,7 @@ local function CreateHomePane(parent)
 	end
 
 	function this:GetDefaultSelectionObject()
-		return ProfileButton
+		return OpenLocalDocumentButton or ProfileButton
 	end
 
 	function this:SetSelectionObject()

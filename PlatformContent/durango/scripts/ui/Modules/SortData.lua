@@ -11,6 +11,11 @@ local GameData = require(Modules:FindFirstChild('GameData'))
 local Http = require(Modules:FindFirstChild('Http'))
 local Strings = require(Modules:FindFirstChild('LocalizedStrings'))
 local Utility = require(Modules:FindFirstChild('Utility'))
+local UserInputService = game:GetService('UserInputService')
+
+local function usesLocalPlaceLibrary()
+	return UserInputService:GetPlatform() ~= Enum.Platform.XBoxOne
+end
 
 local SortData = {}
 
@@ -159,6 +164,9 @@ end
 
 -- returns class style table for sorts
 function SortData.GetSortCategoriesAsync()
+	if usesLocalPlaceLibrary() then
+		return {}
+	end
 	local result = Http.GetGameSortsAsync()
 	if not result then
 		-- TODO: Error codes
@@ -180,6 +188,9 @@ end
 
 local function createSort(sort, sortId, httpFunc)
 	function sort:GetPageAsync(startIndex, pageSize, timeFilter)
+		if usesLocalPlaceLibrary() then
+			return initPage({})
+		end
 		local result = httpFunc(startIndex, pageSize, sortId, timeFilter)
 		if not result then
 			return nil

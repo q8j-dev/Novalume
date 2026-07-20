@@ -19,7 +19,7 @@
             <key>CFBundleTypeRole</key><string>Viewer</string>
             <key>LSHandlerRank</key><string>Alternate</string>
             <key>CFBundleTypeExtensions</key>
-            <array><string>rbxl</string><string>rbxlx</string><string>rbxm</string><string>rbxmx</string></array>
+            <array><string>rbxl</string><string>rbxlx</string><string>rbxm</string><string>rbxmx</string><string>rbxlp</string></array>
         </dict>
     </array>
 </dict>

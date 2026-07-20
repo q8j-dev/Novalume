@@ -55,6 +55,7 @@ public:
     void renderFrame(unsigned long frameNumber);
     void handleInput(const rbx::platform::InputEvent& event);
     [[nodiscard]] bool wantsPointerLock() const;
+    [[nodiscard]] bool takeOpenDocumentRequest();
     void writeFrameProof(const std::filesystem::path& outputPath);
     void finishVerification();
 

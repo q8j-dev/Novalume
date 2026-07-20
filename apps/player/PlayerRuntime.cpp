@@ -482,6 +482,7 @@ struct PlayerRuntime::State final {
     rbx::signals::scoped_connection screenshotRequestConnection;
     rbx::signals::scoped_connection captureSavedConnection;
     rbx::signals::scoped_connection lightingChangedConnection;
+    rbx::signals::scoped_connection openDocumentConnection;
     rbx::signals::scoped_connection r15AnimationPlayedConnection;
     rbx::signals::scoped_connection r15EmoteTriggeredConnection;
     RBX::Graphics::shared_ptr<RBX::Graphics::Texture> verificationColor;
@@ -624,6 +625,7 @@ struct PlayerRuntime::State final {
     unsigned long renderingFrame = 0;
     std::vector<RBX::Vector3> cameraChangesThisFrame;
     std::vector<RBX::Vector3> mouseChangesThisFrame;
+    std::atomic<bool> openDocumentRequested{false};
 
     ~State()
     {
@@ -634,6 +636,7 @@ struct PlayerRuntime::State final {
         serverScriptErrorConnection.disconnect();
         offlineChatMountConnection.disconnect();
         lightingChangedConnection.disconnect();
+        openDocumentConnection.disconnect();
         if (!verificationCapturePath.empty())
         {
             std::error_code error;
@@ -2089,6 +2092,21 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
                 throw std::runtime_error(
                     "Chrome product policy did not disable the Music integration");
 		}
+        if (useDurangoLauncher)
+        {
+            RBX::CoreGuiService* coreGui =
+                RBX::ServiceProvider::create<RBX::CoreGuiService>(state->dataModel.get());
+            boost::shared_ptr<RBX::BindableEvent> openDocument =
+                RBX::Creatable<RBX::Instance>::create<RBX::BindableEvent>();
+            openDocument->setName("OpenLocalDocument");
+            openDocument->setParent(coreGui);
+            State* runtimeState = state.get();
+            state->openDocumentConnection = openDocument->event.connect(
+                [runtimeState](boost::shared_ptr<const RBX::Reflection::Tuple>) {
+                    runtimeState->openDocumentRequested.store(
+                        true, std::memory_order_release);
+                });
+        }
         state->dataModel->startCoreScripts(
             true, useDurangoLauncher ? "XStarterScript" : std::string());
 		if (!useCurrentInExperienceUi)
@@ -2568,6 +2586,11 @@ bool PlayerRuntime::wantsPointerLock() const
         input->getMouseType() == RBX::UserInputService::MOUSETYPE_LOCKCURRENT ||
         wrap == RBX::UserInputService::WRAP_CENTER ||
         wrap == RBX::UserInputService::WRAP_NONEANDCENTER;
+}
+
+bool PlayerRuntime::takeOpenDocumentRequest()
+{
+    return state->openDocumentRequested.exchange(false, std::memory_order_acq_rel);
 }
 
 void PlayerRuntime::renderFrame(unsigned long frameNumber)
@@ -4431,6 +4454,13 @@ void PlayerRuntime::finishVerification()
             ? appHome->findFirstChildByNameRecursive("HubContainer") : nullptr;
         RBX::Instance* homePane = hub
             ? hub->findFirstChildByNameRecursive("HomePane") : nullptr;
+        RBX::BindableEvent* openDocument = coreGui
+            ? RBX::Instance::fastDynamicCast<RBX::BindableEvent>(
+                coreGui->findFirstChildByName("OpenLocalDocument"))
+            : nullptr;
+        RBX::Instance* openDocumentButton = homePane
+            ? homePane->findFirstChildByNameRecursive("OpenLocalDocumentButton")
+            : nullptr;
         RBX::Soundscape::SoundService* soundService =
             RBX::ServiceProvider::find<RBX::Soundscape::SoundService>(
                 state->dataModel.get());
@@ -4438,13 +4468,19 @@ void PlayerRuntime::finishVerification()
             ? soundService->findFirstChildByName("AppShellSounds") : nullptr;
         RBX::Instance* backgroundLoop = shellSounds
             ? shellSounds->findFirstChildByName("BackgroundLoop") : nullptr;
-        if (!appHome || !engagement || !logo || !hub || !homePane || !shellSounds ||
+        if (!appHome || !engagement || !logo || !hub || !homePane ||
+            !openDocument || !openDocumentButton || !shellSounds ||
             !backgroundLoop || backgroundLoop->numChildren() != 3)
             throw std::runtime_error(
                 "authentic Durango launcher did not complete desktop activation into its shell");
+        openDocument->fire(boost::make_shared<RBX::Reflection::Tuple>());
+        if (!takeOpenDocumentRequest())
+            throw std::runtime_error(
+                "Durango launcher local-document bridge did not reach the Player host");
         std::cout << "Durango launcher mounted AppHome, engagement logo, and "
                   << backgroundLoop->numChildren()
-                  << " pooled background-music voices; keyboard activation opened HomePane\n";
+                  << " pooled background-music voices; keyboard activation opened HomePane "
+                     "and its local-document action reached the Player host\n";
     }
     if (state->verifiesAudio) {
         RBX::DataModel::LegacyLock lock(

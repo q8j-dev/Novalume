@@ -78,9 +78,7 @@ function UserData:Initialize()
 		currentUserData["Gamertag"] = "InStudioNoGamertag"
 		currentUserData["RbxUid"] = localPlayer.userId
 		currentUserData["RobloxName"] = localPlayer.Name
-		spawn(function()
-			setVoteCountAsync()
-		end)
+		currentUserData["VoteCount"] = 0
 	elseif PlatformService then
 		local userInfo = PlatformService:GetPlatformUserInfo()
 		if userInfo then

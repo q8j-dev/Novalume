@@ -8,6 +8,12 @@ The shared `Host` and renderer interfaces contain no Cocoa, Win32, UIKit, JNI,
 X11/Wayland, browser, Metal, D3D, Vulkan, GL, or WebGPU public types. Native
 handles use `uintptr_t`; bgfx performs API translation. Paths use
 `std::filesystem`, dimensions use fixed-width types, and density is explicit.
+The shared host contract now also owns local-document selection, queued
+application-open events, and confirmed document-session launch without
+exposing a native picker or process type. The macOS adapter implements the
+contract with NSOpenPanel, NSApplicationDelegate, and NSTask; equivalent
+Windows, Linux, mobile, and browser adapters remain required before their
+launcher builds can claim local-file parity.
 
 | Target | Expected bring-up | Current follow-up |
 |---|---|---|

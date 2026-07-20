@@ -334,7 +334,9 @@ local function CreateAvatarPane(parent)
 		if forceRefresh or
 				LastWearingPackageAssetId ~= PackageData:GetCachedWearingPackage() or
 				LastWearingOutfitId ~= OutfitData:GetCachedWearingOutfitId() then
-			CrossfadeAvatarImage(ProfileImage, CrossfadeProfileImage, UserData.GetLocalUserIdAsync())
+			if game:GetService('UserInputService'):GetPlatform() == Enum.Platform.XBoxOne then
+				CrossfadeAvatarImage(ProfileImage, CrossfadeProfileImage, UserData.GetLocalUserIdAsync())
+			end
 
 			LastWearingPackageAssetId = PackageData:GetCachedWearingPackage()
 			LastWearingOutfitId = OutfitData:GetCachedWearingOutfitId()

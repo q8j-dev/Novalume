@@ -336,6 +336,9 @@ end)
 
 local debounceGetXboxCatalogPackages = false
 function PackageData:GetXboxCatalogPackagesAsync()
+	if game:GetService('UserInputService'):GetPlatform() ~= Enum.Platform.XBoxOne then
+		return {}
+	end
 	if debounceGetXboxCatalogPackages then
 		while debounceGetXboxCatalogPackages do wait() end
 	end
@@ -364,6 +367,9 @@ end
 
 
 function PackageData:GetCurrentlyWearingPackageAssetIdAsync()
+	if game:GetService('UserInputService'):GetPlatform() ~= Enum.Platform.XBoxOne then
+		return nil
+	end
 	local currentWearingData = Http.GetXboxCurrentlyWearingPackageAsync()
 	return currentWearingData and currentWearingData['AssetId']
 end

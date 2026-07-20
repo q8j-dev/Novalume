@@ -223,6 +223,11 @@ local function getOnlineFriends()
 
 		return myOnlineFriends
 	end
+
+	-- Desktop/mobile/web launcher sessions do not have an Xbox social graph.
+	-- An empty collection is the real local state and keeps the authentic empty
+	-- friends treatment active without calling retired console endpoints.
+	return {}
 end
 
 --[[ Public API ]]--

@@ -15,6 +15,7 @@ local EventHub = require(Modules:FindFirstChild('EventHub'))
 local Http = require(Modules:FindFirstChild('Http'))
 local UserData = require(Modules:FindFirstChild('UserData'))
 local PlatformInterface = require(Modules:FindFirstChild('PlatformInterface'))
+local UserInputService = game:GetService('UserInputService')
 
 
 local VIEW_GAMETYPE_ENUM =
@@ -51,6 +52,9 @@ end
 
 
 local function UpdateEquippedPackagesAsync()
+	if UserInputService:GetPlatform() ~= Enum.Platform.XBoxOne then
+		return
+	end
 	-- print("Update Equipped Packages")
 	local myUserId = UserData:GetRbxUserId()
 	local packages = myUserId and Http.GetUserOwnedPackagesAsync(myUserId)

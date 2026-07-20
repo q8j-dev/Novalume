@@ -14,6 +14,11 @@ local Http = require(Modules:FindFirstChild('Http'))
 local UserData = require(Modules:FindFirstChild('UserData'))
 local PlatformInterface = require(Modules:FindFirstChild('PlatformInterface'))
 local GameCollection = require(Modules:FindFirstChild('GameCollection'))
+local UserInputService = game:GetService('UserInputService')
+
+local function isXboxShell()
+	return UserInputService:GetPlatform() == Enum.Platform.XBoxOne
+end
 
 --[[ ACHIEVEMENT NAMES --]]
 	-- "Award10DayRoll"
@@ -199,6 +204,9 @@ EventHub:addEventListener(EventHub.Notifications["TestXButtonPressed"], "Achieve
 
 EventHub:addEventListener(EventHub.Notifications["AuthenticationSuccess"], "AchievementManager",
 	function()
+		if not isXboxShell() then
+			return
+		end
 		spawn(function()
 			local myUserId = UserData:GetRbxUserId()
 			local function stillLoggedIn()
@@ -259,4 +267,3 @@ end
 
 
 return AchievementManager
-

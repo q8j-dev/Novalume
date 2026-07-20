@@ -9,12 +9,37 @@
 #include <utility>
 
 typedef void (*RbxWindowCloseCallback)(void* context);
+typedef void (*RbxDocumentOpenCallback)(void* context, const char* path);
 
 @interface RbxMacWindowDelegate : NSObject <NSWindowDelegate> {
 @public
     void* context;
     RbxWindowCloseCallback callback;
     BOOL allowClose;
+}
+@end
+
+@interface RbxMacApplicationDelegate : NSObject <NSApplicationDelegate> {
+@public
+    void* context;
+    RbxDocumentOpenCallback callback;
+}
+@end
+
+@implementation RbxMacApplicationDelegate
+- (void)application:(NSApplication*)application openFiles:(NSArray<NSString*>*)filenames
+{
+    BOOL accepted = NO;
+    for (NSString* filename in filenames) {
+        const char* path = [filename fileSystemRepresentation];
+        if (callback && path) {
+            callback(context, path);
+            accepted = YES;
+        }
+    }
+    [application replyToOpenOrPrint:accepted
+        ? NSApplicationDelegateReplySuccess
+        : NSApplicationDelegateReplyFailure];
 }
 @end
 
@@ -103,6 +128,10 @@ public:
     MacHost(std::uint32_t width, std::uint32_t height, bool visible)
         : visible_(visible) {
         [NSApplication sharedApplication];
+        applicationDelegate_ = [[RbxMacApplicationDelegate alloc] init];
+        applicationDelegate_->context = this;
+        applicationDelegate_->callback = &MacHost::queueOpenedDocument;
+        [NSApp setDelegate:applicationDelegate_];
         [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
         [NSApp finishLaunching];
         const NSRect rect = NSMakeRect(0, 0, static_cast<CGFloat>(width),
@@ -147,6 +176,8 @@ public:
         [window_ setDelegate:nil];
         [windowDelegate_ release];
         [window_ release];
+        [NSApp setDelegate:nil];
+        [applicationDelegate_ release];
     }
 
     NativeSurface nativeSurface() const noexcept override {
@@ -203,6 +234,12 @@ public:
             const NSEventType type = [event type];
             if (type == NSEventTypeKeyDown || type == NSEventTypeKeyUp) {
                 const bool down = type == NSEventTypeKeyDown;
+                if (([event modifierFlags] & NSEventModifierFlagCommand) != 0 &&
+                    translateKey(event) == InputEvent::Key::o) {
+                    if (down && ![event isARepeat])
+                        requestOpenDocument();
+                    continue;
+                }
                 NSString* text = [event characters];
                 events_.push_back(InputEvent{
                     .kind = down ? InputEvent::Kind::keyDown : InputEvent::Kind::keyUp,
@@ -250,6 +287,54 @@ public:
         return result;
     }
 
+    void requestOpenDocument() override {
+        setPointerLock(false);
+        NSOpenPanel* panel = [NSOpenPanel openPanel];
+        [panel setCanChooseFiles:YES];
+        [panel setCanChooseDirectories:NO];
+        [panel setAllowsMultipleSelection:NO];
+        [panel setResolvesAliases:YES];
+        [panel setAllowedFileTypes:@[@"rbxl", @"rbxlx", @"rbxm", @"rbxmx", @"rbxlp"]];
+        if ([panel runModal] != NSModalResponseOK)
+            return;
+        NSURL* url = [[panel URLs] firstObject];
+        if (url && [url isFileURL])
+            queueOpenedDocument(this, [[url path] fileSystemRepresentation]);
+    }
+
+    std::vector<std::filesystem::path> takeOpenedDocuments() override {
+        std::vector<std::filesystem::path> result;
+        result.swap(openedDocuments_);
+        return result;
+    }
+
+    bool launchDocument(const std::filesystem::path& path) override {
+        if (!std::filesystem::is_regular_file(path))
+            return false;
+        NSString* executable = [[NSBundle mainBundle] executablePath];
+        const std::string nativePath = path.string();
+        NSString* document = [[NSString alloc]
+            initWithBytes:nativePath.data()
+                   length:nativePath.size()
+                 encoding:NSUTF8StringEncoding];
+        if (!executable || !document) {
+            [document release];
+            return false;
+        }
+
+        NSTask* task = [[NSTask alloc] init];
+        [task setLaunchPath:executable];
+        [task setArguments:@[@"--place", document]];
+        NSError* error = nil;
+        const BOOL launched = [task launchAndReturnError:&error];
+        if (!launched)
+            NSLog(@"Unable to launch Roblox document %@: %@", document,
+                [error localizedDescription]);
+        [task release];
+        [document release];
+        return launched == YES;
+    }
+
     void setClipboardText(std::string_view text) override {
         NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
         [pasteboard clearContents];
@@ -270,6 +355,12 @@ private:
         MacHost* host = static_cast<MacHost*>(context);
         host->events_.push_back(InputEvent{
             .kind = InputEvent::Kind::nativeCloseRequested});
+    }
+
+    static void queueOpenedDocument(void* context, const char* path) {
+        if (!context || !path)
+            return;
+        static_cast<MacHost*>(context)->openedDocuments_.emplace_back(path);
     }
 
     void setCursorHidden(bool hidden) {
@@ -393,6 +484,7 @@ private:
 
     NSWindow* window_ = nil;
     RbxMacWindowDelegate* windowDelegate_ = nil;
+    RbxMacApplicationDelegate* applicationDelegate_ = nil;
     bool visible_ = false;
     bool focused_ = true;
     bool pointerLockRequested_ = false;
@@ -404,6 +496,7 @@ private:
     NSPoint pointerRestorePoint_ = NSZeroPoint;
     CGDirectDisplayID hiddenDisplay_ = 0;
     std::vector<InputEvent> events_;
+    std::vector<std::filesystem::path> openedDocuments_;
 };
 
 } // namespace

@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cctype>
 #include <cstdlib>
 #include <exception>
 #include <filesystem>
@@ -23,6 +24,21 @@
 #ifndef RBX_LEGACY_UI_TEST
 #define RBX_LEGACY_UI_TEST 0
 #endif
+
+namespace {
+
+bool isSupportedDocument(const std::filesystem::path& path)
+{
+    std::string extension = path.extension().string();
+    std::transform(extension.begin(), extension.end(), extension.begin(),
+        [](unsigned char value) { return static_cast<char>(std::tolower(value)); });
+    return std::filesystem::is_regular_file(path) &&
+        (extension == ".rbxl" || extension == ".rbxlx" ||
+         extension == ".rbxm" || extension == ".rbxmx" ||
+         extension == ".rbxlp");
+}
+
+} // namespace
 
 int main(int argc, char** argv) {
     try {
@@ -111,11 +127,7 @@ int main(int argc, char** argv) {
             throw std::runtime_error(
                 "--verify-capture-gallery requires --render-proof for pixel verification");
         if (placePath) {
-            const auto extension = placePath->extension().string();
-            if (!std::filesystem::is_regular_file(*placePath) ||
-                (extension != ".rbxl" && extension != ".rbxlx" &&
-                 extension != ".rbxm" && extension != ".rbxmx" &&
-                 extension != ".rbxlp")) {
+            if (!isSupportedDocument(*placePath)) {
                 throw std::runtime_error(
                     "--place requires an existing Roblox place/model or RBXLP package");
             }
@@ -226,8 +238,23 @@ int main(int argc, char** argv) {
                 std::min(frameLimit, 245) - 60));
         while (host->pumpEvents() && (frameLimit < 0 || frame < frameLimit)) {
             const auto frameStart = std::chrono::steady_clock::now();
+            for (const auto& document : host->takeOpenedDocuments()) {
+                if (!isSupportedDocument(document)) {
+                    std::cerr << "RobloxPlayer: ignored unsupported document: "
+                              << document << '\n';
+                    continue;
+                }
+                if (!host->launchDocument(document))
+                    throw std::runtime_error(
+                        "unable to start selected Roblox document: " +
+                        document.string());
+                std::cout << "launched document=" << document << '\n';
+                return 0;
+            }
             for (const auto& event : host->takeInputEvents())
                 runtime.handleInput(event);
+            if (runtime.takeOpenDocumentRequest())
+                host->requestOpenDocument();
             host->setPointerLock(runtime.wantsPointerLock());
             if (headlessVerify && verifyLauncher && frame == 100) {
                 runtime.handleInput(rbx::platform::InputEvent{

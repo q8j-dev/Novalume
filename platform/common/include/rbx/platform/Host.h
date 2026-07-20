@@ -163,6 +163,16 @@ public:
     }
     virtual bool pumpEvents() = 0;
     [[nodiscard]] virtual std::vector<InputEvent> takeInputEvents() = 0;
+    // Launcher document selection stays behind the host boundary because each
+    // product platform owns its picker and application activation contract.
+    // Paths cross back as standard filesystem values; no native UI type leaks
+    // into the shared Player.
+    virtual void requestOpenDocument() = 0;
+    [[nodiscard]] virtual std::vector<std::filesystem::path>
+        takeOpenedDocuments() = 0;
+    // Starts the selected document in a fresh Player session. The launcher
+    // exits only after the platform confirms that the session was created.
+    virtual bool launchDocument(const std::filesystem::path& path) = 0;
     virtual void setClipboardText(std::string_view text) = 0;
     // A locked pointer uses native relative motion while the engine keeps its
     // software cursor at the lock point. Hosts must restore the system cursor

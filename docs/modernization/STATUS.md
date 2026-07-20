@@ -31,6 +31,20 @@ the final return; it is not replaced or treated as accepted while deferred.
   keyboard, verifies all three authentic background-music voices, releases the
   bitmap font atlas before renderer shutdown, and exits cleanly. Source changes
   in the launcher corpus now invalidate the bundle packaging step.
+- Completed the first real desktop local-document path through that launcher.
+  The Home pane now presents a keyboard/controller-selectable local-place
+  action on non-Xbox platforms, backed by an app-owned CoreGui event and the
+  platform-neutral Player/Host boundary rather than a web-game or fake tile.
+  On macOS the same path supports Command-O, the native open panel, Finder
+  document-open events, and associations for RBXL, RBXLX, RBXM, RBXMX, and
+  RBXLP. A validated selection starts the signed bundled executable as a fresh
+  `--place` session, and the launcher exits only after `NSTask` confirms the
+  process launch. The 480-frame Metal launcher proof now requires the visible
+  local-document button and fires its real bridge through to the host request;
+  the run exits cleanly with no CoreScript HTTP errors. Retired Xbox-only
+  consecutive-login, avatar-thumbnail, package, friend, and sort requests are
+  no longer issued by a desktop local identity; the shell truthfully shows an
+  offline/empty state instead of fabricating service data.
 - Connected the replacement miniaudio engine to the packaged Player's normal
   `Sound`/`SoundChannel`/`SoundService` DataModel path. Headless verification
   now disables only the physical output device while retaining the same active
