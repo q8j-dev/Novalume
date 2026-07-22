@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include <cstdarg>
 
-#if !defined(G3D_IOS) && !defined(__ANDROID__)
+#ifdef _MSC_VER
 #define CALLSPEC __cdecl
 #else
 #define CALLSPEC

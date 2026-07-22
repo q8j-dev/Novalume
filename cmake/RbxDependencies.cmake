@@ -310,7 +310,19 @@ else()
     # targets here and carry the platform thread/dynamic-loader requirements
     # with libcrypto so both configure-time symbol probes and final consumers
     # use the same complete link contract.
+    if(DEFINED ENV{PKG_CONFIG_LIBDIR})
+        set(_rbx_saved_pkg_config_libdir "$ENV{PKG_CONFIG_LIBDIR}")
+        set(_rbx_had_pkg_config_libdir TRUE)
+    endif()
+    set(ENV{PKG_CONFIG_LIBDIR} "${RBX_OPENSSL_ROOT}/lib/pkgconfig")
     find_package(OpenSSL 3.5.7 EXACT REQUIRED COMPONENTS Crypto SSL)
+    if(_rbx_had_pkg_config_libdir)
+        set(ENV{PKG_CONFIG_LIBDIR} "${_rbx_saved_pkg_config_libdir}")
+    else()
+        unset(ENV{PKG_CONFIG_LIBDIR})
+    endif()
+    unset(_rbx_had_pkg_config_libdir)
+    unset(_rbx_saved_pkg_config_libdir)
     find_package(Threads REQUIRED)
     set_property(TARGET OpenSSL::Crypto APPEND PROPERTY
         INTERFACE_LINK_LIBRARIES Threads::Threads)

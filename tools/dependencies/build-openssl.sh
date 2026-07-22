@@ -71,7 +71,7 @@ cd "$build_source"
     --prefix="$logical_prefix" \
     --openssldir="$logical_prefix/ssl" \
     --libdir=lib \
-    no-apps no-docs no-dso no-module no-shared no-tests
+    no-apps no-docs no-dso no-jitter no-module no-shared no-tests
 make -j2
 make install_sw DESTDIR="$stage_root"
 mkdir -p "$stage/share/licenses/openssl"
