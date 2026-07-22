@@ -1,10 +1,10 @@
 #pragma once
 
-#include "rbx/boost.hpp"
+#include "rbx/Boost.hpp"
 #include "util/ScopedSingleton.h"
 
 #if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-#include <pdh.h>
+#include <Pdh.h>
 
 class CQuery
 {
@@ -67,4 +67,3 @@ private:
 
 
 #endif
-

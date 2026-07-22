@@ -1,5 +1,5 @@
-#include "rbx/boost.hpp"
-#include "rbx/ThreadSafe.h"
+#include "rbx/Boost.hpp"
+#include "rbx/threadsafe.h"
 #include "rbx/Debug.h"
 #include "rbx/atomic.h"
 

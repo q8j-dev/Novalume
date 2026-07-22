@@ -7,10 +7,10 @@
  @edited  2008-02-02
  */
 
-#include "G3D/platform.h"
-#include "G3D/LineSegment.h"
-#include "G3D/Sphere.h"
-#include "G3D/debug.h"
+#include "g3d/platform.h"
+#include "g3d/LineSegment.h"
+#include "g3d/Sphere.h"
+#include "g3d/debug.h"
 
 namespace G3D {
 
@@ -216,4 +216,3 @@ Vector2 LineSegment2D::intersection(const LineSegment2D& other) const {
 }
 
 }
-

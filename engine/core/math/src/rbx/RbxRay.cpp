@@ -12,7 +12,7 @@
 
 //#include "G3D/platform.h"
 #include "RbxG3D/RbxRay.h"
-#include "G3D/CollisionDetection.h"
+#include "g3d/CollisionDetection.h"
 
 namespace RBX {
 

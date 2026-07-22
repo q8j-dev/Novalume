@@ -5,7 +5,7 @@
 #include <functional>
 #include <algorithm>
 #include <string>
-#include "rbx/boost.hpp"
+#include "rbx/Boost.hpp"
 #include "rbx/Debug.h"
 
 namespace RBX

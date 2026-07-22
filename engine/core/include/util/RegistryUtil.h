@@ -1,7 +1,7 @@
 #pragma once
 
 #if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-#include "pdh.h"
+#include "Pdh.h"
 
 #include <string>
 

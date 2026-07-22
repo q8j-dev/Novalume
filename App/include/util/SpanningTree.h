@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "G3D/Array.h"
+#include "g3d/Array.h"
 #include <set>
 
 namespace RBX {
@@ -50,4 +50,3 @@ namespace RBX {
 	};
 
 } // namespace
-

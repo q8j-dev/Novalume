@@ -2,7 +2,7 @@
 
 #if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
 #include <windows.h>
-#include <wincrypt.h>
+#include <WinCrypt.h>
 #endif
 
 #include <string>
@@ -21,5 +21,4 @@ namespace RBX
 		void verifySignatureBase64(std::string message, std::string signatureBase64);
 	};
 }
-
 

@@ -4,13 +4,13 @@
 
 #include <string>
 #include <istream>
-#include "rbx/boost.hpp"
+#include "rbx/Boost.hpp"
 #include "rbx/rbxTime.h"
-#include "V8Tree/Service.h"
-#include "Util/AsyncHttpCache.h"
+#include "v8tree/Service.h"
+#include "util/AsyncHttpCache.h"
 #define BOOST_DATE_TIME_NO_LIB
 #include "boost/date_time/posix_time/posix_time.hpp"
-#include "Util/HeartbeatInstance.h"
+#include "util/HeartbeatInstance.h"
 
 namespace RBX
 {

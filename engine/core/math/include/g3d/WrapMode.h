@@ -13,8 +13,8 @@
 #ifndef G3D_WrapMode_h
 #define G3D_WrapMode_h
 
-#include "G3D/platform.h"
-#include "G3D/enumclass.h"
+#include "g3d/platform.h"
+#include "g3d/enumclass.h"
 #include "G3D/Any.h"
 
 #ifdef IGNORE

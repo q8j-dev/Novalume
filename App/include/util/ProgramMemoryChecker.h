@@ -3,10 +3,10 @@
 #include <boost/scoped_ptr.hpp>
 #include "rbx/rbxTime.h"
 #include <vector>
-#include "Security/RandomConstant.h"
+#include "security/RandomConstant.h"
 #include "v8datamodel/HackDefines.h"
 #include "util/HeapValue.h"
-#include "Security/ApiSecurity.h"
+#include "security/ApiSecurity.h"
 
 namespace RBX {
 
@@ -363,4 +363,3 @@ namespace Security{
 }
 
 }
-

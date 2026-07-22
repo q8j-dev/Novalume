@@ -13,7 +13,7 @@
 #ifndef G3D_ERROR_H
 #define G3D_ERROR_H
 
-#include "G3D/platform.h"
+#include "g3d/platform.h"
 #include <string>
 #include "G3D/prompt.h"
 #include <time.h>

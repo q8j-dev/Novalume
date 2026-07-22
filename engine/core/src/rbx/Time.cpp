@@ -5,7 +5,7 @@
 #endif
 
 #include "rbx/rbxTime.h"
-#include "rbx/debug.h"
+#include "rbx/Debug.h"
 #include "rbx/atomic.h"
 #include <stdexcept>
 #include "FastLog.h"
@@ -23,7 +23,7 @@
 #endif
 
 #if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-#include "Mmsystem.h"
+#include "MMSystem.h"
 #pragma comment (lib, "Winmm.lib")
 #endif
 

@@ -1,8 +1,8 @@
 #ifndef RBXG3D_FRUSTUM_H
 #define RBXG3D_FRUSTUM_H
 
-#include "G3D/Plane.h"
-#include "G3D/Vector3.h"
+#include "g3d/Plane.h"
+#include "g3d/Vector3.h"
 
 namespace G3D
 {

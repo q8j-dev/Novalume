@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Util/IndexedTree.h"
+#include "util/IndexedTree.h"
 
 namespace RBX {
 
@@ -59,4 +59,3 @@ namespace RBX {
 	};
 
 } // namespace
-

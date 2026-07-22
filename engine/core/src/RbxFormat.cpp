@@ -2,7 +2,7 @@
 #include "RbxPlatform.h"
 #include "FastLog.h"
 
-#include <math.h>
+#include <Math.h>
 #include "boost/scoped_array.hpp"
 
 #define NEWLINE "\r\n"

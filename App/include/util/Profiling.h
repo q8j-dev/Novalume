@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rbx/boost.hpp"
+#include "rbx/Boost.hpp"
 #include "rbx/rbxTime.h"
 #include "boost/array.hpp"
 #include <map>

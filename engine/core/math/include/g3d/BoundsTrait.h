@@ -11,10 +11,9 @@
 #ifndef G3D_BOUNDSTRAIT_H
 #define G3D_BOUNDSTRAIT_H
 
-#include "G3D/platform.h"
+#include "g3d/platform.h"
 
 template<typename Value>
 struct BoundsTrait{};
 
 #endif
-

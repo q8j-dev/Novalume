@@ -30,6 +30,17 @@ target_include_directories(rbx-math
         "${CMAKE_SOURCE_DIR}/engine/core/include"
         "${CMAKE_SOURCE_DIR}/App/include"
         "${CMAKE_SOURCE_DIR}/Library/boost/include")
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(RBX_G3D_CASE_COMPAT_DIR
+        "${CMAKE_CURRENT_BINARY_DIR}/case-sensitive-include")
+    file(MAKE_DIRECTORY "${RBX_G3D_CASE_COMPAT_DIR}")
+    if(NOT EXISTS "${RBX_G3D_CASE_COMPAT_DIR}/G3D")
+        file(CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/include/g3d"
+            "${RBX_G3D_CASE_COMPAT_DIR}/G3D" SYMBOLIC)
+    endif()
+    target_include_directories(rbx-math BEFORE PUBLIC
+        "${RBX_G3D_CASE_COMPAT_DIR}")
+endif()
 target_link_libraries(rbx-math PUBLIC Roblox::Core ZLIB::ZLIB)
 target_compile_features(rbx-math PUBLIC cxx_std_20)
 target_compile_definitions(rbx-math PRIVATE

@@ -4,12 +4,12 @@
 #define _4B0F5828DADB441bA2D2FDCBCB5538A6
 
 #include "stdio.h"
-#include "util/name.h"
+#include "util/Name.h"
 #include <string>
 #include <istream>
 #include <memory>
 #include <vector>
-#include "rbx/boost.hpp"
+#include "rbx/Boost.hpp"
 #include <boost/shared_ptr.hpp>
 #include <boost/scoped_ptr.hpp>
 

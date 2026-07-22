@@ -48,7 +48,7 @@ namespace rbx
 
 #elif defined(_WIN32)  // Windows
 
-#include "rbx/debug.h"
+#include "rbx/Debug.h"
 #include "boost/detail/interlocked.hpp"
 #include "boost/static_assert.hpp"
 #include <cstdint>

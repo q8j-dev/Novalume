@@ -5,7 +5,7 @@
 
 #include "rbx/Debug.h"
 #include <limits>
-#include "math.h"
+#include "Math.h"
 
 namespace GEMS {
 
@@ -322,4 +322,3 @@ namespace GEMS {
 	}
 
 } // namespace
-

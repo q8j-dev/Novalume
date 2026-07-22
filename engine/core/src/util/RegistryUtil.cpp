@@ -13,12 +13,12 @@
 #define _WINSOCKAPI_  
 
 
-#include "Util/RegistryUtil.h"
+#include "util/RegistryUtil.h"
 
 #undef min
 #undef max
 
-#include "Rbx/Debug.h"
+#include "rbx/Debug.h"
 
 
 // declare HKEY constants as needed for VC6

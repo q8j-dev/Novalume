@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RBX/Debug.h"
+#include "rbx/Debug.h"
 #include "boost/noncopyable.hpp"
 
 namespace RBX { namespace Intrusive {

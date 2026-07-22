@@ -3,15 +3,15 @@
 #pragma once
 
 #include "rbx/Debug.h"
-#include "Util/Name.h"
+#include "util/Name.h"
 #include <string>
 #include <map>
 
-#include "Security/ApiSecurity.h"
-#include "Security/FuzzyTokens.h"
-#include "V8DataModel/HackDefines.h"
+#include "security/ApiSecurity.h"
+#include "security/FuzzyTokens.h"
+#include "v8datamodel/HackDefines.h"
 
-#include "rbx/boost.hpp"
+#include "rbx/Boost.hpp"
 #include "boost/weak_ptr.hpp"
 #include "boost/shared_ptr.hpp"
 #include "boost/scoped_ptr.hpp"
@@ -372,4 +372,3 @@ namespace RBX
 		}
 	};
 }	// namespace RBX
-

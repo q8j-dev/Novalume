@@ -1,4 +1,4 @@
-#include "G3D/System.h"
+#include "g3d/System.h"
 #include "rbx/Crypt.h"
 #include "rbx/SystemUtil.h"
 #include "rbx/atomic.h"

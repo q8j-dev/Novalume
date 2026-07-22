@@ -5,8 +5,8 @@
 #include "rbx/RunningAverage.h"
 #include "rbx/Declarations.h"
 #include "rbx/Debug.h"
-#include "rbx/ThreadSafe.h"
-#include "rbx/boost.hpp"
+#include "rbx/threadsafe.h"
+#include "rbx/Boost.hpp"
 #include "rbx/CEvent.h"
 #include "rbx/atomic.h"
 

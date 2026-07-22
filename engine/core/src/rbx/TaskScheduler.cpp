@@ -5,7 +5,7 @@
 #include "rbx/TaskScheduler.Job.h"
 #include "rbx/Debug.h"
 #include "FastLog.h"
-#include "rbx/boost.hpp"
+#include "rbx/Boost.hpp"
 #include "boost/scoped_ptr.hpp"
 #include "rbx/ProcessPerfCounter.h"
 #include "rbx/Profiler.h"

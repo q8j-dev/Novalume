@@ -5,7 +5,7 @@
 #include <queue>
 #include "rbx/Boost.hpp"
 #include "rbx/Thread.hpp"
-#include "rbx/rbxtime.h"
+#include "rbx/rbxTime.h"
 #include "rbx/atomic.h"
 #include "boost/shared_ptr.hpp"
 #include "boost/noncopyable.hpp"

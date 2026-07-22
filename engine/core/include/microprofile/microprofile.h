@@ -512,7 +512,7 @@ struct MicroProfileScopeHandler
 #endif
 
 #ifdef _WIN32
-#include <basetsd.h>
+#include <BaseTsd.h>
 typedef UINT_PTR MpSocket;
 #else
 typedef int MpSocket;
@@ -988,7 +988,7 @@ void MicroProfileWebServerStop();
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
-#include <math.h>
+#include <Math.h>
 #include <algorithm>
 
 
@@ -3516,8 +3516,8 @@ void MicroProfileStopContextSwitchTrace()
 
 #if defined(_WIN32)
 #define INITGUID
-#include <wmistr.h>
-#include <evntrace.h>
+#include <Wmistr.h>
+#include <Evntrace.h>
 #include <evntcons.h>
 #include <strsafe.h>
 

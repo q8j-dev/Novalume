@@ -1,8 +1,8 @@
 #pragma once
 
-#include "rbx/debug.h"
+#include "rbx/Debug.h"
 #include "rbx/atomic.h"
-#include "rbx/declarations.h"
+#include "rbx/Declarations.h"
 #include "boost/cast.hpp"
 
 /// Forward Declarations

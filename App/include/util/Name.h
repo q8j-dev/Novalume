@@ -8,7 +8,7 @@
 #include "boost/utility.hpp"
 
 #include "rbx/Debug.h"
-#include "rbx/boost.hpp"
+#include "rbx/Boost.hpp"
 #include "rbx/atomic.h"  
 #include <boost/unordered_map.hpp>
 #include "rbx/threadsafe.h"

@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "Util/G3DCore.h"
-#include "Util/NormalId.h"
-#include "appdraw/HandleType.h"
+#include "util/G3DCore.h"
+#include "util/NormalId.h"
+#include "AppDraw/HandleType.h"
 
 namespace RBX {
 

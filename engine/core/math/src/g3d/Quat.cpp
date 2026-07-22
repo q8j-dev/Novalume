@@ -9,7 +9,7 @@
   @edited  2010-03-31
  */
 
-#include "G3D/Quat.h"
+#include "g3d/Quat.h"
 #include "FastLog.h"
 
 DYNAMIC_FASTFLAGVARIABLE(G3DQuatConstructorFix, true)
@@ -620,4 +620,3 @@ Vector4 Quat::ywww() const  { return Vector4       (y, w, w, w); }
 Vector4 Quat::zwww() const  { return Vector4       (z, w, w, w); }
 Vector4 Quat::wwww() const  { return Vector4       (w, w, w, w); }
 }
-

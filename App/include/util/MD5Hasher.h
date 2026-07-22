@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rbx/declarations.h"
+#include "rbx/Declarations.h"
 #include <string>
 #include <istream>
 

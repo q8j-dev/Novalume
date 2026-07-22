@@ -1,7 +1,7 @@
 #if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
 #include "rbx/Crypt.h"
 
-#include "rbxFormat.h"
+#include "RbxFormat.h"
 #include <atlenc.h>
 #include <iomanip>
 #include <sstream>
@@ -111,6 +111,5 @@ void Crypt::verifySignatureBase64(std::string message, std::string signatureBase
 }
 
 #endif
-
 
 

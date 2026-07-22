@@ -1,6 +1,6 @@
 #pragma once
-#include "V8Tree/Service.h"
-#include "Util/AsyncHttpCache.h"
+#include "v8tree/Service.h"
+#include "util/AsyncHttpCache.h"
 
 namespace RBX {
     extern const char* const sPages;
@@ -137,4 +137,3 @@ namespace RBX {
 			shared_ptr<const Reflection::ValueTable>& result, std::string& status);
 	};
 }
-

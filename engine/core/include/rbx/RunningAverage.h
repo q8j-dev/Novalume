@@ -2,7 +2,7 @@
 #pragma once
 
 #include "rbx/atomic.h"
-#include "rbx/boost.hpp"
+#include "rbx/Boost.hpp"
 #include "rbx/rbxTime.h"
 #include "rbx/Debug.h"
 #include "rbx/MathUtil.h"

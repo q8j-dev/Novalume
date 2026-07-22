@@ -6,7 +6,7 @@
 #include "boost/pool/singleton_pool.hpp"
 #include "boost/scoped_ptr.hpp"
 #include <assert.h>
-#include "rbx/debug.h"
+#include "rbx/Debug.h"
 #include "rbx/atomic.h"
 #include <vector>
 

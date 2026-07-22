@@ -3,7 +3,7 @@
 
 #include "boost/type_traits.hpp"
 #include "boost/any.hpp"
-#include "rbx/boost.hpp"
+#include "rbx/Boost.hpp"
 #include "rbx/threadsafe.h"
 #include "rbx/Debug.h"
 #include <limits>

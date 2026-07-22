@@ -1,6 +1,6 @@
 
 #include "rbx/TaskScheduler.h"
-#include "rbx/boost.hpp"
+#include "rbx/Boost.hpp"
 #include "rbx/TaskScheduler.Job.h"
 #include "CPUCount.h"
 #include "boost/enable_shared_from_this.hpp"

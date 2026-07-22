@@ -8,8 +8,8 @@
 #ifndef G3D_constants_h
 #define G3D_constants_h
 
-#include "G3D/platform.h"
-#include "G3D/enumclass.h"
+#include "g3d/platform.h"
+#include "g3d/enumclass.h"
 #include "G3D/Any.h"
 
 namespace G3D {
@@ -142,4 +142,3 @@ G3D_DECLARE_ENUM_CLASS_HASHCODE(G3D::RefractionQuality)
 G3D_DECLARE_ENUM_CLASS_HASHCODE(G3D::MirrorQuality)
 
 #endif
-

@@ -1,4 +1,4 @@
-#include "rbx/boost.hpp"
+#include "rbx/Boost.hpp"
 #include "rbx/Thread.hpp"
 
 #include "RbxPlatform.h"

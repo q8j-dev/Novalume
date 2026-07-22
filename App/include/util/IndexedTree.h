@@ -3,7 +3,7 @@
 #pragma once
 
 #include "rbx/Declarations.h"
-#include "Util/IndexArray.h"
+#include "util/IndexArray.h"
 #include "rbx/Debug.h"
 
 namespace RBX {
@@ -129,4 +129,3 @@ namespace RBX {
 	};
 
 } // namespace
-
