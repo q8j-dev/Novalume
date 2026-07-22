@@ -35,11 +35,9 @@
  * compile-time configuration.
  */
 
-#ifndef HAVE_OPENSSL
-
 #include <string.h>
 
-#include "Util/md5.h"
+#include "util/md5.h"
 
 /*
  * The basic MD5 functions.
@@ -71,16 +69,16 @@
  */
 #if defined(__i386__) || defined(__x86_64__) || defined(__vax__)
 #define SET(n) \
-	(*(MD5_u32plus *)&ptr[(n) * 4])
+	(*(RBX_MD5_u32plus *)&ptr[(n) * 4])
 #define GET(n) \
 	SET(n)
 #else
 #define SET(n) \
 	(ctx->block[(n)] = \
-	(MD5_u32plus)ptr[(n) * 4] | \
-	((MD5_u32plus)ptr[(n) * 4 + 1] << 8) | \
-	((MD5_u32plus)ptr[(n) * 4 + 2] << 16) | \
-	((MD5_u32plus)ptr[(n) * 4 + 3] << 24))
+	(RBX_MD5_u32plus)ptr[(n) * 4] | \
+	((RBX_MD5_u32plus)ptr[(n) * 4 + 1] << 8) | \
+	((RBX_MD5_u32plus)ptr[(n) * 4 + 2] << 16) | \
+	((RBX_MD5_u32plus)ptr[(n) * 4 + 3] << 24))
 #define GET(n) \
 	(ctx->block[(n)])
 #endif
@@ -89,11 +87,11 @@
  * This processes one or more 64-byte data blocks, but does NOT update
  * the bit counters.  There are no alignment requirements.
  */
-static void *body(MD5_CTX *ctx, void *data, unsigned long size)
+static const void *body(RBX_MD5_CTX *ctx, const void *data, size_t size)
 {
 	unsigned char *ptr;
-	MD5_u32plus a, b, c, d;
-	MD5_u32plus saved_a, saved_b, saved_c, saved_d;
+	RBX_MD5_u32plus a, b, c, d;
+	RBX_MD5_u32plus saved_a, saved_b, saved_c, saved_d;
 
     ptr = (unsigned char *)data;
 
@@ -196,7 +194,7 @@ static void *body(MD5_CTX *ctx, void *data, unsigned long size)
 	return ptr;
 }
 
-void MD5_Init(MD5_CTX *ctx)
+void RBX_MD5_Init(RBX_MD5_CTX *ctx)
 {
 	ctx->a = 0x67452301;
 	ctx->b = 0xefcdab89;
@@ -207,15 +205,15 @@ void MD5_Init(MD5_CTX *ctx)
 	ctx->hi = 0;
 }
 
-void MD5_Update(MD5_CTX *ctx, void *data, unsigned long size)
+void RBX_MD5_Update(RBX_MD5_CTX *ctx, const void *data, size_t size)
 {
-	MD5_u32plus saved_lo;
-	unsigned long used, free;
+	RBX_MD5_u32plus saved_lo;
+	size_t used, free;
 
 	saved_lo = ctx->lo;
 	if ((ctx->lo = (saved_lo + size) & 0x1fffffff) < saved_lo)
 		ctx->hi++;
-	ctx->hi += size >> 29;
+	ctx->hi += (RBX_MD5_u32plus)(size >> 29);
 
 	used = saved_lo & 0x3f;
 
@@ -228,20 +226,20 @@ void MD5_Update(MD5_CTX *ctx, void *data, unsigned long size)
 		}
 
 		memcpy(&ctx->buffer[used], data, free);
-		data = (unsigned char *)data + free;
+		data = (const unsigned char *)data + free;
 		size -= free;
 		body(ctx, ctx->buffer, 64);
 	}
 
 	if (size >= 64) {
-		data = body(ctx, data, size & ~(unsigned long)0x3f);
+		data = body(ctx, data, size & ~(size_t)0x3f);
 		size &= 0x3f;
 	}
 
 	memcpy(ctx->buffer, data, size);
 }
 
-void MD5_Final(unsigned char *result, MD5_CTX *ctx)
+void RBX_MD5_Final(unsigned char *result, RBX_MD5_CTX *ctx)
 {
 	unsigned long used, free;
 
@@ -261,35 +259,33 @@ void MD5_Final(unsigned char *result, MD5_CTX *ctx)
 	memset(&ctx->buffer[used], 0, free - 8);
 
 	ctx->lo <<= 3;
-	ctx->buffer[56] = ctx->lo;
-	ctx->buffer[57] = ctx->lo >> 8;
-	ctx->buffer[58] = ctx->lo >> 16;
-	ctx->buffer[59] = ctx->lo >> 24;
-	ctx->buffer[60] = ctx->hi;
-	ctx->buffer[61] = ctx->hi >> 8;
-	ctx->buffer[62] = ctx->hi >> 16;
-	ctx->buffer[63] = ctx->hi >> 24;
+	ctx->buffer[56] = (unsigned char)ctx->lo;
+	ctx->buffer[57] = (unsigned char)(ctx->lo >> 8);
+	ctx->buffer[58] = (unsigned char)(ctx->lo >> 16);
+	ctx->buffer[59] = (unsigned char)(ctx->lo >> 24);
+	ctx->buffer[60] = (unsigned char)ctx->hi;
+	ctx->buffer[61] = (unsigned char)(ctx->hi >> 8);
+	ctx->buffer[62] = (unsigned char)(ctx->hi >> 16);
+	ctx->buffer[63] = (unsigned char)(ctx->hi >> 24);
 
 	body(ctx, ctx->buffer, 64);
 
-	result[0] = ctx->a;
-	result[1] = ctx->a >> 8;
-	result[2] = ctx->a >> 16;
-	result[3] = ctx->a >> 24;
-	result[4] = ctx->b;
-	result[5] = ctx->b >> 8;
-	result[6] = ctx->b >> 16;
-	result[7] = ctx->b >> 24;
-	result[8] = ctx->c;
-	result[9] = ctx->c >> 8;
-	result[10] = ctx->c >> 16;
-	result[11] = ctx->c >> 24;
-	result[12] = ctx->d;
-	result[13] = ctx->d >> 8;
-	result[14] = ctx->d >> 16;
-	result[15] = ctx->d >> 24;
+	result[0] = (unsigned char)ctx->a;
+	result[1] = (unsigned char)(ctx->a >> 8);
+	result[2] = (unsigned char)(ctx->a >> 16);
+	result[3] = (unsigned char)(ctx->a >> 24);
+	result[4] = (unsigned char)ctx->b;
+	result[5] = (unsigned char)(ctx->b >> 8);
+	result[6] = (unsigned char)(ctx->b >> 16);
+	result[7] = (unsigned char)(ctx->b >> 24);
+	result[8] = (unsigned char)ctx->c;
+	result[9] = (unsigned char)(ctx->c >> 8);
+	result[10] = (unsigned char)(ctx->c >> 16);
+	result[11] = (unsigned char)(ctx->c >> 24);
+	result[12] = (unsigned char)ctx->d;
+	result[13] = (unsigned char)(ctx->d >> 8);
+	result[14] = (unsigned char)(ctx->d >> 16);
+	result[15] = (unsigned char)(ctx->d >> 24);
 
 	memset(ctx, 0, sizeof(*ctx));
 }
-
-#endif

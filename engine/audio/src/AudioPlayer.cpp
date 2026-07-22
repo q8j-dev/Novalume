@@ -23,20 +23,39 @@ struct AudioRoute
     std::uint32_t effectCount = 0;
 };
 
+int channelIndex(const std::string& pin)
+{
+    static const std::array<const char*, 12> pins = {
+        "Left", "Right", "Center", "SurroundLeft", "SurroundRight",
+        "BackLeft", "BackRight", "Sub", "TopLeft", "TopRight",
+        "TopBackLeft", "TopBackRight"};
+    const auto found = std::find(pins.begin(), pins.end(), pin);
+    return found == pins.end() ? -1 : static_cast<int>(found - pins.begin());
+}
+
 AudioRoute findRoute(const AudioNode* node, float gain,
     std::array<Audio::VoiceEffect, 32>& effects, std::uint32_t effectCount,
-    std::unordered_set<const Instance*>& visited)
+    std::unordered_set<const Instance*> visited)
 {
     if (!node)
         return {};
     const Instance* nodeInstance = node->audioNodeInstance();
     if (!nodeInstance || !visited.insert(nodeInstance).second)
         return {};
+    const std::uint32_t inheritedEffectCount = effectCount;
     for (const std::string& outputPin : node->outputPins())
     {
+        effectCount = inheritedEffectCount;
         if (Instance::fastDynamicCast<AudioChannelSplitter>(nodeInstance) &&
             outputPin != "Output")
-            continue;
+        {
+            const int selectedChannel = channelIndex(outputPin);
+            if (selectedChannel < 0 || effectCount >= effects.size())
+                continue;
+            Audio::VoiceEffect& effect = effects[effectCount++];
+            effect.type = Audio::VoiceEffectType::ChannelExtract;
+            effect.parameters[0] = static_cast<float>(selectedChannel);
+        }
         const boost::shared_ptr<const Instances> wires =
             node->getConnectedWires(outputPin);
         if (!wires)
@@ -334,7 +353,15 @@ AudioRoute findRoute(const AudioNode* node, float gain,
                          Instance::fastDynamicCast<AudioChannelMixer>(target))
             {
                 if (wire->getTargetName() != "Input")
-                    continue;
+                {
+                    const int selectedChannel =
+                        channelIndex(wire->getTargetName());
+                    if (selectedChannel < 0 || effectCount >= effects.size())
+                        continue;
+                    Audio::VoiceEffect& effect = effects[effectCount++];
+                    effect.type = Audio::VoiceEffectType::ChannelInject;
+                    effect.parameters[0] = static_cast<float>(selectedChannel);
+                }
                 AudioRoute route = findRoute(mixer, gain, effects,
                     effectCount, visited);
                 if (route.connected)

@@ -8,7 +8,9 @@
 #include "network/Players.h"
 #include "ConcurrentPeer.h"
 #include "FastLog.h"
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
 #include "Util/ProgramMemoryChecker.h"
+#endif
 #include "V8DataModel/HackDefines.h"
 #include "Util/ScopedAssign.h"
 #include "V8DataModel/HackDefines.h"
@@ -46,10 +48,14 @@
 
 #include <boost/scoped_ptr.hpp>
 #include "Replicator.StreamJob.h"
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
 #include "Replicator.HashItem.h"
+#endif
 #include "Replicator.TagItem.h"
 #include "Replicator.ChangePropertyItem.h"
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
 #include "Replicator.RockyItem.h"
+#endif
 #include "util/PhysicalProperties.h"
 #include "util/ProtectedString.h"
 #include "util/UDim.h"
@@ -57,7 +63,7 @@
 
 #include "rbx/Profiler.h"
 
-#if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
 #include "util/CheatEngine.h"
 #include "security/ApiSecurity.h"
 #endif
@@ -75,9 +81,11 @@ FASTFLAGVARIABLE(CopyArrayReferences, true)
 
 FASTFLAG(FilterSinglePass)
 
-namespace{
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
+namespace {
     static RBX::Network::MccReport mccReport = {};
 }
+#endif
 
 namespace RBX { namespace Network {
 
@@ -126,7 +134,7 @@ namespace RBX { namespace Network {
 		}
 	};
 
-#if defined(_WIN32) && !defined(RBX_STUDIO_BUILD) && !defined(RBX_PLATFORM_DURANGO)
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
     // Periodically check that the program memory hashing job is still running
     class ClientReplicator::BadAppCheckerJob : public DataModelJob {
         shared_ptr<ClientReplicator> clientReplicator;
@@ -226,7 +234,7 @@ namespace RBX { namespace Network {
 
 
 
-#if !defined(RBX_STUDIO_BUILD) && !defined(RBX_PLATFORM_DURANGO)
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
 	// Periodically hash program memory, and raise an alert if the hash changes
 	class ClientReplicator::MemoryCheckerJob : public DataModelJob {
 
@@ -315,7 +323,7 @@ namespace RBX { namespace Network {
             if (sendSignal == ProgramMemoryChecker::kAllDone)
             {
                 hashReadySignal();
-#if defined(_WIN32) && !defined(RBX_PLATFORM_DURNAGO)
+#if !defined(RBX_PLATFORM_DURANGO)
                 isLuaLockFail = ((memoryChecker->isLuaLockOk() != ProgramMemoryChecker::kLuaLockOk));
 
                 MEMORY_BASIC_INFORMATION trapInfo;
@@ -364,7 +372,7 @@ namespace RBX { namespace Network {
 	};
 #endif
 
-#if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO) && !defined(RBX_STUDIO_BUILD)
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
 	// Periodically check that the program memory hashing job is still running
 	class ClientReplicator::MemoryCheckerCheckerJob : public DataModelJob {
 
@@ -1029,11 +1037,13 @@ shared_ptr<DeserializedItem> ClientReplicator::deserializeItem(RBX::Network::Pac
 		item = StatsItem::read(*this, inBitstream);
 		NETPROFILE_END("readStats", &inBitstream);
 		break;
-    case Item::ItemTypeRocky:
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
+	case Item::ItemTypeRocky:
 		NETPROFILE_START("readBonus", &inBitstream);
 		item = RockyItem::read(*this, inBitstream);
 		NETPROFILE_END("readBonus", &inBitstream);
 		break;
+#endif
 	}
 
 	return item;
@@ -1061,11 +1071,13 @@ void ClientReplicator::readItem(RBX::Network::PacketBuffer& inBitstream, RBX::Ne
 		statsReceivedSignal(readStats(inBitstream));
 		NETPROFILE_END("readStats", &inBitstream);
 		break;
-    case Item::ItemTypeRocky:
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
+	case Item::ItemTypeRocky:
 		NETPROFILE_START("readBonus", &inBitstream);
         processRockyItem(inBitstream);
 		NETPROFILE_END("readBonus", &inBitstream);
         break;
+#endif
 	}
 }
 
@@ -1195,6 +1207,7 @@ shared_ptr<Reflection::ValueTable> ClientReplicator::readStats(RBX::Network::Pac
 	return stats;
 }
 
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
 void ClientReplicator::readRockyItem(RBX::Network::PacketBuffer& inBitstream, uint8_t& idx, RBX::Security::NetPmcChallenge& key)
 {
     uint8_t subtype;
@@ -1223,6 +1236,7 @@ void ClientReplicator::processRockyItem(RBX::Network::PacketBuffer& inBitstream)
     DataModel::get(this)->submitTask(
         boost::bind(&ClientReplicator::doNetPmcCheck, shared_from(this), idx, challenge), DataModelJob::Write);
 }
+#endif
 
 
 void ClientReplicator::markerReceived()
@@ -1667,21 +1681,13 @@ FilterResult ClientReplicator::filterReceivedParent(Instance* instance, Instance
 
 void ClientReplicator::onServiceProvider(ServiceProvider* oldProvider, ServiceProvider* newProvider)
 {
-#if !defined(RBX_STUDIO_BUILD) && !defined(RBX_PLATFORM_DURANGO)
-#ifdef _WIN32
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
     TaskScheduler::singleton().remove(memoryCheckerCheckerJob);
     memoryCheckerCheckerJob.reset();
-#endif
-
-#if defined(_WIN32) || (defined(__APPLE__) && !defined(RBX_PLATFORM_IOS))
     TaskScheduler::singleton().remove(memoryCheckerJob);
     memoryCheckerJob.reset();
-#endif
-
-#ifdef _WIN32
     TaskScheduler::singleton().remove(badAppCheckerJob);
     badAppCheckerJob.reset();
-#endif
 #endif
 
 	if (gcJob)
@@ -1693,32 +1699,28 @@ void ClientReplicator::onServiceProvider(ServiceProvider* oldProvider, ServicePr
 
 	Super::onServiceProvider(oldProvider, newProvider);
 	
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
 	hashReadyConnection.disconnect();
-	mccReadyConnection.disconnect();
+    mccReadyConnection.disconnect();
+#endif
 
 	if (newProvider)
 	{ 
-#if !defined(RBX_STUDIO_BUILD)
-#if !defined(LOVE_ALL_ACCESS) && defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY) && \
+		!defined(RBX_STUDIO_BUILD) && !defined(LOVE_ALL_ACCESS)
         badAppCheckerJob.reset(new BadAppCheckerJob(shared_from(this)));
         TaskScheduler::singleton().add(badAppCheckerJob);
-#endif
-
-#if !defined(LOVE_ALL_ACCESS) && (defined(_WIN32) || (defined(__APPLE__) && !defined(RBX_PLATFORM_IOS))) && !defined(RBX_PLATFORM_DURANGO)
         memoryCheckerJob.reset(new MemoryCheckerJob(shared_from(this)));
         TaskScheduler::singleton().add(memoryCheckerJob);
-#endif
-
-#if !defined(LOVE_ALL_ACCESS) && defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
         memoryCheckerCheckerJob.reset(new MemoryCheckerCheckerJob(shared_from(this)));
         TaskScheduler::singleton().add(memoryCheckerCheckerJob);
         hashReadyConnection = memoryCheckerJob->hashReadySignal.connect(boost::bind(&ClientReplicator::onHashReady, this));
         mccReadyConnection = memoryCheckerCheckerJob->reportReadySignal.connect(boost::bind(&ClientReplicator::onMccReady, this));
 #endif
-#endif
 	}
 }
 
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
 void ClientReplicator::onHashReady()
 {
     unsigned long long thisTag = Tokens::apiToken.crypt();
@@ -1730,6 +1732,7 @@ void ClientReplicator::onMccReady()
 {
     pendingItems.push_back(new RockyItem(this, ::mccReport));
 }
+#endif
 
 bool ClientReplicator::canUseProtocolVersion(int protocolVersion) const {
 	return protocolVersion <= NETWORK_PROTOCOL_VERSION;

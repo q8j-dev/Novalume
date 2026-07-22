@@ -136,7 +136,7 @@
 #include "util/RbxStringTable.h"
 #include "format_string.h"
 #if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-#include "VMProtect/VMProtectSDK.h"
+#include "security/ProtectionMarkers.h"
 #endif
 
 #include "RbxFormat.h"
@@ -1102,6 +1102,7 @@ DataModel::DataModel(RBX::Verb* lockVerb)
 	isContentLoaded(false),
     isShuttingDown(false),
 	runningInStudio(false),
+	appShell(false),
 	isStudioRunMode(false),
 	checkedExperimentalFeatures(false),
 	drawId(0),
@@ -4359,7 +4360,7 @@ unsigned int DataModel::allHackFlagsOredTogether() {
     unsigned int result = 0;
 #if !defined(RBX_STUDIO_BUILD)
 	#if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-	VMProtectBeginMutation("18");
+	Security::ProtectionMarkers::beginMutation("18");
 	#endif
 	boost::mutex::scoped_lock l(hackFlagSetMutex);
 	
@@ -4368,7 +4369,7 @@ unsigned int DataModel::allHackFlagsOredTogether() {
 		result |= *itr;
 	}
 	#if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-	VMProtectEnd();
+	Security::ProtectionMarkers::end();
 	#endif
 #endif
 	return result;

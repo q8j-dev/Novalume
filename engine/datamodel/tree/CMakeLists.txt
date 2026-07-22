@@ -37,7 +37,8 @@ target_include_directories(rbx-datamodel-tree
         "${CMAKE_SOURCE_DIR}/Library/SDL2/include"
         )
 target_link_libraries(rbx-datamodel-tree
-    PUBLIC Roblox::Reflection Roblox::Serialization)
+    PUBLIC Roblox::Reflection Roblox::Serialization
+    PRIVATE Roblox::ProtectionMarkers)
 target_compile_features(rbx-datamodel-tree PUBLIC cxx_std_20)
 target_compile_definitions(rbx-datamodel-tree PRIVATE
     BOOST_NO_CXX98_FUNCTION_BASE=1

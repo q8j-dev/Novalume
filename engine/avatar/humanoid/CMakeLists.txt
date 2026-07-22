@@ -37,7 +37,8 @@ target_link_libraries(rbx-avatar-humanoid
         Roblox::Simulation
         Roblox::Physics
         Roblox::Animation
-        Roblox::AudioContracts)
+        Roblox::AudioContracts
+        Roblox::ProtectionMarkers)
 target_compile_features(rbx-avatar-humanoid PUBLIC cxx_std_20)
 target_compile_definitions(rbx-avatar-humanoid PRIVATE
     BOOST_NO_CXX98_FUNCTION_BASE=1

@@ -21,7 +21,6 @@ add_library(rbx-platform-runtime-macos STATIC EXCLUDE_FROM_ALL
     src/FileSystem.mm
     src/MachOBaseAddr.mm
     src/MemoryStats.cpp
-    src/ProgramMemoryChecker.cpp
     src/StringConv.cpp)
 add_library(Roblox::PlatformRuntime ALIAS rbx-platform-runtime-macos)
 target_include_directories(rbx-platform-runtime-macos PRIVATE

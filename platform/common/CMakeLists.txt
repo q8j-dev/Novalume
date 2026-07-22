@@ -17,11 +17,12 @@ if(NOT APPLE AND NOT WIN32 AND NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
 endif()
 
 function(rbx_add_portable_platform_runtime target)
-    add_library(${target} STATIC EXCLUDE_FROM_ALL
+    set(_rbx_platform_runtime_sources
         "${CMAKE_SOURCE_DIR}/platform/common/src/FileSystemIndependent.cpp"
-        "${CMAKE_SOURCE_DIR}/platform/common/src/MemoryStatsCommon.cpp"
-        "${CMAKE_SOURCE_DIR}/platform/common/src/ProgramMemoryCheckerPortable.cpp"
-        ${ARGN})
+        "${CMAKE_SOURCE_DIR}/platform/common/src/MemoryStatsCommon.cpp")
+    list(APPEND _rbx_platform_runtime_sources ${ARGN})
+    add_library(${target} STATIC EXCLUDE_FROM_ALL
+        ${_rbx_platform_runtime_sources})
     target_include_directories(${target} PRIVATE
         "${CMAKE_SOURCE_DIR}/App/include"
         "${CMAKE_SOURCE_DIR}/App"

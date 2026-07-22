@@ -18,7 +18,6 @@
 
 #ifdef _WIN32
 #include "Util/FileSystem.h"
-#include "VersionInfo.h"
 #elif __ANDROID__
 namespace RBX
 {
@@ -35,7 +34,7 @@ extern std::string robloxVersion; // JNIMain.cpp
 #include <rapidjson/writer.h>
 
 #if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-#include "VMProtect/VMProtectSDK.h"
+#include "security/ProtectionMarkers.h"
 #endif
 DYNAMIC_FASTINTVARIABLE(HttpInfluxHundredthsPercentage, 0)
 DYNAMIC_FASTSTRINGVARIABLE(HttpInfluxURL, "https://onepointtwentyone-misterfusion-1.c.influxdb.com:8087")
@@ -698,13 +697,13 @@ static const bool jobsAsArray = true;
 				if (sc)
 				{
 					#if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-					VMProtectBeginMutation("19");
+					Security::ProtectionMarkers::beginMutation("19");
 					#endif
 					ProtectedString verifiedSource = ProtectedString::fromTrustedSource(script);
 					ContentProvider::verifyRequestedScriptSignature(verifiedSource, "StatsScript", true);
 					sc->executeInNewThread(Security::RobloxGameScript_, verifiedSource, "StatsReporting");
 					#if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-					VMProtectEnd();
+					Security::ProtectionMarkers::end();
 					#endif
 				}
 			}

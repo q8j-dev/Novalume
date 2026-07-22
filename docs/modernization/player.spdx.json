@@ -2,10 +2,10 @@
   "spdxVersion": "SPDX-2.3",
   "dataLicense": "CC0-1.0",
   "SPDXID": "SPDXRef-DOCUMENT",
-  "name": "RobloxPlayer default dependency inventory",
-  "documentNamespace": "https://roblox-modernization.invalid/spdx/player-2026-07-16",
+  "name": "RobloxPlayer macOS arm64 dependency inventory",
+  "documentNamespace": "https://roblox-modernization.invalid/spdx/player-2026-07-21",
   "creationInfo": {
-    "created": "2026-07-16T00:00:00Z",
+    "created": "2026-07-21T00:00:00Z",
     "creators": ["Tool: Codex modernization build"]
   },
   "documentDescribes": ["SPDXRef-RobloxPlayer"],
@@ -18,7 +18,8 @@
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
       "licenseDeclared": "NOASSERTION",
-      "copyrightText": "NOASSERTION"
+      "copyrightText": "NOASSERTION",
+      "comment": "This document describes the macOS arm64 package. Other target packages require platform-specific SBOM generation."
     },
     {
       "name": "bgfx",
@@ -71,6 +72,22 @@
       "copyrightText": "Copyright 2025 David Reid"
     },
     {
+      "name": "FFmpeg",
+      "SPDXID": "SPDXRef-FFmpeg",
+      "versionInfo": "8.1.2",
+      "downloadLocation": "https://ffmpeg.org/releases/ffmpeg-8.1.2.tar.xz",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "464beb5e7bf0c311e68b45ae2f04e9cc2af88851abb4082231742a74d97b524c"
+        }
+      ],
+      "filesAnalyzed": false,
+      "licenseConcluded": "LGPL-2.1-or-later AND LicenseRef-IJG",
+      "licenseDeclared": "LGPL-2.1-or-later AND LicenseRef-IJG",
+      "copyrightText": "NOASSERTION"
+    },
+    {
       "name": "GameNetworkingSockets",
       "SPDXID": "SPDXRef-GameNetworkingSockets",
       "versionInfo": "1.5.0+4fbfe83ef4d59a12dc32baeff2c33e511af93157",
@@ -109,6 +126,78 @@
       "licenseConcluded": "Apache-2.0",
       "licenseDeclared": "Apache-2.0",
       "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "curl",
+      "SPDXID": "SPDXRef-curl",
+      "versionInfo": "8.21.0+68720b4837284335b2d63cb358f8f6ce65f5bc55",
+      "downloadLocation": "https://github.com/curl/curl.git",
+      "filesAnalyzed": false,
+      "licenseConcluded": "curl",
+      "licenseDeclared": "curl",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "zlib",
+      "SPDXID": "SPDXRef-zlib",
+      "versionInfo": "1.2.12",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Zlib",
+      "licenseDeclared": "Zlib",
+      "copyrightText": "NOASSERTION",
+      "comment": "Provided by the macOS SDK and linked into the static Player dependency closure."
+    },
+    {
+      "name": "Zstandard",
+      "SPDXID": "SPDXRef-zstd",
+      "versionInfo": "1.5.7",
+      "downloadLocation": "https://github.com/facebook/zstd.git",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "Copyright Meta Platforms, Inc. and affiliates"
+    },
+    {
+      "name": "Luau",
+      "SPDXID": "SPDXRef-Luau",
+      "versionInfo": "5e76a0a162d82cbe13a09a4beacd09d7e53cc856",
+      "downloadLocation": "https://github.com/luau-lang/luau.git",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "Copyright 2019-2025 Roblox Corporation; Copyright 1994-2019 Lua.org, PUC-Rio"
+    },
+    {
+      "name": "Draco",
+      "SPDXID": "SPDXRef-Draco",
+      "versionInfo": "1.5.7+8786740086a9f4d83f44aa83badfbea4dce7a1b5",
+      "downloadLocation": "https://github.com/google/draco.git",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "Boost",
+      "SPDXID": "SPDXRef-Boost",
+      "versionInfo": "1.74.0",
+      "downloadLocation": "https://archives.boost.io/release/1.74.0/source/boost_1_74_0.tar.bz2",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSL-1.0",
+      "licenseDeclared": "BSL-1.0",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "LZ4 historical snapshot",
+      "SPDXID": "SPDXRef-LZ4-historical",
+      "versionInfo": "2013-snapshot",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-2-Clause",
+      "licenseDeclared": "BSD-2-Clause",
+      "copyrightText": "Copyright 2011-2013 Yann Collet",
+      "comment": "Retained for legacy place and bytecode compatibility; maintained Zstandard handles current binary place chunks."
     },
     {
       "name": "FreeType",
@@ -168,14 +257,31 @@
     {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-bimg"},
     {"spdxElementId": "SPDXRef-bgfx-cmake", "relationshipType": "BUILD_DEPENDENCY_OF", "relatedSpdxElement": "SPDXRef-RobloxPlayer"},
     {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-miniaudio"},
+    {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-FFmpeg"},
     {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-GameNetworkingSockets"},
     {"spdxElementId": "SPDXRef-GameNetworkingSockets", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-protobuf"},
     {"spdxElementId": "SPDXRef-protobuf", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-Abseil"},
     {"spdxElementId": "SPDXRef-GameNetworkingSockets", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-OpenSSL"},
+    {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-curl"},
+    {"spdxElementId": "SPDXRef-curl", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-OpenSSL"},
+    {"spdxElementId": "SPDXRef-curl", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-zlib"},
+    {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-zstd"},
+    {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-Luau"},
+    {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-Draco"},
+    {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-Boost"},
+    {"spdxElementId": "SPDXRef-Boost", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-zlib"},
+    {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-LZ4-historical"},
     {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-FreeType"},
     {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-HarfBuzz"},
     {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-utf8proc"},
     {"spdxElementId": "SPDXRef-RobloxPlayer", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "SPDXRef-SheenBidi"},
     {"spdxElementId": "SPDXRef-SDL", "relationshipType": "BUILD_DEPENDENCY_OF", "relatedSpdxElement": "SPDXRef-RobloxPlayer"}
+  ],
+  "hasExtractedLicensingInfos": [
+    {
+      "licenseId": "LicenseRef-IJG",
+      "name": "Independent JPEG Group terms",
+      "extractedText": "The authors make NO WARRANTY or representation, either express or implied, with respect to this software, its quality, accuracy, merchantability, or fitness for a particular purpose. This software is provided AS IS, and you, its user, assume the entire risk as to its quality and accuracy. Permission is hereby granted to use, copy, modify, and distribute this software (or portions thereof) for any purpose, without fee, subject to these conditions: (1) If any part of the source code for this software is distributed, then the copyright and no-warranty notice must be included unaltered, and any additions, deletions, or changes to the original files must be clearly indicated in accompanying documentation. (2) If only executable code is distributed, then the accompanying documentation must state that this software is based in part on the work of the Independent JPEG Group. (3) Permission for use of this software is granted only if the user accepts full responsibility for any undesirable consequences; the authors accept NO LIABILITY for damages of any kind. Permission is NOT granted for the use of any IJG author's name or company name in advertising or publicity relating to this software or products derived from it."
+    }
   ]
 }

@@ -29,7 +29,7 @@
 #include <vector>
 
 #if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-#include "VMProtect/VMProtectSDK.h"
+#include "security/ProtectionMarkers.h"
 #endif
 
 #define MAX_BORDER_SIZE_PIXEL 100
@@ -3206,7 +3206,7 @@ void GuiButton::setVerb(std::string verbString)
 {
     // People were modifying verbString when it was loaded into a register by using CE.
     #if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-    VMProtectBeginMutation(NULL);
+    Security::ProtectionMarkers::beginMutation();
     #endif
 	if(Workspace* workspace = ServiceProvider::find<Workspace>(this))
 	{
@@ -3225,7 +3225,7 @@ void GuiButton::setVerb(std::string verbString)
 	else
 		verbToSet = verbString; // our object isn't in the workspace yet, save string for later use (when we reset our parent)
     #if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-    VMProtectEnd();
+    Security::ProtectionMarkers::end();
     #endif
 }
 
@@ -3548,7 +3548,7 @@ GuiResponse GuiButton::checkForSelectedObjectClick(const shared_ptr<InputObject>
 	                        fireActivated(event);
 
 						#if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-						VMProtectBeginMutation(NULL);
+						Security::ProtectionMarkers::beginMutation();
 						#endif
 						if (verb != NULL)
 						{
@@ -3559,7 +3559,7 @@ GuiResponse GuiButton::checkForSelectedObjectClick(const shared_ptr<InputObject>
 							}
 						}
 						#if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-						VMProtectEnd();
+						Security::ProtectionMarkers::end();
 						#endif
 						lastSelectedObjectEvent = weak_ptr<InputObject>();
                     }
@@ -3636,7 +3636,7 @@ GuiResponse GuiButton::processMouseEvent(const shared_ptr<InputObject>& event)
     GuiResponse answer = Super::processMouseEvent(event);			//We need to call our classParent to deal with the state table
     
     #if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-    VMProtectBeginMutation(NULL);
+    Security::ProtectionMarkers::beginMutation();
     #endif
     if (verb != NULL && clicked)
     {
@@ -3647,7 +3647,7 @@ GuiResponse GuiButton::processMouseEvent(const shared_ptr<InputObject>& event)
         }
     }
     #if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-    VMProtectEnd();
+    Security::ProtectionMarkers::end();
     #endif
 
     if (sinkEvent) 

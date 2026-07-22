@@ -55,6 +55,7 @@ local function CreateHomePane(parent)
 		Name = 'ProfileContainer';
 		Position = UDim2.new(0,0,0,0);
 		BackgroundTransparency = 1;
+		ClipsDescendants = true;
 		Parent = HomePaneContainer;
 	}
 
@@ -254,6 +255,7 @@ local function CreateHomePane(parent)
 	{
 		Name = 'SortsContainer';
 		BackgroundTransparency = 1;
+		ClipsDescendants = true;
 		Parent = HomePaneContainer;
 	}
 
@@ -268,6 +270,7 @@ local function CreateHomePane(parent)
 			BackgroundTransparency = 0.15;
 			BorderSizePixel = 0;
 			AutoButtonColor = false;
+			ClipsDescendants = true;
 			Parent = SortsContainer;
 			Utility.Create'TextLabel'
 			{
@@ -280,6 +283,7 @@ local function CreateHomePane(parent)
 				TextXAlignment = 'Left';
 				Font = GlobalSettings.BoldFont;
 				FontSize = GlobalSettings.HeaderSize;
+				TextTruncate = Enum.TextTruncate.AtEnd;
 			};
 			Utility.Create'TextLabel'
 			{
@@ -287,11 +291,12 @@ local function CreateHomePane(parent)
 				Size = UDim2.new(1, -40, 0, 36);
 				Position = UDim2.new(0, 20, 0, 78);
 				BackgroundTransparency = 1;
-				Text = 'RBXL, RBXLX, RBXM, RBXMX OR RBXLP  ·  COMMAND-O';
+				Text = 'PLACE OR MODEL FILE  |  COMMAND-O';
 				TextColor3 = GlobalSettings.GreyTextColor;
 				TextXAlignment = 'Left';
 				Font = GlobalSettings.RegularFont;
-				FontSize = GlobalSettings.DescriptionSize;
+				FontSize = GlobalSettings.SmallTitleSize;
+				TextTruncate = Enum.TextTruncate.AtEnd;
 			};
 		}
 		local function updateOpenButtonSelection()
@@ -324,6 +329,7 @@ local function CreateHomePane(parent)
 					BackgroundTransparency = 0.15;
 					BorderSizePixel = 0;
 					AutoButtonColor = false;
+					ClipsDescendants = true;
 					Parent = SortsContainer;
 					Utility.Create'TextLabel'
 					{
@@ -336,6 +342,7 @@ local function CreateHomePane(parent)
 						TextXAlignment = 'Left';
 						Font = GlobalSettings.BoldFont;
 						FontSize = GlobalSettings.DescriptionSize;
+						TextTruncate = Enum.TextTruncate.AtEnd;
 					};
 					Utility.Create'TextLabel'
 					{
@@ -348,6 +355,7 @@ local function CreateHomePane(parent)
 						TextXAlignment = 'Left';
 						Font = GlobalSettings.RegularFont;
 						FontSize = GlobalSettings.SmallTitleSize;
+						TextTruncate = Enum.TextTruncate.AtEnd;
 					};
 				}
 				local function updateRecentSelection()

@@ -95,7 +95,7 @@ target_link_libraries(rbx-luau-scripting PRIVATE
     Roblox::DataModelRuntime Roblox::RuntimeUI Roblox::InteractionTools
     Roblox::RenderAdorn Roblox::RenderFoundation Roblox::Simulation
     Roblox::Animation Roblox::Serialization Roblox::Reflection Roblox::Math
-    Roblox::Lz4 Roblox::Utf8proc)
+    Roblox::Lz4 Roblox::Utf8proc Roblox::ProtectionMarkers)
 target_compile_definitions(rbx-luau-scripting PUBLIC
     RBX_LUAU_VM=1
     BOOST_NO_CXX98_FUNCTION_BASE=1
@@ -140,6 +140,7 @@ target_link_libraries(rbx-scripting PUBLIC
     Roblox::RenderAdorn Roblox::RenderFoundation Roblox::Simulation
     Roblox::Animation Roblox::Serialization Roblox::Reflection Roblox::Math
     Roblox::Lz4 Roblox::Utf8proc)
+target_link_libraries(rbx-scripting PRIVATE Roblox::ProtectionMarkers)
 target_compile_features(rbx-scripting PUBLIC cxx_std_20)
 target_compile_definitions(rbx-scripting PRIVATE
     BOOST_NO_CXX98_FUNCTION_BASE=1

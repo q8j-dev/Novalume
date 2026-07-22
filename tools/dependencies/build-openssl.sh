@@ -8,6 +8,11 @@ root=$(cd "$(dirname "$0")/../.." && pwd)
 base="$root/out/dependencies/openssl-$version/$platform"
 source="$base/source"
 prefix="$base/install"
+work="/tmp/novalume-openssl-$version-$platform"
+build_source="$work/source"
+stage_root="$work/stage-root"
+logical_prefix="/opt/novalume/openssl-$version/$platform"
+stage="$stage_root$logical_prefix"
 
 case "$platform" in
     macos-arm64)
@@ -43,6 +48,9 @@ fi
 
 git -C "$source" fetch --depth=1 origin "$revision"
 git -C "$source" checkout --detach "$revision"
+export SOURCE_DATE_EPOCH
+SOURCE_DATE_EPOCH=$(git -C "$source" show -s --format=%ct "$revision")
+export ZERO_AR_DATE=1
 
 if [[ -n "$sdk" ]]; then
     export SDKROOT
@@ -54,20 +62,25 @@ if [[ -n "$sdk" ]]; then
     fi
 fi
 
-cd "$source"
+cmake -E rm -rf "$work"
+mkdir -p "$build_source"
+git -C "$source" archive "$revision" | tar -xf - -C "$build_source"
+
+cd "$build_source"
 ./Configure "$configure_target" \
-    --prefix="$prefix" \
-    --openssldir="$prefix/ssl" \
+    --prefix="$logical_prefix" \
+    --openssldir="$logical_prefix/ssl" \
     --libdir=lib \
     no-apps no-docs no-dso no-module no-shared no-tests
-if command -v nproc >/dev/null 2>&1; then
-    build_jobs=$(nproc)
-else
-    build_jobs=$(sysctl -n hw.logicalcpu)
-fi
-make -j "$build_jobs"
-make install_sw
+make -j2
+make install_sw DESTDIR="$stage_root"
+mkdir -p "$stage/share/licenses/openssl"
+cp "$build_source/LICENSE.txt" "$stage/share/licenses/openssl/"
 
-test -f "$prefix/include/openssl/evp.h"
-test -f "$prefix/lib/libcrypto.a"
+test -f "$stage/include/openssl/evp.h"
+test -f "$stage/lib/libcrypto.a"
+test -f "$stage/share/licenses/openssl/LICENSE.txt"
+cmake -E rm -rf "$prefix"
+mkdir -p "$prefix"
+cmake -E copy_directory "$stage" "$prefix"
 printf '%s\n' "$prefix"

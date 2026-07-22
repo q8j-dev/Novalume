@@ -93,17 +93,42 @@ def annotate_struct(source: str, struct_name: str, vertex_output: bool) -> str:
     if not match:
         return source
     fields = []
+    promoted_vertex_outputs: list[tuple[str, str]] = []
     for line in match.group(2).splitlines():
         field = re.fullmatch(r"(\s*\S+\s+)(\w+)(\s*;)", line)
         if not field or (vertex_output and field.group(2) == "gl_Position"):
             fields.append(line)
             continue
         name = field.group(2)
+        type_prefix = field.group(1)
+        half_type = re.search(r"\bhalf([234]?)\s+$", type_prefix)
+        if vertex_output and half_type:
+            promoted_type = "float" + half_type.group(1)
+            type_prefix = re.sub(
+                r"\bhalf([234]?)\s+$", promoted_type + " ", type_prefix
+            )
+            promoted_vertex_outputs.append((name, promoted_type))
         fields.append(
-            f"{field.group(1)}{name} [[user(locn{varying_location(name)})]];"
+            f"{type_prefix}{name} [[user(locn{varying_location(name)})]];"
         )
     replacement = match.group(1) + "\n".join(fields) + match.group(3)
-    return source[: match.start()] + replacement + source[match.end() :]
+    source = source[: match.start()] + replacement + source[match.end() :]
+    for name, promoted_type in promoted_vertex_outputs:
+        assignment = re.compile(
+            rf"(_mtl_o\.{re.escape(name)}\s*=\s*)([^;]+)(;)"
+        )
+        source = assignment.sub(
+            lambda value: (
+                value.group(1)
+                + promoted_type
+                + "("
+                + value.group(2)
+                + ")"
+                + value.group(3)
+            ),
+            source,
+        )
+    return source
 
 
 def patch_attributes(source: str) -> str:
@@ -209,6 +234,153 @@ def patch_metal(source: str, stage: str) -> str:
     else:
         source = annotate_struct(source, "xlatMtlShaderInput", False)
     return source
+
+
+def scene_program_pairs(shader_names: set[str]) -> list[tuple[str, str]]:
+    """Return every vertex/fragment pairing constructed by the scene renderer."""
+    pairs = {
+        ("AdornAALineVS", "AdornAALineFS"),
+        ("AdornLightingVS", "AdornFS"),
+        ("AdornOutlineVS", "AdornOutlineFS"),
+        ("AdornSelfLitHighlightVS", "AdornFS"),
+        ("AdornSelfLitVS", "AdornFS"),
+        ("AdornVS", "AdornFS"),
+        ("DownSample4x4VS", "DownSample4x4GlowFS"),
+        ("GBufferResolveVS", "GBufferResolveFS"),
+        ("MegaClusterHQVS", "MegaClusterHQFS"),
+        ("MegaClusterHQVS", "MegaClusterHQGBufferFS"),
+        ("MegaClusterShadowVS", "DefaultShadowFS"),
+        ("MegaClusterVS", "MegaClusterFS"),
+        ("ParticleCustomVS", "ParticleCustomFS"),
+        ("ParticleVS", "ParticleAddFS"),
+        ("ParticleVS", "ParticleCrazyFS"),
+        ("ParticleVS", "ParticleCrazySparklesFS"),
+        ("ParticleVS", "ParticleModulateFS"),
+        ("ProfilerVS", "ProfilerFS"),
+        ("SSAODepthDownVS", "SSAODepthDownFS"),
+        ("SSAOBlurXVS", "SSAOBlurXFS"),
+        ("SSAOBlurYVS", "SSAOBlurYFS"),
+        ("SSAOCompositVS", "SSAOCompositFS"),
+        ("SkyVS", "SkyFS"),
+        ("SmoothClusterHQVS", "SmoothClusterHQFS"),
+        ("SmoothClusterHQVS", "SmoothClusterHQGBufferFS"),
+        ("SmoothClusterShadowVS", "DefaultShadowFS"),
+        ("SmoothClusterVS", "SmoothClusterFS"),
+        ("SmoothWaterHQVS", "SmoothWaterHQFS"),
+        ("SmoothWaterHQVS", "SmoothWaterHQGBufferFS"),
+        ("SmoothWaterVS", "SmoothWaterFS"),
+        ("TexCompVS", "TexCompFS"),
+        ("TexCompVS", "TexCompPMAFS"),
+        ("UIFogVS", "UIFogFS"),
+        ("UIVS", "UIFS"),
+        ("WaterHQVS", "WaterHQFS"),
+        ("WaterVS", "WaterFS"),
+    }
+
+    for fragment in (
+        "Blur3FS",
+        "Blur5FS",
+        "Blur7FS",
+        "GlowApplyFS",
+        "ImageProcessFS",
+        "PassThroughFS",
+        "SSAOFS",
+        "ShadowBlurFS",
+    ):
+        pairs.add(("PassThroughVS", fragment))
+
+    for skinning in ("Static", "Skinned"):
+        pairs.add((f"Default{skinning}HQVS", "DefaultHQFS"))
+        pairs.add((f"Default{skinning}HQVS", "DefaultHQGBufferFS"))
+        pairs.add((f"Default{skinning}VS", "DefaultFS"))
+        pairs.add((f"DefaultShadow{skinning}VS", "DefaultShadowFS"))
+
+        for vertex in (
+            f"Default{skinning}VS",
+            f"Default{skinning}ReflectionVS",
+        ):
+            for fragment in (
+                "LowQMaterialFS",
+                "LowQMaterialWangFS",
+                "LowQMaterialWangFallbackFS",
+            ):
+                pairs.add((vertex, fragment))
+        pairs.add((f"Default{skinning}VS", "DefaultPlasticFS"))
+        pairs.add((f"Default{skinning}VS", "DefaultNeonFS"))
+        pairs.add(
+            (f"Default{skinning}ReflectionVS", "DefaultPlasticReflectionFS")
+        )
+        pairs.add(
+            (f"Default{skinning}ReflectionVS", "DefaultSmoothPlasticReflectionFS")
+        )
+
+        for fragment in shader_names:
+            match = re.fullmatch(r"Default(.+)HQ(?:GBuffer)?FS", fragment)
+            if not match:
+                continue
+            material = match.group(1).removesuffix("Reflection")
+            vertex = (
+                f"Default{skinning}HQVS"
+                if material in {"SmoothPlastic", "Neon"}
+                else f"Default{skinning}SurfaceHQVS"
+            )
+            pairs.add((vertex, fragment))
+
+    return sorted(
+        pair for pair in pairs
+        if pair[0] in shader_names and pair[1] in shader_names
+    )
+
+
+def extract_varying_interface(
+    source: str, struct_name: str
+) -> dict[int, tuple[str, str]]:
+    match = re.search(
+        rf"struct {re.escape(struct_name)} \{{\n(.*?)\n\}};", source, re.DOTALL
+    )
+    if not match:
+        return {}
+    interface: dict[int, tuple[str, str]] = {}
+    field_pattern = re.compile(
+        r"\s*(\w+)\s+(\w+)\s+\[\[user\(locn(\d+)\)\]\];"
+    )
+    for line in match.group(1).splitlines():
+        field = field_pattern.fullmatch(line)
+        if not field:
+            continue
+        type_name, varying_name, location_text = field.groups()
+        location = int(location_text)
+        if location in interface:
+            raise ValueError(
+                f"Metal {struct_name} contains duplicate varying location {location}"
+            )
+        interface[location] = (type_name, varying_name)
+    return interface
+
+
+def validate_program_interfaces(translated: dict[str, str]) -> None:
+    """Reject stage containers that compile alone but cannot link together."""
+    for vertex_name, fragment_name in scene_program_pairs(set(translated)):
+        outputs = extract_varying_interface(
+            translated[vertex_name], "xlatMtlShaderOutput"
+        )
+        inputs = extract_varying_interface(
+            translated[fragment_name], "xlatMtlShaderInput"
+        )
+        for location, (input_type, input_name) in inputs.items():
+            output = outputs.get(location)
+            if output is None:
+                raise ValueError(
+                    f"Metal program {vertex_name}/{fragment_name} has fragment "
+                    f"input {input_name} at locn{location} with no vertex output"
+                )
+            output_type, output_name = output
+            if output_type != input_type:
+                raise ValueError(
+                    f"Metal program {vertex_name}/{fragment_name} varying locn{location} "
+                    f"type mismatch: vertex {output_name} is {output_type}, "
+                    f"fragment {input_name} is {input_type}"
+                )
 
 
 def extract_uniforms(source: str) -> list[tuple[str, int, int, int]]:
@@ -341,6 +513,7 @@ def main() -> int:
     names.extend(name for name in descriptions if name not in names)
     sampler_slots = read_sampler_slots(arguments.source_pack)
     entries: list[tuple[str, bytes]] = []
+    translated: dict[str, str] = {}
     with tempfile.TemporaryDirectory(prefix="rbx-metal-scene-") as temporary:
         translator = Path(temporary) / "ShaderCompiler"
         shutil.copyfile(arguments.translator, translator)
@@ -370,7 +543,9 @@ def main() -> int:
             metal = patch_metal(process.stdout.decode("utf-8"), stage)
             metal = patch_sampler_stages(metal, sampler_slots.get(name, {}))
             validate_metal(name, metal, Path(temporary))
+            translated[name] = metal
             entries.append((name, bgfx_container(stage, metal)))
+        validate_program_interfaces(translated)
     write_pack(arguments.output, entries)
     print(f"translated {len(entries)} Metal scene shaders into {arguments.output}")
     return 0

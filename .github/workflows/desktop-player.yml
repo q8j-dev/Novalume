@@ -12,6 +12,7 @@ on:
       - 'engine/**'
       - 'platform/**'
       - 'shaders/**'
+      - 'tests/**'
       - 'content/**'
       - 'PlatformContent/**'
       - 'third_party/**'
@@ -72,6 +73,7 @@ jobs:
             build-essential cmake ninja-build pkg-config python3 \
             libavformat-dev libavcodec-dev libavutil-dev \
             libswscale-dev libswresample-dev \
+            libglvnd-dev libasound2-dev libusb-1.0-0-dev \
             libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxi-dev \
             libxfixes-dev libxss-dev libxtst-dev libxkbcommon-dev libwayland-dev wayland-protocols \
             libdecor-0-dev liburing-dev
@@ -87,12 +89,19 @@ jobs:
           cmake -S . -B out/build/linux-${{ matrix.arch }}-release -G Ninja
           -DCMAKE_BUILD_TYPE=Release
           -DRBX_BUILD_PLAYER=ON
-          -DRBX_BUILD_TESTS=OFF
+          -DRBX_BUILD_TESTS=ON
           -DRBX_ENABLE_LEGACY_BUILD=OFF
           -DRBX_ENABLE_LEGACY_RENDERERS=OFF
           -DRBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE="$GITHUB_WORKSPACE/out/runtime-inputs/$RBX_RUNTIME_RESOURCE_ASSET"
           -DRBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE_SHA256="$RBX_RUNTIME_RESOURCE_SHA256"
           -DRBX_OPENSSL_ROOT=${{ github.workspace }}/out/dependencies/openssl-3.5.7/linux-${{ matrix.arch }}/install
+
+      - name: Verify native platform and signature contracts
+        run: |
+          cmake --build out/build/linux-${{ matrix.arch }}-release \
+            --target rbx-system-util-contract-tests --parallel 2
+          ctest --test-dir out/build/linux-${{ matrix.arch }}-release \
+            -R '^system-util-contract$' --output-on-failure
 
       - name: Build the actual shared Player
         run: cmake --build out/build/linux-${{ matrix.arch }}-release --target RobloxPlayer --parallel 2
@@ -190,23 +199,32 @@ jobs:
         shell: pwsh
         run: |
           $installed = "$env:VCPKG_INSTALLATION_ROOT\installed\${{ matrix.triplet }}"
-          $bundle = Join-Path $env:GITHUB_WORKSPACE "out/runtime-inputs/$env:RBX_RUNTIME_RESOURCE_ASSET"
-          $compiler = (Get-Command cl.exe -ErrorAction Stop).Source
-          $resourceCompiler = (Get-Command rc.exe -ErrorAction Stop).Source
+          $bundle = [IO.Path]::GetFullPath((Join-Path $env:GITHUB_WORKSPACE "out/runtime-inputs/$env:RBX_RUNTIME_RESOURCE_ASSET")).Replace('\', '/')
+          $compiler = [IO.Path]::GetFullPath((Get-Command cl.exe -ErrorAction Stop).Source).Replace('\', '/')
+          $resourceCompiler = [IO.Path]::GetFullPath((Get-Command rc.exe -ErrorAction Stop).Source).Replace('\', '/')
+          $toolchain = [IO.Path]::GetFullPath((Join-Path $env:VCPKG_INSTALLATION_ROOT "scripts/buildsystems/vcpkg.cmake")).Replace('\', '/')
           $env:PKG_CONFIG_PATH = "$installed\lib\pkgconfig;$installed\share\pkgconfig"
           cmake -S . -B "out/build/${{ matrix.build_dir }}" -G Ninja `
             -DCMAKE_BUILD_TYPE=Release `
             "-DCMAKE_C_COMPILER=$compiler" `
             "-DCMAKE_CXX_COMPILER=$compiler" `
             "-DCMAKE_RC_COMPILER=$resourceCompiler" `
-            -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT\scripts\buildsystems\vcpkg.cmake" `
+            "-DCMAKE_TOOLCHAIN_FILE=$toolchain" `
             -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }} `
             -DRBX_BUILD_PLAYER=ON `
-            -DRBX_BUILD_TESTS=OFF `
+            -DRBX_BUILD_TESTS=ON `
             -DRBX_ENABLE_LEGACY_BUILD=OFF `
             -DRBX_ENABLE_LEGACY_RENDERERS=OFF `
             "-DRBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE=$bundle" `
             "-DRBX_PREBUILT_RUNTIME_RESOURCE_BUNDLE_SHA256=$env:RBX_RUNTIME_RESOURCE_SHA256"
+
+      - name: Verify native platform and signature contracts
+        shell: pwsh
+        run: |
+          cmake --build out/build/${{ matrix.build_dir }} `
+            --target rbx-system-util-contract-tests --parallel 2
+          ctest --test-dir out/build/${{ matrix.build_dir }} `
+            -C Release -R '^system-util-contract$' --output-on-failure
 
       - name: Build the actual shared Player
         run: cmake --build out/build/${{ matrix.build_dir }} --target RobloxPlayer --parallel 2

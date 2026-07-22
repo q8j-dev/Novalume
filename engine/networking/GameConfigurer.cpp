@@ -989,6 +989,17 @@ void StudioConfigurer::configure(RBX::Security::Identities identity, DataModel* 
 	if (Network::Players::frontendProcessing(dataModel) && !CoreScript::hasPackagedSources())
 		loadCoreModules();
 
+	if (dataModel->isAppShell())
+	{
+		if (ScriptContext* scriptContext = dataModel->create<ScriptContext>())
+		{
+			if (starterScript.empty())
+				starterScript = "XStarterScript";
+			scriptContext->addCoreScriptLocal(starterScript, shared_ptr<Instance>());
+			return;
+		}
+	}
+
 #if defined(RBX_PLATFORM_DURANGO)
 	if (ScriptContext* scriptContext = dataModel->create<ScriptContext>())
 	{
@@ -1026,4 +1037,3 @@ void StudioConfigurer::configure(RBX::Security::Identities identity, DataModel* 
 		}
 	}
 } 
-

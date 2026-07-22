@@ -1,6 +1,6 @@
 
 #if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-#include "VMProtect/VMProtectSDK.h"
+#include "security/ProtectionMarkers.h"
 #endif
 
 #include "V8DataModel/GuiObject.h"
@@ -771,7 +771,7 @@ namespace RBX
 	{
 		// People were modifying verbString when it was loaded into a register by using CE.
 		#if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-		VMProtectBeginMutation(NULL);
+		Security::ProtectionMarkers::beginMutation();
 		#endif
 
 		std::string verbString = "ToggleFullScreen";
@@ -797,7 +797,7 @@ namespace RBX
 		}
 
 		#if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-		VMProtectEnd();
+		Security::ProtectionMarkers::end();
 		#endif
 	}
 

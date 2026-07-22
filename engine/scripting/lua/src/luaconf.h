@@ -17,7 +17,9 @@
 #include "security/securityContext.h"
 #include "security/ApiSecurity.h"
 #include "security/FuzzyTokens.h"
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
 #include "util/ProgramMemoryChecker.h"
+#endif
 #include "Script/ExitHandlers.h"
 #include "rbx/Intrusive/Set.h"
 
@@ -841,7 +843,9 @@ void lua_vmhooked_handler(lua_State* L);
 inline void lua_vmhooked_handler_ex(lua_State* L)
 {
     RBX::Tokens::apiToken.addFlagFast(RBX::kLuaHooked);
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
     RBX::pmcHash.nonce = 0;
+#endif
     lua_vmhooked_handler(L);
 }
 

@@ -433,6 +433,69 @@ int main()
         "stream resources must tear down cleanly");
     std::filesystem::remove(streamPath);
 
+    Engine oggStreamEngine({.sampleRate = 48000, .channels = 2});
+    const ClipHandle oggStreamClip = oggStreamEngine.createStreamingClip(
+        std::filesystem::path(RBX_TEST_STREAMING_OGG));
+    require(oggStreamEngine.clipIsStreaming(oggStreamClip) &&
+            oggStreamEngine.clipSampleRate(oggStreamClip) == 44100 &&
+            oggStreamEngine.clipLengthFrames(oggStreamClip) > 2600000,
+        "FFmpeg fallback audio must remain a bounded disk stream");
+    const VoiceHandle oggStreamVoice = oggStreamEngine.play(oggStreamClip);
+    require(static_cast<bool>(oggStreamVoice),
+        "FFmpeg fallback streaming playback must schedule");
+    bool oggStreamAudible = false;
+    for (unsigned attempt = 0; attempt < 100 && !oggStreamAudible; ++attempt)
+    {
+        std::vector<float> streamMix(1024 * 2);
+        require(oggStreamEngine.mix(streamMix),
+            "FFmpeg fallback streaming reads must remain operational");
+        oggStreamAudible = channelEnergy(streamMix, 0) > 0.01f;
+        if (!oggStreamAudible)
+            std::this_thread::sleep_for(std::chrono::milliseconds(2));
+    }
+    require(oggStreamAudible &&
+            oggStreamEngine.destroyVoice(oggStreamVoice) &&
+            oggStreamEngine.destroyClip(oggStreamClip),
+        "FFmpeg fallback streaming must be audible and tear down cleanly");
+
+    rejected = false;
+    try
+    {
+        Engine boundedOggStream({.sampleRate = 48000, .channels = 2,
+            .maxClipFrames = 48000, .maxEncodedBytes = 1024 * 1024});
+        static_cast<void>(boundedOggStream.createStreamingClip(
+            std::filesystem::path(RBX_TEST_STREAMING_OGG)));
+    }
+    catch (const std::invalid_argument&)
+    {
+        rejected = true;
+    }
+    require(rejected,
+        "FFmpeg fallback streaming must enforce the configured frame limit");
+
+    const std::filesystem::path corruptStreamPath =
+        std::filesystem::temp_directory_path() /
+        "rbx-audio-corrupt-stream-contract.ogg";
+    {
+        std::ofstream corruptStream(corruptStreamPath,
+            std::ios::binary | std::ios::trunc);
+        const std::array<char, 64> corruptBytes{};
+        corruptStream.write(corruptBytes.data(), corruptBytes.size());
+    }
+    rejected = false;
+    try
+    {
+        static_cast<void>(oggStreamEngine.createStreamingClip(
+            corruptStreamPath));
+    }
+    catch (const std::runtime_error&)
+    {
+        rejected = true;
+    }
+    std::filesystem::remove(corruptStreamPath);
+    require(rejected,
+        "corrupt FFmpeg fallback streams must fail without a usable clip");
+
     rejected = false;
     try
     {
@@ -519,14 +582,82 @@ int main()
     std::vector<float> busMix(64);
     require(busEngine.mix(busMix) && channelEnergy(busMix, 0) < 4.0f,
         "bus gain must attenuate routed voices");
-    require(busEngine.setBusVolume(quietBus, 0.0f), "bus volume updates must succeed");
+    const BusHandle reassignedBus = busEngine.createBus(0.0f);
+    const std::uint64_t beforeBusChange = busEngine.positionFrames(busVoice);
+    require(busEngine.setVoiceBus(busVoice, reassignedBus),
+        "a live voice must support bus reassignment");
+    require(busEngine.positionFrames(busVoice) == beforeBusChange,
+        "bus reassignment must preserve the voice cursor");
+    require(busEngine.destroyBus(quietBus),
+        "reassigning the final voice must release its previous bus");
     std::fill(busMix.begin(), busMix.end(), 1.0f);
     require(busEngine.mix(busMix) && channelEnergy(busMix, 0) == 0.0f,
-        "a muted bus must silence routed voices");
-    require(busEngine.destroyVoice(busVoice) && busEngine.destroyBus(quietBus),
-        "an unused bus must be releasable");
+        "moving a playing voice to a muted bus must silence it");
+    require(busEngine.setBusVolume(reassignedBus, 0.5f),
+        "live bus volume updates must succeed");
+    std::fill(busMix.begin(), busMix.end(), 0.0f);
+    require(busEngine.mix(busMix) && channelEnergy(busMix, 0) > 0.0f,
+        "raising the reassigned bus volume must restore routed audio");
+    require(busEngine.setVoiceBus(busVoice, {}),
+        "a live voice must detach from its SoundGroup bus");
+    require(busEngine.destroyBus(reassignedBus),
+        "a detached SoundGroup bus must be releasable");
+    require(busEngine.destroyVoice(busVoice) && busEngine.destroyClip(busClip),
+        "a dynamically rerouted voice and clip must tear down cleanly");
     require(!busEngine.setBusVolume(quietBus, 1.0f),
         "stale bus handles must be rejected");
+
+    Engine nestedBusEngine({.sampleRate = 48000, .channels = 2});
+    const BusHandle parentBus = nestedBusEngine.createBus(0.5f);
+    const BusHandle childBus = nestedBusEngine.createBus(0.5f, parentBus);
+    require(static_cast<bool>(parentBus) && static_cast<bool>(childBus),
+        "nested buses must accept a valid parent bus");
+    require(!nestedBusEngine.destroyBus(parentBus),
+        "a parent bus with a live child bus must be retained");
+    const ClipHandle nestedBusClip = nestedBusEngine.createClip({
+        .sampleRate = 48000, .channels = 1,
+        .samples = std::vector<float>(512, 0.5f)});
+    VoiceParameters nestedBusParameters;
+    nestedBusParameters.looping = true;
+    nestedBusParameters.bus = childBus;
+    const VoiceHandle nestedBusVoice = nestedBusEngine.play(
+        nestedBusClip, nestedBusParameters);
+    require(static_cast<bool>(nestedBusVoice),
+        "a voice must route through a nested child bus");
+    std::vector<float> nestedBusMix(64);
+    require(nestedBusEngine.mix(nestedBusMix) &&
+            channelEnergy(nestedBusMix, 0) > 3.0f &&
+            channelEnergy(nestedBusMix, 0) < 5.0f,
+        "nested bus gain must include every SoundGroup ancestor");
+    const std::uint64_t beforeParentChange =
+        nestedBusEngine.positionFrames(nestedBusVoice);
+    require(nestedBusEngine.setBusParent(childBus, {}) &&
+            nestedBusEngine.positionFrames(nestedBusVoice) == beforeParentChange,
+        "live SoundGroup reparenting must preserve routed voice cursors");
+    std::fill(nestedBusMix.begin(), nestedBusMix.end(), 0.0f);
+    require(nestedBusEngine.mix(nestedBusMix) &&
+            channelEnergy(nestedBusMix, 0) > 7.0f,
+        "detaching a child bus must remove only its former ancestor gain");
+    VoiceEffect groupDistortion;
+    groupDistortion.type = VoiceEffectType::Distortion;
+    groupDistortion.parameters[0] = 0.75f;
+    require(nestedBusEngine.setBusEffects(childBus,
+                std::span<const VoiceEffect>(&groupDistortion, 1)),
+        "a SoundGroup bus must accept a live mixed-bus effect chain");
+    std::fill(nestedBusMix.begin(), nestedBusMix.end(), 0.0f);
+    require(nestedBusEngine.mix(nestedBusMix) &&
+            channelEnergy(nestedBusMix, 0) > 20.0f,
+        "a SoundGroup effect must process the mixed child-bus signal");
+    require(nestedBusEngine.setBusEffects(childBus, {}) &&
+            nestedBusEngine.setBusParent(childBus, parentBus),
+        "mixed-bus effects and parent routing must update live");
+    require(!nestedBusEngine.setBusParent(parentBus, childBus),
+        "SoundGroup bus parenting must reject cycles");
+    require(nestedBusEngine.destroyVoice(nestedBusVoice) &&
+            nestedBusEngine.destroyBus(childBus) &&
+            nestedBusEngine.destroyBus(parentBus) &&
+            nestedBusEngine.destroyClip(nestedBusClip),
+        "a nested SoundGroup bus tree must tear down child-first");
 
     Engine reverbEngine({.sampleRate = 48000, .channels = 2});
     std::vector<float> impulse(32, 0.0f);
@@ -621,11 +752,14 @@ int main()
     VoiceEffect dryTremolo;
     dryTremolo.type = VoiceEffectType::Tremolo;
     dryTremolo.parameters = {0.0f, 1.0f, 10.0f, 0.5f, 0.0f, 0.0f, 0.0f};
+    const std::uint64_t beforeEffectUpdate =
+        tremoloEngine.positionFrames(tremoloVoice);
     require(tremoloEngine.setVoiceEffects(tremoloVoice,
                 std::span<const VoiceEffect>(&dryTremolo, 1)) &&
+            tremoloEngine.positionFrames(tremoloVoice) == beforeEffectUpdate &&
             tremoloEngine.mix(tremoloMix) &&
             channelEnergy(tremoloMix, 0) > 4700.0f,
-        "a zero-depth live tremolo update must restore the dry voice");
+        "a live effect update must preserve the cursor and restore dry audio");
     dryTremolo.parameters[2] = std::numeric_limits<float>::quiet_NaN();
     require(!tremoloEngine.setVoiceEffects(tremoloVoice,
                 std::span<const VoiceEffect>(&dryTremolo, 1)),
@@ -676,6 +810,45 @@ int main()
             graphCompressorEngine.mix(graphCompressorMix) &&
             channelEnergy(graphCompressorMix, 0) > 4000.0f,
         "bypassing the graph compressor must restore the dry voice");
+
+    Engine sidechainEngine({.sampleRate = 48000, .channels = 2});
+    const BusHandle mutedDetectorBus = sidechainEngine.createBus(0.0f);
+    const ClipHandle detectorClip = sidechainEngine.createClip({
+        .sampleRate = 48000, .channels = 1,
+        .samples = std::vector<float>(16384, 1.0f)});
+    const ClipHandle duckedClip = sidechainEngine.createClip({
+        .sampleRate = 48000, .channels = 1,
+        .samples = std::vector<float>(16384, 0.1f)});
+    const std::shared_ptr<MeterState> sidechainMeter =
+        std::make_shared<MeterState>();
+    VoiceParameters detectorParameters;
+    detectorParameters.bus = mutedDetectorBus;
+    detectorParameters.effects[0].type = VoiceEffectType::Analyzer;
+    detectorParameters.effects[0].meter = sidechainMeter;
+    detectorParameters.effectCount = 1;
+    VoiceParameters duckedParameters;
+    duckedParameters.effects[0].type = VoiceEffectType::Compressor;
+    duckedParameters.effects[0].parameters = {
+        0.001f, 0.0f, 20.0f, 0.01f, -20.0f, 0.0f, 0.0f};
+    duckedParameters.effects[0].meter = sidechainMeter;
+    duckedParameters.effectCount = 1;
+    require(static_cast<bool>(sidechainEngine.play(
+                detectorClip, detectorParameters)),
+        "an external sidechain detector must start");
+    std::vector<float> detectorWarmup(1024 * 2);
+    require(sidechainEngine.mix(detectorWarmup) &&
+            sidechainMeter->updateSerial.load() > 0 &&
+            channelEnergy(detectorWarmup, 0) == 0.0f,
+        "an inaudible sidechain source must still update its detector");
+    require(static_cast<bool>(sidechainEngine.play(
+                duckedClip, duckedParameters)),
+        "an externally ducked target voice must start");
+    std::vector<float> sidechainMix(8192 * 2);
+    const bool sidechainMixed = sidechainEngine.mix(sidechainMix);
+    require(sidechainMixed &&
+            sidechainMeter->updateSerial.load() > 0 &&
+            channelEnergy(sidechainMix, 0) < 250.0f,
+        "an inaudible external source must genuinely duck the compressor target");
 
     Engine gateEngine({.sampleRate = 48000, .channels = 2});
     const ClipHandle gateClip = gateEngine.createClip({
@@ -829,6 +1002,31 @@ int main()
             graphAnalyzerParameters.effects[0].meter->rms.load() > 0.2f &&
             graphAnalyzerParameters.effects[0].meter->spectrumSize.load() == 257,
         "the graph analyzer must meter amplitude and publish its FFT window");
+
+    Engine channelRouteEngine({.sampleRate = 48000, .channels = 2});
+    std::vector<float> stereoChannels(512 * 2);
+    for (std::size_t frame = 0; frame < 512; ++frame)
+    {
+        stereoChannels[frame * 2] = 0.25f;
+        stereoChannels[frame * 2 + 1] = 0.75f;
+    }
+    const ClipHandle channelRouteClip = channelRouteEngine.createClip({
+        .sampleRate = 48000, .channels = 2,
+        .samples = std::move(stereoChannels)});
+    VoiceParameters channelRouteParameters;
+    channelRouteParameters.effects[0].type = VoiceEffectType::ChannelExtract;
+    channelRouteParameters.effects[0].parameters[0] = 1.0f;
+    channelRouteParameters.effects[1].type = VoiceEffectType::ChannelInject;
+    channelRouteParameters.effects[1].parameters[0] = 0.0f;
+    channelRouteParameters.effectCount = 2;
+    require(static_cast<bool>(channelRouteEngine.play(
+                channelRouteClip, channelRouteParameters)),
+        "a component-channel route must start");
+    std::vector<float> channelRouteMix(128 * 2);
+    require(channelRouteEngine.mix(channelRouteMix) &&
+            channelEnergy(channelRouteMix, 0) > 90.0f &&
+            channelEnergy(channelRouteMix, 1) == 0.0f,
+        "a splitter component must feed the selected mixer component");
 
     Engine queuedEngine({.sampleRate = 48000, .channels = 2});
     require(queuedEngine.mixerTimeSeconds() == 0.0,

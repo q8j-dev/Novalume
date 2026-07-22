@@ -2,6 +2,10 @@
 
 #pragma once
 
+#if defined(RBX_MODERN_NETWORKING_RUNTIME) && defined(RBX_RCC_SECURITY)
+#error "RBX_RCC_SECURITY is not exposed by the modern Player CMake graph; use the historical server build or add a complete modern RCC feature boundary"
+#endif
+
 #include "network/NetworkTypes.h"
 
 #include "network/PacketBuffer.h"
@@ -22,7 +26,9 @@
 #include "boost/thread/thread.hpp"
 #include <boost/thread/condition.hpp>
 
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY) || defined(RBX_RCC_SECURITY)
 #include "util/ProgramMemoryChecker.h"
+#endif
 #include "security/FuzzyTokens.h"
 
 #ifdef RBX_RCC_SECURITY
@@ -39,7 +45,9 @@ namespace RBX {
 
 	class Server;
 	class NetworkFilter;
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY) || defined(RBX_RCC_SECURITY)
     struct MccReport;
+#endif
 
     enum PlaceAuthenticationState
     {
@@ -101,9 +109,11 @@ namespace RBX {
 		bool remotePlayerInstalled;
 		std::string gameSessionID;
 
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY) || defined(RBX_RCC_SECURITY)
         typedef std::vector<unsigned int> HashVector;
         PmcHashContainer hashes;
         unsigned long long securityTokens[3];
+#endif
 
 		void sendJoinStatsToInflux();
 
@@ -111,6 +121,7 @@ namespace RBX {
         virtual void PlaceAuthenticationThreadImpl(int previousPlaceId, int requestedPlaceId);
 
         virtual void setAuthenticated(bool authenticated) {}
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY) || defined(RBX_RCC_SECURITY)
         virtual void decodeHashItem(PmcHashContainer& netHashes, unsigned long long* securityTokens) {}
         virtual void processHashValue(const PmcHashContainer& netHashes) {}
         virtual void processHashValuePost(const unsigned long long* const tokens, unsigned int nonce) {}
@@ -118,6 +129,7 @@ namespace RBX {
         virtual void processRockyMccReport(const MccReport& report) {}
         virtual void processNetPmcResponseItem(RBX::Network::PacketBuffer& inBitstream) {}
         virtual void processRockyCallInfoItem(RBX::Network::PacketBuffer& inBitstream) {}
+#endif
 
 		// Replicator
 		/*override*/ bool isProtectedStringEnabled();
@@ -173,8 +185,10 @@ namespace RBX {
 		virtual void installRemotePlayer(const std::string& preferedSpawnName);
 		static void installRemotePlayerSafe(weak_ptr<ServerReplicator> weakThis, const std::string preferedSpawnName);
         void sendDictionaryFormat();
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY) || defined(RBX_RCC_SECURITY)
         void readHashItem(RBX::Network::PacketBuffer& inBitstream);
         void readRockyItem(RBX::Network::PacketBuffer& inBitstream);
+#endif
 		static void toggleSendStatsJob(weak_ptr<ServerReplicator> weakServerReplicator, bool required, int version);
 
 	public: // methods

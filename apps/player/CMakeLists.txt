@@ -5,6 +5,8 @@ endif()
 add_subdirectory(shared/client)
 
 add_executable(RobloxPlayer MACOSX_BUNDLE
+    LauncherResourceIntegrity.cpp
+    LauncherResourceIntegrity.h
     main.cpp
     PlayerMain.h
     LocalPlayerThumbnailProvider.cpp
@@ -16,6 +18,7 @@ add_executable(RobloxPlayer MACOSX_BUNDLE
 target_link_libraries(RobloxPlayer PRIVATE
     Roblox::RenderScene Roblox::LuauScripting Roblox::RuntimeUI Roblox::InteractionTools
     Roblox::AudioDataModel Roblox::DataModelRuntime Roblox::RuntimeSupport
+    Roblox::Core
     Roblox::AvatarHumanoid Roblox::NetworkingRuntime Roblox::TerrainRuntime
     Roblox::PlayerShared Roblox::Assets Roblox::PlatformRuntime Roblox::PlatformHost)
 target_compile_features(RobloxPlayer PRIVATE cxx_std_20)
@@ -32,6 +35,8 @@ target_compile_options(RobloxPlayer PRIVATE
 rbx_enable_warnings(RobloxPlayer)
 
 add_executable(RobloxPlayerLegacy MACOSX_BUNDLE EXCLUDE_FROM_ALL
+    LauncherResourceIntegrity.cpp
+    LauncherResourceIntegrity.h
     main.cpp
     PlayerMain.h
     LocalPlayerThumbnailProvider.cpp
@@ -43,6 +48,7 @@ add_executable(RobloxPlayerLegacy MACOSX_BUNDLE EXCLUDE_FROM_ALL
 target_link_libraries(RobloxPlayerLegacy PRIVATE
     Roblox::RenderScene Roblox::LuauScripting Roblox::RuntimeUI Roblox::InteractionTools
     Roblox::AudioDataModel Roblox::DataModelRuntime Roblox::RuntimeSupport
+    Roblox::Core
     Roblox::AvatarHumanoid Roblox::NetworkingRuntime Roblox::TerrainRuntime
     Roblox::PlayerShared Roblox::Assets Roblox::PlatformRuntime Roblox::PlatformHost)
 target_compile_features(RobloxPlayerLegacy PRIVATE cxx_std_20)
@@ -103,7 +109,7 @@ set_target_properties(RobloxPlayer PROPERTIES
     MACOSX_BUNDLE_BUNDLE_NAME "Roblox"
     MACOSX_BUNDLE_GUI_IDENTIFIER "com.roblox.offline-player"
     MACOSX_BUNDLE_INFO_STRING "Shared cross-platform Roblox player"
-    MACOSX_BUNDLE_SHORT_VERSION_STRING "0.1.0"
+    MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
     MACOSX_BUNDLE_BUNDLE_VERSION "1")
 
 set_target_properties(RobloxPlayerLegacy PROPERTIES
@@ -111,7 +117,7 @@ set_target_properties(RobloxPlayerLegacy PROPERTIES
     MACOSX_BUNDLE_BUNDLE_NAME "Roblox Legacy UI Test"
     MACOSX_BUNDLE_GUI_IDENTIFIER "dev.q8j.novalume.legacy-ui-test"
     MACOSX_BUNDLE_INFO_STRING "Novalume legacy UI and avatar test player"
-    MACOSX_BUNDLE_SHORT_VERSION_STRING "0.1.0"
+    MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
     MACOSX_BUNDLE_BUNDLE_VERSION "1")
 
 if(APPLE)
@@ -428,14 +434,69 @@ set_property(TARGET RobloxPlayer APPEND PROPERTY LINK_DEPENDS
 set_property(TARGET RobloxPlayerLegacy APPEND PROPERTY LINK_DEPENDS
     ${RBX_PLAYER_SHADER_LINK_DEPENDS})
 
-file(GLOB_RECURSE RBX_DURANGO_LAUNCHER_FILES CONFIGURE_DEPENDS
+set(RBX_DURANGO_LAUNCHER_SOURCE_ROOT
+    "${CMAKE_SOURCE_DIR}/PlatformContent/durango")
+file(GLOB_RECURSE RBX_DURANGO_LAUNCHER_FILES LIST_DIRECTORIES false
+    CONFIGURE_DEPENDS
     "${CMAKE_SOURCE_DIR}/PlatformContent/durango/scripts/ui/*"
     "${CMAKE_SOURCE_DIR}/PlatformContent/durango/textures/*"
     "${CMAKE_SOURCE_DIR}/PlatformContent/durango/terrain/*"
     "${CMAKE_SOURCE_DIR}/PlatformContent/durango/sounds/ui/*")
+list(FILTER RBX_DURANGO_LAUNCHER_FILES EXCLUDE REGEX "(^|/)\\.DS_Store$")
 list(APPEND RBX_DURANGO_LAUNCHER_FILES
     "${CMAKE_SOURCE_DIR}/PlatformContent/durango/ScaledWorldv4.7.rbxl")
+
+set(RBX_DURANGO_LAUNCHER_GENERATED_ROOT
+    "${CMAKE_BINARY_DIR}/generated/launcher")
+set(RBX_DURANGO_LAUNCHER_PACKAGE_ROOT
+    "${RBX_DURANGO_LAUNCHER_GENERATED_ROOT}/package")
+set(RBX_DURANGO_LAUNCHER_MANIFEST
+    "${RBX_DURANGO_LAUNCHER_PACKAGE_ROOT}/launcher-manifest.v1")
+set(RBX_DURANGO_LAUNCHER_GENERATED_HEADER
+    "${RBX_DURANGO_LAUNCHER_GENERATED_ROOT}/include/LauncherResourceManifest.generated.h")
+set(RBX_DURANGO_LAUNCHER_STAGED_FILES)
+foreach(source_file IN LISTS RBX_DURANGO_LAUNCHER_FILES)
+    file(RELATIVE_PATH source_relative
+        "${RBX_DURANGO_LAUNCHER_SOURCE_ROOT}" "${source_file}")
+    if(source_relative MATCHES "^scripts/ui/")
+        string(REGEX REPLACE "^scripts/ui/" "scripts/"
+            logical_path "${source_relative}")
+    else()
+        set(logical_path "${source_relative}")
+    endif()
+    list(APPEND RBX_DURANGO_LAUNCHER_STAGED_FILES
+        "${RBX_DURANGO_LAUNCHER_PACKAGE_ROOT}/content/${logical_path}")
+endforeach()
+
+add_custom_command(
+    OUTPUT
+        "${RBX_DURANGO_LAUNCHER_MANIFEST}"
+        "${RBX_DURANGO_LAUNCHER_GENERATED_HEADER}"
+        ${RBX_DURANGO_LAUNCHER_STAGED_FILES}
+    COMMAND "${CMAKE_COMMAND}"
+        "-DINPUT_ROOT=${RBX_DURANGO_LAUNCHER_SOURCE_ROOT}"
+        "-DOUTPUT_GUARD_ROOT=${RBX_DURANGO_LAUNCHER_GENERATED_ROOT}"
+        "-DOUTPUT_ROOT=${RBX_DURANGO_LAUNCHER_PACKAGE_ROOT}"
+        "-DOUTPUT_HEADER=${RBX_DURANGO_LAUNCHER_GENERATED_HEADER}"
+        -P "${CMAKE_SOURCE_DIR}/cmake/GenerateDurangoLauncherPayload.cmake"
+    DEPENDS
+        "${CMAKE_SOURCE_DIR}/cmake/GenerateDurangoLauncherPayload.cmake"
+        ${RBX_DURANGO_LAUNCHER_FILES}
+    COMMENT "Staging and hashing the authentic Durango launcher payload"
+    VERBATIM)
+add_custom_target(rbx-durango-launcher-payload DEPENDS
+    "${RBX_DURANGO_LAUNCHER_MANIFEST}"
+    "${RBX_DURANGO_LAUNCHER_GENERATED_HEADER}"
+    ${RBX_DURANGO_LAUNCHER_STAGED_FILES})
+add_dependencies(RobloxPlayer rbx-durango-launcher-payload)
+add_dependencies(RobloxPlayerLegacy rbx-durango-launcher-payload)
+target_include_directories(RobloxPlayer PRIVATE
+    "${RBX_DURANGO_LAUNCHER_GENERATED_ROOT}/include")
+target_include_directories(RobloxPlayerLegacy PRIVATE
+    "${RBX_DURANGO_LAUNCHER_GENERATED_ROOT}/include")
 set_property(TARGET RobloxPlayer APPEND PROPERTY LINK_DEPENDS
+    ${RBX_DURANGO_LAUNCHER_FILES})
+set_property(TARGET RobloxPlayerLegacy APPEND PROPERTY LINK_DEPENDS
     ${RBX_DURANGO_LAUNCHER_FILES})
 
 add_custom_command(TARGET RobloxPlayer POST_BUILD
@@ -445,21 +506,11 @@ add_custom_command(TARGET RobloxPlayer POST_BUILD
     COMMAND "${CMAKE_COMMAND}" -E copy_directory
         "${CMAKE_SOURCE_DIR}/PlatformContent/pc"
         "${RBX_PLAYER_RESOURCE_DIR}/PlatformContent/pc"
+    COMMAND "${CMAKE_COMMAND}" -E rm -rf
+        "${RBX_PLAYER_RESOURCE_DIR}/launcher"
     COMMAND "${CMAKE_COMMAND}" -E copy_directory
-        "${CMAKE_SOURCE_DIR}/PlatformContent/durango/scripts/ui"
-        "${RBX_PLAYER_RESOURCE_DIR}/launcher/content/scripts"
-    COMMAND "${CMAKE_COMMAND}" -E copy_directory
-        "${CMAKE_SOURCE_DIR}/PlatformContent/durango/textures"
-        "${RBX_PLAYER_RESOURCE_DIR}/launcher/content/textures"
-    COMMAND "${CMAKE_COMMAND}" -E copy_directory
-        "${CMAKE_SOURCE_DIR}/PlatformContent/durango/terrain"
-        "${RBX_PLAYER_RESOURCE_DIR}/launcher/content/terrain"
-    COMMAND "${CMAKE_COMMAND}" -E copy_directory
-        "${CMAKE_SOURCE_DIR}/PlatformContent/durango/sounds/ui"
-        "${RBX_PLAYER_RESOURCE_DIR}/launcher/content/sounds/ui"
-    COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/PlatformContent/durango/ScaledWorldv4.7.rbxl"
-        "${RBX_PLAYER_RESOURCE_DIR}/launcher/content/ScaledWorldv4.7.rbxl"
+        "${RBX_DURANGO_LAUNCHER_PACKAGE_ROOT}"
+        "${RBX_PLAYER_RESOURCE_DIR}/launcher"
     COMMAND "${CMAKE_COMMAND}" -E make_directory
         "${RBX_PLAYER_RESOURCE_DIR}/places"
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
@@ -477,9 +528,6 @@ add_custom_command(TARGET RobloxPlayer POST_BUILD
     COMMAND "${CMAKE_COMMAND}" -E copy
         "${CMAKE_SOURCE_DIR}/THIRD_PARTY_NOTICES.md"
         "${RBX_PLAYER_RESOURCE_DIR}/THIRD_PARTY_NOTICES.md"
-    COMMAND "${CMAKE_COMMAND}" -E copy
-        "${CMAKE_SOURCE_DIR}/docs/modernization/player.spdx.json"
-        "${RBX_PLAYER_RESOURCE_DIR}/player.spdx.json"
     COMMENT "Packaging owned shaders and source-tree Roblox resources")
 
 add_custom_command(TARGET RobloxPlayerLegacy POST_BUILD
@@ -489,6 +537,11 @@ add_custom_command(TARGET RobloxPlayerLegacy POST_BUILD
     COMMAND "${CMAKE_COMMAND}" -E copy_directory
         "${CMAKE_SOURCE_DIR}/PlatformContent/pc"
         "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/PlatformContent/pc"
+    COMMAND "${CMAKE_COMMAND}" -E rm -rf
+        "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/launcher"
+    COMMAND "${CMAKE_COMMAND}" -E copy_directory
+        "${RBX_DURANGO_LAUNCHER_PACKAGE_ROOT}"
+        "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/launcher"
     COMMAND "${CMAKE_COMMAND}" -E make_directory
         "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/places"
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
@@ -506,9 +559,6 @@ add_custom_command(TARGET RobloxPlayerLegacy POST_BUILD
     COMMAND "${CMAKE_COMMAND}" -E copy
         "${CMAKE_SOURCE_DIR}/THIRD_PARTY_NOTICES.md"
         "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/THIRD_PARTY_NOTICES.md"
-    COMMAND "${CMAKE_COMMAND}" -E copy
-        "${CMAKE_SOURCE_DIR}/docs/modernization/player.spdx.json"
-        "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/player.spdx.json"
     COMMENT "Packaging the isolated legacy UI and avatar test player")
 
 if(RBX_PLAYER_CJK_FONT)
@@ -608,6 +658,97 @@ endif()
 
 if(APPLE)
     add_custom_command(TARGET RobloxPlayer POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_SOURCE_DIR}/docs/modernization/player.spdx.json"
+            "${RBX_PLAYER_RESOURCE_DIR}/player.spdx.json"
+        COMMAND "${CMAKE_COMMAND}" -E rm -rf
+            "${RBX_PLAYER_RESOURCE_DIR}/licenses"
+        VERBATIM)
+    add_custom_command(TARGET RobloxPlayerLegacy POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E copy
+            "${CMAKE_SOURCE_DIR}/docs/modernization/player.spdx.json"
+            "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/player.spdx.json"
+        COMMAND "${CMAKE_COMMAND}" -E rm -rf
+            "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/licenses"
+        VERBATIM)
+
+    function(rbx_package_apple_license component license_file)
+        if(NOT EXISTS "${license_file}")
+            message(FATAL_ERROR "Missing ${component} license file: ${license_file}")
+        endif()
+        add_custom_command(TARGET RobloxPlayer POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E make_directory
+                "${RBX_PLAYER_RESOURCE_DIR}/licenses/${component}"
+            COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+                "${license_file}"
+                "${RBX_PLAYER_RESOURCE_DIR}/licenses/${component}/"
+            VERBATIM)
+        add_custom_command(TARGET RobloxPlayerLegacy POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E make_directory
+                "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/licenses/${component}"
+            COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+                "${license_file}"
+                "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/licenses/${component}/"
+            VERBATIM)
+    endfunction()
+
+    rbx_package_apple_license(bgfx "${rbx_bgfx_SOURCE_DIR}/LICENSE")
+    rbx_package_apple_license(bx "${rbx_bx_SOURCE_DIR}/LICENSE")
+    rbx_package_apple_license(bimg "${rbx_bimg_SOURCE_DIR}/LICENSE")
+    rbx_package_apple_license(bgfx.cmake "${rbx_bgfx_cmake_SOURCE_DIR}/LICENSE")
+    rbx_package_apple_license(miniaudio "${rbx_miniaudio_SOURCE_DIR}/LICENSE")
+    rbx_package_apple_license(FFmpeg "${RBX_FFMPEG_ROOT}/share/licenses/ffmpeg/LICENSE.md")
+    rbx_package_apple_license(FFmpeg "${RBX_FFMPEG_ROOT}/share/licenses/ffmpeg/COPYING.LGPLv2.1")
+    rbx_package_apple_license(GameNetworkingSockets "${rbx_gns_SOURCE_DIR}/LICENSE")
+    rbx_package_apple_license(protobuf "${rbx_protobuf_SOURCE_DIR}/LICENSE")
+    rbx_package_apple_license(Abseil "${rbx_abseil_SOURCE_DIR}/LICENSE")
+    rbx_package_apple_license(OpenSSL "${RBX_OPENSSL_ROOT}/share/licenses/openssl/LICENSE.txt")
+    rbx_package_apple_license(FreeType "${rbx_freetype_SOURCE_DIR}/LICENSE.TXT")
+    rbx_package_apple_license(FreeType "${rbx_freetype_SOURCE_DIR}/docs/FTL.TXT")
+    rbx_package_apple_license(FreeType "${rbx_freetype_SOURCE_DIR}/docs/GPLv2.TXT")
+    rbx_package_apple_license(HarfBuzz "${rbx_harfbuzz_SOURCE_DIR}/COPYING")
+    rbx_package_apple_license(utf8proc "${rbx_utf8proc_SOURCE_DIR}/LICENSE.md")
+    rbx_package_apple_license(SheenBidi "${rbx_sheenbidi_SOURCE_DIR}/LICENSE")
+    rbx_package_apple_license(curl "${rbx_curl_SOURCE_DIR}/COPYING")
+    rbx_package_apple_license(zstd "${rbx_zstd_SOURCE_DIR}/LICENSE")
+    rbx_package_apple_license(Luau "${rbx_luau_SOURCE_DIR}/LICENSE.txt")
+    rbx_package_apple_license(Draco "${rbx_draco_SOURCE_DIR}/LICENSE")
+    rbx_package_apple_license(Boost "${CMAKE_SOURCE_DIR}/Library/boost/LICENSE_1_0.txt")
+    rbx_package_apple_license(LZ4 "${CMAKE_SOURCE_DIR}/third_party/lz4_historical/LICENSE")
+
+    add_custom_command(TARGET RobloxPlayer POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E rm -rf
+            "${RBX_PLAYER_RESOURCE_DIR}/sources/FFmpeg"
+        COMMAND "${CMAKE_COMMAND}" -E copy_directory
+            "${RBX_FFMPEG_ROOT}/share/sources/ffmpeg"
+            "${RBX_PLAYER_RESOURCE_DIR}/sources/FFmpeg"
+        VERBATIM)
+    add_custom_command(TARGET RobloxPlayerLegacy POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E rm -rf
+            "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/sources/FFmpeg"
+        COMMAND "${CMAKE_COMMAND}" -E copy_directory
+            "${RBX_FFMPEG_ROOT}/share/sources/ffmpeg"
+            "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/sources/FFmpeg"
+        VERBATIM)
+    set_property(TARGET RobloxPlayer APPEND PROPERTY LINK_DEPENDS
+        "${CMAKE_SOURCE_DIR}/cmake/BundleMacOSRuntimeDependencies.cmake")
+    set_property(TARGET RobloxPlayerLegacy APPEND PROPERTY LINK_DEPENDS
+        "${CMAKE_SOURCE_DIR}/cmake/BundleMacOSRuntimeDependencies.cmake")
+    add_custom_command(TARGET RobloxPlayer POST_BUILD
+        COMMAND "${CMAKE_COMMAND}"
+            "-DAPP_BUNDLE=$<TARGET_BUNDLE_DIR:RobloxPlayer>"
+            "-DSEARCH_DIRECTORIES=${RBX_FFMPEG_ROOT}/lib"
+            -P "${CMAKE_SOURCE_DIR}/cmake/BundleMacOSRuntimeDependencies.cmake"
+        VERBATIM)
+
+    add_custom_command(TARGET RobloxPlayerLegacy POST_BUILD
+        COMMAND "${CMAKE_COMMAND}"
+            "-DAPP_BUNDLE=$<TARGET_BUNDLE_DIR:RobloxPlayerLegacy>"
+            "-DSEARCH_DIRECTORIES=${RBX_FFMPEG_ROOT}/lib"
+            -P "${CMAKE_SOURCE_DIR}/cmake/BundleMacOSRuntimeDependencies.cmake"
+        VERBATIM)
+
+    add_custom_command(TARGET RobloxPlayer POST_BUILD
         COMMAND codesign --force --deep --sign -
             "$<TARGET_BUNDLE_DIR:RobloxPlayer>"
         COMMENT "Ad-hoc signing the completed local RobloxPlayer bundle")
@@ -617,25 +758,39 @@ if(APPLE)
             "$<TARGET_BUNDLE_DIR:RobloxPlayerLegacy>"
         COMMENT "Ad-hoc signing the legacy UI and avatar test bundle")
 
-    # Interactive builds live under a Desktop workspace, which macOS protects
-    # with a per-signature privacy prompt. Keep the build artifact intact and
-    # provide a runnable copy whose packaged resources do not require Desktop
-    # access. CI and headless verification continue to use the build artifact.
     set(RBX_LOCAL_PLAYER_DIR "$ENV{HOME}/Applications/Novalume")
     add_custom_target(RobloxPlayerLocalInstall
         COMMAND "${CMAKE_COMMAND}" -E make_directory "${RBX_LOCAL_PLAYER_DIR}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_directory
+        COMMAND "${CMAKE_COMMAND}" -E rm -rf
+            "${RBX_LOCAL_PLAYER_DIR}/RobloxPlayer.app"
+        COMMAND /usr/bin/ditto
             "$<TARGET_BUNDLE_DIR:RobloxPlayer>"
             "${RBX_LOCAL_PLAYER_DIR}/RobloxPlayer.app"
+        COMMAND "${CMAKE_COMMAND}"
+            "-DAPP_BUNDLE=${RBX_LOCAL_PLAYER_DIR}/RobloxPlayer.app"
+            "-DMAX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}"
+            "-DSOURCE_ROOT=${CMAKE_SOURCE_DIR}"
+            "-DBINARY_ROOT=${CMAKE_BINARY_DIR}"
+            "-DREJECT_LOCAL_PATHS=$<IF:$<CONFIG:Release>,ON,OFF>"
+            -P "${CMAKE_SOURCE_DIR}/cmake/VerifyMacOSBundle.cmake"
         DEPENDS RobloxPlayer
         COMMENT "Installing the self-contained Player outside protected Desktop storage"
         VERBATIM)
 
     add_custom_target(RobloxPlayerLegacyLocalInstall
         COMMAND "${CMAKE_COMMAND}" -E make_directory "${RBX_LOCAL_PLAYER_DIR}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_directory
+        COMMAND "${CMAKE_COMMAND}" -E rm -rf
+            "${RBX_LOCAL_PLAYER_DIR}/RobloxPlayerLegacy.app"
+        COMMAND /usr/bin/ditto
             "$<TARGET_BUNDLE_DIR:RobloxPlayerLegacy>"
             "${RBX_LOCAL_PLAYER_DIR}/RobloxPlayerLegacy.app"
+        COMMAND "${CMAKE_COMMAND}"
+            "-DAPP_BUNDLE=${RBX_LOCAL_PLAYER_DIR}/RobloxPlayerLegacy.app"
+            "-DMAX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}"
+            "-DSOURCE_ROOT=${CMAKE_SOURCE_DIR}"
+            "-DBINARY_ROOT=${CMAKE_BINARY_DIR}"
+            "-DREJECT_LOCAL_PATHS=$<IF:$<CONFIG:Release>,ON,OFF>"
+            -P "${CMAKE_SOURCE_DIR}/cmake/VerifyMacOSBundle.cmake"
         DEPENDS RobloxPlayerLegacy
         COMMENT "Installing the legacy UI test Player outside protected Desktop storage"
         VERBATIM)

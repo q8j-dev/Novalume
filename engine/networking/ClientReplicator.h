@@ -13,10 +13,12 @@
 #include "Replicator.StreamJob.h"
 
 namespace RBX { 
-    namespace Security
-    {
-        struct NetPmcChallenge;
-    }
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
+	namespace Security
+	{
+		struct NetPmcChallenge;
+	}
+#endif
 
 	namespace Network {
 
@@ -27,7 +29,9 @@ namespace RBX {
 		class DeserializedStatsItem;
 		class DeserializedTagItem;
 		class DeserializedStreamDataItem;
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
 		class DeserializedRockyItem;
+#endif
 
 		extern const char* const sClientReplicator;
 		class ClientReplicator 
@@ -39,10 +43,10 @@ namespace RBX {
 			class RequestCharacterItem;
 			class ClientCapacityUpdateItem;
 			class ClientStatsItem;
+#ifdef RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY
 			class MemoryCheckerJob;
-#ifdef _WIN32
 			class MemoryCheckerCheckerJob;
-            class BadAppCheckerJob;
+			class BadAppCheckerJob;
 #endif
 			class GCJob;
 			friend class ClientStatsItem;
@@ -50,17 +54,19 @@ namespace RBX {
 			friend class DeserializedStatsItem;
 			friend class DeserializedTagItem;
 			friend class DeserializedStreamDataItem;
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
 			friend class RockyItem;
 			friend class DeserializedRockyItem;
+#endif
 
 			PropSync::Slave propSync;
 			PeerAddress clientAddress;
 			bool receivedGlobals;
 			boost::scoped_ptr<RBX::AutoMemPool> cframePool;
+#ifdef RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY
 			boost::shared_ptr<MemoryCheckerJob> memoryCheckerJob;
-#ifdef _WIN32
 			boost::shared_ptr<MemoryCheckerCheckerJob> memoryCheckerCheckerJob;
-            boost::shared_ptr<BadAppCheckerJob> badAppCheckerJob;
+			boost::shared_ptr<BadAppCheckerJob> badAppCheckerJob;
 #endif
 			boost::shared_ptr<GCJob> gcJob;
 
@@ -72,10 +78,12 @@ namespace RBX {
 			rbx::signals::scoped_connection playerCharacterAddedConnection;
 			void onPlayerCharacterAdded();
 
-            rbx::signals::scoped_connection hashReadyConnection;
-            rbx::signals::scoped_connection mccReadyConnection;
-            void onHashReady();
-            void onMccReady();
+#ifdef RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY
+			rbx::signals::scoped_connection hashReadyConnection;
+			rbx::signals::scoped_connection mccReadyConnection;
+			void onHashReady();
+			void onMccReady();
+#endif
 			shared_ptr<Reflection::ValueTable> readStats(RBX::Network::PacketBuffer& bitStream);
 
 			// streaming
@@ -111,9 +119,11 @@ namespace RBX {
 			void readTagItem(DeserializedTagItem* item);
 			void processTag(int tag);
 
-            void readRockyItem(RBX::Network::PacketBuffer& inBitstream, uint8_t& idx, RBX::Security::NetPmcChallenge& key);
-            static void doNetPmcCheck(shared_ptr<ClientReplicator> rep, uint8_t idx, RBX::Security::NetPmcChallenge challenge);
-            void processRockyItem(RBX::Network::PacketBuffer& inBitstream);
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
+			void readRockyItem(RBX::Network::PacketBuffer& inBitstream, uint8_t& idx, RBX::Security::NetPmcChallenge& key);
+			static void doNetPmcCheck(shared_ptr<ClientReplicator> rep, uint8_t idx, RBX::Security::NetPmcChallenge challenge);
+			void processRockyItem(RBX::Network::PacketBuffer& inBitstream);
+#endif
 
 			/*override*/ void readItem(RBX::Network::PacketBuffer& inBitstream, RBX::Network::Item::ItemType itemType);
 			/*override*/ shared_ptr<DeserializedItem> deserializeItem(RBX::Network::PacketBuffer& inBitstream, RBX::Network::Item::ItemType itemType);

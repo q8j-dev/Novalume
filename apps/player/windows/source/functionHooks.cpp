@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "functionHooks.h"
-#include "VMProtect/VMProtectSDK.h"
 #include <windows.h>
 #include <psapi.h>
 

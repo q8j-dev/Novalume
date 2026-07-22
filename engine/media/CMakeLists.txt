@@ -9,6 +9,6 @@ target_include_directories(rbx-media-runtime
     PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_link_libraries(rbx-media-runtime
     PUBLIC Roblox::AudioContracts
-    PRIVATE Roblox::AudioRuntime PkgConfig::RBX_FFMPEG)
+    PRIVATE Roblox::AudioRuntime Roblox::FFmpeg)
 target_compile_features(rbx-media-runtime PUBLIC cxx_std_20)
 rbx_enable_warnings(rbx-media-runtime)

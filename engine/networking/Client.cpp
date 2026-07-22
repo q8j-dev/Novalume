@@ -7,7 +7,9 @@
 #include "ConcurrentPeer.h"
 #include "Network/Players.h"
 #include "Network/NetworkOwner.h"
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
 #include "Util/ProgramMemoryChecker.h"
+#endif
 #include "util/standardout.h"
 #include "util/ProtectedString.h"
 #include "Util/RbxStringTable.h"
@@ -269,7 +271,11 @@ void Client::sendTicket()
 
     serializeStringCompressed(Http::gameSessionID, bitStream);
 
-    unsigned int reportedGoldHash = RBX::Security::rbxGoldHash;
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
+    const unsigned int reportedGoldHash = RBX::Security::rbxGoldHash;
+#else
+    const unsigned int reportedGoldHash = 0;
+#endif
 
     bitStream << reportedGoldHash;
 
@@ -303,7 +309,7 @@ void Client::OnFailedConnectionAttempt(Packet *packet, FailedConnectionReason fa
 }
 
 // Cheat Engine StealthEdit Plugin helper. Name obscured for security.
-#if !defined(RBX_STUDIO_BUILD)
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY) && !defined(RBX_STUDIO_BUILD)
 static void programMemoryPermissionsHackChecker(weak_ptr<DataModel> weakDataModel) {
 	static const unsigned int kSleepBetweenStealthEditChecksMillis = 2 * 1000;
 	while (true) {
@@ -362,7 +368,7 @@ void Client::HandleConnection(Packet *packet)
         // descriptor dictionaries before it sends its Player join data.
         proxy->OnReceive(packet);
 
-#if defined(_WIN32) && !defined(RBX_STUDIO_BUILD) && !defined(RBX_PLATFORM_DURANGO) 
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY) && !defined(RBX_STUDIO_BUILD)
 		{
             weak_ptr<DataModel> weakDataModel = weak_from(DataModel::get(this));
 

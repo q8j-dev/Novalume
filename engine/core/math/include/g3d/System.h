@@ -14,6 +14,12 @@
 #ifndef G3D_System_h
 #define G3D_System_h
 
+#include <chrono>
+
+#if defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64))
+#include <intrin.h>
+#endif
+
 #include "G3D/platform.h"
 #include "G3D/g3dmath.h"
 #include "G3D/G3DGameUnits.h"
@@ -390,13 +396,19 @@ public:
 
 #ifdef _MSC_VER
     inline uint64 System::getCycleCount() {
+#if defined(_M_IX86) || defined(_M_X64)
         return  __rdtsc();
+#else
+        return static_cast<uint64>(std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count());
+#endif
     }
 
 #elif defined(G3D_LINUX) || defined(G3D_ANDROID) // ROBLOX
 
     inline uint64 System::getCycleCount() {
 #   if defined(G3D_LINUX)
+#if defined(__i386__) || defined(__x86_64__)
         uint32 timehi, timelo;
 
         __asm__ __volatile__ (
@@ -406,8 +418,13 @@ public:
             : );
 
         return ((uint64)timehi << 32) + (uint64)timelo;
+#else
+        return static_cast<uint64>(std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count());
+#endif
 #elif defined(G3D_ANDROID)
-        return 0;
+        return static_cast<uint64>(std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count());
 #   endif
     }
 

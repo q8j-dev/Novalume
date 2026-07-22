@@ -391,6 +391,8 @@ public:
 
 	bool isStudio() const { return runningInStudio; }
 	void setIsStudio(bool runningInStudio);
+	bool isAppShell() const { return appShell; }
+	void setIsAppShell(bool value) { appShell = value; }
 
 	bool isRunMode() const { return isStudioRunMode; }
 	void setIsRunMode(bool value);
@@ -721,6 +723,7 @@ private:
 	std::string gameInstanceID;
 	int universeId;
 	bool runningInStudio;
+	bool appShell;
 	bool isStudioRunMode;
 	bool checkedExperimentalFeatures;
 

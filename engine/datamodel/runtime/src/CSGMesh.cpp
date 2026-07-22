@@ -12,7 +12,7 @@
 #include <sstream>
 
 #if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-#include "VMProtect/VMProtectSDK.h"
+#include "security/ProtectionMarkers.h"
 #endif
 #include "Util/MD5Hasher.h"
 
@@ -90,7 +90,7 @@ const size_t hashSize = 16;
 std::string CSGMesh::createHash(const std::string saltIn) const
 {
 	#if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-	VMProtectBeginMutation("17");
+	Security::ProtectionMarkers::beginMutation("17");
 	#endif
 
     const size_t verticesSize = vertices.size() * sizeof(CSGVertex);
@@ -132,7 +132,7 @@ std::string CSGMesh::createHash(const std::string saltIn) const
     std::string hashStr(&hash[0], hashSize + saltSize);
 
     #if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-    VMProtectEnd();
+    Security::ProtectionMarkers::end();
     #endif
 
     return hashStr;

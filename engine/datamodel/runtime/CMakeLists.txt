@@ -35,7 +35,8 @@ target_include_directories(rbx-datamodel-runtime
         "${OPENSSL_INCLUDE_DIR}")
 target_link_libraries(rbx-datamodel-runtime
     PUBLIC Roblox::DataModelTree Roblox::Serialization Roblox::Reflection Roblox::ValueTypes Roblox::Assets Roblox::AudioContracts Roblox::MediaRuntime Roblox::UILayout Roblox::UIInput Roblox::Simulation Roblox::Animation Roblox::Terrain
-    PRIVATE Roblox::PlatformClipboard Luau.VM "${OPENSSL_CRYPTO_LIBRARY}")
+    PRIVATE Roblox::PlatformClipboard Roblox::ProtectionMarkers
+        Luau.VM "${OPENSSL_CRYPTO_LIBRARY}")
 target_compile_features(rbx-datamodel-runtime PUBLIC cxx_std_20)
 target_compile_definitions(rbx-datamodel-runtime PRIVATE
     RBX_LUAU_VM=1

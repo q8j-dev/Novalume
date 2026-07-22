@@ -575,7 +575,7 @@ double DebugSettings::processCores() const
 		return 1;
 	
 	return count;
-#elif __ANDROID__
+#elif defined(__ANDROID__) || defined(__linux__)
     return SystemUtil::getCPULogicalCount();
 #else
 #error Unsupported platform.
@@ -711,4 +711,3 @@ int DebugSettings::GetPageFaultsPerSecond() const
 	return ((usage.ru_minflt + usage.ru_majflt) / (usage.ru_utime.tv_sec + usage.ru_stime.tv_sec));
 #endif
 }
-

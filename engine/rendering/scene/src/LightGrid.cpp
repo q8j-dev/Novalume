@@ -37,7 +37,7 @@ LOGVARIABLE(RenderLightGridAgeProportion, 5)
 LOGVARIABLE(RenderLightGridBorderGlobalCutoff, 32)
 LOGVARIABLE(RenderLightGridBorderSkylightCutoff, 32)
 
-#if defined(_WIN32) || defined(__x86_64__) || defined(__i386__)
+#if defined(_M_IX86) || defined(_M_X64) || defined(__x86_64__) || defined(__i386__)
 #define SIMD_SSE2
 #endif
 

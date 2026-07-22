@@ -118,6 +118,7 @@ end
 
 function ControllerStateManager:CheckUserConnected()
 	if not PlatformService then return end
+	if UserInputService:GetPlatform() ~= Enum.Platform.XBoxOne then return end
 
 	local isGamepadConnected = UserInputService:GetGamepadConnected(Enum.UserInputType.Gamepad1)
 	local dataModelType = PlatformService.DatamodelType

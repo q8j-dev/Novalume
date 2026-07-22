@@ -1,6 +1,6 @@
 # Modernization status
 
-Last updated: 2026-07-19
+Last updated: 2026-07-21
 
 ## Current phase
 
@@ -9,6 +9,48 @@ lighting, animation/R15, audio, camera/input, place compatibility, networking,
 server software, launcher/platform shells, packaging, and cross-platform
 readiness are active first. The genuine 2026 Player UI remains preserved for
 the final return; it is not replaced or treated as accepted while deferred.
+
+## Packaging and integrity checkpoint (2026-07-21)
+
+- Removed the OpenSSL-dependent ownership ambiguity from the retained MD5
+  implementation. The runtime now exports only `RBX_MD5_Init`,
+  `RBX_MD5_Update`, and `RBX_MD5_Final`; its contract compiles with
+  `HAVE_OPENSSL=1` and passes canonical, padding-boundary, large-input,
+  bytewise, and chunked vectors in Debug and Release. The final executable
+  contains both the owned `RBX_MD5_*` surface and OpenSSL's distinct
+  `MD5_*` surface without a duplicate definition.
+- Replaced host package-manager FFmpeg linkage on Apple with the official
+  FFmpeg 8.1.2 archive pinned at SHA-256
+  `464beb5e7bf0c311e68b45ae2f04e9cc2af88851abb4082231742a74d97b524c`.
+  The owned builder produces five replaceable LGPL shared libraries at macOS
+  13.0, disables external autodetection and GPL/nonfree/version3 features,
+  removes transient build paths, and stages the upstream LGPL/IJG notices.
+  Packaging copies the versioned libraries with relative symlinks, rewrites
+  their install names, copies their licenses, and signs the complete bundle.
+- Rebuilt pinned OpenSSL 3.5.7 from commit
+  `8cf17aaeb4599f8af87fefd810b5b5fee90fe69e` with stable configuration paths,
+  removing the former Desktop checkout path from the linked executable.
+  Release compilation now applies deterministic source/build prefix maps, and
+  the generated PlayerScripts manifest records stable corpus-relative paths.
+  The install verifier rejects absolute/out-of-bundle symlinks, non-system or
+  non-rpath dependencies, deployment targets newer than 13.0, invalid deep
+  signatures, and repository, user, Homebrew, or transient build paths in
+  executable and packaged text resources.
+- The clean Release `RobloxPlayerLocalInstall` target passes. The current
+  installed app and a copied app in `/tmp/novalume-relocated.2mvNgE` passed the
+  same strict verifier. The installed app also completed three consecutive
+  421-frame Metal launcher runs under a sandbox that denied read
+  access to both the repository and `/opt/homebrew`. Every run proved 14/14
+  R15 MeshParts, live 3D changes in all four quadrants between frames 240 and
+  420, the authentic AppHome/controller/local-document path, and clean process
+  teardown. Frame p95 was 2.10-2.30 ms with no 16.67 or 33.33 ms misses.
+- Expanded the packaged SPDX 2.3 inventory to cover the active curl 8.21.0,
+  macOS SDK zlib 1.2.12, Zstandard 1.5.7, pinned Luau, Draco 1.5.7, Boost
+  1.74.0, and retained legacy LZ4 relationships in addition to the previously
+  recorded rendering, audio, networking, crypto, and text stack. The app now
+  packages the exact retained LZ4 BSD-2-Clause notice as well; both Debug and
+  Release bundles contain parseable updated SBOMs and pass strict deep-signature
+  verification.
 
 ## Completed evidence
 
@@ -1466,3 +1508,35 @@ verification is complete and the user separately gives explicit permission.
   FFTs in lazily retained per-tap scratch storage, publishing atomic RMS
   frequency bins for safe main-thread reads. Unit, binary, and actual signed
   Player proofs cover metering and all three window sizes' shared contract.
+- Completed component-pin DSP routing for `AudioChannelSplitter` and
+  `AudioChannelMixer`. Splitter component outputs now extract the selected
+  interleaved channel, mixer component inputs inject it into the selected
+  destination channel, invalid channels remain silent, and each route branch
+  carries independent effect state. A deterministic stereo regression routes
+  the right input exclusively to the left output, while the packaged Player's
+  combined mixer/splitter graph remains green.
+- Implemented genuine `CompressorSoundEffect.SideChain` detector routing for
+  both `Sound` and `SoundGroup` sources. Active sources receive a shared
+  allocation-free analyzer tap and the compressor reads that external RMS
+  detector rather than its own input; muted detector buses still drive gain
+  reduction. Bindings update on the normal SoundService step and reject
+  disabled, self-referential, cyclic, detached, destroyed, cross-service, and
+  otherwise unavailable targets without retaining stale routing. The focused
+  DataModel integration contract proves Sound and SoundGroup meter identity,
+  cycle rejection and live disable/recovery, while the engine contract proves
+  numerical ducking by an inaudible external source. After relinking the full
+  debug application, `audio-runtime-contract`, `audio-sidechain-routing`, and
+  `player-audio-runtime` passed together; the manual CoreAudio device
+  start/restart/stop smoke also passed.
+- Removed the remaining full-PCM allocation from unsupported-container
+  streaming. When miniaudio cannot stream a source such as Ogg Vorbis, FFmpeg
+  now converts it incrementally into a private, atomically created float-WAV
+  temporary file under the configured frame and RIFF-size ceilings; miniaudio
+  then uses its normal asynchronous disk streamer, and clip teardown removes
+  both the file and private directory. Conversion buffers are capped, corrupt
+  or oversized inputs fail without residue, and no decoded-duration-sized PCM
+  vector is retained. The runtime contract exercises the authentic 60-second,
+  44.1 kHz stereo launcher `RobloxMusic.ogg`, requires it to remain marked as
+  streaming and become audible, verifies frame-limit rejection, and confirms
+  cleanup. Debug/Release audio tests and three newly installed sandboxed
+  launcher proofs pass with no residual stream directories.

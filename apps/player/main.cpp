@@ -1,3 +1,4 @@
+#include "LauncherResourceIntegrity.h"
 #include "PlayerRuntime.h"
 #include "PlayerMain.h"
 #include "rbx/core/BuildInfo.h"
@@ -154,6 +155,14 @@ int rbxPlayerMain(int argc, char** argv) {
         if (verifyCaptureGallery && !renderProofPath)
             throw std::runtime_error(
                 "--verify-capture-gallery requires --render-proof for pixel verification");
+        if (verifyLauncher && !headlessVerify)
+            throw std::runtime_error(
+                "--verify-launcher requires --headless-verify");
+        constexpr int minimumLauncherProofFrames = 421;
+        if (verifyLauncher && requestedFrameLimit &&
+            *requestedFrameLimit < minimumLauncherProofFrames)
+            throw std::runtime_error(
+                "--verify-launcher requires --frame-limit 421 or greater for temporal 3D proof");
         if (placePath) {
             if (!isSupportedDocument(*placePath)) {
                 throw std::runtime_error(
@@ -194,6 +203,8 @@ int rbxPlayerMain(int argc, char** argv) {
             throw std::runtime_error(
                 "packaged resource, in-game UI overlay, or selected renderer shader payload is missing");
         }
+        if (useDurangoLauncher)
+            rbx::player::verifyLauncherResourceIntegrity(resources);
 
         auto& assetMounts = RBX::Assets::assetMountTable();
         assetMounts.clear();
@@ -249,14 +260,22 @@ int rbxPlayerMain(int argc, char** argv) {
                                      rbx::platform::pathToUtf8(runtimePlace));
         std::cout << "place=" << rbx::platform::pathToUtf8(runtimePlace) << '\n';
         auto recentDocuments = host->recentDocuments();
-        if (headlessVerify && verifyLauncher && recentDocuments.empty())
-            recentDocuments.push_back(runtimePlace);
+        if (headlessVerify && verifyLauncher) {
+            const std::filesystem::path launcherRecentFixture =
+                resources / "places" / "Baseplate.rbxl";
+            if (!std::filesystem::is_regular_file(launcherRecentFixture))
+                throw std::runtime_error(
+                    "packaged launcher recent-place fixture is missing: " +
+                    rbx::platform::pathToUtf8(launcherRecentFixture));
+            recentDocuments.clear();
+            recentDocuments.push_back(launcherRecentFixture);
+        }
         const auto runtimeLoadStart = std::chrono::steady_clock::now();
         rbx::player::PlayerRuntime runtime(device.get(), resources,
             host->existingClientSettingsRoot(), runtimePlace,
             surface.width, surface.height, surface.logicalWidth,
             surface.logicalHeight, headlessVerify, useCurrentInExperienceUi,
-            useDurangoLauncher,
+            useDurangoLauncher, headlessVerify && verifyLauncher,
             avatarRig, verifyViewportRendering,
             videoVerificationPath.value_or(std::filesystem::path()),
             verifyPeoplePage, verifyExperienceChat, verifyCaptureGallery,
@@ -268,7 +287,8 @@ int rbxPlayerMain(int argc, char** argv) {
             std::chrono::duration<double, std::milli>(
                 std::chrono::steady_clock::now() - runtimeLoadStart).count();
 
-        const int frameLimit = requestedFrameLimit.value_or(headlessVerify ? 300 : -1);
+        const int frameLimit = requestedFrameLimit.value_or(
+            verifyLauncher ? 480 : (headlessVerify ? 300 : -1));
         int frame = 0;
         std::vector<double> headlessFrameMilliseconds;
         if (headlessVerify && frameLimit > 60)
@@ -321,6 +341,10 @@ int rbxPlayerMain(int argc, char** argv) {
             }
             if (runtime.takeOpenDocumentRequest())
                 host->requestOpenDocument();
+            while (const auto uri = runtime.takeExternalUriRequest()) {
+                if (!host->openExternalUri(*uri))
+                    std::cerr << "RobloxPlayer: native shell could not open approved URI\n";
+            }
             host->setPointerLock(runtime.wantsPointerLock());
             if (headlessVerify && verifyLauncher && frame == 100) {
                 runtime.handleInput(rbx::platform::InputEvent{

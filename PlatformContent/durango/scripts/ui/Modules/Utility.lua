@@ -1,6 +1,7 @@
 -- Written by Kip Turner, Copyright ROBLOX 2015
 local RunService = game:GetService('RunService')
 local GuiService = game:GetService('GuiService')
+local CoreGui = Game:GetService('CoreGui')
 
 local Util = {}
 do
@@ -10,18 +11,19 @@ do
 	end
 
 	function Util.CalculateRelativeDimensions(guiObject, guiDims, mockup_dims)
-		local guiResolution = GuiService:GetScreenResolution()
-		local absolutePercentSize = (guiDims / mockup_dims)
-		if mockup_dims.y > 0 and guiResolution.y > 0 then
-			local mockupAspectRatio = mockup_dims.x / mockup_dims.y
-			local globalAspectRatio = guiResolution.x / guiResolution.y
-			absolutePercentSize = absolutePercentSize * (mockupAspectRatio / globalAspectRatio)
-			local parentObject = guiObject.Parent
-			if parentObject then
-				local parentPercentScreen = parentObject.AbsoluteSize / guiResolution
-				local parentSizeInverse = 1 / parentPercentScreen
-				if Util.IsFinite(parentSizeInverse.x) and Util.IsFinite(parentSizeInverse.y) then
-					return UDim2.new(parentSizeInverse.x * absolutePercentSize.x, 0, parentSizeInverse.y * absolutePercentSize.y, 0)
+		local absolutePercentSize = guiDims / mockup_dims
+		local parentObject = guiObject.Parent
+		if parentObject and mockup_dims.y > 0 then
+			local guiRoot = CoreGui:FindFirstChild('RobloxGui')
+			if guiRoot then
+				local fitted = Util.CalculateFit(guiRoot, mockup_dims)
+				local fittedSize = Vector2.new(fitted.X.Offset, fitted.Y.Offset)
+				local parentSize = parentObject.AbsoluteSize
+				if parentSize.x > 0 and parentSize.y > 0 then
+					local parentSizeInverse = fittedSize / parentSize
+					if Util.IsFinite(parentSizeInverse.x) and Util.IsFinite(parentSizeInverse.y) then
+						return UDim2.new(parentSizeInverse.x * absolutePercentSize.x, 0, parentSizeInverse.y * absolutePercentSize.y, 0)
+					end
 				end
 			end
 		end

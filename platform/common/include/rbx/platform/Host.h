@@ -200,6 +200,7 @@ public:
     // Starts the selected document in a fresh Player session. The launcher
     // exits only after the platform confirms that the session was created.
     virtual bool launchDocument(const std::filesystem::path& path) = 0;
+    [[nodiscard]] virtual bool openExternalUri(std::string_view uri) = 0;
     virtual void setClipboardText(std::string_view text) = 0;
     // A locked pointer uses native relative motion while the engine keeps its
     // software cursor at the lock point. Hosts must restore the system cursor

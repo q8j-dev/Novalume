@@ -416,6 +416,7 @@ ui_*.h
 *.jsc
 Makefile*
 *build-*
+!tools/dependencies/build-ffmpeg.sh
 *.qm
 *.prl
 

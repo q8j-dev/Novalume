@@ -15,6 +15,7 @@
         "RBX_ENABLE_LEGACY_BUILD": "OFF",
         "RBX_ENABLE_LEGACY_RENDERERS": "OFF",
         "RBX_OPENSSL_ROOT": "${sourceDir}/out/dependencies/openssl-3.5.7/macos-arm64/install",
+        "RBX_FFMPEG_ROOT": "${sourceDir}/out/dependencies/ffmpeg-8.1.2/macos-arm64/install",
         "RBX_PLAYER_REFERENCE_ROOT": "${sourceDir}/../WindowsPlayer-version-ddf02245bdbb428c",
         "RBX_STUDIO_REFERENCE_ROOT": "${sourceDir}/../LIVE-WindowsStudio64-version-ed7d8193e8564b1f",
         "RBX_ARCHIVED_AVATAR_ASSET_ROOT": "${sourceDir}/../out/avatar-assets/rthro",

@@ -8,9 +8,12 @@ extern "C" {
 }
 
 #include <algorithm>
+#include <array>
 #include <cstring>
+#include <fstream>
 #include <limits>
 #include <stdexcept>
+#include <vector>
 
 namespace RBX::Audio {
 namespace {
@@ -58,6 +61,42 @@ std::int64_t seekMemory(void* opaque, std::int64_t offset, int whence)
     char text[AV_ERROR_MAX_STRING_SIZE] = {};
     av_strerror(error, text, sizeof(text));
     throw std::runtime_error(std::string(operation) + ": " + text);
+}
+
+void writeLittleEndian16(std::ostream& output, std::uint16_t value)
+{
+    const std::array<char, 2> bytes = {
+        static_cast<char>(value & 0xffu),
+        static_cast<char>((value >> 8u) & 0xffu)};
+    output.write(bytes.data(), bytes.size());
+}
+
+void writeLittleEndian32(std::ostream& output, std::uint32_t value)
+{
+    const std::array<char, 4> bytes = {
+        static_cast<char>(value & 0xffu),
+        static_cast<char>((value >> 8u) & 0xffu),
+        static_cast<char>((value >> 16u) & 0xffu),
+        static_cast<char>((value >> 24u) & 0xffu)};
+    output.write(bytes.data(), bytes.size());
+}
+
+void writeFloatWavHeader(std::ostream& output, std::uint32_t sampleRate,
+    std::uint16_t channels, std::uint32_t dataBytes)
+{
+    output.write("RIFF", 4);
+    writeLittleEndian32(output, 36u + dataBytes);
+    output.write("WAVEfmt ", 8);
+    writeLittleEndian32(output, 16u);
+    writeLittleEndian16(output, 3u);
+    writeLittleEndian16(output, channels);
+    writeLittleEndian32(output, sampleRate);
+    writeLittleEndian32(output, sampleRate * channels * sizeof(float));
+    writeLittleEndian16(output,
+        static_cast<std::uint16_t>(channels * sizeof(float)));
+    writeLittleEndian16(output, 32u);
+    output.write("data", 4);
+    writeLittleEndian32(output, dataBytes);
 }
 
 } // namespace
@@ -209,6 +248,193 @@ PcmClip decodeFfmpegAudio(
         avcodec_free_context(&codec);
         avformat_close_input(&format);
         avio_context_free(&io);
+        throw;
+    }
+}
+
+FfmpegStreamMetadata transcodeFfmpegAudioToFloatWav(
+    const std::filesystem::path& inputPath,
+    const std::filesystem::path& outputPath,
+    std::uint64_t maxClipFrames)
+{
+    if (!std::filesystem::is_regular_file(inputPath) || maxClipFrames == 0)
+        throw std::invalid_argument("FFmpeg streaming input is invalid");
+
+    const std::u8string inputUtf8 = inputPath.u8string();
+    const std::string inputName(
+        reinterpret_cast<const char*>(inputUtf8.data()), inputUtf8.size());
+    AVFormatContext* format = nullptr;
+    AVCodecContext* codec = nullptr;
+    AVPacket* packet = nullptr;
+    AVFrame* frame = nullptr;
+    SwrContext* resampler = nullptr;
+    std::ofstream output;
+    try
+    {
+        int result = avformat_open_input(&format, inputName.c_str(), nullptr,
+            nullptr);
+        if (result < 0)
+            fail("FFmpeg could not open streaming audio", result);
+        result = avformat_find_stream_info(format, nullptr);
+        if (result < 0)
+            fail("FFmpeg could not inspect streaming audio", result);
+        const int streamIndex = av_find_best_stream(
+            format, AVMEDIA_TYPE_AUDIO, -1, -1, nullptr, 0);
+        if (streamIndex < 0)
+            fail("FFmpeg found no streaming audio", streamIndex);
+        AVStream* stream = format->streams[streamIndex];
+        const AVCodec* decoder = avcodec_find_decoder(stream->codecpar->codec_id);
+        if (!decoder)
+            throw std::runtime_error(
+                "FFmpeg has no decoder for the streaming audio");
+        codec = avcodec_alloc_context3(decoder);
+        if (!codec)
+            throw std::bad_alloc();
+        result = avcodec_parameters_to_context(codec, stream->codecpar);
+        if (result < 0)
+            fail("FFmpeg could not configure streaming audio", result);
+        result = avcodec_open2(codec, decoder, nullptr);
+        if (result < 0)
+            fail("FFmpeg could not start streaming audio", result);
+        if (codec->sample_rate <= 0 || codec->sample_rate > 768000 ||
+            codec->ch_layout.nb_channels <= 0 ||
+            codec->ch_layout.nb_channels > 8)
+            throw std::runtime_error(
+                "FFmpeg streaming audio has invalid dimensions");
+
+        FfmpegStreamMetadata metadata;
+        metadata.sampleRate = static_cast<std::uint32_t>(codec->sample_rate);
+        metadata.channels = static_cast<std::uint32_t>(
+            codec->ch_layout.nb_channels);
+        if (metadata.channels > std::numeric_limits<std::uint16_t>::max() ||
+            maxClipFrames > (std::numeric_limits<std::uint32_t>::max() - 36u) /
+                (metadata.channels * sizeof(float)))
+            throw std::invalid_argument(
+                "FFmpeg streaming audio exceeds the WAV container limit");
+
+        AVChannelLayout outputLayout{};
+        result = av_channel_layout_copy(&outputLayout, &codec->ch_layout);
+        if (result < 0)
+            fail("FFmpeg could not copy streaming channel layout", result);
+        result = swr_alloc_set_opts2(&resampler,
+            &outputLayout, AV_SAMPLE_FMT_FLT, codec->sample_rate,
+            &codec->ch_layout, codec->sample_fmt, codec->sample_rate, 0,
+            nullptr);
+        av_channel_layout_uninit(&outputLayout);
+        if (result < 0 || !resampler)
+            fail("FFmpeg could not configure streaming conversion", result);
+        result = swr_init(resampler);
+        if (result < 0)
+            fail("FFmpeg could not initialize streaming conversion", result);
+
+        output.open(outputPath,
+            std::ios::binary | std::ios::trunc | std::ios::out);
+        if (!output)
+            throw std::runtime_error(
+                "FFmpeg streaming WAV could not be created");
+        writeFloatWavHeader(output, metadata.sampleRate,
+            static_cast<std::uint16_t>(metadata.channels), 0);
+
+        packet = av_packet_alloc();
+        frame = av_frame_alloc();
+        if (!packet || !frame)
+            throw std::bad_alloc();
+        std::vector<float> converted;
+        const auto receiveFrames = [&]() {
+            for (;;)
+            {
+                const int receive = avcodec_receive_frame(codec, frame);
+                if (receive == AVERROR(EAGAIN) || receive == AVERROR_EOF)
+                    break;
+                if (receive < 0)
+                    fail("FFmpeg streaming audio decoding failed", receive);
+                const int capacity = swr_get_out_samples(
+                    resampler, frame->nb_samples);
+                if (capacity < 0)
+                    fail("FFmpeg streaming conversion capacity failed",
+                        capacity);
+                if (capacity > 65536)
+                    throw std::invalid_argument(
+                        "FFmpeg streaming conversion frame is too large");
+                if (static_cast<std::uint64_t>(capacity) >
+                    maxClipFrames - metadata.frameCount)
+                    throw std::invalid_argument(
+                        "FFmpeg streaming audio exceeds the frame limit");
+                converted.resize(static_cast<std::size_t>(capacity) *
+                    metadata.channels);
+                std::uint8_t* destination = reinterpret_cast<std::uint8_t*>(
+                    converted.data());
+                const int frames = swr_convert(resampler, &destination,
+                    capacity,
+                    const_cast<const std::uint8_t**>(frame->extended_data),
+                    frame->nb_samples);
+                if (frames < 0)
+                    fail("FFmpeg streaming audio conversion failed", frames);
+                if (frames > capacity)
+                    throw std::runtime_error(
+                        "FFmpeg streaming conversion exceeded its capacity");
+                const std::size_t bytes = static_cast<std::size_t>(frames) *
+                    metadata.channels * sizeof(float);
+                output.write(reinterpret_cast<const char*>(converted.data()),
+                    static_cast<std::streamsize>(bytes));
+                if (!output)
+                    throw std::runtime_error(
+                        "FFmpeg streaming WAV write failed");
+                metadata.frameCount += static_cast<std::uint64_t>(frames);
+                av_frame_unref(frame);
+            }
+        };
+
+        while (av_read_frame(format, packet) >= 0)
+        {
+            if (packet->stream_index == streamIndex)
+            {
+                result = avcodec_send_packet(codec, packet);
+                if (result < 0)
+                    fail("FFmpeg rejected a streaming audio packet", result);
+                receiveFrames();
+            }
+            av_packet_unref(packet);
+        }
+        result = avcodec_send_packet(codec, nullptr);
+        if (result < 0 && result != AVERROR_EOF)
+            fail("FFmpeg could not flush streaming audio", result);
+        receiveFrames();
+        if (metadata.frameCount == 0)
+            throw std::runtime_error(
+                "FFmpeg streaming audio produced no frames");
+        const std::uint64_t dataBytes64 = metadata.frameCount *
+            metadata.channels * sizeof(float);
+        if (dataBytes64 >
+            std::numeric_limits<std::uint32_t>::max() - 36u)
+            throw std::invalid_argument(
+                "FFmpeg streaming WAV exceeds its container limit");
+        const std::uint32_t dataBytes = static_cast<std::uint32_t>(dataBytes64);
+        output.seekp(0);
+        writeFloatWavHeader(output, metadata.sampleRate,
+            static_cast<std::uint16_t>(metadata.channels), dataBytes);
+        output.close();
+        if (!output)
+            throw std::runtime_error(
+                "FFmpeg streaming WAV finalization failed");
+
+        swr_free(&resampler);
+        av_frame_free(&frame);
+        av_packet_free(&packet);
+        avcodec_free_context(&codec);
+        avformat_close_input(&format);
+        return metadata;
+    }
+    catch (...)
+    {
+        output.close();
+        std::error_code removeError;
+        std::filesystem::remove(outputPath, removeError);
+        swr_free(&resampler);
+        av_frame_free(&frame);
+        av_packet_free(&packet);
+        avcodec_free_context(&codec);
+        avformat_close_input(&format);
         throw;
     }
 }

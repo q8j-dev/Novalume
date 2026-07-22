@@ -15,6 +15,8 @@
 #include "FastLog.h"
 #include "rbx/RbxDbgInfo.h"
 
+#include <cmath>
+
 LOGGROUP(Sound)
 DYNAMIC_LOGGROUP(SoundTiming)
 DYNAMIC_LOGGROUP(SoundTrace)
@@ -199,6 +201,7 @@ void SoundChannel::releaseChannel()
 		audioEngine->stop(voice);
 		audioEngine->destroyVoice(voice);
 		voice = {};
+		voiceBus = {};
 		if (sound)
 			sound->unacquire();
 	}
@@ -220,6 +223,8 @@ void SoundChannel::updateListenState(const Time::Interval& timeSinceLastStep)
 {
 	if (voice && audioEngine)
 	{
+		synchronizeSoundGroupBus();
+		synchronizeSoundEffects();
 		update3D();
 		if (!getLooped() && audioEngine->isFinished(voice))
 			onChannelEnd();
@@ -620,9 +625,11 @@ void SoundChannel::setSoundPosition(double value, bool setFromLua)
 	}
 }
 
-	void SoundChannel::setVolume(float value)
+void SoundChannel::setVolume(float value)
 {
-	value = G3D::clamp(value, 0.0f, 1.0f);
+	if (!std::isfinite(value))
+		throw runtime_error("Sound.Volume must be finite");
+	value = G3D::clamp(value, 0.0f, 10.0f);
 	if (DFLog::SoundTrace)
 	{
 		std::stringstream ss;
@@ -648,7 +655,41 @@ void SoundChannel::setSoundGroup(SoundGroup* value)
 	if (getSoundGroup() == value)
 		return;
 	soundGroup = value ? weak_from(value) : weak_ptr<SoundGroup>();
+	synchronizeSoundGroupBus();
 	raisePropertyChanged(sound_desc_SoundGroup);
+}
+
+void SoundChannel::synchronizeSoundGroupBus()
+{
+	if (!voice || !audioEngine)
+	{
+		voiceBus = {};
+		return;
+	}
+
+	SoundService* service = ServiceProvider::find<SoundService>(this);
+	const Audio::BusHandle desired = service
+		? service->resolveSoundGroupBus(getSoundGroup())
+		: Audio::BusHandle{};
+	if (voiceBus.index == desired.index &&
+		voiceBus.generation == desired.generation)
+		return;
+
+	if (audioEngine->setVoiceBus(voice, desired))
+		voiceBus = desired;
+}
+
+void SoundChannel::synchronizeSoundEffects()
+{
+	if (!voice || !audioEngine)
+		return;
+	std::array<Audio::VoiceEffect, 32> effects{};
+	SoundService* service = ServiceProvider::find<SoundService>(this);
+	const std::uint32_t count = service
+		? service->collectRuntimeSoundEffects(this, effects)
+		: collectSoundEffects(this, effects);
+	audioEngine->setVoiceEffects(voice,
+		std::span<const Audio::VoiceEffect>(effects.data(), count));
 }
 
 float SoundChannel::getPitch() const
@@ -841,6 +882,7 @@ void SoundChannel::onChannelEnd()
 
 		audioEngine->destroyVoice(voice);
 		voice = {};
+		voiceBus = {};
 		audioEngine = NULL;
 
 		if (sound)
@@ -967,6 +1009,7 @@ void SoundChannel::playSound(const Instance* context, bool isResuming)
 								audioEngine->stop(voice);
 								audioEngine->destroyVoice(voice);
 								voice = {};
+								voiceBus = {};
 								if (sound)
 									sound->unacquire();
 							}
@@ -1001,6 +1044,11 @@ void SoundChannel::playSound(const Instance* context, bool isResuming)
 						parameters.attenuation = rollOff == Linear
 							? Audio::AttenuationModel::Linear
 							: Audio::AttenuationModel::Inverse;
+						parameters.bus = soundService->resolveSoundGroupBus(
+							getSoundGroup());
+						parameters.effectCount =
+							soundService->collectRuntimeSoundEffects(this,
+								parameters.effects);
 						if (playbackRegionsEnabled)
 						{
 							const std::uint32_t rate = audioEngine->clipSampleRate(clip);
@@ -1022,6 +1070,7 @@ void SoundChannel::playSound(const Instance* context, bool isResuming)
 							return;
 						}
 						sound->acquire();
+						voiceBus = parameters.bus;
 						FASTLOG2(DFLog::SoundTrace, "SoundChannel %p has voice %u", this, voice.index);
 						invalidChannel = false;
 
@@ -1123,6 +1172,7 @@ void SoundChannel::stop()
 		audioEngine->stop(voice);
 		audioEngine->destroyVoice(voice);
 		voice = {};
+		voiceBus = {};
 		audioEngine = NULL;
 		if (sound)
 			sound->unacquire();

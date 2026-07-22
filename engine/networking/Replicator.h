@@ -297,22 +297,26 @@ protected:
 	class ProcessPacketsJob;
 	class PingBackItem;
 	class PingItem;
-    class HashItem;
-	class PingJob;
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
+	class HashItem;
+#endif
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY) || defined(RBX_RCC_SECURITY)
 	class RockyItem;
+#endif
+	class PingJob;
 	class SendDataJob;
 	class StreamJob;
 	class Stats;
 	class SendStatsJob;
 
-    #ifndef RBX_STUDIO_BUILD
-    class NetPmcResponseItem;
-    class RockyDbgItem;
-    #endif
+#if (defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY) || defined(RBX_RCC_SECURITY)) && !defined(RBX_STUDIO_BUILD)
+	class NetPmcResponseItem;
+	class RockyDbgItem;
+#endif
 
-    #ifdef RBX_RCC_SECURITY
-    class NetPmcChallengeItem;
-    #endif
+#if defined(RBX_RCC_SECURITY)
+	class NetPmcChallengeItem;
+#endif
 
 	// Item pools
 	boost::scoped_ptr<RBX::AutoMemPool> newInstancePool;
@@ -645,7 +649,9 @@ private:
 
 	void sendDataPing();
 	void sendStats(int version);
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY) || defined(RBX_RCC_SECURITY)
 	virtual void sendNetPmcChallenge() {}
+#endif
 
 	void assignRef(Reflection::Property& property, RBX::Guid::Data id);
 	bool shouldStreamingHandleOnAddedForChild(shared_ptr<const Instance> child);

@@ -21,7 +21,7 @@
 #include "View.h"
 #include "RbxWebView.h"
 
-#include "VMProtect/VMProtectSDK.h"
+#include "security/ProtectionMarkers.h"
 
 LOGGROUP(PlayerShutdownLuaTimeoutSeconds)
 
@@ -139,7 +139,8 @@ void Document::executeScript(HttpFuture& scriptResult, const SharedLauncher::Lau
 
 #if !defined(LOVE_ALL_ACCESS) && !defined(_NOOPT) && !defined(_DEBUG) && !defined(RBX_STUDIO_BUILD)
 	dataModel->addHackFlag(HATE_DEBUGGER *
-		VMProtectIsDebuggerPresent(true /*check for kernel debuggers too*/));
+		RBX::Security::ProtectionMarkers::isDebuggerPresent(
+			true /*check for kernel debuggers too*/));
 #endif
 
 	Security::Impersonator impersonate(Security::COM);
@@ -162,7 +163,8 @@ void Document::executeScript(HttpFuture& scriptResult, const SharedLauncher::Lau
 
 #if !defined(LOVE_ALL_ACCESS) && !defined(_NOOPT) && !defined(_DEBUG) && !defined(RBX_STUDIO_BUILD)
 	dataModel->addHackFlag(HATE_DEBUGGER *
-		VMProtectIsDebuggerPresent(true /*check for kernel debuggers too*/));
+		RBX::Security::ProtectionMarkers::isDebuggerPresent(
+			true /*check for kernel debuggers too*/));
 #endif
 	ProtectedString verifiedSource;
 	try

@@ -35,8 +35,9 @@ def instance_name(path: Path) -> str:
 
 
 class ModelBuilder:
-    def __init__(self) -> None:
+    def __init__(self, source_root: Path) -> None:
         self.next_referent = 1
+        self.source_root = source_root
         self.sources: list[dict[str, str]] = []
 
     def item(self, class_name: str, name: str, source: Path | None = None) -> ET.Element:
@@ -58,7 +59,7 @@ class ModelBuilder:
                 ET.SubElement(properties, "bool", {"name": "Disabled"}).text = "false"
             self.sources.append(
                 {
-                    "path": source.as_posix(),
+                    "path": source.relative_to(self.source_root).as_posix(),
                     "sha256": hashlib.sha256(raw).hexdigest(),
                 }
             )
@@ -97,7 +98,7 @@ def build(studio_root: Path, output: Path, manifest: Path) -> None:
     if not all(path.exists() for path in required):
         raise SystemExit("supplied Studio build does not contain the current PlayerModule project")
 
-    builder = ModelBuilder()
+    builder = ModelBuilder(scripts)
     root = ET.Element(
         "roblox",
         {
@@ -124,7 +125,7 @@ def build(studio_root: Path, output: Path, manifest: Path) -> None:
     )
     payload = {
         "format": 1,
-        "studio_root": studio_root.as_posix(),
+        "source_corpus": studio_root.name,
         "source_count": len(builder.sources),
         "sources": sorted(builder.sources, key=lambda entry: entry["path"]),
         "model_sha256": hashlib.sha256(output.read_bytes()).hexdigest(),

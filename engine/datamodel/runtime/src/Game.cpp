@@ -73,7 +73,7 @@ namespace RBX {
         cookieSharingPolicy = RBX::Http::CookieSharingSingleProcessMultipleThreads;
 #elif defined(RBX_PLATFORM_DURANGO)
 		cookieSharingPolicy = RBX::Http::CookieSharingSingleProcessMultipleThreads;
-#elif defined(_WIN32) || defined(__APPLE__)
+#elif defined(_WIN32) || defined(__APPLE__) || defined(__linux__)
 	if (DFFlag::PersistenceCurlCookies)
 	{
         cookieSharingPolicy = RBX::Http::CookieSharingMultipleProcessesWrite;

@@ -35,7 +35,6 @@ add_library(rbx-networking-runtime STATIC EXCLUDE_FROM_ALL
     ../Replicator.DeleteInstanceItem.cpp
     ../Replicator.EventInvocationItem.cpp
     ../Replicator.GCJob.cpp
-    ../Replicator.HashItem.cpp
     ../Replicator.ItemSender.cpp
     ../Replicator.JoinDataItem.cpp
     ../Replicator.MarkerItem.cpp
@@ -43,7 +42,6 @@ add_library(rbx-networking-runtime STATIC EXCLUDE_FROM_ALL
     ../Replicator.PingBackItem.cpp
     ../Replicator.PingItem.cpp
     ../Replicator.ReferencePropertyChangedItem.cpp
-    ../Replicator.RockyItem.cpp
     ../Replicator.StatsItem.cpp
     ../Replicator.StreamJob.cpp
     ../Replicator.TagItem.cpp
@@ -57,6 +55,17 @@ add_library(rbx-networking-runtime STATIC EXCLUDE_FROM_ALL
     ../Util.cpp
     ../WebChatFilter.cpp)
 add_library(Roblox::NetworkingRuntime ALIAS rbx-networking-runtime)
+
+if(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
+    target_sources(rbx-networking-runtime PRIVATE
+        ../NetPmc.cpp
+        ../Replicator.HashItem.cpp
+        ../Replicator.RockyItem.cpp
+        "${CMAKE_SOURCE_DIR}/engine/security/src/platform/windows/CheatEngine.cpp"
+        "${CMAKE_SOURCE_DIR}/engine/security/src/platform/windows/ProgramMemoryChecker.cpp")
+    target_link_libraries(rbx-networking-runtime PRIVATE
+        Roblox::ProtectionMarkers psapi gdi32 user32)
+endif()
 
 target_include_directories(rbx-networking-runtime
     PUBLIC "${CMAKE_CURRENT_LIST_DIR}/../include"
@@ -95,6 +104,7 @@ target_compile_features(rbx-networking-runtime PUBLIC cxx_std_20)
 set_source_files_properties(../NetworkProfiler.cpp PROPERTIES
     COMPILE_DEFINITIONS NETWORK_PROFILER=1)
 target_compile_definitions(rbx-networking-runtime PRIVATE
+    RBX_MODERN_NETWORKING_RUNTIME=1
     BOOST_NO_CXX98_FUNCTION_BASE=1
     _LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR=1
     _LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION=1)

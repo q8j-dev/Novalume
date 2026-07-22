@@ -68,6 +68,24 @@ target_link_libraries(rbx-fastlog-contract-tests PRIVATE Roblox::Core)
 rbx_enable_warnings(rbx-fastlog-contract-tests)
 add_test(NAME fastlog-contract COMMAND rbx-fastlog-contract-tests)
 
+add_executable(rbx-md5-contract-tests
+    unit/MD5Tests.cpp
+    "${CMAKE_SOURCE_DIR}/engine/runtime_support/src/md5.c")
+target_include_directories(rbx-md5-contract-tests PRIVATE
+    "${CMAKE_SOURCE_DIR}/App/include")
+target_compile_definitions(rbx-md5-contract-tests PRIVATE HAVE_OPENSSL=1)
+rbx_enable_warnings(rbx-md5-contract-tests)
+add_test(NAME md5-contract COMMAND rbx-md5-contract-tests)
+set_tests_properties(md5-contract PROPERTIES LABELS "core;hashing;security")
+
+add_executable(rbx-system-util-contract-tests unit/SystemUtilTests.cpp)
+target_link_libraries(rbx-system-util-contract-tests PRIVATE
+    Roblox::Core Roblox::Math)
+rbx_enable_warnings(rbx-system-util-contract-tests)
+add_test(NAME system-util-contract COMMAND rbx-system-util-contract-tests)
+set_tests_properties(system-util-contract PROPERTIES
+    LABELS "core;platform;security")
+
 add_executable(rbx-asset-mount-tests unit/AssetMountTableTests.cpp)
 target_link_libraries(rbx-asset-mount-tests PRIVATE Roblox::Assets)
 rbx_enable_warnings(rbx-asset-mount-tests)
@@ -294,6 +312,12 @@ endif()
 
 add_executable(rbx-audio-runtime-tests unit/AudioEngineTests.cpp)
 target_link_libraries(rbx-audio-runtime-tests PRIVATE Roblox::AudioRuntime)
+target_compile_definitions(rbx-audio-runtime-tests PRIVATE
+    "RBX_TEST_STREAMING_OGG=\"${CMAKE_SOURCE_DIR}/PlatformContent/durango/sounds/ui/Shell/RobloxMusic.ogg\"")
+if(APPLE)
+    set_property(TARGET rbx-audio-runtime-tests PROPERTY BUILD_RPATH
+        "${RBX_FFMPEG_ROOT}/lib")
+endif()
 rbx_enable_warnings(rbx-audio-runtime-tests)
 add_test(NAME audio-runtime-contract COMMAND rbx-audio-runtime-tests)
 
@@ -347,6 +371,8 @@ if(APPLE)
     add_custom_target(rbx-media-decoder-fixture DEPENDS "${RBX_MEDIA_FIXTURE}")
     add_executable(rbx-media-decoder-tests integration/MediaDecoderTests.cpp)
     target_link_libraries(rbx-media-decoder-tests PRIVATE Roblox::MediaRuntime)
+    set_property(TARGET rbx-media-decoder-tests PROPERTY BUILD_RPATH
+        "${RBX_FFMPEG_ROOT}/lib")
     add_dependencies(rbx-media-decoder-tests rbx-media-decoder-fixture)
     rbx_enable_warnings(rbx-media-decoder-tests)
     add_test(NAME media-decoder COMMAND rbx-media-decoder-tests "${RBX_MEDIA_FIXTURE}")
@@ -355,7 +381,28 @@ if(APPLE)
     add_executable(rbx-audio-output-device-smoke EXCLUDE_FROM_ALL
         integration/AudioOutputDeviceSmoke.cpp)
     target_link_libraries(rbx-audio-output-device-smoke PRIVATE Roblox::AudioRuntime)
+    set_property(TARGET rbx-audio-output-device-smoke PROPERTY BUILD_RPATH
+        "${RBX_FFMPEG_ROOT}/lib")
     rbx_enable_warnings(rbx-audio-output-device-smoke)
+
+    add_executable(rbx-audio-sidechain-routing-tests
+        integration/AudioSidechainRoutingTests.cpp)
+    target_include_directories(rbx-audio-sidechain-routing-tests PRIVATE
+        "${CMAKE_SOURCE_DIR}/Library/SDL2/include")
+    target_link_libraries(rbx-audio-sidechain-routing-tests PRIVATE
+        Roblox::LuauScripting Roblox::RuntimeUI Roblox::InteractionTools
+        Roblox::AudioDataModel Roblox::DataModelRuntime Roblox::RuntimeSupport
+        Roblox::AvatarHumanoid Roblox::NetworkingRuntime Roblox::TerrainRuntime
+        Roblox::PlayerShared Roblox::PlatformRuntime Roblox::PlatformHost)
+    target_compile_definitions(rbx-audio-sidechain-routing-tests PRIVATE
+        _LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR=1)
+    target_compile_options(rbx-audio-sidechain-routing-tests PRIVATE
+        $<$<COMPILE_LANG_AND_ID:CXX,AppleClang>:-Wno-enum-constexpr-conversion>)
+    rbx_enable_warnings(rbx-audio-sidechain-routing-tests)
+    add_test(NAME audio-sidechain-routing
+        COMMAND rbx-audio-sidechain-routing-tests)
+    set_tests_properties(audio-sidechain-routing PROPERTIES
+        RUN_SERIAL TRUE LABELS "audio;sidechain;datamodel")
 
     add_executable(rbx-gfxcore-bgfx-tests integration/GfxCoreBgfxTests.cpp)
     target_link_libraries(rbx-gfxcore-bgfx-tests PRIVATE

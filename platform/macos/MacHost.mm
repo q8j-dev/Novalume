@@ -351,6 +351,19 @@ public:
         return launched == YES;
     }
 
+    bool openExternalUri(std::string_view uri) override {
+        NSString* value = [[NSString alloc]
+            initWithBytes:uri.data()
+                   length:uri.size()
+                 encoding:NSUTF8StringEncoding];
+        if (!value)
+            return false;
+        NSURL* url = [NSURL URLWithString:value];
+        const BOOL opened = url && [[NSWorkspace sharedWorkspace] openURL:url];
+        [value release];
+        return opened == YES;
+    }
+
     void setClipboardText(std::string_view text) override {
         NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
         [pasteboard clearContents];

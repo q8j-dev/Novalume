@@ -8,9 +8,6 @@
 #include "Util/http.h"
 #include "util/RbxStringTable.h"
 
-#if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-#include "VMProtect/VMProtectSDK.h"
-#endif
 #include "V8DataModel/Workspace.h"
 #include "network/Player.h"
 #include "network/Players.h"

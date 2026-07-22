@@ -11,6 +11,14 @@ option(RBX_BUILD_TESTS "Build modernization tests" ON)
 option(RBX_FETCH_DEPENDENCIES "Fetch pinned open-source dependencies into the build tree" ON)
 option(RBX_ENABLE_LEGACY_BUILD "Configure the historical monolithic build (migration only)" OFF)
 option(RBX_ENABLE_LEGACY_RENDERERS "Compile historical D3D/OpenGL renderers" OFF)
+option(RBX_ENABLE_VMPROTECT
+    "Compile proprietary VMProtect marker calls (requires a separately supplied SDK)" OFF)
+set(RBX_VMPROTECT_INCLUDE_DIR "" CACHE PATH
+    "Directory containing VMProtect/VMProtectSDK.h when RBX_ENABLE_VMPROTECT is ON")
+set(RBX_VMPROTECT_LIBRARY "" CACHE FILEPATH
+    "Target-architecture VMProtect SDK import library when RBX_ENABLE_VMPROTECT is ON")
+option(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY
+    "Compile the historical Win32/x86 client anti-tamper jobs (requires the real VMProtect SDK)" OFF)
 set(RBX_PLAYER_REFERENCE_ROOT "" CACHE PATH
     "Build-time path to the supplied Windows Player snapshot for verified resource import")
 set(RBX_STUDIO_REFERENCE_ROOT "" CACHE PATH
@@ -29,11 +37,44 @@ if(RBX_ENABLE_LEGACY_BUILD)
     return()
 endif()
 
+if(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
+    if(NOT WIN32)
+        message(FATAL_ERROR
+            "RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY is only supported on Win32/x86")
+    endif()
+    if(NOT CMAKE_SIZEOF_VOID_P EQUAL 4)
+        message(FATAL_ERROR
+            "RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY requires a 32-bit x86 target")
+    endif()
+    if(NOT MSVC)
+        message(FATAL_ERROR
+            "RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY requires the MSVC Win32 toolchain")
+    endif()
+    if(NOT RBX_ENABLE_VMPROTECT)
+        message(FATAL_ERROR
+            "RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY requires RBX_ENABLE_VMPROTECT "
+            "and a genuine vendor SDK/import library")
+    endif()
+    add_compile_definitions(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY=1)
+endif()
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries" FORCE)
+
+if(CMAKE_C_COMPILER_ID MATCHES "AppleClang|Clang")
+    foreach(prefix_map IN ITEMS
+        "${CMAKE_SOURCE_DIR}=."
+        "${CMAKE_BINARY_DIR}=./build")
+        add_compile_options(
+            "$<$<CONFIG:Release>:-ffile-prefix-map=${prefix_map}>"
+            "$<$<CONFIG:Release>:-fdebug-prefix-map=${prefix_map}>"
+            "$<$<CONFIG:Release>:-fmacro-prefix-map=${prefix_map}>")
+    endforeach()
+endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(RbxCompilerWarnings)

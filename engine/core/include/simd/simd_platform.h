@@ -12,7 +12,7 @@
 #define RBX_SIMD_X64
 #endif
 
-#if defined( __ARM_NEON ) || defined( __arm__ ) || defined( _M_ARM ) // __ARM_NEON on apple clang for iOS, __arm__ on GCC, _M_ARM in MVC for Windows Phone
+#if defined( __ARM_NEON ) || defined( __aarch64__ ) || defined( __arm__ ) || defined( _M_ARM64 ) || defined( _M_ARM )
 #define RBX_SIMD_ARM
 #endif
 
@@ -29,7 +29,11 @@
 #endif
 
 #ifdef RBX_SIMD_USE_NEON
+#if defined( _MSC_VER ) && defined( _M_ARM64 )
+#include <arm64_neon.h>
+#else
 #include <arm_neon.h>
+#endif
 #endif
 
 #define RBX_SIMD_ALIGN_ASSERT( p, a ) RBXASSERT_VERY_FAST( ( ( uint64_t )( p ) & ( a - 1 ) ) == 0 )

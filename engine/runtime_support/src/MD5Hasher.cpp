@@ -6,7 +6,7 @@
 
 
 
-#include "Util/md5.h"
+#include "util/md5.h"
 // Windows needs digest length defined
 #define MD5_DIGEST_LENGTH 16
 
@@ -17,7 +17,7 @@ namespace RBX
 
 	class MD5HasherImpl : public MD5Hasher
 	{
-		MD5_CTX context;
+		RBX_MD5_CTX context;
 
         unsigned char resultBuffer[MD5_DIGEST_LENGTH];
 		std::string resultString;
@@ -27,7 +27,7 @@ namespace RBX
 		MD5HasherImpl()
 			: resultReady(false)
 		{
-			MD5_Init(&context);
+			RBX_MD5_Init(&context);
 		}
 
 		~MD5HasherImpl()
@@ -54,14 +54,14 @@ namespace RBX
 		{
             RBXASSERT(!resultReady);
 
-			MD5_Update(&context, (void*)data.data(), data.length());
+			RBX_MD5_Update(&context, data.data(), data.length());
 		}
 
 		virtual void addData(const char* data, size_t nBytes)
 		{
             RBXASSERT(!resultReady);
 
-			MD5_Update(&context, (void*)data, nBytes);
+			RBX_MD5_Update(&context, data, nBytes);
 		}
 
 		virtual const std::string& toString()
@@ -93,7 +93,7 @@ namespace RBX
 			{
 				resultReady = true;
 
-				MD5_Final(resultBuffer, &context);
+				RBX_MD5_Final(resultBuffer, &context);
                 
                 resultString.reserve(MD5_DIGEST_LENGTH * 2);
 

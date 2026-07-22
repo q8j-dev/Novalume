@@ -14,7 +14,9 @@
 #include "Replicator.PingJob.h"
 #include "Replicator.ProcessPacketsJob.h"
 #include "Replicator.ReferencePropertyChangedItem.h"
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
 #include "Replicator.RockyItem.h"
+#endif
 #include "Replicator.SendDataJob.h"
 #include "Replicator.StreamJob.h"
 #include "Replicator.StatsItem.h"
@@ -41,7 +43,6 @@
 #include "audio/SoundService.h"
 #include "Util/ProtectedString.h"
 #include "Util/BrickColor.h"
-#include "Util/ProgramMemoryChecker.h"
 #include "Util/UDim.h"
 #include "Util/Faces.h"
 #include "Util/Axes.h"
@@ -2647,7 +2648,7 @@ void Replicator::onPropertyChanged(Instance* instance, const Reflection::Propert
 			pendingChangedPropertyItems.insert(RBX::Reflection::ConstProperty(*descriptor, instance));
 		}
 	}
-#if defined(_WIN32) && !defined(RBX_STUDIO_BUILD)
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY) && !defined(RBX_STUDIO_BUILD)
     // This should check pretty far back into the call stack.
     if (FFlag::FilterSinglePass)
     {

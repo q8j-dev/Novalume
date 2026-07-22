@@ -19,12 +19,58 @@ set(RBX_HARFBUZZ_REVISION "56feae4035bdd48f62ba2b8d8c16232d4d89b3a4") # 14.2.1
 set(RBX_SHEENBIDI_REVISION "cfe430e7375a7845b679adae9d51dac6deaa8858") # 3.0.0
 set(RBX_SDL_REVISION "8e37db5e797b6167f3a00d697d816a684bd259c7") # 3.4.10
 
-# VideoFrame uses the LGPL libav demux/decode/conversion libraries.  Keep GPL
-# and nonfree codec add-ons out of the dependency contract; distributable
-# platform packages provide the corresponding shared libraries and source.
-pkg_check_modules(RBX_FFMPEG REQUIRED IMPORTED_TARGET
-    libavformat>=62.0 libavcodec>=62.0 libavutil>=60.0
-    libswscale>=9.0 libswresample>=6.0)
+set(RBX_FFMPEG_ROOT "" CACHE PATH
+    "Pinned FFmpeg 8.1.2 installation for the target platform and architecture")
+if(APPLE AND CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    foreach(component avformat avcodec avutil swscale swresample)
+        if(NOT EXISTS "${RBX_FFMPEG_ROOT}/lib/lib${component}.dylib")
+            message(FATAL_ERROR
+                "Apple Player builds require the pinned FFmpeg 8.1.2 tree. "
+                "Run tools/dependencies/build-ffmpeg.sh macos-arm64.")
+        endif()
+    endforeach()
+    if(NOT EXISTS "${RBX_FFMPEG_ROOT}/include/libavformat/avformat.h")
+        message(FATAL_ERROR "RBX_FFMPEG_ROOT does not contain FFmpeg headers")
+    endif()
+    add_library(rbx-ffmpeg INTERFACE)
+    add_library(Roblox::FFmpeg ALIAS rbx-ffmpeg)
+    target_include_directories(rbx-ffmpeg INTERFACE
+        "${RBX_FFMPEG_ROOT}/include")
+    foreach(component avformat avcodec avutil swscale swresample)
+        add_library(rbx-ffmpeg-${component} SHARED IMPORTED GLOBAL)
+        set_target_properties(rbx-ffmpeg-${component} PROPERTIES
+            IMPORTED_LOCATION "${RBX_FFMPEG_ROOT}/lib/lib${component}.dylib")
+        target_link_libraries(rbx-ffmpeg INTERFACE rbx-ffmpeg-${component})
+    endforeach()
+elseif(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+    foreach(component avformat avcodec avutil swscale swresample)
+        if(NOT EXISTS "${RBX_FFMPEG_ROOT}/lib/lib${component}.a")
+            message(FATAL_ERROR
+                "iOS builds require the pinned static FFmpeg 8.1.2 tree. "
+                "Run tools/dependencies/build-ffmpeg.sh ios-arm64.")
+        endif()
+    endforeach()
+    if(NOT EXISTS "${RBX_FFMPEG_ROOT}/include/libavformat/avformat.h")
+        message(FATAL_ERROR "RBX_FFMPEG_ROOT does not contain FFmpeg headers")
+    endif()
+    add_library(rbx-ffmpeg INTERFACE)
+    add_library(Roblox::FFmpeg ALIAS rbx-ffmpeg)
+    target_include_directories(rbx-ffmpeg INTERFACE
+        "${RBX_FFMPEG_ROOT}/include")
+    target_link_libraries(rbx-ffmpeg INTERFACE
+        "${RBX_FFMPEG_ROOT}/lib/libavformat.a"
+        "${RBX_FFMPEG_ROOT}/lib/libavcodec.a"
+        "${RBX_FFMPEG_ROOT}/lib/libswscale.a"
+        "${RBX_FFMPEG_ROOT}/lib/libswresample.a"
+        "${RBX_FFMPEG_ROOT}/lib/libavutil.a")
+else()
+    pkg_check_modules(RBX_FFMPEG REQUIRED IMPORTED_TARGET
+        libavformat>=62.0 libavcodec>=62.0 libavutil>=60.0
+        libswscale>=9.0 libswresample>=6.0)
+    add_library(rbx-ffmpeg INTERFACE)
+    add_library(Roblox::FFmpeg ALIAS rbx-ffmpeg)
+    target_link_libraries(rbx-ffmpeg INTERFACE PkgConfig::RBX_FFMPEG)
+endif()
 
 if(NOT RBX_FETCH_DEPENDENCIES)
     find_package(bgfx CONFIG REQUIRED)
@@ -297,6 +343,10 @@ set(CURL_ZLIB ON CACHE BOOL "" FORCE)
 set(CURL_BROTLI OFF CACHE BOOL "" FORCE)
 set(CURL_ZSTD OFF CACHE BOOL "" FORCE)
 set(CURL_USE_LIBPSL OFF CACHE BOOL "" FORCE)
+set(CURL_USE_PKGCONFIG OFF CACHE BOOL "" FORCE)
+set(CURL_USE_LIBSSH2 OFF CACHE BOOL "" FORCE)
+set(USE_LIBIDN2 OFF CACHE BOOL "" FORCE)
+set(USE_NGHTTP2 OFF CACHE BOOL "" FORCE)
 if(WIN32)
     set(CURL_USE_SCHANNEL ON CACHE BOOL "" FORCE)
     set(CURL_USE_OPENSSL OFF CACHE BOOL "" FORCE)

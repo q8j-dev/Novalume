@@ -6,7 +6,7 @@
 #include "security/ApiSecurity.h"
 #include "util/CheatEngine.h"
 #include "v8datamodel/FastLogSettings.h"
-#include "VMProtect/VMProtectSDK.h"
+#include "security/ProtectionMarkers.h"
 #include <windows.h>
 #include <psapi.h>
 
@@ -27,7 +27,7 @@ HWND WINAPI findWindowHook(LPCTSTR className, LPCSTR windowName)
     size_t argDiff;
     static const size_t kHalf = 1 << 23;
     static const size_t kFull = 1 << 24;  
-    VMProtectBeginMutation("35");
+    RBX::Security::ProtectionMarkers::beginMutation("35");
     returnAddress = reinterpret_cast<size_t>(_ReturnAddress());
     argDiff = (reinterpret_cast<size_t>(windowName) - returnAddress);
     
@@ -41,7 +41,7 @@ HWND WINAPI findWindowHook(LPCTSTR className, LPCSTR windowName)
         RBX::hotpatchUnhook(resumeFindWindow);
         RBX::Tokens::simpleToken |= HATE_DLL_INJECTION;
     }
-    VMProtectEnd();
+    RBX::Security::ProtectionMarkers::end();
     return resumeFindWindow(className,windowName);
 }
 
@@ -127,7 +127,7 @@ namespace RBX
     bool hookPreVeh()
     {
         volatile bool result = false;
-        VMProtectBeginMutation(NULL);
+        RBX::Security::ProtectionMarkers::beginMutation();
         HMODULE ntdll = GetModuleHandleA("ntdll");
         DWORD* loc = reinterpret_cast<DWORD*>(rbxNtdllProcAddress(ntdll, cmpKiUserExceptionDispatcher));
         ntdll = 0;
@@ -170,7 +170,7 @@ namespace RBX
             Tokens::apiToken.addFlagSafe(kVehNoNtdll);
         }
         result = result; // vmprotect workaround.
-        VMProtectEnd();
+        RBX::Security::ProtectionMarkers::end();
         return result;
     }
 

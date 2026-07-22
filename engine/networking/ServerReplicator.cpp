@@ -57,10 +57,14 @@
 
 #include <boost/algorithm/string.hpp>
 #include "Replicator.StatsItem.h"
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY) || defined(RBX_RCC_SECURITY)
 #include "Replicator.RockyItem.h"
+#endif
 
 #include "script/LuaVM.h"
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY) || defined(RBX_RCC_SECURITY)
 #include "NetPmc.h"
+#endif
 
 DYNAMIC_LOGGROUP(NetworkJoin)
 
@@ -1430,6 +1434,7 @@ void CheatHandlingServerReplicator::processTicket(Packet *packet)
 }
 #endif
 
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY) || defined(RBX_RCC_SECURITY)
 void ServerReplicator::readHashItem(RBX::Network::PacketBuffer& inBitstream)
 {
     using namespace RBX::Hasher;
@@ -1481,6 +1486,7 @@ void ServerReplicator::readRockyItem(RBX::Network::PacketBuffer& inBitstream)
         processRockyCallInfoItem(inBitstream);
     }
 }
+#endif
 
 #ifdef RBX_RCC_SECURITY
 void CheatHandlingServerReplicator::processNetPmcResponseItem(RBX::Network::PacketBuffer& inBitstream)
@@ -2161,9 +2167,11 @@ void ServerReplicator::readItem(RBX::Network::PacketBuffer& inBitstream, RBX::Ne
 		Super::readItem(inBitstream, itemType);
 		break;
 
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY) || defined(RBX_RCC_SECURITY)
     case Item::ItemTypeHash:
         readHashItem(inBitstream);
         break;
+#endif
 
 	case Item::ItemTypeUpdateClientQuota:
 		readClientQuotaUpdate(inBitstream);
@@ -2187,9 +2195,11 @@ void ServerReplicator::readItem(RBX::Network::PacketBuffer& inBitstream, RBX::Ne
 		readPropAcknowledgement(inBitstream);
 		break;
 
+#if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY) || defined(RBX_RCC_SECURITY)
 	case Item::ItemTypeRocky:
         readRockyItem(inBitstream);
         break;
+#endif
 	}
 }
 

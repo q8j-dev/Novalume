@@ -58,7 +58,7 @@
 #endif
 
 #if defined(_WIN32)
-#include "VMProtect/VMProtectSDK.h"
+#include "security/ProtectionMarkers.h"
 #endif
 
 #include "rbx/Profiler.h"
@@ -1602,7 +1602,7 @@ std::auto_ptr<Reflection::Tuple> ScriptContext::executeInNewThread(
 		const char* name, const Reflection::Tuple& arguments)
 {
 #if defined(_WIN32)
-	VMProtectBeginMutation("1");
+	Security::ProtectionMarkers::beginMutation("1");
 #endif
 	std::auto_ptr<Reflection::Tuple> result;
 	executeInNewThread(
@@ -1614,7 +1614,7 @@ std::auto_ptr<Reflection::Tuple> ScriptContext::executeInNewThread(
 		Scripts::Continuations()
 		);
 #if defined(_WIN32)
-	VMProtectEnd();
+	Security::ProtectionMarkers::end();
 #endif
 
 	return result;
@@ -1625,7 +1625,7 @@ void ScriptContext::executeInNewThreadWithExtraGlobals(
 	const char* name, const std::map<std::string, shared_ptr<Instance> >& extraGlobals)
 {
 #if defined(_WIN32)
-	VMProtectBeginMutation("2");
+	Security::ProtectionMarkers::beginMutation("2");
 #endif
 	executeInNewThread(
 		identity,
@@ -1637,7 +1637,7 @@ void ScriptContext::executeInNewThreadWithExtraGlobals(
 		NULL,
 		&extraGlobals);
 #if defined(_WIN32)
-	VMProtectEnd();
+	Security::ProtectionMarkers::end();
 #endif
 }
 
@@ -1681,7 +1681,7 @@ void ScriptContext::executeInNewThread(RBX::Security::Identities identity, const
 {
 	
 #if defined(_WIN32) && !defined(RBX_STUDIO_BUILD)
-    VMProtectBeginMutation("3");
+    Security::ProtectionMarkers::beginMutation("3");
 	// check xxhash integrity
 	static const char* kXHIntData = STRING_BY_ID(ExecScriptNewThread);
 	static const unsigned int kIntermediateGolden = 976374109;
@@ -1707,7 +1707,7 @@ void ScriptContext::executeInNewThread(RBX::Security::Identities identity, const
     const bool isCmdLine = (identity==RBX::Security::CmdLine_);
     const bool clSandboxEmpty = (commandLineSandbox.empty());
 #if defined(_WIN32) && !defined(RBX_STUDIO_BUILD)
-    VMProtectEnd();
+    Security::ProtectionMarkers::end();
 #endif
 
 	if (isCmdLine)
@@ -1774,7 +1774,7 @@ void ScriptContext::executeInNewThread(RBX::Security::Identities identity, const
 		// They probably haven't used a scoped_write_request
 #if !defined(RBX_STUDIO_BUILD)
 #if defined(_WIN32)
-        VMProtectBeginMutation("4");
+        Security::ProtectionMarkers::beginMutation("4");
 #endif
 		if (DataModel* dataModel = DataModel::get(this))
 		{
@@ -1782,7 +1782,7 @@ void ScriptContext::executeInNewThread(RBX::Security::Identities identity, const
 				dataModel->addHackFlag(HATE_ILLEGAL_SCRIPTS);
 		}
 #if defined(_WIN32)
-        VMProtectEnd();
+        Security::ProtectionMarkers::end();
 #endif
 #endif
 
@@ -3170,11 +3170,11 @@ void ScriptContext::onServiceProvider(ServiceProvider* oldProvider, ServiceProvi
         }
 
 #if defined(_WIN32)
-        VMProtectBeginVirtualization("");
+        Security::ProtectionMarkers::beginVirtualization("");
 #endif
         securityAnchor.update(&(this->securityAnchor));
 #if defined(_WIN32)
-        VMProtectEnd();
+        Security::ProtectionMarkers::end();
 #endif
 
 		if (FLog::LuaScriptTimeoutSeconds > 0) {

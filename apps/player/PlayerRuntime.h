@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <memory>
 #include <optional>
+#include <string>
 #include <vector>
 
 #include "rbx/platform/Host.h"
@@ -17,7 +18,7 @@ enum class AvatarRigVariant
 {
     R6,
     R15,
-	R15Plus,
+    R15Plus,
     RthroNormal,
     RthroSlender,
 };
@@ -32,6 +33,7 @@ public:
                   unsigned int logicalWidth, unsigned int logicalHeight,
                   bool disableAudioOutput, bool useCurrentInExperienceUi,
                   bool useDurangoLauncher = false,
+                  bool verifyDurangoLauncher = false,
                   AvatarRigVariant avatarRig = AvatarRigVariant::R15,
                   bool verifyViewportRendering = false,
                   const std::filesystem::path& videoVerificationPath = {},
@@ -64,6 +66,7 @@ public:
     [[nodiscard]] bool takeOpenDocumentRequest();
     [[nodiscard]] std::optional<std::filesystem::path>
         takeRecentDocumentRequest();
+    [[nodiscard]] std::optional<std::string> takeExternalUriRequest();
     void writeFrameProof(const std::filesystem::path& outputPath);
     void finishVerification();
 

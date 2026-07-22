@@ -71,6 +71,7 @@ struct MeterState
 {
     std::atomic<float> peak{0.0f};
     std::atomic<float> rms{0.0f};
+    std::atomic<std::uint64_t> updateSerial{0};
     std::array<std::atomic<float>, 1025> spectrum{};
     std::atomic<std::uint32_t> spectrumSize{0};
 };
@@ -90,6 +91,8 @@ enum class VoiceEffectType : std::uint8_t
     Echo,
     Reverb,
     Analyzer,
+    ChannelExtract,
+    ChannelInject,
 };
 
 // Fixed-size effect descriptors keep graph updates and the real-time callback
@@ -197,9 +200,12 @@ public:
     bool resetQueuedClip(ClipHandle clip);
     bool destroyClip(ClipHandle clip);
 
-    BusHandle createBus(float volume = 1.0f);
+    BusHandle createBus(float volume = 1.0f, BusHandle parent = {});
     bool destroyBus(BusHandle bus);
     bool setBusVolume(BusHandle bus, float volume);
+    bool setBusParent(BusHandle bus, BusHandle parent);
+    bool setBusEffects(BusHandle bus,
+        std::span<const VoiceEffect> effects);
     float busVolume(BusHandle bus) const;
 
     void setReverb(const ReverbParameters& parameters) noexcept;
@@ -227,6 +233,7 @@ public:
         std::span<const AttenuationPoint> curve);
     bool setVoiceVolume(VoiceHandle voice, float volume);
     bool setVoicePitch(VoiceHandle voice, float pitch);
+    bool setVoiceBus(VoiceHandle voice, BusHandle bus);
     bool setVoiceEffects(VoiceHandle voice,
         std::span<const VoiceEffect> effects);
     bool setVoiceDistortion(VoiceHandle voice, std::span<const float> levels);
@@ -240,6 +247,7 @@ public:
     std::uint64_t lengthFrames(VoiceHandle voice) const;
     std::uint64_t clipLengthFrames(ClipHandle clip) const;
     std::uint32_t clipSampleRate(ClipHandle clip) const;
+    bool clipIsStreaming(ClipHandle clip) const;
 
     void setListener(const ListenerState& listener);
     void setGraphListener(const ListenerState& listener);

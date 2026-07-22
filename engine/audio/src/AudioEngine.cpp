@@ -6,11 +6,13 @@
 #include <algorithm>
 #include <array>
 #include <atomic>
+#include <chrono>
 #include <cmath>
 #include <cstring>
 #include <limits>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
 namespace RBX::Audio {
 
@@ -20,6 +22,36 @@ void requireSuccess(ma_result result, const char* operation)
 {
     if (result != MA_SUCCESS)
         throw std::runtime_error(operation);
+}
+
+std::filesystem::path temporaryStreamingPath()
+{
+    static std::atomic<std::uint64_t> serial{0};
+    const std::uint64_t clock = static_cast<std::uint64_t>(
+        std::chrono::steady_clock::now().time_since_epoch().count());
+    for (;;)
+    {
+        const std::filesystem::path directory =
+            std::filesystem::temp_directory_path() /
+            ("novalume-audio-stream-" + std::to_string(clock) + "-" +
+                std::to_string(serial.fetch_add(1,
+                    std::memory_order_relaxed)));
+        std::error_code error;
+        if (std::filesystem::create_directory(directory, error))
+            return directory / "audio.wav";
+        if (error && error != std::errc::file_exists)
+            throw std::filesystem::filesystem_error(
+                "audio streaming temporary directory creation failed",
+                directory, error);
+    }
+}
+
+void removeTemporaryStreamingPath(const std::filesystem::path& path)
+{
+    std::error_code error;
+    std::filesystem::remove(path, error);
+    error.clear();
+    std::filesystem::remove(path.parent_path(), error);
 }
 
 } // namespace
@@ -52,6 +84,9 @@ struct Engine::Impl
         std::vector<std::shared_ptr<MeterState>> retainedMeters;
         std::array<std::uint32_t, 32> analysisFilled{};
         std::array<std::uint32_t, 32> analysisSinceSpectrum{};
+        std::array<std::uint64_t, 32> detectorSerials{};
+        std::array<float, 32> detectorLevels{};
+        std::array<std::uint64_t, 32> detectorAges{};
         std::uint32_t sampleRate = 48000;
         std::uint32_t channels = 2;
         std::atomic<std::uint32_t> count{0};
@@ -217,7 +252,7 @@ struct Engine::Impl
                 {
                     const float attack = std::clamp(
                         effects->parameters[effect][0].load(
-                            std::memory_order_relaxed), 0.0001f, 0.5f);
+                            std::memory_order_relaxed), 0.001f, 1.0f);
                     const float makeupGain = std::clamp(
                         effects->parameters[effect][1].load(
                             std::memory_order_relaxed), -30.0f, 30.0f);
@@ -226,10 +261,10 @@ struct Engine::Impl
                             std::memory_order_relaxed), 1.0f, 50.0f);
                     const float release = std::clamp(
                         effects->parameters[effect][3].load(
-                            std::memory_order_relaxed), 0.01f, 5.0f);
+                            std::memory_order_relaxed), 0.001f, 5.0f);
                     const float threshold = std::clamp(
                         effects->parameters[effect][4].load(
-                            std::memory_order_relaxed), -60.0f, 0.0f);
+                            std::memory_order_relaxed), -80.0f, 0.0f);
                     std::vector<float>& envelopes = effects->states[effect];
                     if (envelopes.size() < channels)
                         continue;
@@ -237,12 +272,33 @@ struct Engine::Impl
                         (attack * effects->sampleRate));
                     const float releaseCoefficient = std::exp(-1.0f /
                         (release * effects->sampleRate));
+                    MeterState* detector = effects->meters[effect].load(
+                        std::memory_order_acquire);
+                    float detectorLevel = 0.0f;
+                    if (detector)
+                    {
+                        const std::uint64_t serial = detector->updateSerial.load(
+                            std::memory_order_acquire);
+                        if (serial != effects->detectorSerials[effect])
+                        {
+                            effects->detectorSerials[effect] = serial;
+                            effects->detectorLevels[effect] = detector->rms.load(
+                                std::memory_order_relaxed);
+                            effects->detectorAges[effect] = 0;
+                        }
+                        else
+                            effects->detectorAges[effect] += frames;
+                        if (effects->detectorAges[effect] <=
+                            effects->sampleRate / 4)
+                            detectorLevel = effects->detectorLevels[effect];
+                    }
                     for (ma_uint32 frame = 0; frame < frames; ++frame)
                         for (ma_uint32 channel = 0; channel < channels; ++channel)
                         {
                             const std::size_t index =
                                 static_cast<std::size_t>(frame) * channels + channel;
-                            const float level = std::abs(output[0][index]);
+                            const float level = detector
+                                ? detectorLevel : std::abs(output[0][index]);
                             const float coefficient = level > envelopes[channel]
                                 ? attackCoefficient : releaseCoefficient;
                             envelopes[channel] = coefficient * envelopes[channel] +
@@ -602,7 +658,7 @@ struct Engine::Impl
                             std::memory_order_relaxed), 0.0f, 60000.0f);
                     const float wetGain = std::pow(10.0f, std::clamp(
                         effects->parameters[effect][4].load(
-                            std::memory_order_relaxed), -80.0f, 10.0f) / 20.0f);
+                            std::memory_order_relaxed), -80.0f, 100.0f) / 20.0f);
                     float currentDelay = effects->phases[effect];
                     if (currentDelay < 1.0f || rampTime == 0.0f)
                     {
@@ -676,10 +732,10 @@ struct Engine::Impl
                         0.1f, 20.0f);
                     const float density = std::clamp(
                         effects->parameters[effect][2].load(std::memory_order_relaxed),
-                        0.1f, 1.0f);
+                        0.0f, 1.0f);
                     const float diffusion = std::clamp(
                         effects->parameters[effect][3].load(std::memory_order_relaxed),
-                        0.1f, 1.0f);
+                        0.0f, 1.0f);
                     const float dryGain = std::pow(10.0f, std::clamp(
                         effects->parameters[effect][4].load(std::memory_order_relaxed),
                         -80.0f, 20.0f) / 20.0f);
@@ -771,6 +827,36 @@ struct Engine::Impl
                     }
                     effects->delayPositions[effect] = writeFrame;
                 }
+                else if (type == VoiceEffectType::ChannelExtract)
+                {
+                    const ma_uint32 selected = static_cast<ma_uint32>(
+                        std::max(0.0f, effects->parameters[effect][0].load(
+                            std::memory_order_relaxed)));
+                    for (ma_uint32 frame = 0; frame < frames; ++frame)
+                    {
+                        const std::size_t base =
+                            static_cast<std::size_t>(frame) * channels;
+                        const float value = selected < channels
+                            ? output[0][base + selected] : 0.0f;
+                        std::fill_n(output[0] + base, channels, 0.0f);
+                        output[0][base] = value;
+                    }
+                }
+                else if (type == VoiceEffectType::ChannelInject)
+                {
+                    const ma_uint32 selected = static_cast<ma_uint32>(
+                        std::max(0.0f, effects->parameters[effect][0].load(
+                            std::memory_order_relaxed)));
+                    for (ma_uint32 frame = 0; frame < frames; ++frame)
+                    {
+                        const std::size_t base =
+                            static_cast<std::size_t>(frame) * channels;
+                        const float value = output[0][base];
+                        std::fill_n(output[0] + base, channels, 0.0f);
+                        if (selected < channels)
+                            output[0][base + selected] = value;
+                    }
+                }
                 else if (type == VoiceEffectType::Analyzer)
                 {
                     MeterState* meter = effects->meters[effect].load(
@@ -789,6 +875,7 @@ struct Engine::Impl
                     meter->rms.store(samples ? static_cast<float>(std::sqrt(
                         squares / static_cast<double>(samples))) : 0.0f,
                         std::memory_order_relaxed);
+                    meter->updateSerial.fetch_add(1, std::memory_order_release);
                     const bool spectrumEnabled =
                         effects->parameters[effect][0].load(
                             std::memory_order_relaxed) >= 0.5f;
@@ -907,6 +994,12 @@ struct Engine::Impl
 
     struct Clip
     {
+        ~Clip()
+        {
+            if (ownsStreamPath)
+                removeTemporaryStreamingPath(streamPath);
+        }
+
         std::uint32_t generation = 1;
         PcmClip pcm;
         std::filesystem::path streamPath;
@@ -914,6 +1007,7 @@ struct Engine::Impl
         std::uint32_t sampleRate = 0;
         std::uint32_t channels = 0;
         bool streaming = false;
+        bool ownsStreamPath = false;
         bool queued = false;
         ma_pcm_rb queue{};
     };
@@ -923,6 +1017,7 @@ struct Engine::Impl
         std::uint32_t generation = 1;
         std::uint32_t clipIndex = UINT32_MAX;
         std::uint32_t busIndex = UINT32_MAX;
+        std::uint32_t busGeneration = 0;
         std::int32_t priority = 0;
         std::uint64_t serial = 0;
         bool paused = false;
@@ -948,8 +1043,12 @@ struct Engine::Impl
     struct Bus
     {
         std::uint32_t generation = 1;
+        std::uint32_t parentIndex = UINT32_MAX;
+        std::uint32_t parentGeneration = 0;
         float volume = 1.0f;
         ma_sound_group group{};
+        EffectNode effects;
+        bool effectsInitialized = false;
     };
 
     EngineConfig config;
@@ -1200,8 +1299,15 @@ struct Engine::Impl
                     ma_audio_buffer_ref_uninit(&voice->buffer);
             }
         for (const std::unique_ptr<Bus>& bus : buses)
+            if (bus && bus->effectsInitialized)
+                ma_node_detach_output_bus(&bus->effects.base, 0);
+        for (const std::unique_ptr<Bus>& bus : buses)
             if (bus)
+            {
                 ma_sound_group_uninit(&bus->group);
+                if (bus->effectsInitialized)
+                    ma_node_uninit(&bus->effects.base, nullptr);
+            }
         for (const std::unique_ptr<Clip>& clip : clips)
             if (clip && clip->queued)
                 ma_pcm_rb_uninit(&clip->queue);
@@ -1230,6 +1336,138 @@ struct Engine::Impl
             return nullptr;
         Bus* bus = buses[handle.index].get();
         return bus->generation == handle.generation ? bus : nullptr;
+    }
+
+    void initializeEffectNode(EffectNode& effects)
+    {
+        const ma_uint32 channels = config.channels;
+        ma_node_config nodeConfig = ma_node_config_init();
+        nodeConfig.vtable = &effectVtable();
+        nodeConfig.pInputChannels = &channels;
+        nodeConfig.pOutputChannels = &channels;
+        requireSuccess(ma_node_init(ma_engine_get_node_graph(&engine),
+            &nodeConfig, nullptr, &effects.base),
+            "audio effect node initialization failed");
+        effects.sampleRate = config.sampleRate;
+        effects.channels = config.channels;
+        const std::size_t modulationDelaySamples = std::max<std::size_t>(
+            static_cast<std::size_t>(config.sampleRate) / 20 + 2,
+            2050) * config.channels;
+        for (std::vector<float>& delay : effects.delays)
+            delay.resize(modulationDelaySamples);
+        for (std::vector<float>& state : effects.states)
+            state.resize(config.channels);
+        for (std::vector<float>& state : effects.secondaryStates)
+            state.resize(config.channels);
+        for (std::vector<float>& state : effects.tertiaryStates)
+            state.resize(config.channels);
+    }
+
+    bool setEffectNodeEffects(EffectNode& node,
+        std::span<const VoiceEffect> effects)
+    {
+        if (effects.size() > node.types.size())
+            return false;
+        for (const VoiceEffect& effect : effects)
+        {
+            if (effect.type != VoiceEffectType::Distortion &&
+                effect.type != VoiceEffectType::Tremolo &&
+                effect.type != VoiceEffectType::Chorus &&
+                effect.type != VoiceEffectType::Flanger &&
+                effect.type != VoiceEffectType::Compressor &&
+                effect.type != VoiceEffectType::Gate &&
+                effect.type != VoiceEffectType::Limiter &&
+                effect.type != VoiceEffectType::Equalizer &&
+                effect.type != VoiceEffectType::Filter &&
+                effect.type != VoiceEffectType::PitchShifter &&
+                effect.type != VoiceEffectType::Echo &&
+                effect.type != VoiceEffectType::Reverb &&
+                effect.type != VoiceEffectType::Analyzer &&
+                effect.type != VoiceEffectType::ChannelExtract &&
+                effect.type != VoiceEffectType::ChannelInject)
+                return false;
+            const std::size_t parameterCount = effect.type ==
+                VoiceEffectType::Distortion ? 1 :
+                effect.type == VoiceEffectType::Tremolo ? 6 :
+                effect.type == VoiceEffectType::Compressor ? 5 :
+                effect.type == VoiceEffectType::Gate ? 4 :
+                effect.type == VoiceEffectType::Limiter ? 2 :
+                effect.type == VoiceEffectType::Equalizer ? 5 :
+                effect.type == VoiceEffectType::Filter ? 4 :
+                effect.type == VoiceEffectType::PitchShifter ? 2 :
+                effect.type == VoiceEffectType::Echo ? 7 :
+                effect.type == VoiceEffectType::Reverb ? 13 :
+                effect.type == VoiceEffectType::ChannelExtract ? 1 :
+                effect.type == VoiceEffectType::ChannelInject ? 1 : 3;
+            for (std::size_t parameter = 0; parameter < parameterCount;
+                 ++parameter)
+                if (!std::isfinite(effect.parameters[parameter]))
+                    return false;
+        }
+        for (std::size_t index = 0; index < effects.size(); ++index)
+        {
+            if (effects[index].type == VoiceEffectType::Echo ||
+                effects[index].type == VoiceEffectType::Reverb ||
+                effects[index].type == VoiceEffectType::Analyzer)
+            {
+                const bool echo = effects[index].type == VoiceEffectType::Echo;
+                const bool reverb =
+                    effects[index].type == VoiceEffectType::Reverb;
+                const std::uint32_t resetMarker = echo
+                    ? static_cast<std::uint32_t>(std::max(
+                        effects[index].parameters[5], 0.0f)) : 0u;
+                const std::uint32_t ownerKey = static_cast<std::uint32_t>(
+                    std::max(effects[index].parameters[
+                        echo ? 6 : reverb ? 12 : 2], 0.0f));
+                EffectNode::LongDelay* current =
+                    node.longDelays[index].load(std::memory_order_acquire);
+                const VoiceEffectType previousType =
+                    static_cast<VoiceEffectType>(node.types[index].load(
+                        std::memory_order_relaxed));
+                if (!current || previousType != effects[index].type ||
+                    current->resetMarker != resetMarker ||
+                    current->ownerKey != ownerKey)
+                {
+                    std::unique_ptr<EffectNode::LongDelay> longDelay(
+                        new EffectNode::LongDelay());
+                    longDelay->samples.resize(effects[index].type ==
+                        VoiceEffectType::Analyzer ? 6144 :
+                        (static_cast<std::size_t>(config.sampleRate) * 5 + 2) *
+                            config.channels);
+                    longDelay->resetMarker = resetMarker;
+                    longDelay->ownerKey = ownerKey;
+                    EffectNode::LongDelay* published = longDelay.get();
+                    node.retainedLongDelays.push_back(std::move(longDelay));
+                    node.longDelays[index].store(published,
+                        std::memory_order_release);
+                }
+            }
+            if (effects[index].meter)
+            {
+                MeterState* current = node.meters[index].load(
+                    std::memory_order_acquire);
+                if (current != effects[index].meter.get())
+                {
+                    node.retainedMeters.push_back(effects[index].meter);
+                    node.meters[index].store(effects[index].meter.get(),
+                        std::memory_order_release);
+                }
+            }
+            else
+            {
+                node.meters[index].store(nullptr, std::memory_order_release);
+            }
+            node.types[index].store(static_cast<std::uint8_t>(
+                effects[index].type), std::memory_order_relaxed);
+            for (std::size_t parameter = 0;
+                 parameter < effects[index].parameters.size(); ++parameter)
+                node.parameters[index][parameter].store(
+                    effects[index].parameters[parameter],
+                    std::memory_order_relaxed);
+        }
+        node.count.store(static_cast<std::uint32_t>(effects.size()),
+            std::memory_order_release);
+        return true;
     }
 
     void applyPendingRange(Voice* voice) noexcept
@@ -1418,16 +1656,46 @@ ClipHandle Engine::createStreamingClip(const std::filesystem::path& path)
         std::filesystem::file_size(path) > impl->config.maxEncodedBytes)
         throw std::invalid_argument("streaming audio file violates configured limits");
 
+    std::filesystem::path streamPath = path;
+    bool ownsStreamPath = false;
     ma_decoder decoder{};
+    const ma_decoder_config decoderConfig = ma_decoder_config_init(ma_format_f32, 0, 0);
 #if defined(_WIN32)
-    const ma_decoder_config decoderConfig = ma_decoder_config_init(ma_format_f32, 0, 0);
-    requireSuccess(ma_decoder_init_file_w(path.c_str(), &decoderConfig, &decoder),
-        "miniaudio streaming metadata initialization failed");
+    ma_result decoderInitResult = ma_decoder_init_file_w(
+        streamPath.c_str(), &decoderConfig, &decoder);
 #else
-    const ma_decoder_config decoderConfig = ma_decoder_config_init(ma_format_f32, 0, 0);
-    requireSuccess(ma_decoder_init_file(path.c_str(), &decoderConfig, &decoder),
-        "miniaudio streaming metadata initialization failed");
+    ma_result decoderInitResult = ma_decoder_init_file(
+        streamPath.c_str(), &decoderConfig, &decoder);
 #endif
+    if (decoderInitResult != MA_SUCCESS)
+    {
+        streamPath = temporaryStreamingPath();
+        try
+        {
+            transcodeFfmpegAudioToFloatWav(
+                path, streamPath, impl->config.maxClipFrames);
+        }
+        catch (...)
+        {
+            removeTemporaryStreamingPath(streamPath);
+            throw;
+        }
+        ownsStreamPath = true;
+#if defined(_WIN32)
+        decoderInitResult = ma_decoder_init_file_w(
+            streamPath.c_str(), &decoderConfig, &decoder);
+#else
+        decoderInitResult = ma_decoder_init_file(
+            streamPath.c_str(), &decoderConfig, &decoder);
+#endif
+        if (decoderInitResult != MA_SUCCESS)
+        {
+            removeTemporaryStreamingPath(streamPath);
+            throw std::runtime_error(
+                "transcoded streaming audio could not be opened");
+        }
+    }
+
     ma_uint64 frameCount = 0;
     const ma_result lengthResult = ma_decoder_get_length_in_pcm_frames(&decoder, &frameCount);
     const std::uint32_t sampleRate = decoder.outputSampleRate;
@@ -1435,10 +1703,29 @@ ClipHandle Engine::createStreamingClip(const std::filesystem::path& path)
     ma_decoder_uninit(&decoder);
     if (lengthResult != MA_SUCCESS || frameCount == 0 ||
         frameCount > impl->config.maxClipFrames || sampleRate == 0 || channels == 0)
+    {
+        if (ownsStreamPath)
+        {
+            removeTemporaryStreamingPath(streamPath);
+        }
         throw std::invalid_argument("streaming audio has invalid or unbounded dimensions");
+    }
 
-    auto clip = std::make_unique<Impl::Clip>();
-    clip->streamPath = path;
+    std::unique_ptr<Impl::Clip> clip;
+    try
+    {
+        clip = std::make_unique<Impl::Clip>();
+    }
+    catch (...)
+    {
+        if (ownsStreamPath)
+        {
+            removeTemporaryStreamingPath(streamPath);
+        }
+        throw;
+    }
+    clip->streamPath = streamPath;
+    clip->ownsStreamPath = ownsStreamPath;
     clip->frameCount = frameCount;
     clip->sampleRate = sampleRate;
     clip->channels = channels;
@@ -1455,6 +1742,12 @@ ClipHandle Engine::createStreamingClip(const std::filesystem::path& path)
     impl->clips.push_back(std::move(clip));
     impl->clipGenerations.push_back(impl->clips.back()->generation);
     return {static_cast<std::uint32_t>(impl->clips.size() - 1), impl->clips.back()->generation};
+}
+
+bool Engine::clipIsStreaming(ClipHandle handle) const
+{
+    const Impl::Clip* clip = impl->find(handle);
+    return clip && clip->streaming;
 }
 
 ClipHandle Engine::createQueuedClip(std::uint32_t sampleRate, std::uint32_t channels,
@@ -1550,13 +1843,49 @@ bool Engine::destroyClip(ClipHandle handle)
     return true;
 }
 
-BusHandle Engine::createBus(float volume)
+BusHandle Engine::createBus(float volume, BusHandle parentHandle)
 {
+    Impl::Bus* parent = parentHandle ? impl->find(parentHandle) : nullptr;
+    if (parentHandle && !parent)
+        return {};
+    if (!std::isfinite(volume))
+        return {};
+
     auto bus = std::make_unique<Impl::Bus>();
     bus->volume = std::max(volume, 0.0f);
-    requireSuccess(ma_sound_group_init(&impl->engine, 0, nullptr, &bus->group),
-        "miniaudio bus initialization failed");
-    ma_sound_group_set_volume(&bus->group, bus->volume);
+    if (parent)
+    {
+        bus->parentIndex = parentHandle.index;
+        bus->parentGeneration = parentHandle.generation;
+    }
+    bool groupInitialized = false;
+    try
+    {
+        requireSuccess(ma_sound_group_init(&impl->engine, 0, nullptr,
+            &bus->group), "miniaudio bus initialization failed");
+        groupInitialized = true;
+        ma_sound_group_set_volume(&bus->group, bus->volume);
+        impl->initializeEffectNode(bus->effects);
+        bus->effectsInitialized = true;
+        requireSuccess(ma_node_detach_output_bus(&bus->group, 0),
+            "miniaudio bus output detachment failed");
+        requireSuccess(ma_node_attach_output_bus(&bus->group, 0,
+            &bus->effects.base, 0),
+            "miniaudio bus effect input attachment failed");
+        ma_node* destination = parent
+            ? static_cast<ma_node*>(&parent->group)
+            : ma_engine_get_endpoint(&impl->engine);
+        requireSuccess(ma_node_attach_output_bus(&bus->effects.base, 0,
+            destination, 0), "miniaudio bus effect output attachment failed");
+    }
+    catch (...)
+    {
+        if (groupInitialized)
+            ma_sound_group_uninit(&bus->group);
+        if (bus->effectsInitialized)
+            ma_node_uninit(&bus->effects.base, nullptr);
+        throw;
+    }
     for (std::uint32_t index = 0; index < impl->buses.size(); ++index)
     {
         if (!impl->buses[index])
@@ -1577,9 +1906,17 @@ bool Engine::destroyBus(BusHandle handle)
     if (!bus)
         return false;
     for (const std::unique_ptr<Impl::Voice>& voice : impl->voices)
-        if (voice && voice->busIndex == handle.index)
+        if (voice && voice->busIndex == handle.index &&
+            voice->busGeneration == handle.generation)
+            return false;
+    for (const std::unique_ptr<Impl::Bus>& child : impl->buses)
+        if (child && child.get() != bus &&
+            child->parentIndex == handle.index &&
+            child->parentGeneration == handle.generation)
             return false;
     ma_sound_group_uninit(&bus->group);
+    if (bus->effectsInitialized)
+        ma_node_uninit(&bus->effects.base, nullptr);
     impl->buses[handle.index].reset();
     if (++impl->busGenerations[handle.index] == 0)
         ++impl->busGenerations[handle.index];
@@ -1589,11 +1926,63 @@ bool Engine::destroyBus(BusHandle handle)
 bool Engine::setBusVolume(BusHandle handle, float volume)
 {
     Impl::Bus* bus = impl->find(handle);
-    if (!bus)
+    if (!bus || !std::isfinite(volume))
         return false;
     bus->volume = std::max(volume, 0.0f);
     ma_sound_group_set_volume(&bus->group, bus->volume);
     return true;
+}
+
+bool Engine::setBusParent(BusHandle handle, BusHandle parentHandle)
+{
+    Impl::Bus* bus = impl->find(handle);
+    Impl::Bus* parent = parentHandle ? impl->find(parentHandle) : nullptr;
+    if (!bus || !bus->effectsInitialized || (parentHandle && !parent) ||
+        (parentHandle && handle.index == parentHandle.index &&
+            handle.generation == parentHandle.generation))
+        return false;
+    if (bus->parentIndex == parentHandle.index &&
+        bus->parentGeneration == parentHandle.generation)
+        return true;
+
+    for (Impl::Bus* ancestor = parent; ancestor;)
+    {
+        if (ancestor == bus)
+            return false;
+        if (ancestor->parentIndex == UINT32_MAX)
+            break;
+        ancestor = impl->find(BusHandle{ancestor->parentIndex,
+            ancestor->parentGeneration});
+    }
+
+    Impl::Bus* previousParent = bus->parentIndex == UINT32_MAX ? nullptr :
+        impl->find(BusHandle{bus->parentIndex, bus->parentGeneration});
+    ma_node* previousDestination = previousParent
+        ? static_cast<ma_node*>(&previousParent->group)
+        : ma_engine_get_endpoint(&impl->engine);
+    ma_node* destination = parent
+        ? static_cast<ma_node*>(&parent->group)
+        : ma_engine_get_endpoint(&impl->engine);
+    if (ma_node_detach_output_bus(&bus->effects.base, 0) != MA_SUCCESS)
+        return false;
+    if (ma_node_attach_output_bus(&bus->effects.base, 0, destination, 0) !=
+        MA_SUCCESS)
+    {
+        ma_node_attach_output_bus(&bus->effects.base, 0,
+            previousDestination, 0);
+        return false;
+    }
+    bus->parentIndex = parentHandle ? parentHandle.index : UINT32_MAX;
+    bus->parentGeneration = parentHandle ? parentHandle.generation : 0;
+    return true;
+}
+
+bool Engine::setBusEffects(BusHandle handle,
+    std::span<const VoiceEffect> effects)
+{
+    Impl::Bus* bus = impl->find(handle);
+    return bus && bus->effectsInitialized &&
+        impl->setEffectNodeEffects(bus->effects, effects);
 }
 
 float Engine::busVolume(BusHandle handle) const
@@ -1705,7 +2094,9 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
                 effect.type != VoiceEffectType::PitchShifter &&
                 effect.type != VoiceEffectType::Echo &&
                 effect.type != VoiceEffectType::Reverb &&
-                effect.type != VoiceEffectType::Analyzer)
+                effect.type != VoiceEffectType::Analyzer &&
+                effect.type != VoiceEffectType::ChannelExtract &&
+                effect.type != VoiceEffectType::ChannelInject)
                 return {};
             const std::size_t parameterCount = effect.type ==
                 VoiceEffectType::Distortion ? 1 :
@@ -1718,6 +2109,8 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
                 effect.type == VoiceEffectType::PitchShifter ? 2 :
                 effect.type == VoiceEffectType::Echo ? 7 :
                 effect.type == VoiceEffectType::Reverb ? 13 :
+                effect.type == VoiceEffectType::ChannelExtract ? 1 :
+                effect.type == VoiceEffectType::ChannelInject ? 1 :
                 effect.type == VoiceEffectType::Analyzer ? 3 : 3;
             for (std::size_t parameter = 0; parameter < parameterCount; ++parameter)
                 if (!std::isfinite(effect.parameters[parameter]))
@@ -1768,6 +2161,7 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
         if (!bus)
             return {};
         voice->busIndex = parameters.bus.index;
+        voice->busGeneration = parameters.bus.generation;
     }
     voice->priority = parameters.priority;
     voice->serial = impl->nextVoiceSerial++;
@@ -1922,7 +2316,7 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
                 voice->effects.longDelays[index].store(published,
                     std::memory_order_release);
             }
-            if (effect.type == VoiceEffectType::Analyzer && effect.meter)
+            if (effect.meter)
             {
                 voice->effects.retainedMeters.push_back(effect.meter);
                 voice->effects.meters[index].store(effect.meter.get(),
@@ -2142,6 +2536,39 @@ bool Engine::setVoicePitch(VoiceHandle handle, float pitch)
     return true;
 }
 
+bool Engine::setVoiceBus(VoiceHandle handle, BusHandle busHandle)
+{
+    Impl::Voice* voice = impl->find(handle);
+    Impl::Bus* bus = busHandle ? impl->find(busHandle) : nullptr;
+    if (!voice || !voice->effectsInitialized || (busHandle && !bus))
+        return false;
+    if (voice->busIndex == busHandle.index &&
+        voice->busGeneration == busHandle.generation)
+        return true;
+
+    ma_node* destination = bus
+        ? static_cast<ma_node*>(&bus->group)
+        : ma_engine_get_endpoint(&impl->engine);
+    Impl::Bus* previousBus = voice->busIndex == UINT32_MAX ? nullptr :
+        impl->find(BusHandle{voice->busIndex, voice->busGeneration});
+    ma_node* previousDestination = previousBus
+        ? static_cast<ma_node*>(&previousBus->group)
+        : ma_engine_get_endpoint(&impl->engine);
+    if (ma_node_detach_output_bus(&voice->effects.base, 0) != MA_SUCCESS)
+        return false;
+    if (ma_node_attach_output_bus(&voice->effects.base, 0, destination, 0) !=
+        MA_SUCCESS)
+    {
+        ma_node_attach_output_bus(&voice->effects.base, 0,
+            previousDestination, 0);
+        return false;
+    }
+
+    voice->busIndex = busHandle ? busHandle.index : UINT32_MAX;
+    voice->busGeneration = busHandle ? busHandle.generation : 0;
+    return true;
+}
+
 bool Engine::setVoiceDistortion(VoiceHandle handle,
     std::span<const float> levels)
 {
@@ -2180,7 +2607,9 @@ bool Engine::setVoiceEffects(VoiceHandle handle,
             effect.type != VoiceEffectType::PitchShifter &&
             effect.type != VoiceEffectType::Echo &&
             effect.type != VoiceEffectType::Reverb &&
-            effect.type != VoiceEffectType::Analyzer)
+            effect.type != VoiceEffectType::Analyzer &&
+            effect.type != VoiceEffectType::ChannelExtract &&
+            effect.type != VoiceEffectType::ChannelInject)
             return false;
         const std::size_t parameterCount = effect.type ==
             VoiceEffectType::Distortion ? 1 :
@@ -2192,7 +2621,9 @@ bool Engine::setVoiceEffects(VoiceHandle handle,
             effect.type == VoiceEffectType::Filter ? 4 :
             effect.type == VoiceEffectType::PitchShifter ? 2 :
             effect.type == VoiceEffectType::Echo ? 7 :
-            effect.type == VoiceEffectType::Reverb ? 13 : 3;
+            effect.type == VoiceEffectType::Reverb ? 13 :
+            effect.type == VoiceEffectType::ChannelExtract ? 1 :
+            effect.type == VoiceEffectType::ChannelInject ? 1 : 3;
         for (std::size_t parameter = 0; parameter < parameterCount; ++parameter)
             if (!std::isfinite(effect.parameters[parameter]))
                 return false;
@@ -2233,8 +2664,7 @@ bool Engine::setVoiceEffects(VoiceHandle handle,
                     std::memory_order_release);
             }
         }
-        if (effects[index].type == VoiceEffectType::Analyzer &&
-            effects[index].meter)
+        if (effects[index].meter)
         {
             MeterState* current = voice->effects.meters[index].load(
                 std::memory_order_acquire);
@@ -2244,6 +2674,11 @@ bool Engine::setVoiceEffects(VoiceHandle handle,
                 voice->effects.meters[index].store(effects[index].meter.get(),
                     std::memory_order_release);
             }
+        }
+        else
+        {
+            voice->effects.meters[index].store(nullptr,
+                std::memory_order_release);
         }
         voice->effects.types[index].store(static_cast<std::uint8_t>(
             effects[index].type), std::memory_order_relaxed);

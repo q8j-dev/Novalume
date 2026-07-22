@@ -75,7 +75,11 @@ function UserData:Initialize()
 	if UserSettings().GameSettings:InStudioMode()
 		or UserInputService:GetPlatform() ~= Enum.Platform.XBoxOne then
 		local localPlayer = getLocalPlayer()
-		currentUserData["Gamertag"] = "InStudioNoGamertag"
+		local displayName = localPlayer.DisplayName
+		if not displayName or displayName == "" then
+			displayName = localPlayer.Name
+		end
+		currentUserData["Gamertag"] = displayName ~= "" and displayName or "Local Player"
 		currentUserData["RbxUid"] = localPlayer.userId
 		currentUserData["RobloxName"] = localPlayer.Name
 		currentUserData["VoteCount"] = 0

@@ -1219,6 +1219,9 @@ void Player::doPeriodicIdleCheck()
 
 void Player::onServiceProvider(ServiceProvider* oldProvider, ServiceProvider* newProvider)
 {
+	DataModel* enteringDataModel = newProvider ? DataModel::get(newProvider) : NULL;
+	const bool enteringAppShell = enteringDataModel && enteringDataModel->isAppShell();
+
 	if (oldProvider && Players::backendProcessing(oldProvider))
 	{
 		setCharacter(NULL);
@@ -1233,7 +1236,7 @@ void Player::onServiceProvider(ServiceProvider* oldProvider, ServiceProvider* ne
 		{
 			onCharacterChangedFrontend();
 			RBX::Network::Player* localPlayer = Network::Players::findLocalPlayer(newProvider);
-			if (localPlayer && this == localPlayer)
+			if (!enteringAppShell && localPlayer && this == localPlayer)
 				rebuildPlayerScripts();
 		}
 
@@ -2176,18 +2179,16 @@ void Player::loadCharacterInternal(bool inGame,
 		}
 	}
 
-	// Studio's current authored R15 rig files are stored as anchored preview
-	// models. Character assembly, like the official Player's RigBuilder path,
-	// must turn those preview parts into one simulated jointed assembly before
-	// the model enters Workspace. Leaving only HumanoidRootPart dynamic tears the
-	// character apart as soon as a game unanchors its spawn hold.
+	DataModel* characterDataModel = DataModel::get(this);
+	const bool preserveAppShellPreviewRig =
+		characterDataModel && characterDataModel->isAppShell();
 	if (useR15 && pModel)
 	{
 		for (std::size_t index = 0; index < pModel->numChildren(); ++index)
 		{
 			if (PartInstance* part = Instance::fastDynamicCast<PartInstance>(
 					pModel->getChild(index)))
-				part->setAnchored(false);
+				part->setAnchored(preserveAppShellPreviewRig);
 		}
 	}
 
@@ -2377,7 +2378,9 @@ void Player::setupHumanoid(shared_ptr<Humanoid> humanoid)
 	Workspace* workspace = ServiceProvider::find<Workspace>(this);
 	RBXASSERT(workspace);
 
-	if (workspace && workspace->getCamera() &&
+	DataModel* dataModel = DataModel::get(this);
+	const bool appShellIdentity = dataModel && dataModel->isAppShell();
+	if (!appShellIdentity && workspace && workspace->getCamera() &&
 		(workspace->getCamera()->getCameraSubject() == NULL ||
 		 hasOfflineCharacterAuthority()))
 	{

@@ -13,6 +13,7 @@
 #include <algorithm>
 
 #ifndef _WIN32
+#include <time.h>
 #include <unistd.h>
 #endif
 
@@ -111,28 +112,8 @@ static void checkDbg()
 #ifdef __RBX_NOT_RELEASE
 	return;
 #else
-	DWORD dw = 0;
-	__asm
-	{
-		push eax    // Preserve the registers
-		push ecx
-		mov eax, fs:[0x18]  // Get the TIB's linear address
-
-		mov eax, dword ptr [eax + 0x30]
-		mov ecx, dword ptr [eax]    // Get the whole DWORD
-
-		mov dw, ecx // Save it
-		pop ecx // Restore the registers
-		pop eax
-	}
-
-	// The 3rd byte is the byte we really need to check for the
-	// presence of a debugger.
-	// Check the 3rd byte
-	if (dw & 0x00010000)
-	{
+	if (IsDebuggerPresent() != FALSE)
 		isDebuggedValue = true;
-	}
 #endif
 }
 
@@ -155,7 +136,7 @@ static double tick_frequency_helper()
     }
 return static_cast<double>(tinfo.numer/(double)tinfo.denom * 1e-9);
     
-#elif defined(__ANDROID__)
+#elif defined(__ANDROID__) || defined(__linux__)
     return 1e-9;
     
 #endif
@@ -173,11 +154,11 @@ long long Time::getTickCount(){
 #elif defined(__APPLE__)
     uint64_t ticks = mach_absolute_time();
     return ticks;
-#elif defined(__ANDROID__)
+#elif defined(__ANDROID__) || defined(__linux__)
     timespec now;
     clock_gettime(CLOCK_MONOTONIC, &now);
-    
-    return now.tv_sec*1e9 + now.tv_nsec;
+
+    return static_cast<long long>(now.tv_sec) * 1000000000LL + now.tv_nsec;
 #endif
 }
 long long Time::getStart()
@@ -190,7 +171,7 @@ long long Time::getStart()
 
 #if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
 
-void CALLBACK directCallback(UINT, UINT, DWORD, DWORD, DWORD) 
+void CALLBACK directCallback(UINT, UINT, DWORD_PTR, DWORD_PTR, DWORD_PTR)
 { 
 	if(recguard.swap(1) == 1)
 	{

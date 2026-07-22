@@ -21,6 +21,7 @@
 #include <filesystem>
 #include <mutex>
 #include <iterator>
+#include <limits>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -292,6 +293,24 @@ public:
             recordRecentDocument(writableDataRoot(), path);
         }
         return launched != FALSE;
+    }
+
+    bool openExternalUri(std::string_view uri) override
+    {
+        if (uri.empty() || uri.size() > static_cast<std::size_t>(
+                std::numeric_limits<int>::max()))
+            return false;
+        const int size = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS,
+            uri.data(), static_cast<int>(uri.size()), nullptr, 0);
+        if (size <= 0)
+            return false;
+        std::wstring wide(static_cast<std::size_t>(size), L'\0');
+        if (MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, uri.data(),
+                static_cast<int>(uri.size()), wide.data(), size) != size)
+            return false;
+        const HINSTANCE result = ShellExecuteW(window_, L"open", wide.c_str(),
+            nullptr, nullptr, SW_SHOWNORMAL);
+        return reinterpret_cast<std::intptr_t>(result) > 32;
     }
 
     void setClipboardText(std::string_view text) override

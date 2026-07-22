@@ -32,6 +32,8 @@ namespace RBX
 		bool isTrustedContent(const char* url);
 	}
 
+#ifdef RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY
 	void spawnDebugCheckThreads(boost::weak_ptr<RBX::DataModel> weakDataModel);
-    extern unsigned int initialProgramHash;
+	extern unsigned int initialProgramHash;
+#endif
 }

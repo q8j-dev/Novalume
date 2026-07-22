@@ -282,6 +282,7 @@
 #include "V8datamodel/NotificationService.h"
 #include "V8datamodel/GroupService.h"
 #include "V8datamodel/GamepadService.h"
+#include "V8DataModel/PlatformService.h"
 
 #include "v8datamodel/NumberSequence.h"
 #include "v8datamodel/NumberRange.h"
@@ -384,6 +385,7 @@ RBX_REGISTER_CLASS(ForceField);
 RBX_REGISTER_CLASS(Fire);
 RBX_REGISTER_CLASS(GameSettings);
 RBX_REGISTER_CLASS(GameBasicSettings);
+RBX_REGISTER_CLASS(PlatformService);
 RBX_REGISTER_CLASS(GeometryService);
 RBX_REGISTER_CLASS(Settings);
 RBX_REGISTER_CLASS(GlobalAdvancedSettings);
@@ -750,7 +752,16 @@ RBX_REGISTER_CLASS(NegateOperation);
 RBX_REGISTER_CLASS(Soundscape::SoundService);
 RBX_REGISTER_CLASS(Soundscape::SoundChannel);
 RBX_REGISTER_CLASS(Soundscape::SoundGroup);
+RBX_REGISTER_CLASS(Soundscape::SoundEffect);
 RBX_REGISTER_CLASS(Soundscape::EqualizerSoundEffect);
+RBX_REGISTER_CLASS(Soundscape::DistortionSoundEffect);
+RBX_REGISTER_CLASS(Soundscape::FlangeSoundEffect);
+RBX_REGISTER_CLASS(Soundscape::EchoSoundEffect);
+RBX_REGISTER_CLASS(Soundscape::TremoloSoundEffect);
+RBX_REGISTER_CLASS(Soundscape::ReverbSoundEffect);
+RBX_REGISTER_CLASS(Soundscape::PitchShiftSoundEffect);
+RBX_REGISTER_CLASS(Soundscape::ChorusSoundEffect);
+RBX_REGISTER_CLASS(Soundscape::CompressorSoundEffect);
 RBX_REGISTER_CLASS(Soundscape::Wire);
 RBX_REGISTER_CLASS(Soundscape::AudioDeviceOutput);
 RBX_REGISTER_CLASS(Soundscape::AudioFader);
@@ -811,6 +822,8 @@ FactoryRegistrator::FactoryRegistrator()
 
 // Enum types
 RBX_REGISTER_ENUM(Enums::RunContext);
+RBX_REGISTER_ENUM(XboxKeyBoardType);
+RBX_REGISTER_ENUM(VoiceChatState);
 RBX_REGISTER_ENUM(HingeConstraint::ActuatorType);
 RBX_REGISTER_ENUM(ChangeHistoryService::RuntimeUndoBehavior);
 RBX_REGISTER_ENUM(ProximityPrompt::Style);

@@ -26,10 +26,6 @@
 #include "util/FileSystem.h"
 #include "FastLog.h"
 
-#if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-#include "../platform/windows/historical/LogManager.h"
-#endif
-
 FASTFLAGVARIABLE(CSGExportFailure, false);
 
 static std::string lastFileError = "";
@@ -220,16 +216,27 @@ void logError(sgCObject* obj1, sgCObject* obj2, bool unionOperation = true)
 #if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
 	removePreviousErrorFiles();
 
-	std::string path = MainLogManager::getMainLogManager()->MakeLogFileName(unionOperation ? "_csgU" : "_csgN");
-	path = path.substr(0, path.size() - 4);
-	lastFileError = path;
+	const boost::filesystem::path logDirectory =
+		RBX::FileSystem::getUserDirectory(true, RBX::DirAppData, "logs");
+	if (logDirectory.empty())
+		return;
+
+	boost::system::error_code error;
+	boost::filesystem::create_directories(logDirectory, error);
+	if (error)
+		return;
+
+	std::ostringstream fileName;
+	fileName << (unionOperation ? "csgU-" : "csgN-")
+		<< boost::uuids::random_generator()();
+	lastFileError = (logDirectory / fileName.str()).string();
 	
 	sgGetScene()->AttachObject(obj1);
-	sgFileManager::ExportDXF(sgGetScene(), (path + "A.dxf").c_str());
+	sgFileManager::ExportDXF(sgGetScene(), (lastFileError + "A.dxf").c_str());
 	sgGetScene()->DetachObject(obj1);
 
 	sgGetScene()->AttachObject(obj2);
-	sgFileManager::ExportDXF(sgGetScene(), (path + "B.dxf").c_str());
+	sgFileManager::ExportDXF(sgGetScene(), (lastFileError + "B.dxf").c_str());
 	sgGetScene()->DetachObject(obj2);
 #endif
 }

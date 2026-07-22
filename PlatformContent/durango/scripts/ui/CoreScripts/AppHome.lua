@@ -3,7 +3,6 @@
 -- App's Main
 
 local CoreGui = Game:GetService("CoreGui")
-local ContentProvider = Game:GetService("ContentProvider")
 local GuiRoot = CoreGui:FindFirstChild("RobloxGui")
 local Modules = GuiRoot:FindFirstChild("Modules")
 -- TODO: Will use for re-auth when finished
@@ -40,10 +39,12 @@ local BACKGROUND_ASSETS =
 	'Home_screen_01.png';
 }
 
+local Is3DBackgroundEnabled = Utility.IsFastFlagEnabled("Durango3DBackground")
+
 local AppHomeContainer = Utility.Create'Frame'
 {
 	Size = UDim2.new(1, 0, 1, 0);
-	BackgroundTransparency = 0;
+	BackgroundTransparency = Is3DBackgroundEnabled and 1 or 0;
 	BorderSizePixel = 0;
 	BackgroundColor3 = Color3.new(0,0,0);
 	Name = 'AppHomeContainer';
@@ -55,10 +56,11 @@ local BackgroundAssetIndex = 1
 local Background = Utility.Create'ImageLabel'
 {
 	Size = UDim2.new(1, 0, 1, 0);
-	BackgroundTransparency = 0;
+	BackgroundTransparency = Is3DBackgroundEnabled and 1 or 0;
 	BorderSizePixel = 0;
 	Name = 'Background';
-	Image = 'rbxasset://textures/ui/Shell/Background/' .. BACKGROUND_ASSETS[BackgroundAssetIndex];
+	Image = Is3DBackgroundEnabled and '' or
+		('rbxasset://textures/ui/Shell/Background/' .. BACKGROUND_ASSETS[BackgroundAssetIndex]);
 	Parent = AppHomeContainer;
 }
 local CrossfadeBackground = Utility.Create'ImageLabel'
@@ -71,10 +73,7 @@ local CrossfadeBackground = Utility.Create'ImageLabel'
 	Parent = Background;
 }
 
-Background.ImageTransparency = 0
-
--- get fast flags for 3D backgrounds
-local Is3DBackgroundEnabled = Utility.IsFastFlagEnabled("Durango3DBackground")
+Background.ImageTransparency = Is3DBackgroundEnabled and 1 or 0
 
 
 -- print ("BACKGROUND")
@@ -98,31 +97,10 @@ if soundHandle then
 end
 
 if Is3DBackgroundEnabled then
+	CameraManager:StartTransitionScreenEffect()
+	CameraManager:EnableCameraControl()
 	spawn(function()
-
-		while true do
-			local queueSize = ContentProvider.RequestQueueSize
-
-			if queueSize == 0 then
-				CameraManager:StartTransitionScreenEffect()
-				CameraManager:EnableCameraControl()
-
-				spawn(function()
-					CameraManager:CameraMoveToAsync()
-				end)
-
-				AppHomeContainer.BackgroundTransparency = 1
-				Background.BackgroundTransparency = 1;
-				Background.ImageTransparency = 1
-				CrossfadeBackground.ImageTransparency = 1
-
-				Utility.PropertyTweener(Background, 'ImageTransparency', 0, 1, CROSSFADE_DURATION,  Utility.EaseInOutQuad, true)
-				break
-			end
-
-			wait(0.01)
-		end
-
+		CameraManager:CameraMoveToAsync()
 	end)
 else
 	spawn(function()

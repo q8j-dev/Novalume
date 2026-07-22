@@ -9,7 +9,7 @@ target_include_directories(rbx-audio-runtime
     PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../include")
 target_include_directories(rbx-audio-runtime SYSTEM PRIVATE
     "${MINIAUDIO_INCLUDE_DIR}")
-target_link_libraries(rbx-audio-runtime PUBLIC Roblox::AudioContracts PkgConfig::RBX_FFMPEG)
+target_link_libraries(rbx-audio-runtime PUBLIC Roblox::AudioContracts Roblox::FFmpeg)
 target_compile_features(rbx-audio-runtime PUBLIC cxx_std_20)
 rbx_enable_warnings(rbx-audio-runtime)
 

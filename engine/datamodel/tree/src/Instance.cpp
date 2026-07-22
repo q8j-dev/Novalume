@@ -17,7 +17,7 @@
 #include <cstring>
 #include <limits>
 #if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-#include "VMProtect/VMProtectSDK.h"
+#include "security/ProtectionMarkers.h"
 #endif
 
 LOGVARIABLE(InstanceTreeManipulation, 0)
@@ -1158,9 +1158,9 @@ bool Instance::setParentInternal(Instance* newParent, bool ignoreLock)
 #if !defined(RBX_RCC_SECURITY) && !defined(RBX_STUDIO_BUILD) && !defined(_NOOPT) && !defined(_DEBUG) && defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
     if (detectedExploit)
     {
-        VMProtectBeginVirtualization(NULL);
+        Security::ProtectionMarkers::beginVirtualization();
         RBX::Security::setHackFlagVs<0>(RBX::Security::hackFlag3, HATE_SEH_CHECK);
-        VMProtectEnd();
+        Security::ProtectionMarkers::end();
     }
 #endif
 	

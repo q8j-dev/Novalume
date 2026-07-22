@@ -1,10 +1,7 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
-
-#ifdef _WIN32
-typedef unsigned __int64    uint64_t;
-#endif
 
 namespace RBX
 {
@@ -12,16 +9,16 @@ namespace RBX
 	{
 		/// CPU Related
 		std::string getCPUMake();		
-		uint64_t getCPUSpeed();
-		uint64_t getCPULogicalCount();
-		uint64_t getCPUCoreCount();
-		uint64_t getCPUPhysicalCount();
+		std::uint64_t getCPUSpeed();
+		std::uint64_t getCPULogicalCount();
+		std::uint64_t getCPUCoreCount();
+		std::uint64_t getCPUPhysicalCount();
 		bool isCPU64Bit();
 		
 		/// Memory Related
-		uint64_t getMBSysRAM();
-		uint64_t getMBSysAvailableRAM();
-		uint64_t getVideoMemory();
+		std::uint64_t getMBSysRAM();
+		std::uint64_t getMBSysAvailableRAM();
+		std::uint64_t getVideoMemory();
 
 		/// OS Related
         std::string osPlatform();

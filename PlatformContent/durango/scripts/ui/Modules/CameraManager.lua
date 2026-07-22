@@ -57,7 +57,7 @@ local function onCameraChanged()
 		camera.CameraType = 'Scriptable'
 	end
 end
-workspace.Changed:connect(function()
+workspace.Changed:connect(function(prop)
 	if prop == 'CurrentCamera' then
 		onCameraChanged()
 	end
@@ -237,6 +237,7 @@ end)
 local ZoneManager = require(script.Parent:WaitForChild("CameraManagerModules"):WaitForChild("CameraManager_ZoneManager"))
 
 function CameraManager:CameraMoveToAsync( ... )
+	onCameraChanged()
 	local cameraSets = {}
 	for k, f in pairs(workspace:WaitForChild("Cameras"):GetChildren()) do
 		cameraSets[f.Name] = GetCameraParts(f)
@@ -257,5 +258,3 @@ end
 
 
 return CameraManager
-
-

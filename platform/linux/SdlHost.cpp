@@ -364,6 +364,12 @@ public:
         return launched;
     }
 
+    bool openExternalUri(std::string_view uri) override
+    {
+        const std::string value(uri);
+        return SDL_OpenURL(value.c_str());
+    }
+
     void setClipboardText(std::string_view text) override
     {
         const std::string value(text);

@@ -2,6 +2,7 @@
 /* Copyright 2003-2014 ROBLOX Corporation, All Rights Reserved  */
 #include "V8Tree/Instance.h"
 #include "V8Tree/Service.h"
+#include "V8DataModel/DataModel.h"
 #include "V8DataModel/StarterPlayerService.h"
 #include "V8DataModel/PlayerScripts.h"
 #include "V8DataModel/GameBasicSettings.h"
@@ -329,6 +330,10 @@ void StarterPlayerService::onServiceProvider(ServiceProvider* oldProvider, Servi
 
 void StarterPlayerService::setupPlayerScripts()
 {
+	DataModel* dataModel = DataModel::get(this);
+	if (dataModel && dataModel->isAppShell())
+		return;
+
 	RBX::StarterPlayerScripts* currPlayerScripts= findFirstChildOfType<RBX::StarterPlayerScripts>();
 	if (!currPlayerScripts)
 	{

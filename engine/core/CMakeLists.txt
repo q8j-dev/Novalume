@@ -31,6 +31,10 @@ elseif(ANDROID)
     list(APPEND RBX_CORE_SOURCES
         src/rbx/Android/SystemUtil.cpp
         src/rbx/Android/ifaddrs.c)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    list(APPEND RBX_CORE_SOURCES
+        src/rbx/Linux/SystemUtil.cpp
+        src/rbx/Unix/Crypt.cpp)
 elseif(WIN32)
     list(APPEND RBX_CORE_SOURCES
         src/rbx/Crypt.cpp
@@ -40,6 +44,19 @@ endif()
 
 add_library(rbx-core STATIC ${RBX_CORE_SOURCES})
 add_library(Roblox::Core ALIAS rbx-core)
+
+# Keep runtime version reporting sourced from CMake's Novalume project
+# metadata. A three-component project version has an implicit zero tweak
+# component for APIs, such as PlatformService, that require four integers.
+set(RBX_PROJECT_VERSION_TWEAK "${PROJECT_VERSION_TWEAK}")
+if(RBX_PROJECT_VERSION_TWEAK STREQUAL "")
+    set(RBX_PROJECT_VERSION_TWEAK 0)
+endif()
+target_compile_definitions(rbx-core PUBLIC
+    RBX_PRODUCT_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
+    RBX_PRODUCT_VERSION_MINOR=${PROJECT_VERSION_MINOR}
+    RBX_PRODUCT_VERSION_PATCH=${PROJECT_VERSION_PATCH}
+    RBX_PRODUCT_VERSION_REVISION=${RBX_PROJECT_VERSION_TWEAK})
 target_include_directories(rbx-core
     PUBLIC
         include
@@ -60,6 +77,18 @@ if(APPLE)
     # boundary until the pinned Boost replacement is complete.
     target_compile_definitions(rbx-core PRIVATE
         _LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION)
+endif()
+
+if(APPLE)
+    target_link_libraries(rbx-core PRIVATE
+        OpenSSL::Crypto
+        "-framework ApplicationServices"
+        "-framework CoreFoundation"
+        "-framework IOKit")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_link_libraries(rbx-core PRIVATE OpenSSL::Crypto)
+elseif(WIN32)
+    target_link_libraries(rbx-core PRIVATE advapi32 dxgi winmm)
 endif()
 
 add_subdirectory(math)

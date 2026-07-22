@@ -12,14 +12,17 @@
 #include "V8Xml/SerializerBinary.h"
 #include "V8Xml/Serializer.h"
 #include "V8Xml/SerializerV2.h"
+#include "V8Xml/XmlSerializer.h"
 #include "Script/Script.h"
 #include "V8Tree/Verb.h"
 #include "Security/SecurityContext.h"
 #include "audio/AudioGraph.h"
+#include "audio/SoundGroups.h"
 #include "audio/SoundService.h"
 #include "lua/lua.hpp"
 
 #include <fstream>
+#include <boost/scoped_ptr.hpp>
 #include <iostream>
 #include <mutex>
 #include <sstream>
@@ -191,6 +194,229 @@ int main(int argc, char** argv)
 
     boost::shared_ptr<RBX::Folder> audioRoot =
         RBX::Creatable<RBX::Instance>::create<RBX::Folder>();
+    boost::shared_ptr<RBX::Soundscape::SoundGroup> legacySoundGroup =
+        RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::SoundGroup>();
+    legacySoundGroup->setName("LegacySoundGroup");
+    legacySoundGroup->setVolume(12.0f);
+    if (legacySoundGroup->getVolume() != 10.0f)
+        throw std::runtime_error("SoundGroup did not enforce its current upper volume bound");
+    legacySoundGroup->setVolume(-1.0f);
+    if (legacySoundGroup->getVolume() != 0.0f)
+        throw std::runtime_error("SoundGroup did not enforce its current lower volume bound");
+    legacySoundGroup->setVolume(2.5f);
+    legacySoundGroup->setParent(audioRoot.get());
+    boost::shared_ptr<RBX::Soundscape::SoundChannel> legacySound =
+        RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::SoundChannel>();
+    legacySound->setName("GroupedLegacySound");
+    legacySound->setVolume(12.0f);
+    if (legacySound->getVolume() != 10.0f)
+        throw std::runtime_error("Sound did not enforce its current upper volume bound");
+    legacySound->setVolume(-1.0f);
+    if (legacySound->getVolume() != 0.0f)
+        throw std::runtime_error("Sound did not enforce its current lower volume bound");
+    legacySound->setVolume(4.0f);
+    legacySound->setSoundGroup(legacySoundGroup.get());
+    legacySound->setParent(audioRoot.get());
+
+    boost::shared_ptr<RBX::Soundscape::EqualizerSoundEffect> legacyEqualizer =
+        RBX::Creatable<RBX::Instance>::create<
+            RBX::Soundscape::EqualizerSoundEffect>();
+    if (legacyEqualizer->getLowGain() != -20.0f ||
+        legacyEqualizer->getMidGain() != -10.0f ||
+        legacyEqualizer->getHighGain() != 0.0f ||
+        !legacyEqualizer->getEnabled() || legacyEqualizer->getPriority() != 0)
+        throw std::runtime_error("EqualizerSoundEffect Studio defaults changed");
+    legacyEqualizer->setLowGain(-100.0f);
+    legacyEqualizer->setMidGain(100.0f);
+    legacyEqualizer->setHighGain(100.0f);
+    if (legacyEqualizer->getLowGain() != -80.0f ||
+        legacyEqualizer->getMidGain() != 10.0f ||
+        legacyEqualizer->getHighGain() != 10.0f)
+        throw std::runtime_error("EqualizerSoundEffect bounds were not enforced");
+    legacyEqualizer->setName("LegacyEqualizer");
+    legacyEqualizer->setLowGain(-12.0f);
+    legacyEqualizer->setMidGain(-3.0f);
+    legacyEqualizer->setHighGain(4.0f);
+    legacyEqualizer->setPriority(2);
+    legacyEqualizer->setParent(legacySound.get());
+    boost::shared_ptr<RBX::Soundscape::DistortionSoundEffect>
+        legacyDistortion = RBX::Creatable<RBX::Instance>::create<
+            RBX::Soundscape::DistortionSoundEffect>();
+    if (legacyDistortion->getLevel() != 0.75f)
+        throw std::runtime_error("DistortionSoundEffect Studio default changed");
+    legacyDistortion->setLevel(2.0f);
+    if (legacyDistortion->getLevel() != 1.0f)
+        throw std::runtime_error("DistortionSoundEffect bounds were not enforced");
+    legacyDistortion->setName("LegacyDistortion");
+    legacyDistortion->setLevel(0.4f);
+    legacyDistortion->setPriority(5);
+    legacyDistortion->setParent(legacySound.get());
+    boost::shared_ptr<RBX::Soundscape::FlangeSoundEffect> legacyFlange =
+        RBX::Creatable<RBX::Instance>::create<
+            RBX::Soundscape::FlangeSoundEffect>();
+    if (legacyFlange->getDepth() != 0.45f ||
+        legacyFlange->getMix() != 0.85f || legacyFlange->getRate() != 5.0f)
+        throw std::runtime_error("FlangeSoundEffect Studio defaults changed");
+    legacyFlange->setDepth(0.0f);
+    legacyFlange->setMix(2.0f);
+    legacyFlange->setRate(21.0f);
+    if (legacyFlange->getDepth() != 0.01f ||
+        legacyFlange->getMix() != 1.0f || legacyFlange->getRate() != 20.0f)
+        throw std::runtime_error("FlangeSoundEffect bounds were not enforced");
+    legacyFlange->setName("LegacyFlange");
+    legacyFlange->setDepth(0.25f);
+    legacyFlange->setMix(0.65f);
+    legacyFlange->setRate(3.0f);
+    legacyFlange->setPriority(2);
+    legacyFlange->setParent(legacySound.get());
+    boost::shared_ptr<RBX::Soundscape::EchoSoundEffect> legacyEcho =
+        RBX::Creatable<RBX::Instance>::create<RBX::Soundscape::EchoSoundEffect>();
+    if (legacyEcho->getDelay() != 1.0f || legacyEcho->getDryLevel() != 0.0f ||
+        legacyEcho->getFeedback() != 0.5f || legacyEcho->getWetLevel() != 0.0f)
+        throw std::runtime_error("EchoSoundEffect Studio defaults changed");
+    legacyEcho->setDelay(0.0f);
+    legacyEcho->setDryLevel(100.0f);
+    legacyEcho->setFeedback(-1.0f);
+    legacyEcho->setWetLevel(101.0f);
+    if (legacyEcho->getDelay() != 0.1f || legacyEcho->getDryLevel() != 10.0f ||
+        legacyEcho->getFeedback() != 0.0f || legacyEcho->getWetLevel() != 100.0f)
+        throw std::runtime_error("EchoSoundEffect bounds were not enforced");
+    legacyEcho->setName("LegacyEcho");
+    legacyEcho->setDelay(0.35f);
+    legacyEcho->setDryLevel(-2.0f);
+    legacyEcho->setFeedback(0.3f);
+    legacyEcho->setWetLevel(-5.0f);
+    legacyEcho->setPriority(3);
+    legacyEcho->setParent(legacySound.get());
+    boost::shared_ptr<RBX::Soundscape::TremoloSoundEffect> legacyTremolo =
+        RBX::Creatable<RBX::Instance>::create<
+            RBX::Soundscape::TremoloSoundEffect>();
+    if (legacyTremolo->getDepth() != 1.0f ||
+        legacyTremolo->getDuty() != 0.5f ||
+        legacyTremolo->getFrequency() != 5.0f)
+        throw std::runtime_error("TremoloSoundEffect Studio defaults changed");
+    legacyTremolo->setDepth(-1.0f);
+    legacyTremolo->setDuty(2.0f);
+    legacyTremolo->setFrequency(0.0f);
+    if (legacyTremolo->getDepth() != 0.0f ||
+        legacyTremolo->getDuty() != 1.0f ||
+        legacyTremolo->getFrequency() != 0.1f)
+        throw std::runtime_error("TremoloSoundEffect bounds were not enforced");
+    legacyTremolo->setName("LegacyTremolo");
+    legacyTremolo->setDepth(0.7f);
+    legacyTremolo->setDuty(0.4f);
+    legacyTremolo->setFrequency(6.0f);
+    legacyTremolo->setPriority(4);
+    legacyTremolo->setParent(legacySound.get());
+    boost::shared_ptr<RBX::Soundscape::ReverbSoundEffect> legacyReverb =
+        RBX::Creatable<RBX::Instance>::create<
+            RBX::Soundscape::ReverbSoundEffect>();
+    if (legacyReverb->getDecayTime() != 1.5f ||
+        legacyReverb->getDensity() != 1.0f ||
+        legacyReverb->getDiffusion() != 1.0f ||
+        legacyReverb->getDryLevel() != -6.0f ||
+        legacyReverb->getWetLevel() != 0.0f)
+        throw std::runtime_error("ReverbSoundEffect Studio defaults changed");
+    legacyReverb->setDecayTime(0.0f);
+    legacyReverb->setDensity(-1.0f);
+    legacyReverb->setDiffusion(2.0f);
+    legacyReverb->setDryLevel(-100.0f);
+    legacyReverb->setWetLevel(100.0f);
+    if (legacyReverb->getDecayTime() != 0.1f ||
+        legacyReverb->getDensity() != 0.0f ||
+        legacyReverb->getDiffusion() != 1.0f ||
+        legacyReverb->getDryLevel() != -80.0f ||
+        legacyReverb->getWetLevel() != 20.0f)
+        throw std::runtime_error("ReverbSoundEffect bounds were not enforced");
+    legacyReverb->setName("LegacyReverb");
+    legacyReverb->setDecayTime(2.5f);
+    legacyReverb->setDensity(0.8f);
+    legacyReverb->setDiffusion(0.7f);
+    legacyReverb->setDryLevel(-4.0f);
+    legacyReverb->setWetLevel(-1.0f);
+    legacyReverb->setPriority(6);
+    legacyReverb->setParent(legacySound.get());
+    boost::shared_ptr<RBX::Soundscape::PitchShiftSoundEffect> legacyPitch =
+        RBX::Creatable<RBX::Instance>::create<
+            RBX::Soundscape::PitchShiftSoundEffect>();
+    if (legacyPitch->getOctave() != 1.25f)
+        throw std::runtime_error("PitchShiftSoundEffect Studio default changed");
+    legacyPitch->setOctave(0.0f);
+    if (legacyPitch->getOctave() != 0.5f)
+        throw std::runtime_error("PitchShiftSoundEffect bounds were not enforced");
+    legacyPitch->setName("LegacyPitch");
+    legacyPitch->setOctave(1.5f);
+    legacyPitch->setPriority(0);
+    legacyPitch->setParent(legacySound.get());
+    boost::shared_ptr<RBX::Soundscape::ChorusSoundEffect> legacyChorus =
+        RBX::Creatable<RBX::Instance>::create<
+            RBX::Soundscape::ChorusSoundEffect>();
+    if (legacyChorus->getDepth() != 0.15f ||
+        legacyChorus->getMix() != 0.5f || legacyChorus->getRate() != 0.5f)
+        throw std::runtime_error("ChorusSoundEffect Studio defaults changed");
+    legacyChorus->setDepth(-1.0f);
+    legacyChorus->setMix(2.0f);
+    legacyChorus->setRate(21.0f);
+    if (legacyChorus->getDepth() != 0.0f ||
+        legacyChorus->getMix() != 1.0f || legacyChorus->getRate() != 20.0f)
+        throw std::runtime_error("ChorusSoundEffect bounds were not enforced");
+    legacyChorus->setName("LegacyChorus");
+    legacyChorus->setDepth(0.2f);
+    legacyChorus->setMix(0.45f);
+    legacyChorus->setRate(2.0f);
+    legacyChorus->setPriority(2);
+    legacyChorus->setParent(legacySound.get());
+    boost::shared_ptr<RBX::Soundscape::CompressorSoundEffect>
+        legacyCompressor = RBX::Creatable<RBX::Instance>::create<
+            RBX::Soundscape::CompressorSoundEffect>();
+    if (legacyCompressor->getAttack() != 0.1f ||
+        legacyCompressor->getGainMakeup() != 0.0f ||
+        legacyCompressor->getRatio() != 40.0f ||
+        legacyCompressor->getRelease() != 0.1f ||
+        legacyCompressor->getThreshold() != -40.0f)
+        throw std::runtime_error("CompressorSoundEffect Studio defaults changed");
+    legacyCompressor->setAttack(0.0f);
+    legacyCompressor->setGainMakeup(100.0f);
+    legacyCompressor->setRatio(0.0f);
+    legacyCompressor->setRelease(0.0f);
+    legacyCompressor->setThreshold(-100.0f);
+    if (legacyCompressor->getAttack() != 0.001f ||
+        legacyCompressor->getGainMakeup() != 30.0f ||
+        legacyCompressor->getRatio() != 1.0f ||
+        legacyCompressor->getRelease() != 0.001f ||
+        legacyCompressor->getThreshold() != -80.0f)
+        throw std::runtime_error("CompressorSoundEffect bounds were not enforced");
+    legacyCompressor->setName("LegacyCompressor");
+    legacyCompressor->setAttack(0.02f);
+    legacyCompressor->setGainMakeup(3.0f);
+    legacyCompressor->setRatio(8.0f);
+    legacyCompressor->setRelease(0.3f);
+    legacyCompressor->setThreshold(-24.0f);
+    legacyCompressor->setSideChain(legacySoundGroup.get());
+    legacyCompressor->setPriority(7);
+    legacyCompressor->setParent(legacySound.get());
+
+    std::array<RBX::Audio::VoiceEffect, 32> orderedLegacyEffects{};
+    if (RBX::Soundscape::collectSoundEffects(legacySound.get(),
+            orderedLegacyEffects) != 9 ||
+        orderedLegacyEffects[0].type != RBX::Audio::VoiceEffectType::PitchShifter ||
+        orderedLegacyEffects[1].type != RBX::Audio::VoiceEffectType::Equalizer ||
+        orderedLegacyEffects[2].type != RBX::Audio::VoiceEffectType::Flanger ||
+        orderedLegacyEffects[3].type != RBX::Audio::VoiceEffectType::Chorus ||
+        orderedLegacyEffects[4].type != RBX::Audio::VoiceEffectType::Echo ||
+        orderedLegacyEffects[5].type != RBX::Audio::VoiceEffectType::Tremolo ||
+        orderedLegacyEffects[6].type != RBX::Audio::VoiceEffectType::Distortion ||
+        orderedLegacyEffects[7].type != RBX::Audio::VoiceEffectType::Reverb ||
+        orderedLegacyEffects[8].type != RBX::Audio::VoiceEffectType::Compressor)
+        throw std::runtime_error(
+            "legacy SoundEffect Priority order was not stable and ascending");
+
+    legacyChorus->setEnabled(false);
+    if (RBX::Soundscape::collectSoundEffects(legacySound.get(),
+            orderedLegacyEffects) != 8)
+        throw std::runtime_error("disabled legacy SoundEffect remained active");
+    legacyChorus->setEnabled(true);
+    legacyReverb->setEnabled(false);
     boost::shared_ptr<RBX::Soundscape::AudioDeviceOutput> audioOutput =
         RBX::Creatable<RBX::Instance>::create<
             RBX::Soundscape::AudioDeviceOutput>();
@@ -647,6 +873,39 @@ int main(int argc, char** argv)
         decodedAudioRoot->findFirstChildOfType<RBX::Soundscape::AudioPlayer>();
     RBX::Soundscape::AudioListener* decodedAudioListener =
         decodedAudioRoot->findFirstChildOfType<RBX::Soundscape::AudioListener>();
+    RBX::Soundscape::SoundGroup* decodedLegacySoundGroup =
+        RBX::Instance::fastDynamicCast<RBX::Soundscape::SoundGroup>(
+            decodedAudioRoot->findFirstChildByNameRecursive("LegacySoundGroup"));
+    RBX::Soundscape::SoundChannel* decodedLegacySound =
+        RBX::Instance::fastDynamicCast<RBX::Soundscape::SoundChannel>(
+            decodedAudioRoot->findFirstChildByNameRecursive("GroupedLegacySound"));
+    RBX::Soundscape::EqualizerSoundEffect* decodedLegacyEqualizer =
+        RBX::Instance::fastDynamicCast<RBX::Soundscape::EqualizerSoundEffect>(
+            decodedAudioRoot->findFirstChildByNameRecursive("LegacyEqualizer"));
+    RBX::Soundscape::DistortionSoundEffect* decodedLegacyDistortion =
+        RBX::Instance::fastDynamicCast<RBX::Soundscape::DistortionSoundEffect>(
+            decodedAudioRoot->findFirstChildByNameRecursive("LegacyDistortion"));
+    RBX::Soundscape::FlangeSoundEffect* decodedLegacyFlange =
+        RBX::Instance::fastDynamicCast<RBX::Soundscape::FlangeSoundEffect>(
+            decodedAudioRoot->findFirstChildByNameRecursive("LegacyFlange"));
+    RBX::Soundscape::EchoSoundEffect* decodedLegacyEcho =
+        RBX::Instance::fastDynamicCast<RBX::Soundscape::EchoSoundEffect>(
+            decodedAudioRoot->findFirstChildByNameRecursive("LegacyEcho"));
+    RBX::Soundscape::TremoloSoundEffect* decodedLegacyTremolo =
+        RBX::Instance::fastDynamicCast<RBX::Soundscape::TremoloSoundEffect>(
+            decodedAudioRoot->findFirstChildByNameRecursive("LegacyTremolo"));
+    RBX::Soundscape::ReverbSoundEffect* decodedLegacyReverb =
+        RBX::Instance::fastDynamicCast<RBX::Soundscape::ReverbSoundEffect>(
+            decodedAudioRoot->findFirstChildByNameRecursive("LegacyReverb"));
+    RBX::Soundscape::PitchShiftSoundEffect* decodedLegacyPitch =
+        RBX::Instance::fastDynamicCast<RBX::Soundscape::PitchShiftSoundEffect>(
+            decodedAudioRoot->findFirstChildByNameRecursive("LegacyPitch"));
+    RBX::Soundscape::ChorusSoundEffect* decodedLegacyChorus =
+        RBX::Instance::fastDynamicCast<RBX::Soundscape::ChorusSoundEffect>(
+            decodedAudioRoot->findFirstChildByNameRecursive("LegacyChorus"));
+    RBX::Soundscape::CompressorSoundEffect* decodedLegacyCompressor =
+        RBX::Instance::fastDynamicCast<RBX::Soundscape::CompressorSoundEffect>(
+            decodedAudioRoot->findFirstChildByNameRecursive("LegacyCompressor"));
     if (!decodedAudioOutput || !decodedAudioWire ||
         !decodedAudioEmitter || !decodedAudioListener || !decodedAudioFader ||
         !decodedAudioDistortion || !decodedAudioTremolo ||
@@ -656,6 +915,54 @@ int main(int argc, char** argv)
         !decodedAudioPitchShifter || !decodedAudioEcho || !decodedAudioReverb ||
         !decodedAudioAnalyzer ||
         !decodedAudioMixer || !decodedAudioSplitter ||
+        !decodedLegacySoundGroup || !decodedLegacySound ||
+        !decodedLegacyEqualizer || !decodedLegacyDistortion ||
+        !decodedLegacyFlange || !decodedLegacyEcho || !decodedLegacyTremolo ||
+        !decodedLegacyReverb || !decodedLegacyPitch || !decodedLegacyChorus ||
+        !decodedLegacyCompressor ||
+        decodedLegacySoundGroup->getVolume() != 2.5f ||
+        decodedLegacySound->getVolume() != 4.0f ||
+        decodedLegacySound->getSoundGroup() != decodedLegacySoundGroup ||
+        decodedLegacyEqualizer->getLowGain() != -12.0f ||
+        decodedLegacyEqualizer->getMidGain() != -3.0f ||
+        decodedLegacyEqualizer->getHighGain() != 4.0f ||
+        decodedLegacyEqualizer->getPriority() != 2 ||
+        decodedLegacyDistortion->getLevel() != 0.4f ||
+        decodedLegacyDistortion->getPriority() != 5 ||
+        decodedLegacyFlange->getDepth() != 0.25f ||
+        decodedLegacyFlange->getMix() != 0.65f ||
+        decodedLegacyFlange->getRate() != 3.0f ||
+        decodedLegacyFlange->getPriority() != 2 ||
+        decodedLegacyEcho->getDelay() != 0.35f ||
+        decodedLegacyEcho->getDryLevel() != -2.0f ||
+        decodedLegacyEcho->getFeedback() != 0.3f ||
+        decodedLegacyEcho->getWetLevel() != -5.0f ||
+        decodedLegacyEcho->getPriority() != 3 ||
+        decodedLegacyTremolo->getDepth() != 0.7f ||
+        decodedLegacyTremolo->getDuty() != 0.4f ||
+        decodedLegacyTremolo->getFrequency() != 6.0f ||
+        decodedLegacyTremolo->getPriority() != 4 ||
+        decodedLegacyReverb->getDecayTime() != 2.5f ||
+        decodedLegacyReverb->getDensity() != 0.8f ||
+        decodedLegacyReverb->getDiffusion() != 0.7f ||
+        decodedLegacyReverb->getDryLevel() != -4.0f ||
+        decodedLegacyReverb->getWetLevel() != -1.0f ||
+        decodedLegacyReverb->getPriority() != 6 ||
+        decodedLegacyReverb->getEnabled() ||
+        decodedLegacyPitch->getOctave() != 1.5f ||
+        decodedLegacyPitch->getPriority() != 0 ||
+        decodedLegacyChorus->getDepth() != 0.2f ||
+        decodedLegacyChorus->getMix() != 0.45f ||
+        decodedLegacyChorus->getRate() != 2.0f ||
+        !decodedLegacyChorus->getEnabled() ||
+        decodedLegacyChorus->getPriority() != 2 ||
+        decodedLegacyCompressor->getAttack() != 0.02f ||
+        decodedLegacyCompressor->getGainMakeup() != 3.0f ||
+        decodedLegacyCompressor->getRatio() != 8.0f ||
+        decodedLegacyCompressor->getRelease() != 0.3f ||
+        decodedLegacyCompressor->getThreshold() != -24.0f ||
+        decodedLegacyCompressor->getPriority() != 7 ||
+        decodedLegacyCompressor->getSideChain() != decodedLegacySoundGroup ||
         decodedAudioMixer->getLayout() != RBX::Soundscape::AUDIO_CHANNEL_QUAD ||
         decodedAudioSplitter->getLayout() != RBX::Soundscape::AUDIO_CHANNEL_QUAD ||
         decodedAudioMixer->getConnectedWiresReflection("Input")->size() != 1 ||
@@ -782,6 +1089,70 @@ int main(int argc, char** argv)
         decodedAudioWire->getTargetInstance() != decodedAudioOutput ||
         decodedAudioWire->getTargetName() != "Input")
         throw std::runtime_error("current audio sink/wire binary round trip failed");
+
+    std::stringstream audioXmlEncoded;
+    boost::scoped_ptr<XmlElement> audioXmlDocument(Serializer::newRootElement());
+    audioRoot->writeChildren(audioXmlDocument.get(), RBX::SerializationCreator);
+    TextXmlWriter audioXmlWriter(audioXmlEncoded);
+    audioXmlWriter.serialize(audioXmlDocument.get());
+    audioXmlEncoded.seekg(0);
+    RBX::Instances decodedXmlInstances;
+    Serializer audioXmlSerializer;
+    audioXmlSerializer.loadInstances(audioXmlEncoded, decodedXmlInstances);
+    boost::shared_ptr<RBX::Folder> decodedXmlRoot =
+        RBX::Creatable<RBX::Instance>::create<RBX::Folder>();
+    for (const boost::shared_ptr<RBX::Instance>& instance : decodedXmlInstances)
+        instance->setParent(decodedXmlRoot.get());
+    RBX::Soundscape::SoundGroup* xmlLegacySoundGroup =
+        RBX::Instance::fastDynamicCast<RBX::Soundscape::SoundGroup>(
+            decodedXmlRoot->findFirstChildByNameRecursive("LegacySoundGroup"));
+    RBX::Soundscape::SoundChannel* xmlLegacySound =
+        RBX::Instance::fastDynamicCast<RBX::Soundscape::SoundChannel>(
+            decodedXmlRoot->findFirstChildByNameRecursive("GroupedLegacySound"));
+    RBX::Soundscape::CompressorSoundEffect* xmlLegacyCompressor =
+        RBX::Instance::fastDynamicCast<RBX::Soundscape::CompressorSoundEffect>(
+            decodedXmlRoot->findFirstChildByNameRecursive("LegacyCompressor"));
+    RBX::Soundscape::EqualizerSoundEffect* xmlLegacyEqualizer =
+        RBX::Instance::fastDynamicCast<RBX::Soundscape::EqualizerSoundEffect>(
+            decodedXmlRoot->findFirstChildByNameRecursive("LegacyEqualizer"));
+    RBX::Soundscape::DistortionSoundEffect* xmlLegacyDistortion =
+        RBX::Instance::fastDynamicCast<RBX::Soundscape::DistortionSoundEffect>(
+            decodedXmlRoot->findFirstChildByNameRecursive("LegacyDistortion"));
+    RBX::Soundscape::FlangeSoundEffect* xmlLegacyFlange =
+        RBX::Instance::fastDynamicCast<RBX::Soundscape::FlangeSoundEffect>(
+            decodedXmlRoot->findFirstChildByNameRecursive("LegacyFlange"));
+    RBX::Soundscape::EchoSoundEffect* xmlLegacyEcho =
+        RBX::Instance::fastDynamicCast<RBX::Soundscape::EchoSoundEffect>(
+            decodedXmlRoot->findFirstChildByNameRecursive("LegacyEcho"));
+    RBX::Soundscape::TremoloSoundEffect* xmlLegacyTremolo =
+        RBX::Instance::fastDynamicCast<RBX::Soundscape::TremoloSoundEffect>(
+            decodedXmlRoot->findFirstChildByNameRecursive("LegacyTremolo"));
+    RBX::Soundscape::ReverbSoundEffect* xmlLegacyReverb =
+        RBX::Instance::fastDynamicCast<RBX::Soundscape::ReverbSoundEffect>(
+            decodedXmlRoot->findFirstChildByNameRecursive("LegacyReverb"));
+    RBX::Soundscape::PitchShiftSoundEffect* xmlLegacyPitch =
+        RBX::Instance::fastDynamicCast<RBX::Soundscape::PitchShiftSoundEffect>(
+            decodedXmlRoot->findFirstChildByNameRecursive("LegacyPitch"));
+    RBX::Soundscape::ChorusSoundEffect* xmlLegacyChorus =
+        RBX::Instance::fastDynamicCast<RBX::Soundscape::ChorusSoundEffect>(
+            decodedXmlRoot->findFirstChildByNameRecursive("LegacyChorus"));
+    if (!xmlLegacySoundGroup || !xmlLegacySound || !xmlLegacyCompressor ||
+        !xmlLegacyEqualizer || !xmlLegacyDistortion || !xmlLegacyFlange ||
+        !xmlLegacyEcho || !xmlLegacyTremolo || !xmlLegacyReverb ||
+        !xmlLegacyPitch || !xmlLegacyChorus ||
+        xmlLegacySound->getSoundGroup() != xmlLegacySoundGroup ||
+        xmlLegacyCompressor->getSideChain() != xmlLegacySoundGroup ||
+        xmlLegacyCompressor->getThreshold() != -24.0f ||
+        xmlLegacyEqualizer->getLowGain() != -12.0f ||
+        xmlLegacyDistortion->getLevel() != 0.4f ||
+        xmlLegacyFlange->getRate() != 3.0f ||
+        xmlLegacyEcho->getDelay() != 0.35f ||
+        xmlLegacyTremolo->getFrequency() != 6.0f ||
+        xmlLegacyReverb->getEnabled() ||
+        xmlLegacyPitch->getOctave() != 1.5f ||
+        xmlLegacyChorus->getPriority() != 2)
+        throw std::runtime_error(
+            "legacy SoundEffect XML round trip lost a class or property");
 
     RBX::DataModel::closeDataModel(dataModel);
 

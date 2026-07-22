@@ -26,6 +26,10 @@
 #include "FastLog.h"
 #include "rbx/RbxDbgInfo.h"
 
+#include <algorithm>
+#include <array>
+#include <span>
+
 using namespace RBX;
 using namespace RBX::Soundscape;
 
@@ -699,7 +703,10 @@ void SoundService::step(const Time::Interval& timeSinceLastStep)
 	}
 
 	updateMasterChannelGroup(timeSinceLastStep);
+	updateSidechainBindings();
+	updateSoundGroupBuses();
 	updateSoundChannels(timeSinceLastStep);
+	updateSoundGroupBuses();
 	updateAudioPlayers();
 }
 
@@ -758,6 +765,182 @@ void SoundService::updateSoundChannels(const Time::Interval& timeSinceLastStep)
 	{
 		SoundChannel *soundChannel = *it;
 		soundChannel->updateListenState(timeSinceLastStep);
+	}
+}
+
+Audio::BusHandle SoundService::resolveSoundGroupBus(SoundGroup* group)
+{
+	if (!group)
+		return {};
+	SoundGroup* parentGroup = Instance::fastDynamicCast<SoundGroup>(
+		group->getParent());
+	const Audio::BusHandle parentBus = resolveSoundGroupBus(parentGroup);
+	const float volume = std::clamp(group->getVolume(), 0.0f, 10.0f);
+	std::array<Audio::VoiceEffect, 32> effects{};
+	const std::uint32_t effectCount = collectRuntimeSoundEffects(group, effects);
+
+	for (SoundGroupBus& entry : soundGroupBuses)
+	{
+		shared_ptr<SoundGroup> current = entry.group.lock();
+		if (current.get() != group)
+			continue;
+		if (!audioEngine->setBusVolume(entry.bus, volume))
+			entry.bus = audioEngine->createBus(volume, parentBus);
+		else
+			audioEngine->setBusParent(entry.bus, parentBus);
+		audioEngine->setBusEffects(entry.bus,
+			std::span<const Audio::VoiceEffect>(effects.data(), effectCount));
+		return entry.bus;
+	}
+
+	const Audio::BusHandle bus = audioEngine->createBus(volume, parentBus);
+	audioEngine->setBusEffects(bus,
+		std::span<const Audio::VoiceEffect>(effects.data(), effectCount));
+	soundGroupBuses.push_back({weak_from(group), bus});
+	return bus;
+}
+
+void SoundService::updateSoundGroupVolume(SoundGroup* group)
+{
+	if (!group)
+		return;
+	for (SoundGroupBus& entry : soundGroupBuses)
+	{
+		shared_ptr<SoundGroup> current = entry.group.lock();
+		if (current.get() == group)
+		{
+			audioEngine->setBusVolume(entry.bus,
+				std::clamp(group->getVolume(), 0.0f, 10.0f));
+			return;
+		}
+	}
+}
+
+namespace {
+
+bool isSidechainSource(const Instance* instance)
+{
+	return Instance::fastDynamicCast<const SoundChannel>(instance) ||
+		Instance::fastDynamicCast<const SoundGroup>(instance);
+}
+
+bool sidechainPathReaches(const Instance* current, const Instance* target,
+	boost::unordered_set<const Instance*>& visited)
+{
+	if (!current || current == target)
+		return current == target;
+	if (!visited.insert(current).second || !current->getChildren())
+		return false;
+	const shared_ptr<const Instances> children = current->getChildren().read();
+	if (!children)
+		return false;
+	for (const shared_ptr<Instance>& child : *children)
+	{
+		const CompressorSoundEffect* compressor =
+			Instance::fastDynamicCast<CompressorSoundEffect>(child.get());
+		if (!compressor || !compressor->getEnabled())
+			continue;
+		const Instance* next = compressor->getSideChain();
+		if (isSidechainSource(next) &&
+			sidechainPathReaches(next, target, visited))
+			return true;
+	}
+	return false;
+}
+
+}
+
+void SoundService::updateSidechainBindings()
+{
+	boost::unordered_set<Instance*> parents;
+	for (SoundChannel* channel : soundChannels)
+		if (channel)
+			parents.insert(channel);
+	for (const SoundGroupBus& entry : soundGroupBuses)
+		if (shared_ptr<SoundGroup> group = entry.group.lock())
+			parents.insert(group.get());
+
+	boost::unordered_set<const Instance*> activeSources;
+	for (Instance* parent : parents)
+	{
+		const shared_ptr<const Instances> children = parent->getChildren().read();
+		if (!children)
+			continue;
+		for (const shared_ptr<Instance>& child : *children)
+		{
+			CompressorSoundEffect* compressor =
+				Instance::fastDynamicCast<CompressorSoundEffect>(child.get());
+			if (!compressor)
+				continue;
+			compressor->setSideChainMeter({});
+			Instance* source = compressor->getSideChain();
+			if (!compressor->getEnabled() || !isSidechainSource(source) ||
+				ServiceProvider::find<SoundService>(source) != this)
+				continue;
+			boost::unordered_set<const Instance*> visited;
+			if (sidechainPathReaches(source, parent, visited))
+				continue;
+			std::array<Audio::VoiceEffect, 32> sourceEffects{};
+			if (collectSoundEffects(source, sourceEffects) >= sourceEffects.size())
+				continue;
+			std::shared_ptr<Audio::MeterState>& meter = sidechainMeters[source];
+			if (!meter)
+				meter = std::make_shared<Audio::MeterState>();
+			compressor->setSideChainMeter(meter);
+			activeSources.insert(source);
+		}
+	}
+
+	for (SidechainMeters::iterator it = sidechainMeters.begin();
+		it != sidechainMeters.end();)
+	{
+		if (activeSources.find(it->first) == activeSources.end())
+			it = sidechainMeters.erase(it);
+		else
+			++it;
+	}
+}
+
+std::uint32_t SoundService::collectRuntimeSoundEffects(const Instance* parent,
+	std::array<Audio::VoiceEffect, 32>& effects)
+{
+	std::uint32_t count = collectSoundEffects(parent, effects);
+	const SidechainMeters::const_iterator meter = sidechainMeters.find(parent);
+	if (meter == sidechainMeters.end() || count >= effects.size())
+		return count;
+	Audio::VoiceEffect& analyzer = effects[count++];
+	analyzer.type = Audio::VoiceEffectType::Analyzer;
+	analyzer.parameters[2] = static_cast<float>(
+		reinterpret_cast<std::uintptr_t>(parent) & 0x00ffffffu);
+	analyzer.meter = meter->second;
+	return count;
+}
+
+void SoundService::updateSoundGroupBuses()
+{
+	std::vector<shared_ptr<SoundGroup>> liveGroups;
+	liveGroups.reserve(soundGroupBuses.size());
+	for (const SoundGroupBus& entry : soundGroupBuses)
+		if (shared_ptr<SoundGroup> group = entry.group.lock())
+			liveGroups.push_back(group);
+	for (const shared_ptr<SoundGroup>& group : liveGroups)
+		resolveSoundGroupBus(group.get());
+
+	for (std::vector<SoundGroupBus>::iterator it = soundGroupBuses.begin();
+		it != soundGroupBuses.end();)
+	{
+		if (!it->group.expired())
+		{
+			++it;
+		}
+		else if (audioEngine->destroyBus(it->bus))
+		{
+			it = soundGroupBuses.erase(it);
+		}
+		else
+		{
+			++it;
+		}
 	}
 }
 

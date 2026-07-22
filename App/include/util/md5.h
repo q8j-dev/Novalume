@@ -23,29 +23,29 @@
  * See md5.c for more information.
  */
 
-#ifdef HAVE_OPENSSL
-#include <openssl/md5.h>
-#elif !defined(_MD5_H)
-#define _MD5_H
+#ifndef RBX_UTIL_MD5_H
+#define RBX_UTIL_MD5_H
 
-/* Any 32-bit or wider unsigned integer data type will do */
-typedef unsigned int MD5_u32plus;
+#include <stddef.h>
+#include <stdint.h>
+
+typedef uint32_t RBX_MD5_u32plus;
 
 typedef struct {
-	MD5_u32plus lo, hi;
-	MD5_u32plus a, b, c, d;
+	RBX_MD5_u32plus lo, hi;
+	RBX_MD5_u32plus a, b, c, d;
 	unsigned char buffer[64];
-	MD5_u32plus block[16];
-} MD5_CTX;
+	RBX_MD5_u32plus block[16];
+} RBX_MD5_CTX;
 
 #ifdef __cplusplus
 extern "C" 
 {
 #endif
 
-extern void MD5_Init(MD5_CTX *ctx);
-extern void MD5_Update(MD5_CTX *ctx, void *data, unsigned long size);
-extern void MD5_Final(unsigned char *result, MD5_CTX *ctx);
+extern void RBX_MD5_Init(RBX_MD5_CTX *ctx);
+extern void RBX_MD5_Update(RBX_MD5_CTX *ctx, const void *data, size_t size);
+extern void RBX_MD5_Final(unsigned char *result, RBX_MD5_CTX *ctx);
 
 #ifdef __cplusplus
 }

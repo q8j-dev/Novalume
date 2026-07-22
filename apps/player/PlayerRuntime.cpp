@@ -59,6 +59,7 @@
 #include "V8DataModel/LocalStorageService.h"
 #include "V8DataModel/LinkingService.h"
 #include "V8DataModel/LocalizationService.h"
+#include "V8DataModel/PlatformService.h"
 #include "V8DataModel/EventIngestService.h"
 #include "V8DataModel/FaceAnimatorService.h"
 #include "V8DataModel/FeatureRestrictionManager.h"
@@ -125,17 +126,18 @@
 #include "V8Xml/Serializer.h"
 #include "V8Xml/WebParser.h"
 #include "RenderSettingsItem.h"
+#include "rbx/core/BuildInfo.h"
 
 #include <algorithm>
 #include <atomic>
 #include <array>
 #include <chrono>
+#include <cmath>
 #include <cstdint>
 #include <fstream>
 #include <functional>
 #include <iostream>
 #include <iterator>
-#include <fstream>
 #include <mutex>
 #include <set>
 #include <stdexcept>
@@ -146,11 +148,128 @@
 
 FASTFLAG(UseDynamicTypesetterUTF8)
 FASTFLAG(UserAllCamerasInLua)
+FASTFLAG(Durango3DBackground)
 DYNAMIC_FASTFLAG(ContentProviderHttpCaching)
 DYNAMIC_FASTFLAG(HttpZeroLatencyCaching)
 
 namespace rbx::player {
 namespace {
+
+constexpr unsigned long kLauncherFirstSettledFrame = 240;
+constexpr unsigned long kLauncherSecondSettledFrame = 420;
+
+struct LauncherPixelEvidence
+{
+    std::size_t colorBuckets = 0;
+    std::size_t spatialEdges = 0;
+    unsigned int minimumLuminance = 255;
+    unsigned int maximumLuminance = 0;
+    double luminanceDeviation = 0.0;
+};
+
+struct LauncherTemporalPixelEvidence
+{
+    std::size_t changedPixels = 0;
+    std::array<std::size_t, 4> changedPixelsByQuadrant{};
+    double meanChannelDelta = 0.0;
+};
+
+LauncherPixelEvidence analyzeLauncherPixels(
+    const std::vector<std::uint8_t>& pixels,
+    unsigned int width, unsigned int height)
+{
+    const std::size_t expectedSize =
+        static_cast<std::size_t>(width) * height * 4U;
+    if (pixels.size() != expectedSize || width == 0 || height == 0)
+        throw std::runtime_error(
+            "Durango launcher temporal readback has invalid dimensions");
+
+    LauncherPixelEvidence evidence;
+    std::array<bool, 32768> buckets{};
+    double luminanceSum = 0.0;
+    double luminanceSquaredSum = 0.0;
+    for (std::size_t pixel = 0; pixel < expectedSize / 4U; ++pixel)
+    {
+        const std::size_t index = pixel * 4U;
+        const unsigned int red = pixels[index + 0U];
+        const unsigned int green = pixels[index + 1U];
+        const unsigned int blue = pixels[index + 2U];
+        const std::size_t bucket = ((red >> 3U) << 10U) |
+            ((green >> 3U) << 5U) | (blue >> 3U);
+        if (!buckets[bucket])
+        {
+            buckets[bucket] = true;
+            ++evidence.colorBuckets;
+        }
+
+        const unsigned int luminance =
+            (54U * red + 183U * green + 19U * blue) >> 8U;
+        evidence.minimumLuminance =
+            std::min(evidence.minimumLuminance, luminance);
+        evidence.maximumLuminance =
+            std::max(evidence.maximumLuminance, luminance);
+        luminanceSum += luminance;
+        luminanceSquaredSum +=
+            static_cast<double>(luminance) * luminance;
+
+        const unsigned int x = static_cast<unsigned int>(pixel % width);
+        if (x != 0)
+        {
+            const std::size_t previous = index - 4U;
+            const int previousLuminance =
+                (54 * pixels[previous + 0U] +
+                 183 * pixels[previous + 1U] +
+                 19 * pixels[previous + 2U]) >> 8;
+            evidence.spatialEdges +=
+                std::abs(static_cast<int>(luminance) - previousLuminance) >= 6;
+        }
+    }
+
+    const double pixelCount = static_cast<double>(expectedSize / 4U);
+    const double mean = luminanceSum / pixelCount;
+    evidence.luminanceDeviation = std::sqrt(std::max(
+        0.0, luminanceSquaredSum / pixelCount - mean * mean));
+    return evidence;
+}
+
+LauncherTemporalPixelEvidence compareLauncherPixels(
+    const std::vector<std::uint8_t>& first,
+    const std::vector<std::uint8_t>& second,
+    unsigned int width, unsigned int height)
+{
+    const std::size_t expectedSize =
+        static_cast<std::size_t>(width) * height * 4U;
+    if (first.size() != expectedSize || second.size() != expectedSize)
+        throw std::runtime_error(
+            "Durango launcher temporal readbacks have mismatched dimensions");
+
+    LauncherTemporalPixelEvidence evidence;
+    std::uint64_t totalChannelDelta = 0;
+    for (std::size_t pixel = 0; pixel < expectedSize / 4U; ++pixel)
+    {
+        const std::size_t index = pixel * 4U;
+        const unsigned int channelDelta =
+            static_cast<unsigned int>(std::abs(
+                static_cast<int>(second[index + 0U]) - first[index + 0U])) +
+            static_cast<unsigned int>(std::abs(
+                static_cast<int>(second[index + 1U]) - first[index + 1U])) +
+            static_cast<unsigned int>(std::abs(
+                static_cast<int>(second[index + 2U]) - first[index + 2U]));
+        totalChannelDelta += channelDelta;
+        if (channelDelta < 12U)
+            continue;
+
+        ++evidence.changedPixels;
+        const unsigned int x = static_cast<unsigned int>(pixel % width);
+        const unsigned int y = static_cast<unsigned int>(pixel / width);
+        const std::size_t quadrant =
+            (y >= height / 2U ? 2U : 0U) + (x >= width / 2U ? 1U : 0U);
+        ++evidence.changedPixelsByQuadrant[quadrant];
+    }
+    evidence.meanChannelDelta = static_cast<double>(totalChannelDelta) /
+        static_cast<double>(expectedSize / 4U) / 3.0;
+    return evidence;
+}
 
 class DesktopClientSettings final : public RBX::FastLogJSON
 {
@@ -461,6 +580,265 @@ void collectPlaceSounds(RBX::Instance& instance,
         collectPlaceSounds(*instance.getChild(index), sounds);
 }
 
+constexpr std::size_t kMaximumExternalUriLength = 2048;
+
+bool asciiStartsWithIgnoringCase(std::string_view value, std::string_view prefix)
+{
+    if (value.size() < prefix.size())
+        return false;
+    for (std::size_t index = 0; index < prefix.size(); ++index) {
+        const unsigned char character = static_cast<unsigned char>(value[index]);
+        const unsigned char expected = static_cast<unsigned char>(prefix[index]);
+        const unsigned char folded = character >= 'A' && character <= 'Z'
+            ? static_cast<unsigned char>(character - 'A' + 'a') : character;
+        if (folded != expected)
+            return false;
+    }
+    return true;
+}
+
+bool isAllowedExternalUri(std::string_view uri)
+{
+    if (uri.empty() || uri.size() > kMaximumExternalUriLength)
+        return false;
+
+    const bool secure = asciiStartsWithIgnoringCase(uri, "https://");
+    const bool plain = asciiStartsWithIgnoringCase(uri, "http://");
+    if (!secure && !plain)
+        return false;
+    for (const unsigned char character : uri) {
+        if (character <= 0x20 || character >= 0x7f)
+            return false;
+    }
+
+    const std::size_t authorityStart = secure ? 8 : 7;
+    const std::size_t authorityEnd = uri.find_first_of("/?#", authorityStart);
+    const std::string_view authority = uri.substr(authorityStart,
+        authorityEnd == std::string_view::npos
+            ? std::string_view::npos : authorityEnd - authorityStart);
+    return !authority.empty() && authority.front() != '.' &&
+        authority.find('@') == std::string_view::npos;
+}
+
+class DesktopAppShellPlatform final : public RBX::IPlatformAPI
+{
+public:
+    using ExternalUriRequest = std::function<bool(std::string)>;
+
+    DesktopAppShellPlatform(RBX::DataModel* dataModel,
+        ExternalUriRequest externalUriRequest)
+        : dataModel(dataModel)
+        , externalUriRequest(std::move(externalUriRequest))
+    {
+    }
+
+    RBX::AccountAuthResult performAuthorization(
+        RBX::InputObject::UserInputType, bool) override
+    {
+        return RBX::AccountAuth_Error;
+    }
+
+    int performAccountLink(const std::string&, const std::string&,
+        std::string* response) override
+    {
+        if (response)
+            response->clear();
+        return -1;
+    }
+
+    int performUnlinkAccount(std::string* response) override
+    {
+        if (response)
+            response->clear();
+        return -1;
+    }
+
+    int performSetRobloxCredentials(const std::string&, const std::string&,
+        std::string* response) override
+    {
+        if (response)
+            response->clear();
+        return -1;
+    }
+
+    RBX::AccountAuthResult performHasRobloxCredentials() override
+    {
+        return RBX::AccountAuth_Error;
+    }
+
+    RBX::AccountAuthResult performHasLinkedAccount() override
+    {
+        return RBX::AccountAuth_Error;
+    }
+
+    RBX::GameStartResult startGame3(RBX::GameJoinType, int) override
+    {
+        return RBX::GameStart_Weird;
+    }
+
+    void requestGameShutdown(bool) override
+    {
+    }
+    int netConnectionCheck() override { return -1; }
+
+    int fetchFriends(RBX::InputObject::UserInputType, std::string* result) override
+    {
+        if (result)
+            result->clear();
+        return -1;
+    }
+
+    int popupHelpUI() override
+    {
+        return queueExternalUri("https://en.help.roblox.com/");
+    }
+    int launchPlatformUri(const std::string baseUri) override
+    {
+        return queueExternalUri(baseUri);
+    }
+    int popupPartyUI(RBX::InputObject::UserInputType) override { return -1; }
+    int popupProfileUI(RBX::InputObject::UserInputType, std::string) override
+    {
+        return -1;
+    }
+    int popupAccountPickerUI(RBX::InputObject::UserInputType) override
+    {
+        return -1;
+    }
+    void popupGameInviteUI() override
+    {
+        reportUnsupported("game invite UI");
+    }
+    void showKeyBoard(std::string&, std::string&, std::string&, unsigned,
+        RBX::DataModel*) override
+    {
+        reportUnsupported("Xbox virtual keyboard");
+    }
+    void setScreenResolution(double, double) override
+    {
+        reportUnsupported("Xbox game-render overscan resolution");
+    }
+
+    int fetchCatalogInfo(
+        boost::shared_ptr<RBX::Reflection::ValueArray> result) override
+    {
+        catalogRequestCount.fetch_add(1, std::memory_order_relaxed);
+        if (result)
+            result->clear();
+        return -1;
+    }
+    int fetchInventoryInfo(
+        boost::shared_ptr<RBX::Reflection::ValueArray> result) override
+    {
+        if (result)
+            result->clear();
+        return -1;
+    }
+    int getPlatformPartyMembers(
+        boost::shared_ptr<RBX::Reflection::ValueArray> result) override
+    {
+        partyRequestCount.fetch_add(1, std::memory_order_relaxed);
+        if (result)
+            result->clear();
+        return -1;
+    }
+    int getInGamePlayers(
+        boost::shared_ptr<RBX::Reflection::ValueArray> result) override
+    {
+        if (result)
+            result->clear();
+        return -1;
+    }
+    RBX::PlatformPurchaseResult requestPurchase(const std::string&) override
+    {
+        return RBX::PurchaseResult_Error;
+    }
+    int getPMPCreatorId() override { return -1; }
+    int getTitleId() override { return -1; }
+
+    boost::shared_ptr<const RBX::Reflection::ValueTable>
+    getVersionIdInfo() override
+    {
+        boost::shared_ptr<RBX::Reflection::ValueTable> result =
+            boost::make_shared<RBX::Reflection::ValueTable>();
+        (*result)["Major"] = rbx::core::BuildInfo::versionMajor;
+        (*result)["Minor"] = rbx::core::BuildInfo::versionMinor;
+        (*result)["Build"] = rbx::core::BuildInfo::versionPatch;
+        (*result)["Revision"] = rbx::core::BuildInfo::versionRevision;
+        (*result)["Product"] =
+            std::string(rbx::core::BuildInfo::productName);
+        (*result)["Architecture"] =
+            std::string(rbx::core::BuildInfo::architecture);
+        return result;
+    }
+
+    boost::shared_ptr<const RBX::Reflection::ValueTable>
+    getPlatformUserInfo() override
+    {
+        boost::shared_ptr<RBX::Reflection::ValueTable> result =
+            boost::make_shared<RBX::Reflection::ValueTable>();
+        RBX::Network::Players* players = dataModel
+            ? RBX::ServiceProvider::find<RBX::Network::Players>(dataModel)
+            : nullptr;
+        RBX::Network::Player* player = players
+            ? players->getLocalPlayer() : nullptr;
+        if (player) {
+            const std::string displayName = player->getDisplayName().empty()
+                ? player->getName()
+                : player->getDisplayName();
+            (*result)["Gamertag"] = displayName;
+            (*result)["RobloxUserName"] = player->getName();
+            (*result)["RobloxUserId"] = player->getUserID();
+        }
+        return result;
+    }
+
+    RBX::AwardResult awardAchievement(const std::string&) override
+    {
+        return RBX::Award_Fail;
+    }
+    RBX::AwardResult setHeroStat(const std::string&, double*) override
+    {
+        return RBX::Award_Fail;
+    }
+    void voiceChatSetMuteState(int, bool) override
+    {
+        reportUnsupported("Xbox voice-chat mute state");
+    }
+    unsigned voiceChatGetState(int) override
+    {
+        return RBX::voiceChatState_UnknownUser;
+    }
+
+    unsigned int getCatalogRequestCount() const
+    {
+        return catalogRequestCount.load(std::memory_order_relaxed);
+    }
+
+    unsigned int getPartyRequestCount() const
+    {
+        return partyRequestCount.load(std::memory_order_relaxed);
+    }
+
+private:
+    int queueExternalUri(const std::string& uri)
+    {
+        if (!isAllowedExternalUri(uri) || !externalUriRequest)
+            return -1;
+        return externalUriRequest(uri) ? 0 : -1;
+    }
+
+    static void reportUnsupported(const char* capability)
+    {
+        std::cerr << "Desktop AppShell does not support " << capability << '\n';
+    }
+
+    RBX::DataModel* dataModel;
+    ExternalUriRequest externalUriRequest;
+    std::atomic<unsigned int> catalogRequestCount{0};
+    std::atomic<unsigned int> partyRequestCount{0};
+};
+
 } // namespace
 
 struct PlayerRuntime::State final {
@@ -470,6 +848,7 @@ struct PlayerRuntime::State final {
     unsigned int logicalWidth = 0;
     unsigned int logicalHeight = 0;
     CRenderSettingsItem* renderSettings = nullptr;
+    std::unique_ptr<DesktopAppShellPlatform> launcherPlatform;
     boost::shared_ptr<RBX::DataModel> dataModel;
     boost::shared_ptr<RBX::DataModel> serverDataModel;
     RBX::Network::Client* localClient = nullptr;
@@ -519,6 +898,13 @@ struct PlayerRuntime::State final {
     AvatarRigVariant avatarRig = AvatarRigVariant::R6;
     bool usesCurrentInExperienceUi = false;
     bool usesDurangoLauncher = false;
+    bool verifiesDurangoLauncher = false;
+    bool launcherPostProcessApplied = false;
+    float launcherPostProcessBrightness = 0.0f;
+    float launcherPostProcessContrast = 0.0f;
+    float launcherPostProcessGrayscale = 0.0f;
+    float launcherPostProcessBlur = 0.0f;
+    RBX::Color3 launcherPostProcessTint = RBX::Color3::white();
     bool audioOutputDisabled = false;
     bool verifiesViewportRendering = false;
     bool verifiesVideoRendering = false;
@@ -627,9 +1013,19 @@ struct PlayerRuntime::State final {
     unsigned long renderingFrame = 0;
     std::vector<RBX::Vector3> cameraChangesThisFrame;
     std::vector<RBX::Vector3> mouseChangesThisFrame;
+    bool launcherFirstFrameCaptured = false;
+    bool launcherSecondFrameCaptured = false;
+    unsigned long launcherFirstFrameNumber = 0;
+    unsigned long launcherSecondFrameNumber = 0;
+    RBX::CoordinateFrame launcherFirstCameraFrame;
+    RBX::CoordinateFrame launcherSecondCameraFrame;
+    std::vector<std::uint8_t> launcherFirstFramePixels;
+    std::vector<std::uint8_t> launcherSecondFramePixels;
     std::atomic<bool> openDocumentRequested{false};
     std::mutex recentDocumentMutex;
     std::optional<std::filesystem::path> recentDocumentRequested;
+    std::mutex externalUriMutex;
+    std::vector<std::string> externalUriRequests;
 
     ~State()
     {
@@ -688,6 +1084,7 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
     unsigned int renderHeight, unsigned int logicalWidth,
     unsigned int logicalHeight, bool disableAudioOutput,
     bool useCurrentInExperienceUi, bool useDurangoLauncher,
+    bool verifyDurangoLauncher,
     AvatarRigVariant avatarRig,
     bool verifyViewportRendering,
     const std::filesystem::path& videoVerificationPath,
@@ -713,6 +1110,11 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
         throw std::invalid_argument("PlayerRuntime requires a valid renderer and viewport");
 
     initializeRuntime(clientSettingsRoot);
+    if (useDurangoLauncher &&
+        (!FLog::SetValue("Durango3DBackground", "true", FASTVARTYPE_STATIC) ||
+         !FFlag::Durango3DBackground))
+        throw std::runtime_error(
+            "authentic Durango launcher requires its live ScaledWorld 3D background");
     const bool useR15Character = avatarRig != AvatarRigVariant::R6;
     const RBX::DataModel::AvatarRigVariant dataModelRig = [&]() {
         switch (avatarRig)
@@ -721,8 +1123,8 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
             return RBX::DataModel::AVATAR_RIG_R6;
         case AvatarRigVariant::R15:
             return RBX::DataModel::AVATAR_RIG_R15;
-		case AvatarRigVariant::R15Plus:
-			return RBX::DataModel::AVATAR_RIG_R15_PLUS;
+        case AvatarRigVariant::R15Plus:
+            return RBX::DataModel::AVATAR_RIG_R15_PLUS;
         case AvatarRigVariant::RthroNormal:
             return RBX::DataModel::AVATAR_RIG_RTHRO_NORMAL;
         case AvatarRigVariant::RthroSlender:
@@ -757,9 +1159,6 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
                 launcherContent / "ScaledWorldv4.7.rbxl") ||
             !std::filesystem::is_regular_file(
                 launcherContent / "terrain" / "materials.json") ||
-            !std::filesystem::is_regular_file(
-                launcherContent / "textures" / "ui" / "Shell" /
-                "Background" / "Home_screen_01.png") ||
             !std::filesystem::is_regular_file(
                 launcherContent / "sounds" / "ui" / "Shell" /
                 "RobloxMusic.ogg"))
@@ -830,9 +1229,11 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
     state->avatarRig = avatarRig;
     state->usesCurrentInExperienceUi = useCurrentInExperienceUi;
     state->usesDurangoLauncher = useDurangoLauncher;
+    state->verifiesDurangoLauncher = verifyDurangoLauncher;
     state->audioOutputDisabled = disableAudioOutput;
     state->dataModel = RBX::DataModel::createDataModel(
         true, new RBX::NullVerb(nullptr, ""), false);
+    state->dataModel->setIsAppShell(useDurangoLauncher);
     state->dataModel->setIsStudio(localSoloMode);
 
     // Local files run as an actual loopback server/client pair.  A single
@@ -841,7 +1242,7 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
     // server state share authority.  Keeping the authoritative place in a
     // server DataModel also exercises the same Replicator and transport path
     // used by a future remote game server.
-    if (!placePath.empty())
+    if (!placePath.empty() && !useDurangoLauncher)
     {
         state->serverDataModel = RBX::DataModel::createDataModel(
             true, new RBX::NullVerb(nullptr, ""), false);
@@ -1220,6 +1621,18 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
         state->commonVerbs = std::make_unique<RBX::CommonVerbs>(state->dataModel.get());
         RBX::ScriptContext* scriptContext =
             RBX::ServiceProvider::create<RBX::ScriptContext>(state->dataModel.get());
+        if (useDurangoLauncher) {
+            state->scriptErrorConnection = scriptContext->errorSignal.connect(
+                [](std::string message, std::string stack,
+                   boost::shared_ptr<RBX::Instance> script) {
+                    std::cerr << "launcher script error "
+                              << (script ? script->getFullName() : "<unknown>")
+                              << ": " << message;
+                    if (!stack.empty())
+                        std::cerr << '\n' << stack;
+                    std::cerr << '\n';
+                });
+        }
         // PlayerRuntime drives VisualEngine without constructing RenderView.
         // Complete the shared DataModel screenshot contract by capturing the
         // next rendered framebuffer whenever any engine or CoreScript client
@@ -1260,7 +1673,7 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
         RBX::ServiceProvider::create<RBX::GuiService>(state->dataModel.get())
             ->setResolutionScale(static_cast<int>(std::clamp(
                 std::max(horizontalScale, verticalScale), 1U, 3U)));
-        if (placePath.empty()) {
+        if (placePath.empty() && !useDurangoLauncher) {
             createPart(workspace, "Baseplate", RBX::Vector3(96.0f, 2.0f, 96.0f),
                 RBX::Vector3(0.0f, -1.0f, 0.0f), RBX::BrickColor::brickGreen());
             createPart(workspace, "RedBlock", RBX::Vector3(8.0f, 8.0f, 8.0f),
@@ -1283,10 +1696,68 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
         // normal Workspace child before any CoreScript observes the service.
         workspace->replenishCamera();
 
+        if (useDurangoLauncher)
+        {
+            RBX::PlatformService* platformService =
+                RBX::ServiceProvider::create<RBX::PlatformService>(
+                    state->dataModel.get());
+            State* runtimeState = state.get();
+            state->launcherPlatform = std::make_unique<DesktopAppShellPlatform>(
+                state->dataModel.get(),
+                [runtimeState](std::string uri) {
+                    std::scoped_lock lock(runtimeState->externalUriMutex);
+                    constexpr std::size_t maximumPendingUriRequests = 8;
+                    if (runtimeState->externalUriRequests.size() >=
+                            maximumPendingUriRequests)
+                        return false;
+                    runtimeState->externalUriRequests.push_back(std::move(uri));
+                    return true;
+                });
+            platformService->setPlatform(
+                state->launcherPlatform.get(), RBX::AppShellDatamodel);
+            RBX::CoreGuiService* coreGui =
+                RBX::ServiceProvider::create<RBX::CoreGuiService>(
+                    state->dataModel.get());
+            boost::shared_ptr<RBX::BindableEvent> openDocument =
+                RBX::Creatable<RBX::Instance>::create<RBX::BindableEvent>();
+            openDocument->setName("OpenLocalDocument");
+            openDocument->setParent(coreGui);
+            boost::shared_ptr<RBX::Folder> recentFolder =
+                RBX::Creatable<RBX::Instance>::create<RBX::Folder>();
+            recentFolder->setName("LocalRecentDocuments");
+            recentFolder->setParent(coreGui);
+            for (std::size_t index = 0; index < recentDocuments.size(); ++index) {
+                boost::shared_ptr<RBX::StringValue> recent =
+                    RBX::Creatable<RBX::Instance>::create<RBX::StringValue>();
+                recent->setName("RecentDocument" + std::to_string(index + 1));
+                recent->setValue(
+                    rbx::platform::pathToUtf8(recentDocuments[index]));
+                recent->setParent(recentFolder.get());
+            }
+            state->openDocumentConnection = openDocument->event.connect(
+                [runtimeState](boost::shared_ptr<const RBX::Reflection::Tuple> arguments) {
+                    if (arguments && arguments->values.size() == 1 &&
+                        arguments->values.front().isType<std::string>()) {
+                        std::scoped_lock lock(runtimeState->recentDocumentMutex);
+                        runtimeState->recentDocumentRequested =
+                            rbx::platform::pathFromUtf8(
+                                arguments->values.front().cast<std::string>());
+                        return;
+                    }
+                    runtimeState->openDocumentRequested.store(
+                        true, std::memory_order_release);
+                });
+
+            state->dataModel->startCoreScripts(true, "XStarterScript");
+            state->dataModel->loadContent(
+                RBX::ContentId::fromAssets("ScaledWorldv4.7.rbxl"));
+            state->dataModel->setAvatarRigVariant(dataModelRig);
+        }
+
         RBX::Network::Players* players =
             RBX::ServiceProvider::create<RBX::Network::Players>(state->dataModel.get());
         boost::shared_ptr<RBX::Network::Player> localPlayer;
-        if (placePath.empty())
+        if (placePath.empty() || useDurangoLauncher)
         {
             localPlayer = RBX::Instance::fastSharedDynamicCast<RBX::Network::Player>(
                 players->createLocalPlayer(1, false));
@@ -1298,10 +1769,15 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
         if (!localPlayer)
             throw std::runtime_error("offline Player bootstrap did not create a local player");
         localPlayer->setCanLoadCharacterAppearance(false);
-        if (placePath.empty())
+        if (placePath.empty() || useDurangoLauncher)
             localPlayer->loadCharacter(true, "");
-        if (!localPlayer->getCharacter() && !useDurangoLauncher)
+        if (!localPlayer->getCharacter())
             throw std::runtime_error("local server did not replicate a player character");
+        if (useDurangoLauncher) {
+            RBX::ServiceProvider::create<RBX::RunService>(
+                state->dataModel.get())->run();
+            state->dataModel->gameLoaded();
+        }
         if (verifyPlaceVisual) {
             RBX::ModelInstance* character = localPlayer->getCharacter();
             RBX::PartInstance* root = character->getPrimaryPartSetByUser();
@@ -1355,7 +1831,7 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
         // coexist without weakening either side's remote authority checks.
         // The generated Player smoke place remains a client-only session and
         // uses its explicit offline character authority for respawning.
-        if (placePath.empty()) {
+        if (placePath.empty() && !useDurangoLauncher) {
             RBX::ServiceProvider::create<RBX::Network::Client>(state->dataModel.get());
             localPlayer->enableOfflineCharacterAutoSpawn();
         }
@@ -1699,6 +2175,7 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
                 state->verificationAudioReverb.get());
             state->verificationAudioReverbWire->setTargetInstance(
                 state->verificationAudioMixer.get());
+            state->verificationAudioReverbWire->setTargetName("Right");
             state->verificationAudioReverbWire->setParent(
                 state->verificationAudioReverb.get());
             state->verificationAudioAnalyzerWire =
@@ -1727,7 +2204,7 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
                 "PlayerAudioVerificationSplitterWire");
             state->verificationAudioSplitterWire->setSourceInstance(
                 state->verificationAudioSplitter.get());
-            state->verificationAudioSplitterWire->setSourceName("Output");
+            state->verificationAudioSplitterWire->setSourceName("Right");
             state->verificationAudioSplitterWire->setTargetInstance(
                 state->verificationGraphEmitter.get());
             state->verificationAudioSplitterWire->setParent(
@@ -2104,44 +2581,9 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
                 throw std::runtime_error(
                     "Chrome product policy did not disable the Music integration");
 		}
-        if (useDurangoLauncher)
-        {
-            RBX::CoreGuiService* coreGui =
-                RBX::ServiceProvider::create<RBX::CoreGuiService>(state->dataModel.get());
-            boost::shared_ptr<RBX::BindableEvent> openDocument =
-                RBX::Creatable<RBX::Instance>::create<RBX::BindableEvent>();
-            openDocument->setName("OpenLocalDocument");
-            openDocument->setParent(coreGui);
-            boost::shared_ptr<RBX::Folder> recentFolder =
-                RBX::Creatable<RBX::Instance>::create<RBX::Folder>();
-            recentFolder->setName("LocalRecentDocuments");
-            recentFolder->setParent(coreGui);
-            for (std::size_t index = 0; index < recentDocuments.size(); ++index) {
-                boost::shared_ptr<RBX::StringValue> recent =
-                    RBX::Creatable<RBX::Instance>::create<RBX::StringValue>();
-                recent->setName("RecentDocument" + std::to_string(index + 1));
-                recent->setValue(
-                    rbx::platform::pathToUtf8(recentDocuments[index]));
-                recent->setParent(recentFolder.get());
-            }
-            State* runtimeState = state.get();
-            state->openDocumentConnection = openDocument->event.connect(
-                [runtimeState](boost::shared_ptr<const RBX::Reflection::Tuple> arguments) {
-                    if (arguments && arguments->values.size() == 1 &&
-                        arguments->values.front().isType<std::string>()) {
-                        std::scoped_lock lock(runtimeState->recentDocumentMutex);
-                        runtimeState->recentDocumentRequested =
-                            rbx::platform::pathFromUtf8(
-                                arguments->values.front().cast<std::string>());
-                        return;
-                    }
-                    runtimeState->openDocumentRequested.store(
-                        true, std::memory_order_release);
-                });
-        }
-        state->dataModel->startCoreScripts(
-            true, useDurangoLauncher ? "XStarterScript" : std::string());
-		if (!useCurrentInExperienceUi)
+		if (!useDurangoLauncher)
+            state->dataModel->startCoreScripts(true, std::string());
+		if (!useCurrentInExperienceUi && !useDurangoLauncher)
 			localPlayer->setChatAvailabilityStatus("Enabled");
 
 		if (verifyViewportRendering)
@@ -2226,8 +2668,11 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
             videoFrame->setParent(screen.get());
         }
 
-        state->dataModel->setIsGameLoaded(true);
-        RBX::ServiceProvider::create<RBX::RunService>(state->dataModel.get())->run();
+        if (!useDurangoLauncher) {
+            state->dataModel->setIsGameLoaded(true);
+            RBX::ServiceProvider::create<RBX::RunService>(
+                state->dataModel.get())->run();
+        }
         // PlayerScripts injects the packaged ControlScript and CameraScript as
         // part of the normal LocalPlayer startup path.  A second manual load
         // races that injection and leaves two camera controllers fighting over
@@ -2703,6 +3148,16 @@ std::optional<std::filesystem::path> PlayerRuntime::takeRecentDocumentRequest()
     std::scoped_lock lock(state->recentDocumentMutex);
     std::optional<std::filesystem::path> result;
     result.swap(state->recentDocumentRequested);
+    return result;
+}
+
+std::optional<std::string> PlayerRuntime::takeExternalUriRequest()
+{
+    std::scoped_lock lock(state->externalUriMutex);
+    if (state->externalUriRequests.empty())
+        return std::nullopt;
+    std::string result = std::move(state->externalUriRequests.front());
+    state->externalUriRequests.erase(state->externalUriRequests.begin());
     return result;
 }
 
@@ -3206,6 +3661,22 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
                 : RBX::CRenderSettings::QualityLevel15);
         state->visualEngine->getFrameRateManager()->synchronizeQualitySettings();
     }
+    if (state->usesDurangoLauncher) {
+        if (RBX::PlatformService* platformService =
+                RBX::ServiceProvider::find<RBX::PlatformService>(
+                    state->dataModel.get())) {
+            state->visualEngine->getSceneManager()->setPostProcess(
+                platformService->brightness, platformService->contrast,
+                platformService->grayscaleLevel, platformService->blurIntensity,
+                platformService->tintColor);
+            state->launcherPostProcessApplied = true;
+            state->launcherPostProcessBrightness = platformService->brightness;
+            state->launcherPostProcessContrast = platformService->contrast;
+            state->launcherPostProcessGrayscale = platformService->grayscaleLevel;
+            state->launcherPostProcessBlur = platformService->blurIntensity;
+            state->launcherPostProcessTint = platformService->tintColor;
+        }
+    }
     state->visualEngine->getSceneManager()->renderScene(
         context, target, state->visualEngine->getCamera(),
         state->logicalWidth, state->logicalHeight);
@@ -3226,6 +3697,35 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
             state->visualEngine->getRenderStats()->passShadow.batches;
     state->device->endFrame();
     adorn->finishRenderPass();
+    if (state->verifiesDurangoLauncher &&
+        (frameNumber == kLauncherFirstSettledFrame ||
+         frameNumber == kLauncherSecondSettledFrame))
+    {
+        if (camera->getCameraType() != RBX::Camera::LOCKED_CAMERA)
+            throw std::runtime_error(
+                "Durango CameraManager lost Scriptable ownership during temporal proof");
+        std::vector<std::uint8_t>& capture =
+            frameNumber == kLauncherFirstSettledFrame
+            ? state->launcherFirstFramePixels
+            : state->launcherSecondFramePixels;
+        capture.resize(
+            static_cast<std::size_t>(state->width) * state->height * 4U);
+        target->download(capture.data(), static_cast<unsigned int>(capture.size()));
+        if (frameNumber == kLauncherFirstSettledFrame)
+        {
+            state->launcherFirstFrameCaptured = true;
+            state->launcherFirstFrameNumber = frameNumber;
+            state->launcherFirstCameraFrame =
+                camera->getCameraCoordinateFrame();
+        }
+        else
+        {
+            state->launcherSecondFrameCaptured = true;
+            state->launcherSecondFrameNumber = frameNumber;
+            state->launcherSecondCameraFrame =
+                camera->getCameraCoordinateFrame();
+        }
+    }
     if (state->verifiesShadowMap && (frameNumber == 80 || frameNumber == 81)) {
         const RBX::RenderStats* stats = state->visualEngine->getRenderStats();
         RBX::Graphics::SceneManager* scene =
@@ -3386,7 +3886,10 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
         const RBX::CoordinateFrame cameraFrame = camera->getCameraCoordinateFrame();
         RBX::Instance* cameraSubjectInstance =
             dynamic_cast<RBX::Instance*>(camera->getCameraSubject());
-        std::cout << "gameplay camera type=" << camera->getCameraType()
+        std::cout << (state->usesDurangoLauncher
+                          ? "shell camera type="
+                          : "gameplay camera type=")
+                  << camera->getCameraType()
                   << " position=" << cameraFrame.translation
                   << " focus=" << camera->getCameraFocus().translation
                   << " look=" << cameraFrame.lookVector()
@@ -4552,6 +5055,352 @@ void PlayerRuntime::finishVerification()
     {
         RBX::DataModel::LegacyLock lock(
             state->dataModel.get(), RBX::DataModelJob::Write);
+        RBX::Network::Players* players =
+            RBX::ServiceProvider::find<RBX::Network::Players>(
+                state->dataModel.get());
+        RBX::Network::Player* shellPlayer = players
+            ? players->getLocalPlayer() : nullptr;
+        RBX::ModelInstance* shellCharacter = shellPlayer
+            ? shellPlayer->getCharacter() : nullptr;
+        RBX::Workspace* workspace =
+            RBX::ServiceProvider::find<RBX::Workspace>(state->dataModel.get());
+        RBX::Camera* shellCamera = workspace ? workspace->getCamera() : nullptr;
+        RBX::PlatformService* platformService =
+            RBX::ServiceProvider::find<RBX::PlatformService>(
+                state->dataModel.get());
+        if (!state->dataModel->isAppShell() || state->serverDataModel ||
+            state->localServer || state->localClient ||
+            RBX::ServiceProvider::find<RBX::Network::Server>(
+                state->dataModel.get()) ||
+            RBX::ServiceProvider::find<RBX::Network::Client>(
+                state->dataModel.get()))
+            throw std::runtime_error(
+                "Durango launcher incorrectly entered a network game session");
+        RBX::Humanoid* shellHumanoid = shellCharacter
+            ? RBX::Humanoid::modelIsCharacter(shellCharacter) : nullptr;
+        RBX::PartInstance* shellHead = shellCharacter
+            ? RBX::Instance::fastDynamicCast<RBX::PartInstance>(
+                shellCharacter->findFirstChildByName("Head")) : nullptr;
+        RBX::PartInstance* shellRoot = shellCharacter
+            ? RBX::Instance::fastDynamicCast<RBX::PartInstance>(
+                shellCharacter->findFirstChildByName("HumanoidRootPart")) : nullptr;
+        if (!shellPlayer || shellPlayer->getUserID() != 1 ||
+            !shellCharacter || !shellHumanoid || !shellHead || !shellRoot)
+            throw std::runtime_error(
+                "Durango launcher lost its authentic local identity/avatar");
+        RBX::MeshContentProvider* shellMeshProvider =
+            RBX::ServiceProvider::find<RBX::MeshContentProvider>(
+                state->dataModel.get());
+        std::size_t shellMeshPartCount = 0;
+        std::size_t loadedShellMeshPartCount = 0;
+        std::size_t loadedShellVertexCount = 0;
+        std::size_t loadedShellFaceCount = 0;
+        bool shellMeshesNonempty = shellMeshProvider != nullptr;
+        for (std::size_t index = 0; index < shellCharacter->numChildren(); ++index) {
+            RBX::MeshPart* meshPart =
+                RBX::Instance::fastDynamicCast<RBX::MeshPart>(
+                    shellCharacter->getChild(index));
+            if (!meshPart)
+                continue;
+            ++shellMeshPartCount;
+            const boost::shared_ptr<void> meshData = shellMeshProvider
+                ? shellMeshProvider->blockingRequestContent(
+                    meshPart->getMeshId(), true)
+                : boost::shared_ptr<void>();
+            if (!meshData) {
+                shellMeshesNonempty = false;
+                continue;
+            }
+            const boost::shared_ptr<RBX::FileMeshData> parsedMesh =
+                boost::static_pointer_cast<RBX::FileMeshData>(meshData);
+            if (parsedMesh->vnts.empty() || parsedMesh->faces.empty()) {
+                shellMeshesNonempty = false;
+                continue;
+            }
+            ++loadedShellMeshPartCount;
+            loadedShellVertexCount += parsedMesh->vnts.size();
+            loadedShellFaceCount += parsedMesh->faces.size();
+        }
+        if (shellHumanoid->getRigType() !=
+                RBX::Humanoid::HUMANOID_RIG_TYPE_R15 ||
+            shellMeshPartCount != 14 ||
+            loadedShellMeshPartCount != shellMeshPartCount ||
+            !shellMeshesNonempty || loadedShellVertexCount == 0 ||
+            loadedShellFaceCount == 0)
+            throw std::runtime_error(
+                "Durango launcher did not retain its packaged R15 avatar geometry");
+        std::cout << "Durango launcher R15 RigType="
+                  << shellHumanoid->getRigType()
+                  << " MeshParts=" << shellMeshPartCount
+                  << " loaded=" << loadedShellMeshPartCount
+                  << " mesh-vertices=" << loadedShellVertexCount
+                  << " mesh-faces=" << loadedShellFaceCount << '\n';
+        const RBX::Color3 expectedTint(20.0f / 255.0f, 43.0f / 255.0f,
+            60.0f / 255.0f);
+        if (!platformService ||
+            platformService->getPlatformDatamodelType() != RBX::AppShellDatamodel)
+            throw std::runtime_error(
+                "Durango launcher did not expose PlatformService as AppShellDatamodel");
+        boost::shared_ptr<const RBX::Reflection::ValueTable> versionInfo =
+            platformService->getVersionIdInfo();
+        boost::shared_ptr<const RBX::Reflection::ValueTable> platformUserInfo =
+            platformService->getPlatformUserInfo();
+        if (!state->launcherPlatform || !versionInfo || !platformUserInfo)
+            throw std::runtime_error(
+                "desktop AppShell capability adapter did not report the local build and user");
+        const auto versionMajor = versionInfo->find("Major");
+        const auto versionMinor = versionInfo->find("Minor");
+        const auto versionBuild = versionInfo->find("Build");
+        const auto versionRevision = versionInfo->find("Revision");
+        const auto versionProduct = versionInfo->find("Product");
+        const auto versionArchitecture = versionInfo->find("Architecture");
+        const auto platformGamertag = platformUserInfo->find("Gamertag");
+        const auto platformUserId = platformUserInfo->find("RobloxUserId");
+        if (
+            versionMajor == versionInfo->end() ||
+            versionMinor == versionInfo->end() ||
+            versionBuild == versionInfo->end() ||
+            versionRevision == versionInfo->end() ||
+            versionProduct == versionInfo->end() ||
+            versionArchitecture == versionInfo->end() ||
+            platformGamertag == platformUserInfo->end() ||
+            platformUserId == platformUserInfo->end() ||
+            !versionMajor->second.isType<int>() ||
+            !versionMinor->second.isType<int>() ||
+            !versionBuild->second.isType<int>() ||
+            !versionRevision->second.isType<int>() ||
+            versionMajor->second.cast<int>() !=
+                rbx::core::BuildInfo::versionMajor ||
+            versionMinor->second.cast<int>() !=
+                rbx::core::BuildInfo::versionMinor ||
+            versionBuild->second.cast<int>() !=
+                rbx::core::BuildInfo::versionPatch ||
+            versionRevision->second.cast<int>() !=
+                rbx::core::BuildInfo::versionRevision ||
+            !versionProduct->second.isType<std::string>() ||
+            versionProduct->second.cast<std::string>() !=
+                std::string(rbx::core::BuildInfo::productName) ||
+            !versionArchitecture->second.isType<std::string>() ||
+            versionArchitecture->second.cast<std::string>() !=
+                std::string(rbx::core::BuildInfo::architecture) ||
+            !platformGamertag->second.isType<std::string>() ||
+            platformGamertag->second.cast<std::string>().empty() ||
+            !platformUserId->second.isType<int>() ||
+            platformUserId->second.cast<int>() != shellPlayer->getUserID())
+            throw std::runtime_error(
+                "desktop AppShell capability adapter did not report the local build and user");
+
+        const unsigned int automaticCatalogRequests =
+            state->launcherPlatform->getCatalogRequestCount();
+        const unsigned int automaticPartyRequests =
+            state->launcherPlatform->getPartyRequestCount();
+        boost::shared_ptr<RBX::Reflection::ValueArray> unsupportedValues =
+            boost::make_shared<RBX::Reflection::ValueArray>();
+        unsupportedValues->push_back(RBX::Reflection::Variant(
+            std::string("must be cleared")));
+        std::string unsupportedResponse = "must be cleared";
+        double unsupportedHeroValue = 1.0;
+        if (automaticCatalogRequests == 0 || automaticPartyRequests == 0 ||
+            state->launcherPlatform->fetchCatalogInfo(unsupportedValues) >= 0 ||
+            !unsupportedValues->empty())
+            throw std::runtime_error(
+                "desktop AppShell catalog probe did not remain explicitly unsupported");
+        unsupportedValues->push_back(RBX::Reflection::Variant(
+            std::string("must be cleared")));
+        unsupportedResponse = "must be cleared";
+        if (state->launcherPlatform->getPlatformPartyMembers(unsupportedValues) >= 0 ||
+            !unsupportedValues->empty() ||
+            state->launcherPlatform->fetchFriends(RBX::InputObject::TYPE_NONE,
+                &unsupportedResponse) >= 0 || !unsupportedResponse.empty() ||
+            state->launcherPlatform->performAuthorization(
+                RBX::InputObject::TYPE_NONE, false) != RBX::AccountAuth_Error ||
+            state->launcherPlatform->performHasRobloxCredentials() !=
+                RBX::AccountAuth_Error ||
+            state->launcherPlatform->performHasLinkedAccount() !=
+                RBX::AccountAuth_Error ||
+            state->launcherPlatform->startGame3(RBX::GameJoin_Normal, 0) !=
+                RBX::GameStart_Weird ||
+            state->launcherPlatform->netConnectionCheck() >= 0 ||
+            state->launcherPlatform->popupPartyUI(
+                RBX::InputObject::TYPE_NONE) >= 0 ||
+            state->launcherPlatform->popupProfileUI(
+                RBX::InputObject::TYPE_NONE, std::string()) >= 0 ||
+            state->launcherPlatform->popupAccountPickerUI(
+                RBX::InputObject::TYPE_NONE) >= 0 ||
+            state->launcherPlatform->requestPurchase(std::string()) !=
+                RBX::PurchaseResult_Error ||
+            state->launcherPlatform->getPMPCreatorId() >= 0 ||
+            state->launcherPlatform->getTitleId() >= 0 ||
+            state->launcherPlatform->awardAchievement(std::string()) !=
+                RBX::Award_Fail ||
+            state->launcherPlatform->setHeroStat(std::string(),
+                &unsupportedHeroValue) != RBX::Award_Fail ||
+            state->launcherPlatform->voiceChatGetState(0) !=
+                RBX::voiceChatState_UnknownUser)
+            throw std::runtime_error(
+                "desktop AppShell fabricated an Xbox-only platform capability");
+        unsupportedResponse = "must be cleared";
+        if (state->launcherPlatform->performAccountLink(
+                std::string(), std::string(), &unsupportedResponse) >= 0 ||
+            !unsupportedResponse.empty())
+            throw std::runtime_error(
+                "desktop AppShell fabricated Xbox account-link state");
+        unsupportedResponse = "must be cleared";
+        if (state->launcherPlatform->performUnlinkAccount(
+                &unsupportedResponse) >= 0 || !unsupportedResponse.empty())
+            throw std::runtime_error(
+                "desktop AppShell fabricated Xbox account-unlink state");
+        unsupportedResponse = "must be cleared";
+        if (state->launcherPlatform->performSetRobloxCredentials(
+                std::string(), std::string(), &unsupportedResponse) >= 0 ||
+            !unsupportedResponse.empty())
+            throw std::runtime_error(
+                "desktop AppShell fabricated Xbox credential state");
+        unsupportedValues->push_back(RBX::Reflection::Variant(
+            std::string("must be cleared")));
+        if (state->launcherPlatform->fetchInventoryInfo(unsupportedValues) >= 0 ||
+            !unsupportedValues->empty())
+            throw std::runtime_error(
+                "desktop AppShell fabricated Xbox inventory state");
+        unsupportedValues->push_back(RBX::Reflection::Variant(
+            std::string("must be cleared")));
+        if (state->launcherPlatform->getInGamePlayers(unsupportedValues) >= 0 ||
+            !unsupportedValues->empty())
+            throw std::runtime_error(
+                "desktop AppShell fabricated Xbox multiplayer-session state");
+        if (state->launcherPlatform->launchPlatformUri(
+                "file:///not-approved") >= 0 ||
+            takeExternalUriRequest().has_value())
+            throw std::runtime_error(
+                "desktop AppShell accepted a non-HTTP external URI");
+        if (state->launcherPlatform->launchPlatformUri(
+                "https://en.help.roblox.com/hc/en-us/articles/205358110") != 0)
+            throw std::runtime_error(
+                "desktop AppShell rejected an approved HTTPS URI");
+        const std::optional<std::string> termsUri = takeExternalUriRequest();
+        if (!termsUri || *termsUri !=
+                "https://en.help.roblox.com/hc/en-us/articles/205358110" ||
+            state->launcherPlatform->popupHelpUI() != 0)
+            throw std::runtime_error(
+                "desktop AppShell did not queue an approved URI on the host boundary");
+        const std::optional<std::string> helpUri = takeExternalUriRequest();
+        if (!helpUri || *helpUri != "https://en.help.roblox.com/")
+            throw std::runtime_error(
+                "desktop AppShell help action did not use its approved host URI");
+        if (!state->launcherPostProcessApplied ||
+            std::abs(platformService->brightness - 0.3f) > 0.0001f ||
+            std::abs(platformService->contrast - 0.5f) > 0.0001f ||
+            std::abs(platformService->grayscaleLevel - 1.0f) > 0.0001f ||
+            std::abs(platformService->blurIntensity - 3.0f) > 0.0001f ||
+            (platformService->tintColor - expectedTint).squaredLength() > 1e-8f ||
+            std::abs(state->launcherPostProcessBrightness -
+                platformService->brightness) > 0.0001f ||
+            std::abs(state->launcherPostProcessContrast -
+                platformService->contrast) > 0.0001f ||
+            std::abs(state->launcherPostProcessGrayscale -
+                platformService->grayscaleLevel) > 0.0001f ||
+            std::abs(state->launcherPostProcessBlur -
+                platformService->blurIntensity) > 0.0001f ||
+            (state->launcherPostProcessTint - platformService->tintColor)
+                .squaredLength() > 1e-8f)
+            throw std::runtime_error(
+                "Durango CameraManager post-process values did not reach SceneManager");
+        if (shellPlayer->findFirstChildOfType<RBX::PlayerScripts>())
+            throw std::runtime_error(
+                "Durango launcher created gameplay PlayerScripts");
+        if (!shellCamera ||
+            shellCamera->getCameraType() != RBX::Camera::LOCKED_CAMERA)
+            throw std::runtime_error(
+                "Durango launcher camera is not exclusively owned by AppHome");
+
+        bool foundReplicator = false;
+        bool foundGameplayPlayerScripts = false;
+        unsigned int authoredSceneryParts = 0;
+        unsigned int authoredCameraPathParts = 0;
+        RBX::Instance* cameraSets = workspace
+            ? workspace->findFirstChildByName("Cameras") : nullptr;
+        RBX::Instance* zones = workspace
+            ? workspace->findFirstChildByName("Zones") : nullptr;
+        boost::shared_ptr<const RBX::Instances> shellDescendants =
+            state->dataModel->getDescendants();
+        for (const boost::shared_ptr<RBX::Instance>& descendant :
+             *shellDescendants) {
+            foundReplicator = foundReplicator ||
+                RBX::Instance::fastDynamicCast<RBX::Network::ClientReplicator>(
+                    descendant.get()) ||
+                RBX::Instance::fastDynamicCast<RBX::Network::ServerReplicator>(
+                    descendant.get());
+            foundGameplayPlayerScripts = foundGameplayPlayerScripts ||
+                RBX::Instance::fastDynamicCast<RBX::PlayerScripts>(
+                    descendant.get());
+            if (workspace && RBX::Instance::fastDynamicCast<RBX::PartInstance>(
+                    descendant.get()) && descendant->isDescendantOf(workspace)) {
+                ++authoredSceneryParts;
+                if (cameraSets && descendant->isDescendantOf(cameraSets))
+                    ++authoredCameraPathParts;
+            }
+        }
+        if (foundReplicator || foundGameplayPlayerScripts)
+            throw std::runtime_error(
+                "Durango launcher retained replicator or gameplay-script state");
+        if (!cameraSets || !zones ||
+            !cameraSets->findFirstChildByName("City") ||
+            !cameraSets->findFirstChildByName("Space") ||
+            !cameraSets->findFirstChildByName("Volcano") ||
+            !zones->findFirstChildByName("City") ||
+            !zones->findFirstChildByName("Space") ||
+            !zones->findFirstChildByName("Volcano") ||
+            authoredSceneryParts < 1000 || authoredCameraPathParts < 3)
+            throw std::runtime_error(
+                "Durango launcher did not retain the authored ScaledWorld 3D scene and camera paths");
+
+        RBX::Instance* cityCameraPath =
+            cameraSets->findFirstChildByName("City");
+        RBX::Vector3 cityCameraMinimum;
+        RBX::Vector3 cityCameraMaximum;
+        unsigned int cityCameraPartCount = 0;
+        for (std::size_t index = 0;
+             cityCameraPath && index < cityCameraPath->numChildren(); ++index)
+        {
+            RBX::PartInstance* cameraPart =
+                RBX::Instance::fastDynamicCast<RBX::PartInstance>(
+                    cityCameraPath->getChild(index));
+            if (!cameraPart)
+                continue;
+            const RBX::CoordinateFrame authoredCameraFrame =
+                cameraPart->getCoordinateFrame() * RBX::CoordinateFrame(
+                    RBX::Vector3(0.0f, 0.0f,
+                        -cameraPart->getPartSizeXml().z * 0.5f));
+            const RBX::Vector3 point = authoredCameraFrame.translation;
+            if (!point.isFinite())
+                throw std::runtime_error(
+                    "ScaledWorld City camera path contains a non-finite authored frame");
+            if (cityCameraPartCount++ == 0)
+            {
+                cityCameraMinimum = point;
+                cityCameraMaximum = point;
+            }
+            else
+            {
+                cityCameraMinimum.x = std::min(cityCameraMinimum.x, point.x);
+                cityCameraMinimum.y = std::min(cityCameraMinimum.y, point.y);
+                cityCameraMinimum.z = std::min(cityCameraMinimum.z, point.z);
+                cityCameraMaximum.x = std::max(cityCameraMaximum.x, point.x);
+                cityCameraMaximum.y = std::max(cityCameraMaximum.y, point.y);
+                cityCameraMaximum.z = std::max(cityCameraMaximum.z, point.z);
+            }
+        }
+        if (cityCameraPartCount < 2)
+            throw std::runtime_error(
+                "ScaledWorld City camera path has no authored motion curve");
+        const RBX::RenderStats* launcherRenderStats =
+            state->visualEngine->getRenderStats();
+        if (!launcherRenderStats || launcherRenderStats->passScene.batches == 0 ||
+            launcherRenderStats->passScene.faces == 0 ||
+            launcherRenderStats->passScene.vertices == 0)
+            throw std::runtime_error(
+                "Durango launcher did not render its live ScaledWorld 3D scene");
+
         RBX::CoreGuiService* coreGui =
             RBX::ServiceProvider::find<RBX::CoreGuiService>(
                 state->dataModel.get());
@@ -4559,6 +5408,16 @@ void PlayerRuntime::finishVerification()
             ? coreGui->findFirstChildByName("RobloxGui") : nullptr;
         RBX::Instance* appHome = robloxGui
             ? robloxGui->findFirstChildByName("AppHomeContainer") : nullptr;
+        RBX::GuiObject* appHomeGui =
+            RBX::Instance::fastDynamicCast<RBX::GuiObject>(appHome);
+        RBX::ImageLabel* shellBackground = appHome
+            ? RBX::Instance::fastDynamicCast<RBX::ImageLabel>(
+                appHome->findFirstChildByName("Background"))
+            : nullptr;
+        RBX::ImageLabel* crossfadeBackground = shellBackground
+            ? RBX::Instance::fastDynamicCast<RBX::ImageLabel>(
+                shellBackground->findFirstChildByName("CrossfadeBackground"))
+            : nullptr;
         RBX::Instance* engagement = appHome
             ? appHome->findFirstChildByNameRecursive("EngagementScreen") : nullptr;
         RBX::Instance* logo = engagement
@@ -4577,6 +5436,34 @@ void PlayerRuntime::finishVerification()
         RBX::Instance* recentDocumentButton = homePane
             ? homePane->findFirstChildByNameRecursive("RecentLocalDocument1")
             : nullptr;
+        RBX::TextLabel* profileName = homePane
+            ? RBX::Instance::fastDynamicCast<RBX::TextLabel>(
+                homePane->findFirstChildByNameRecursive("NameLabel"))
+            : nullptr;
+        RBX::GuiObject* profileContainer = homePane
+            ? RBX::Instance::fastDynamicCast<RBX::GuiObject>(
+                homePane->findFirstChildByNameRecursive("ProfileContainer"))
+            : nullptr;
+        RBX::GuiObject* openDocumentGui =
+            RBX::Instance::fastDynamicCast<RBX::GuiObject>(openDocumentButton);
+        RBX::TextLabel* openTitle = openDocumentButton
+            ? RBX::Instance::fastDynamicCast<RBX::TextLabel>(
+                openDocumentButton->findFirstChildByName("Title"))
+            : nullptr;
+        RBX::TextLabel* openHint = openDocumentButton
+            ? RBX::Instance::fastDynamicCast<RBX::TextLabel>(
+                openDocumentButton->findFirstChildByName("Hint"))
+            : nullptr;
+        RBX::GuiObject* recentDocumentGui =
+            RBX::Instance::fastDynamicCast<RBX::GuiObject>(recentDocumentButton);
+        RBX::TextLabel* recentTitle = recentDocumentButton
+            ? RBX::Instance::fastDynamicCast<RBX::TextLabel>(
+                recentDocumentButton->findFirstChildByName("Title"))
+            : nullptr;
+        RBX::TextLabel* recentPath = recentDocumentButton
+            ? RBX::Instance::fastDynamicCast<RBX::TextLabel>(
+                recentDocumentButton->findFirstChildByName("Path"))
+            : nullptr;
         RBX::StringValue* recentDocument = coreGui
             ? RBX::Instance::fastDynamicCast<RBX::StringValue>(
                 coreGui->findFirstChildByNameRecursive("RecentDocument1"))
@@ -4588,12 +5475,82 @@ void PlayerRuntime::finishVerification()
             ? soundService->findFirstChildByName("AppShellSounds") : nullptr;
         RBX::Instance* backgroundLoop = shellSounds
             ? shellSounds->findFirstChildByName("BackgroundLoop") : nullptr;
-        if (!appHome || !engagement || !logo || !hub || !homePane ||
+        if (!appHomeGui || !shellBackground || !crossfadeBackground ||
+            !engagement || !logo || !hub || !homePane ||
             !openDocument || !openDocumentButton || !recentDocumentButton ||
+            !profileName || !profileContainer || !openDocumentGui ||
+            !openTitle || !openHint ||
+            !recentDocumentGui || !recentTitle || !recentPath ||
             !recentDocument || !shellSounds ||
             !backgroundLoop || backgroundLoop->numChildren() != 3)
             throw std::runtime_error(
                 "authentic Durango launcher did not complete desktop activation into its shell");
+        if (appHomeGui->getBackgroundTransparency() < 0.999f ||
+            shellBackground->getBackgroundTransparency() < 0.999f ||
+            shellBackground->getImageTransparency() < 0.999f ||
+            !shellBackground->getImage().toString().empty() ||
+            crossfadeBackground->getBackgroundTransparency() < 0.999f ||
+            !crossfadeBackground->getImage().toString().empty())
+            throw std::runtime_error(
+                "Durango AppHomeContainer/Background/CrossfadeBackground obscured live ScaledWorld 3D");
+
+        for (const boost::shared_ptr<RBX::Instance>& descendant :
+             *shellDescendants)
+        {
+            RBX::GuiObject* gui =
+                RBX::Instance::fastDynamicCast<RBX::GuiObject>(descendant.get());
+            if (!gui || !gui->isCurrentlyVisible())
+                continue;
+            const RBX::Vector2 position = gui->getAbsolutePosition();
+            const RBX::Vector2 size = gui->getAbsoluteSize();
+            const float left = std::max(0.0f, position.x);
+            const float top = std::max(0.0f, position.y);
+            const float right = std::min(
+                static_cast<float>(state->logicalWidth), position.x + size.x);
+            const float bottom = std::min(
+                static_cast<float>(state->logicalHeight), position.y + size.y);
+            const float coveredArea =
+                std::max(0.0f, right - left) * std::max(0.0f, bottom - top);
+            const float viewportArea = static_cast<float>(
+                state->logicalWidth * state->logicalHeight);
+            if (coveredArea < viewportArea * 0.95f)
+                continue;
+
+            bool opaqueImage = false;
+            if (RBX::ImageLabel* imageLabel =
+                    RBX::Instance::fastDynamicCast<RBX::ImageLabel>(gui))
+                opaqueImage = imageLabel->getImageTransparency() <= 0.01f &&
+                    !imageLabel->getImage().toString().empty();
+            else if (RBX::GuiImageButton* imageButton =
+                         RBX::Instance::fastDynamicCast<RBX::GuiImageButton>(gui))
+                opaqueImage = imageButton->getImageTransparency() <= 0.01f &&
+                    !imageButton->getImage().toString().empty();
+            if (gui->getBackgroundTransparency() <= 0.01f || opaqueImage)
+                throw std::runtime_error(
+                    "Durango launcher has an opaque fullscreen GUI cover: " +
+                    gui->getFullName());
+        }
+        if (profileName->getText().empty() ||
+            profileName->getText() == "INSTUDIONOGAMERTAG" ||
+            !profileContainer->getClipping() ||
+            !openDocumentGui->getClipping() ||
+            openTitle->getTextTruncate() != RBX::Enums::TEXT_TRUNCATE_AT_END ||
+            openHint->getText() != "PLACE OR MODEL FILE  |  COMMAND-O" ||
+            openHint->getTextTruncate() != RBX::Enums::TEXT_TRUNCATE_AT_END ||
+            !recentDocumentGui->getClipping() ||
+            recentTitle->getTextTruncate() != RBX::Enums::TEXT_TRUNCATE_AT_END ||
+            recentPath->getTextTruncate() != RBX::Enums::TEXT_TRUNCATE_AT_END)
+            throw std::runtime_error(
+                "Durango launcher desktop identity or bounded local-document copy regressed");
+        if (recentDocument->getValue().find("ScaledWorldv4.7.rbxl") !=
+                std::string::npos ||
+            std::filesystem::path(recentDocument->getValue()).filename() !=
+                "Baseplate.rbxl")
+            throw std::runtime_error(
+                "Durango launcher exposed its internal scenery as a recent game");
+        if (coreGui->findFirstChildByNameRecursive("ControlFrame"))
+            throw std::runtime_error(
+                "Durango launcher did not let XStarterScript remove ControlFrame");
         boost::shared_ptr<RBX::Reflection::Tuple> recentArguments =
             boost::make_shared<RBX::Reflection::Tuple>();
         recentArguments->values.push_back(
@@ -4608,10 +5565,117 @@ void PlayerRuntime::finishVerification()
         if (!takeOpenDocumentRequest())
             throw std::runtime_error(
                 "Durango launcher local-document bridge did not reach the Player host");
-        std::cout << "Durango launcher mounted AppHome, engagement logo, and "
+        if (state->verifiesDurangoLauncher)
+        {
+            if (!state->launcherFirstFrameCaptured ||
+                !state->launcherSecondFrameCaptured ||
+                state->launcherFirstFrameNumber != kLauncherFirstSettledFrame ||
+                state->launcherSecondFrameNumber != kLauncherSecondSettledFrame ||
+                state->launcherSecondFrameNumber -
+                    state->launcherFirstFrameNumber < 120)
+                throw std::runtime_error(
+                    "Durango launcher did not produce two separated settled-frame readbacks");
+
+            const auto insideCityCameraHull =
+                [&](const RBX::Vector3& point) {
+                    constexpr float tolerance = 0.5f;
+                    return point.isFinite() &&
+                        point.x >= cityCameraMinimum.x - tolerance &&
+                        point.x <= cityCameraMaximum.x + tolerance &&
+                        point.y >= cityCameraMinimum.y - tolerance &&
+                        point.y <= cityCameraMaximum.y + tolerance &&
+                        point.z >= cityCameraMinimum.z - tolerance &&
+                        point.z <= cityCameraMaximum.z + tolerance;
+                };
+            const RBX::Vector3 firstCameraPosition =
+                state->launcherFirstCameraFrame.translation;
+            const RBX::Vector3 secondCameraPosition =
+                state->launcherSecondCameraFrame.translation;
+            const RBX::Vector3 firstCameraLook =
+                state->launcherFirstCameraFrame.lookVector();
+            const RBX::Vector3 secondCameraLook =
+                state->launcherSecondCameraFrame.lookVector();
+            if (!insideCityCameraHull(firstCameraPosition) ||
+                !insideCityCameraHull(secondCameraPosition) ||
+                !firstCameraLook.isFinite() || !secondCameraLook.isFinite())
+                throw std::runtime_error(
+                    "Durango CameraManager samples escaped the authored ScaledWorld City path");
+
+            const float cameraTranslation =
+                (secondCameraPosition - firstCameraPosition).magnitude();
+            const float cameraLookDelta =
+                (secondCameraLook - firstCameraLook).magnitude();
+            if (cameraTranslation < 0.05f && cameraLookDelta < 0.001f)
+                throw std::runtime_error(
+                    "Durango CameraManager Scriptable camera froze between settled frames");
+
+            const LauncherPixelEvidence firstPixels = analyzeLauncherPixels(
+                state->launcherFirstFramePixels, state->width, state->height);
+            const LauncherPixelEvidence secondPixels = analyzeLauncherPixels(
+                state->launcherSecondFramePixels, state->width, state->height);
+            const LauncherTemporalPixelEvidence temporalPixels =
+                compareLauncherPixels(state->launcherFirstFramePixels,
+                    state->launcherSecondFramePixels,
+                    state->width, state->height);
+            const std::size_t pixelCount =
+                static_cast<std::size_t>(state->width) * state->height;
+            const auto hasLiveSceneDetail = [&](const LauncherPixelEvidence& value) {
+                return value.colorBuckets >= 48 &&
+                    value.maximumLuminance >= value.minimumLuminance + 24 &&
+                    value.luminanceDeviation >= 4.0 &&
+                    value.spatialEdges >= pixelCount / 2000U;
+            };
+            std::size_t changedQuadrants = 0;
+            const std::size_t minimumQuadrantChanges =
+                std::max<std::size_t>(16U, pixelCount / 20000U);
+            for (const std::size_t changed :
+                 temporalPixels.changedPixelsByQuadrant)
+                changedQuadrants += changed >= minimumQuadrantChanges;
+            if (!hasLiveSceneDetail(firstPixels) ||
+                !hasLiveSceneDetail(secondPixels))
+                throw std::runtime_error(
+                    "Durango settled-frame readback is flat or lacks live 3D scene detail");
+            if (temporalPixels.changedPixels <
+                    std::max<std::size_t>(256U, pixelCount / 1000U) ||
+                changedQuadrants < 3 || temporalPixels.meanChannelDelta < 0.1)
+                throw std::runtime_error(
+                    "Durango readback did not show viewport-wide motion from its authored 3D camera path");
+
+            std::cout << "Durango live-3D temporal proof frames="
+                      << state->launcherFirstFrameNumber << ','
+                      << state->launcherSecondFrameNumber
+                      << " CameraType=Scriptable City-path-parts="
+                      << cityCameraPartCount
+                      << " camera-translation=" << cameraTranslation
+                      << " camera-look-delta=" << cameraLookDelta
+                      << " color-buckets=" << firstPixels.colorBuckets << ','
+                      << secondPixels.colorBuckets
+                      << " luminance-deviation="
+                      << firstPixels.luminanceDeviation << ','
+                      << secondPixels.luminanceDeviation
+                      << " spatial-edges=" << firstPixels.spatialEdges << ','
+                      << secondPixels.spatialEdges
+                      << " changed-pixels=" << temporalPixels.changedPixels
+                      << " changed-quadrants=" << changedQuadrants
+                      << " mean-channel-delta="
+                      << temporalPixels.meanChannelDelta << '\n';
+        }
+        std::cout << "Durango launcher direct AppShell retained local avatar, "
+                     "mounted AppHome without network/gameplay state, engagement logo, and "
                   << backgroundLoop->numChildren()
                   << " pooled background-music voices; controller activation opened HomePane "
-                     "and its picker/recent-document actions reached the Player host\n";
+                     "and its picker/recent-document actions reached the Player host; "
+                     "PlatformService AppShell post-process="
+                  << platformService->brightness << ','
+                  << platformService->contrast << ','
+                  << platformService->grayscaleLevel << ','
+                  << platformService->blurIntensity
+                  << " ScaledWorld-parts=" << authoredSceneryParts
+                  << " camera-path-parts=" << authoredCameraPathParts
+                  << " scene-batches=" << launcherRenderStats->passScene.batches
+                  << " scene-faces=" << launcherRenderStats->passScene.faces
+                  << " scene-vertices=" << launcherRenderStats->passScene.vertices
+                  << "\n";
     }
     if (state->verifiesAudio) {
         RBX::DataModel::LegacyLock lock(

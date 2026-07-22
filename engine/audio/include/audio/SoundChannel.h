@@ -33,6 +33,7 @@ namespace RBX {
 			shared_ptr<Sound> sound;
 			Audio::Engine* audioEngine;
 			Audio::VoiceHandle voice;
+			Audio::BusHandle voiceBus;
 
 			RBX::Timer<RBX::Time::Fast> lastTimePosReplication; // to regulate how often we replicate the time
 			
@@ -83,6 +84,8 @@ namespace RBX {
 			void playSound(const Instance* context, bool isResuming = false);
 			void releaseChannel();
 			void loadSound(const Instance *context, bool shouldPlayOnLoad);
+			void synchronizeSoundGroupBus();
+			void synchronizeSoundEffects();
 
 			void serverUpdatedTimePositionFromScript(unsigned int timePosition);
 			void serverUpdatedTimePosition(unsigned int timePosition);

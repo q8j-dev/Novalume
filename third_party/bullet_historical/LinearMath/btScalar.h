@@ -67,7 +67,8 @@ inline int	btGetVersion()
  			#define btFsel(a,b,c) __fsel((a),(b),(c))
 		#else
 
-#if (defined (_WIN32) && (_MSC_VER) && _MSC_VER >= 1400) && (!defined (BT_USE_DOUBLE_PRECISION))
+#if defined(_WIN32) && defined(_MSC_VER) && _MSC_VER >= 1400 && \
+    (defined(_M_IX86) || defined(_M_X64)) && !defined(BT_USE_DOUBLE_PRECISION)
 			#if _MSC_VER>1400
 				#define BT_USE_SIMD_VECTOR3
 			#endif

@@ -11,7 +11,9 @@
 #include "Reflection/Event.h"
 #include "Util/IHasLocation.h"
 
+#include <array>
 #include <cstdint>
+#include <vector>
 
 namespace RBX 
 {
@@ -95,6 +97,7 @@ namespace RBX
 			typedef boost::unordered_set<SoundChannel*> SoundChannels;
 			typedef boost::unordered_set<AudioPlayer*> AudioPlayers;
 			friend class SoundChannel;
+			friend class SoundGroup;
 			std::unique_ptr<Audio::Engine> audioEngine;
 			typedef boost::unordered_map<SoundType, shared_ptr<SoundChannel> > StockSounds;
 			StockSounds stockSounds;
@@ -122,6 +125,16 @@ namespace RBX
 			LoadedSounds loadedSounds;
 			LoadedSounds loaded3DSounds;
 
+			struct SoundGroupBus
+			{
+				weak_ptr<SoundGroup> group;
+				Audio::BusHandle bus;
+			};
+			std::vector<SoundGroupBus> soundGroupBuses;
+			typedef boost::unordered_map<const Instance*,
+				std::shared_ptr<Audio::MeterState> > SidechainMeters;
+			SidechainMeters sidechainMeters;
+
 			float masterChannelFadeTimeMsec;
 			FadeStatus masterChannelFadeStatus;
 			std::uint64_t lastOutputDeviceEventSerial;
@@ -137,6 +150,10 @@ namespace RBX
 			void updateSoundChannels(const Time::Interval& timeSinceLastStep);
 			void updateAudioPlayers();
 			void updateMasterChannelGroup(const Time::Interval& timeSinceLastStep);
+			Audio::BusHandle resolveSoundGroupBus(SoundGroup* group);
+			void updateSoundGroupVolume(SoundGroup* group);
+			void updateSoundGroupBuses();
+			void updateSidechainBindings();
 
 			void update3DSettings();
 			void on3DSettingChanged(const Reflection::PropertyDescriptor&) { update3DSettings(); }
@@ -159,6 +176,8 @@ namespace RBX
 
 			bool enabled() const { return initialized; }
 			Audio::Engine& getAudioEngine() { return *audioEngine; }
+			std::uint32_t collectRuntimeSoundEffects(const Instance* parent,
+				std::array<Audio::VoiceEffect, 32>& effects);
 			SoundService();
 			~SoundService();
 			void playSound(SoundType sound);

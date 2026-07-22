@@ -627,34 +627,25 @@ std::string System::currentDateString() {
     return format("%d-%02d-%02d", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday); 
 }
 
-#if defined(_MSC_VER) && !defined(RBX_PLATFORM_DURANGO)
+#if defined(_MSC_VER) && !defined(RBX_PLATFORM_DURANGO) && \
+    (defined(_M_IX86) || defined(_M_X64))
 
 
 // VC on Intel
 void System::cpuid(CPUIDFunction func, uint32& areg, uint32& breg, uint32& creg, uint32& dreg) {
-    // Can't copy from assembler direct to a function argument (which is on the stack) in VC.
-    uint32 a,b,c,d;
-
-    // Intel assembler syntax
-    __asm {
-        mov	  eax, func      //  eax <- func
-        mov   ecx, 0
-        cpuid              
-        mov   a, eax   
-        mov   b, ebx   
-        mov   c, ecx   
-        mov   d, edx
-    }
-    areg = a;
-    breg = b; 
-    creg = c;
-    dreg = d;
+    int registers[4] = {};
+    __cpuidex(registers, static_cast<int>(func), 0);
+    areg = static_cast<uint32>(registers[0]);
+    breg = static_cast<uint32>(registers[1]);
+    creg = static_cast<uint32>(registers[2]);
+    dreg = static_cast<uint32>(registers[3]);
 }
 
-#elif (defined(RBX_PLATFORM_DURANGO) || defined(G3D_OSX) || defined(G3D_IOS) || defined(G3D_ANDROID)) && ! defined(G3D_OSX_INTEL)
+#elif !defined(__i386__) && !defined(__x86_64__)
 
 // no CPUID
 void System::cpuid(CPUIDFunction func, uint32& eax, uint32& ebx, uint32& ecx, uint32& edx) {
+    (void)func;
     eax = 0;
     ebx = 0;
     ecx = 0;

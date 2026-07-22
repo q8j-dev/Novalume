@@ -10,7 +10,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include "Windows.h"
-#include "VMProtect/VMProtectSDK.h"
+#include "security/ProtectionMarkers.h"
 #include <psapi.h>
 
 #include "security/ApiSecurity.h"
@@ -65,12 +65,12 @@ bool isExePage(const MEMORY_BASIC_INFORMATION& info)
 bool checkG3dConsts()
 {
     volatile bool returnValue = true;
-    VMProtectBeginMutation(NULL);
+    RBX::Security::ProtectionMarkers::beginMutation();
     returnValue = ( (G3D::Matrix3::identity() != G3D::Matrix3(1, 0, 0, 0, 1, 0, 0, 0, 1))
         || (G3D::Vector3::unitX() != G3D::Vector3(1, 0, 0))
         || (G3D::Vector3::unitY() != G3D::Vector3(0, 1, 0))
         || (G3D::Vector3::unitZ() != G3D::Vector3(0, 0, 1)) );
-    VMProtectEnd();
+    RBX::Security::ProtectionMarkers::end();
     return returnValue;
 }
 #pragma optimize( "", on )
@@ -210,7 +210,7 @@ namespace RBX
         , ntdllSize(0)
         , ntdllTextBase(0)
     {
-        VMProtectBeginMutation(NULL);
+        RBX::Security::ProtectionMarkers::beginMutation();
         // get information about ntdll.
         thisProcess = GetCurrentProcess();
         HMODULE ntdll = rbxGetNtdll();
@@ -243,7 +243,7 @@ namespace RBX
         pfn = 0;
         ntdll = 0;
         callTemplate = 0;
-        VMProtectEnd();
+        RBX::Security::ProtectionMarkers::end();
     }
 
 }
@@ -281,7 +281,7 @@ ProgramMemoryChecker::ProgramMemoryChecker()
     , lastCompletedTime(Time::nowFast())
 {
     #if !defined(RBX_STUDIO_BUILD)
-    VMProtectBeginMutation(NULL);
+    RBX::Security::ProtectionMarkers::beginMutation();
     ScanRegionTest nonceLocation( ScanRegion(((char*) (&pmcHash.nonce)), 4));
     nonceLocation.closeHash = true;
     nonceLocation.useHashValueInStructHash = false;
@@ -350,7 +350,7 @@ ProgramMemoryChecker::ProgramMemoryChecker()
         step();
     }
 
-    VMProtectEnd();
+    RBX::Security::ProtectionMarkers::end();
     hsceHashOrReduced = 0;
     hsceHashAndReduced = 0;
     hsceHashAndReduced = ~hsceHashAndReduced;
@@ -365,7 +365,7 @@ ProgramMemoryChecker::ProgramMemoryChecker()
 bool ProgramMemoryChecker::areMemoryPagePermissionsSetupForHacking() 
 {
     #if !defined(RBX_STUDIO_BUILD)
-    VMProtectBeginMutation("12");
+    RBX::Security::ProtectionMarkers::beginMutation("12");
     ScanRegion region = ScanRegion::getScanRegion(NULL, ".text");
 
     MEMORY_BASIC_INFORMATION memInfo;
@@ -379,7 +379,7 @@ bool ProgramMemoryChecker::areMemoryPagePermissionsSetupForHacking()
         RBX::Security::setHackFlagVmp<LINE_RAND4>(RBX::Security::hackFlag8, HATE_CONST_CHANGED);
     }
     
-    VMProtectEnd();
+    RBX::Security::ProtectionMarkers::end();
     #endif
     return false;
 }
@@ -395,7 +395,7 @@ unsigned int ProgramMemoryChecker::step()
     unsigned int blocksLeftForThisStep = 1 + bytesPerStep/kBlock;
     while (blocksLeftForThisStep > 0)
     {
-        VMProtectBeginMutation(NULL);
+        RBX::Security::ProtectionMarkers::beginMutation();
         ScanRegionTest& thisRegion = scanningRegions[currentRegion];
         const char* currentRegionEndAddress = thisRegion.startingAddress +
             thisRegion.size;
@@ -432,7 +432,7 @@ unsigned int ProgramMemoryChecker::step()
         unsigned int v3 = thisHashState->v3;
         unsigned int v4 = thisHashState->v4;
         const char* p = currentMemory;
-        VMProtectEnd();
+        RBX::Security::ProtectionMarkers::end();
         __asm
         {
             mov edx, esp;                    // junk       (orig_esp at esp+12)
@@ -461,7 +461,7 @@ unsigned int ProgramMemoryChecker::step()
         {
             lea esp, [esp-PMC_DEADSPACE]; // subtract 12 from esp
         }
-        VMProtectBeginMutation(NULL);
+        RBX::Security::ProtectionMarkers::beginMutation();
         thisHashState->v1 = v1;
         thisHashState->v2 = v2;
         thisHashState->v3 = v3;
@@ -553,7 +553,7 @@ unsigned int ProgramMemoryChecker::step()
 
             currentMemory = scanningRegions[currentRegion].startingAddress;
         }
-        VMProtectEnd();
+        RBX::Security::ProtectionMarkers::end();
     }
     #endif
 
@@ -564,7 +564,7 @@ unsigned int ProgramMemoryChecker::step()
 int ProgramMemoryChecker::isLuaLockOk() const
 {
 #if !defined(RBX_STUDIO_BUILD) && defined(_WIN32)
-    VMProtectBeginMutation(NULL);
+    RBX::Security::ProtectionMarkers::beginMutation();
     // This is an added check
     size_t checkStart = RBX::Security::rbxTextBase;
     size_t checkSize = RBX::Security::rbxTextSize;
@@ -581,7 +581,7 @@ int ProgramMemoryChecker::isLuaLockOk() const
     {
         returnValue = ProgramMemoryChecker::kLuaLockOk;
     }
-    VMProtectEnd();
+    RBX::Security::ProtectionMarkers::end();
     return returnValue;
 #else
     return ProgramMemoryChecker::kLuaLockOk;
@@ -622,7 +622,7 @@ void ProgramMemoryChecker::getLastHashes(PmcHashContainer::HashVector& outHashes
 unsigned int ProgramMemoryChecker::hashScanningRegions(size_t regions) const
 {
     #if !defined(RBX_STUDIO_BUILD)
-    VMProtectBeginMutation("15");
+    RBX::Security::ProtectionMarkers::beginMutation("15");
     void* hashState = XXH32_init(kHASH_SEED_INIT);
     const size_t termRegion = scanningRegions.size();
     for (size_t i = 0; i < termRegion; ++i)
@@ -640,7 +640,7 @@ unsigned int ProgramMemoryChecker::hashScanningRegions(size_t regions) const
             XXH32_feed(hashState, &(scanningRegions[i].lastHashValue), sizeof(unsigned int));
         }
     }
-    VMProtectEnd();
+    RBX::Security::ProtectionMarkers::end();
     return XXH32_result(hashState);
     #else
     return 0;
@@ -650,7 +650,7 @@ unsigned int ProgramMemoryChecker::hashScanningRegions(size_t regions) const
 unsigned int ProgramMemoryChecker::updateHsceHash()
 {
 #if defined(_WIN32) && !defined(RBX_STUDIO_BUILD)
-    VMProtectBeginMutation(NULL);
+    RBX::Security::ProtectionMarkers::beginMutation();
     XXH_state32_t hsceHashState;
     hsceHashState.v1 = hsceHashState.v2 = hsceHashState.v3 = hsceHashState.v4 = 0xCCCCCCCC;
     hsceHashState.seed = 0xCCCCCCCC;
@@ -664,7 +664,7 @@ unsigned int ProgramMemoryChecker::updateHsceHash()
     unsigned int hsceHash = XXH32_getIntermediateResult(&hsceHashState);
     hsceHashOrReduced |= hsceHash;
     hsceHashAndReduced &= hsceHash;
-    VMProtectEnd();
+    RBX::Security::ProtectionMarkers::end();
     return hsceHash;
 #else
     return 0;
