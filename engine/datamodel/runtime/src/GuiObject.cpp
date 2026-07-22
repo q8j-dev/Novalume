@@ -947,7 +947,8 @@ Vector2 GuiObject::getAbsolutePosition() const
         if (const ScreenGui* screenGui =
                 Instance::fastDynamicCast<ScreenGui>(ancestor))
         {
-            if (screenGui->getIgnoreGuiInset())
+            if (screenGui->getIgnoreGuiInset() ||
+                screenGui->getScreenInsets() == SCREEN_INSETS_DEVICE_SAFE)
                 return absolutePosition;
             break;
         }

@@ -284,7 +284,8 @@ namespace RBX {
 		// A ScreenGui that ignores the core inset is already laid out against the
 		// full viewport. Applying the legacy global-inset translation a second time
 		// moves current CoreGui (notably Chrome/Unibar) above the physical screen.
-		if (screenInsets == SCREEN_INSETS_NONE)
+		if (screenInsets == SCREEN_INSETS_NONE ||
+			screenInsets == SCREEN_INSETS_DEVICE_SAFE)
 			return absolutePosition;
         if (GuiService* guiService = RBX::ServiceProvider::find<GuiService>(this))
         {

@@ -940,6 +940,7 @@ struct PlayerRuntime::State final {
     bool verifiesChromeLeaderboardTouch = false;
     bool verifiesChromeLeaderboardController = false;
     bool verifiesKeyboardNavigation = false;
+    bool verifiesSafeArea = false;
     bool overridesInputPlatform = false;
     bool keyboardNavigationActivated = false;
     bool keyboardNavigationSelectionProved = false;
@@ -949,6 +950,10 @@ struct PlayerRuntime::State final {
     boost::shared_ptr<RBX::ScreenGui> keyboardNavigationScreen;
     boost::shared_ptr<RBX::GuiTextButton> keyboardNavigationFirstButton;
     boost::shared_ptr<RBX::GuiTextButton> keyboardNavigationSecondButton;
+    boost::shared_ptr<RBX::ScreenGui> safeAreaScreen;
+    boost::shared_ptr<RBX::Frame> safeAreaFrame;
+    boost::shared_ptr<RBX::ScreenGui> fullViewportScreen;
+    boost::shared_ptr<RBX::Frame> fullViewportFrame;
     bool verifiesReport = false;
     bool verifiesRespawn = false;
     bool verifiesSwitchAvatar = false;
@@ -1120,7 +1125,8 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
     const std::filesystem::path& clientSettingsRoot,
     const std::filesystem::path& placePath, unsigned int renderWidth,
     unsigned int renderHeight, unsigned int logicalWidth,
-    unsigned int logicalHeight, bool disableAudioOutput,
+    unsigned int logicalHeight, float safeAreaLeft, float safeAreaTop,
+    float safeAreaRight, float safeAreaBottom, bool disableAudioOutput,
     bool useCurrentInExperienceUi, bool useDurangoLauncher,
     bool verifyDurangoLauncher,
     AvatarRigVariant avatarRig,
@@ -1133,6 +1139,7 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
     bool verifyChromeLeaderboardTouch,
     bool verifyChromeLeaderboardController,
     bool verifyKeyboardNavigation,
+    bool verifySafeArea,
     bool verifyReport,
     bool verifyRespawn,
     bool verifySwitchAvatar,
@@ -1147,7 +1154,11 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
     : state(std::make_unique<State>())
 {
     if (!device || renderWidth == 0 || renderHeight == 0 ||
-        logicalWidth == 0 || logicalHeight == 0)
+        logicalWidth == 0 || logicalHeight == 0 ||
+        !std::isfinite(safeAreaLeft) || safeAreaLeft < 0.0f ||
+        !std::isfinite(safeAreaTop) || safeAreaTop < 0.0f ||
+        !std::isfinite(safeAreaRight) || safeAreaRight < 0.0f ||
+        !std::isfinite(safeAreaBottom) || safeAreaBottom < 0.0f)
         throw std::invalid_argument("PlayerRuntime requires a valid renderer and viewport");
 
     initializeRuntime(clientSettingsRoot);
@@ -1261,6 +1272,7 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
     state->verifiesChromeLeaderboardController =
         verifyChromeLeaderboardController;
     state->verifiesKeyboardNavigation = verifyKeyboardNavigation;
+    state->verifiesSafeArea = verifySafeArea;
     state->verifiesReport = verifyReport;
     state->verifiesRespawn = verifyRespawn;
     state->verifiesSwitchAvatar = verifySwitchAvatar;
@@ -1723,9 +1735,12 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
             (renderWidth + logicalWidth / 2U) / logicalWidth;
         const unsigned int verticalScale =
             (renderHeight + logicalHeight / 2U) / logicalHeight;
-        RBX::ServiceProvider::create<RBX::GuiService>(state->dataModel.get())
-            ->setResolutionScale(static_cast<int>(std::clamp(
-                std::max(horizontalScale, verticalScale), 1U, 3U)));
+        RBX::GuiService* guiService =
+            RBX::ServiceProvider::create<RBX::GuiService>(state->dataModel.get());
+        guiService->setResolutionScale(static_cast<int>(std::clamp(
+            std::max(horizontalScale, verticalScale), 1U, 3U)));
+        guiService->setHardwareSafeAreaInsets(
+            safeAreaLeft, safeAreaTop, safeAreaRight, safeAreaBottom);
         if (placePath.empty() && !useDurangoLauncher) {
             createPart(workspace, "Baseplate", RBX::Vector3(96.0f, 2.0f, 96.0f),
                 RBX::Vector3(0.0f, -1.0f, 0.0f), RBX::BrickColor::brickGreen());
@@ -1872,6 +1887,34 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
                             ? input->getUserInputType()
                             : RBX::InputObject::TYPE_NONE;
                     });
+        }
+        if (verifySafeArea) {
+            RBX::PlayerGui* playerGui =
+                localPlayer->findFirstChildOfType<RBX::PlayerGui>();
+            if (!playerGui)
+                throw std::runtime_error(
+                    "safe-area verification requires PlayerGui");
+            state->safeAreaScreen =
+                RBX::Creatable<RBX::Instance>::create<RBX::ScreenGui>();
+            state->safeAreaScreen->setName("SafeAreaVerification");
+            state->safeAreaScreen->setScreenInsets(RBX::SCREEN_INSETS_DEVICE_SAFE);
+            state->safeAreaScreen->setParent(playerGui);
+            state->safeAreaFrame =
+                RBX::Creatable<RBX::Instance>::create<RBX::Frame>();
+            state->safeAreaFrame->setName("SafeAreaBounds");
+            state->safeAreaFrame->setSize(RBX::UDim2(1.0f, 0, 1.0f, 0));
+            state->safeAreaFrame->setParent(state->safeAreaScreen.get());
+            state->fullViewportScreen =
+                RBX::Creatable<RBX::Instance>::create<RBX::ScreenGui>();
+            state->fullViewportScreen->setName("FullViewportVerification");
+            state->fullViewportScreen->setScreenInsets(RBX::SCREEN_INSETS_NONE);
+            state->fullViewportScreen->setClipToDeviceSafeArea(false);
+            state->fullViewportScreen->setParent(playerGui);
+            state->fullViewportFrame =
+                RBX::Creatable<RBX::Instance>::create<RBX::Frame>();
+            state->fullViewportFrame->setName("FullViewportBounds");
+            state->fullViewportFrame->setSize(RBX::UDim2(1.0f, 0, 1.0f, 0));
+            state->fullViewportFrame->setParent(state->fullViewportScreen.get());
         }
         if (useDurangoLauncher) {
             RBX::ServiceProvider::create<RBX::RunService>(
@@ -3021,10 +3064,16 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
 PlayerRuntime::~PlayerRuntime() = default;
 
 void PlayerRuntime::resize(unsigned int renderWidth, unsigned int renderHeight,
-    unsigned int logicalWidth, unsigned int logicalHeight, float pixelDensity)
+    unsigned int logicalWidth, unsigned int logicalHeight, float pixelDensity,
+    float safeAreaLeft, float safeAreaTop, float safeAreaRight,
+    float safeAreaBottom)
 {
     if (renderWidth == 0 || renderHeight == 0 ||
-        logicalWidth == 0 || logicalHeight == 0)
+        logicalWidth == 0 || logicalHeight == 0 ||
+        !std::isfinite(safeAreaLeft) || safeAreaLeft < 0.0f ||
+        !std::isfinite(safeAreaTop) || safeAreaTop < 0.0f ||
+        !std::isfinite(safeAreaRight) || safeAreaRight < 0.0f ||
+        !std::isfinite(safeAreaBottom) || safeAreaBottom < 0.0f)
         throw std::invalid_argument("PlayerRuntime resize requires a nonzero viewport");
 
     RBX::DataModel::LegacyLock lock(
@@ -3044,9 +3093,12 @@ void PlayerRuntime::resize(unsigned int renderWidth, unsigned int renderHeight,
         (renderWidth + logicalWidth / 2U) / logicalWidth;
     const unsigned int verticalScale =
         (renderHeight + logicalHeight / 2U) / logicalHeight;
-    RBX::ServiceProvider::create<RBX::GuiService>(state->dataModel.get())
-        ->setResolutionScale(static_cast<int>(std::clamp(
-            std::max(horizontalScale, verticalScale), 1U, 3U)));
+    RBX::GuiService* guiService =
+        RBX::ServiceProvider::create<RBX::GuiService>(state->dataModel.get());
+    guiService->setResolutionScale(static_cast<int>(std::clamp(
+        std::max(horizontalScale, verticalScale), 1U, 3U)));
+    guiService->setHardwareSafeAreaInsets(
+        safeAreaLeft, safeAreaTop, safeAreaRight, safeAreaBottom);
 }
 
 void PlayerRuntime::handleInput(const rbx::platform::InputEvent& event)
@@ -4116,6 +4168,57 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
         if (state->shadowDarkenedPixels < 64U)
             throw std::runtime_error(
                 "ShadowMap caster pass ran but did not darken visible scene pixels");
+    }
+    if (state->verifiesSafeArea &&
+        (frameNumber == 120UL || frameNumber == 180UL)) {
+        const RBX::Vector4 expected = frameNumber == 120UL
+            ? RBX::Vector4(24.0f, 18.0f, 32.0f, 28.0f)
+            : RBX::Vector4(48.0f, 10.0f, 12.0f, 34.0f);
+        const RBX::Vector2 safePosition =
+            state->safeAreaFrame->getAbsolutePosition();
+        const RBX::Vector2 safeSize = state->safeAreaFrame->getAbsoluteSize();
+        const RBX::Vector2 safeScreenPosition =
+            state->safeAreaScreen->getAbsolutePosition();
+        const RBX::Vector2 safeScreenSize =
+            state->safeAreaScreen->getAbsoluteSize();
+        const RBX::Vector2 fullPosition =
+            state->fullViewportFrame->getAbsolutePosition();
+        const RBX::Vector2 fullSize =
+            state->fullViewportFrame->getAbsoluteSize();
+        RBX::GuiService* guiService =
+            RBX::ServiceProvider::find<RBX::GuiService>(state->dataModel.get());
+        const RBX::Vector2 safeViewport = guiService
+            ? guiService->getHardwareSafeViewport() : RBX::Vector2::zero();
+        const float expectedWidth = static_cast<float>(state->logicalWidth) -
+            expected.x - expected.z;
+        const float expectedHeight = static_cast<float>(state->logicalHeight) -
+            expected.y - expected.w;
+        const auto near = [](float left, float right) {
+            return std::abs(left - right) < 0.01f;
+        };
+        if (!near(safePosition.x, expected.x) ||
+            !near(safePosition.y, expected.y) ||
+            !near(safeSize.x, expectedWidth) ||
+            !near(safeSize.y, expectedHeight) ||
+            !near(safeViewport.x, expectedWidth) ||
+            !near(safeViewport.y, expectedHeight) ||
+            !near(fullPosition.x, 0.0f) ||
+            !near(fullPosition.y, 0.0f) ||
+            !near(fullSize.x, static_cast<float>(state->logicalWidth)) ||
+            !near(fullSize.y, static_cast<float>(state->logicalHeight)))
+            throw std::runtime_error(RBX::format(
+                "host safe-area insets did not reach ScreenGui layout (safe=%f,%f,%f,%f screen=%f,%f,%f,%f full=%f,%f,%f,%f viewport=%f,%f expected=%f,%f,%f,%f)",
+                safePosition.x, safePosition.y, safeSize.x, safeSize.y,
+                safeScreenPosition.x, safeScreenPosition.y,
+                safeScreenSize.x, safeScreenSize.y,
+                fullPosition.x, fullPosition.y, fullSize.x, fullSize.y,
+                safeViewport.x, safeViewport.y, expected.x, expected.y,
+                expectedWidth, expectedHeight));
+        std::cout << "safe-area frame=" << frameNumber << " inset="
+                  << expected.x << ',' << expected.y << ',' << expected.z
+                  << ',' << expected.w << " viewport=" << safePosition.x
+                  << ',' << safePosition.y << ',' << safeSize.x << ','
+                  << safeSize.y << '\n';
     }
     if (state->screenshotRequested) {
         state->screenshotRequested = false;

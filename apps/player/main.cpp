@@ -82,6 +82,7 @@ int rbxPlayerMain(int argc, char** argv) {
         bool verifyChromeLeaderboardTouch = false;
         bool verifyChromeLeaderboardController = false;
         bool verifyKeyboardNavigation = false;
+        bool verifySafeArea = false;
         bool verifyReport = false;
         bool verifyRespawn = false;
         bool verifySwitchAvatar = false;
@@ -117,6 +118,7 @@ int rbxPlayerMain(int argc, char** argv) {
                 argument == "--verify-chrome-leaderboard-controller";
             verifyKeyboardNavigation |=
                 argument == "--verify-keyboard-navigation";
+            verifySafeArea |= argument == "--verify-safe-area";
             verifyReport |= argument == "--verify-report";
             verifyRespawn |= argument == "--verify-respawn";
             verifySwitchAvatar |= argument == "--verify-switch-avatar";
@@ -262,6 +264,8 @@ int rbxPlayerMain(int argc, char** argv) {
             assetMounts.addMount("embedded-place", materializedPlace->root, 1000);
 
         auto surface = host->nativeSurface();
+        if (verifySafeArea)
+            surface.safeArea = {24.0f, 18.0f, 32.0f, 28.0f};
         const auto playerListImage = assetMounts.resolve(
             "rbxasset://textures/ui/PlayerList/ViewAvatar.png", surface.pixelDensity);
         if (useCurrentInExperienceUi &&
@@ -312,7 +316,9 @@ int rbxPlayerMain(int argc, char** argv) {
         rbx::player::PlayerRuntime runtime(device.get(), resources,
             host->existingClientSettingsRoot(), runtimePlace,
             surface.width, surface.height, surface.logicalWidth,
-            surface.logicalHeight, headlessVerify, useCurrentInExperienceUi,
+            surface.logicalHeight, surface.safeArea.left, surface.safeArea.top,
+            surface.safeArea.right, surface.safeArea.bottom,
+            headlessVerify, useCurrentInExperienceUi,
             useDurangoLauncher, headlessVerify && verifyLauncher,
             avatarRig, verifyViewportRendering,
             videoVerificationPath.value_or(std::filesystem::path()),
@@ -320,6 +326,7 @@ int rbxPlayerMain(int argc, char** argv) {
             verifyChromeLeaderboard, verifyChromeLeaderboardTouch,
             verifyChromeLeaderboardController,
             verifyKeyboardNavigation,
+            verifySafeArea,
             verifyReport, verifyRespawn,
             verifySwitchAvatar, verifySurfaceTextures, verifyShadowMap,
             verifySkybox, verifyAudio, verifyPlaceAudio, verifyTextRendering,
@@ -373,7 +380,12 @@ int rbxPlayerMain(int argc, char** argv) {
         };
         while (host->pumpEvents() && (frameLimit < 0 || frame < frameLimit)) {
             const auto frameStart = std::chrono::steady_clock::now();
-            const auto currentSurface = host->nativeSurface();
+            auto currentSurface = host->nativeSurface();
+            if (verifySafeArea) {
+                currentSurface.safeArea = frame < 150
+                    ? rbx::platform::SafeAreaInsets{24.0f, 18.0f, 32.0f, 28.0f}
+                    : rbx::platform::SafeAreaInsets{48.0f, 10.0f, 12.0f, 34.0f};
+            }
             if (currentSurface.width != 0 && currentSurface.height != 0 &&
                 currentSurface.logicalWidth != 0 &&
                 currentSurface.logicalHeight != 0 &&
@@ -381,10 +393,16 @@ int rbxPlayerMain(int argc, char** argv) {
                  currentSurface.height != surface.height ||
                  currentSurface.logicalWidth != surface.logicalWidth ||
                  currentSurface.logicalHeight != surface.logicalHeight ||
-                 currentSurface.pixelDensity != surface.pixelDensity)) {
+                 currentSurface.pixelDensity != surface.pixelDensity ||
+                 currentSurface.safeArea.left != surface.safeArea.left ||
+                 currentSurface.safeArea.top != surface.safeArea.top ||
+                 currentSurface.safeArea.right != surface.safeArea.right ||
+                 currentSurface.safeArea.bottom != surface.safeArea.bottom)) {
                 runtime.resize(currentSurface.width, currentSurface.height,
                     currentSurface.logicalWidth, currentSurface.logicalHeight,
-                    currentSurface.pixelDensity);
+                    currentSurface.pixelDensity, currentSurface.safeArea.left,
+                    currentSurface.safeArea.top, currentSurface.safeArea.right,
+                    currentSurface.safeArea.bottom);
                 surface = currentSurface;
             }
             for (const auto& document : host->takeOpenedDocuments()) {

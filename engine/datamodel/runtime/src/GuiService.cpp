@@ -383,6 +383,15 @@ namespace RBX
     
     Vector2 GuiService::getScreenResolution()
     {
+        if (Workspace* workspace = ServiceProvider::find<Workspace>(this))
+        {
+            if (Camera* camera = workspace->getCamera())
+            {
+                const Vector2 viewport = camera->getViewport();
+                if (viewport != Vector2::zero())
+                    return viewport;
+            }
+        }
         if (CoreGuiService* coreGui = ServiceProvider::create<CoreGuiService>(this))
         {
             if (ScreenGui* screenGui = coreGui->findFirstChildOfType<ScreenGui>())

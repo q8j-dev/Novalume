@@ -32,6 +32,8 @@ public:
                   const std::filesystem::path& placePath,
                   unsigned int renderWidth, unsigned int renderHeight,
                   unsigned int logicalWidth, unsigned int logicalHeight,
+                  float safeAreaLeft, float safeAreaTop,
+                  float safeAreaRight, float safeAreaBottom,
                   bool disableAudioOutput, bool useCurrentInExperienceUi,
                   bool useDurangoLauncher = false,
                   bool verifyDurangoLauncher = false,
@@ -45,6 +47,7 @@ public:
                   bool verifyChromeLeaderboardTouch = false,
                   bool verifyChromeLeaderboardController = false,
                   bool verifyKeyboardNavigation = false,
+                  bool verifySafeArea = false,
                   bool verifyReport = false,
                   bool verifyRespawn = false,
                   bool verifySwitchAvatar = false,
@@ -63,7 +66,8 @@ public:
 
     void resize(unsigned int renderWidth, unsigned int renderHeight,
                 unsigned int logicalWidth, unsigned int logicalHeight,
-                float pixelDensity);
+                float pixelDensity, float safeAreaLeft, float safeAreaTop,
+                float safeAreaRight, float safeAreaBottom);
     void renderFrame(unsigned long frameNumber);
     void handleInput(const rbx::platform::InputEvent& event);
     [[nodiscard]] std::optional<std::array<float, 2>>

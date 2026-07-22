@@ -10,6 +10,24 @@ server software, launcher/platform shells, packaging, and cross-platform
 readiness are active first. The genuine 2026 Player UI remains preserved for
 the final return; it is not replaced or treated as accepted while deferred.
 
+## Native safe-area propagation checkpoint (2026-07-22)
+
+- Connected every host surface's logical safe-area insets to `GuiService` at
+  startup and on inset-only or viewport changes. DataModel rendering now
+  supplies both the legacy CoreGui inset and the independent device-safe inset
+  to the shared Adorn path instead of leaving the latter permanently zero.
+- Corrected full screen-resolution queries to use the camera viewport rather
+  than an already-inset CoreGui child, preventing `GetHardwareSafeViewport`
+  from subtracting device edges twice. DeviceSafe `ScreenGui` descendants now
+  retain physical absolute coordinates instead of also subtracting the legacy
+  top-bar inset.
+- Added `--verify-safe-area`. Its 300-frame signed Metal proof applies two
+  asymmetric inset sets across a live transition, requires exact DeviceSafe
+  position/size and hardware-safe viewport values, and simultaneously proves
+  that a `ScreenInsets=None`/unclipped sibling continues to span 1280x720.
+  Five UI contract runs, keyboard and official PlayerList mouse/controller/
+  three-size touch proofs, and complete iOS/Web Player builds pass.
+
 ## Keyboard GUI navigation checkpoint (2026-07-22)
 
 - Added `--verify-keyboard-navigation` around the supplied current

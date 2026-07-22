@@ -1847,16 +1847,20 @@ void DataModel::computeGuiInset(Adorn* adorn)
 {	
 
 	Vector4 guiInset;
+	Vector4 deviceGuiInset;
 	if (RBX::GuiService* guiService = RBX::ServiceProvider::find<RBX::GuiService>(this))
 	{
-		guiInset = guiService->getGlobalGuiInset(); 
+		guiInset = guiService->getGlobalGuiInset();
+		deviceGuiInset = guiService->getHardwareSafeAreaInsets();
 	}
 	else
 	{
 		guiInset = Vector4(0, 0, 0, 0);
+		deviceGuiInset = Vector4(0, 0, 0, 0);
 	}
 
 	adorn->setUserGuiInset(guiInset);
+	adorn->setDeviceGuiInset(deviceGuiInset);
 }
 
 void DataModel::renderPlayerGui(Adorn* adorn)

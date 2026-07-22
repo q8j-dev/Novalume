@@ -168,6 +168,7 @@ namespace RBX {
 		shared_ptr<const Reflection::Tuple> getGuiInset();
 		Rect2D getInsetArea(ScreenInsetsType screenInsets);
 		Vector2 getHardwareSafeViewport();
+		Vector4 getHardwareSafeAreaInsets() const { return hardwareSafeAreaInsets; }
 		const Rect2D& getTopbarInset() const { return topbarInset; }
 		void setTopbarInset(Rect2D value);
 		void setHardwareSafeAreaInsets(float left, float top, float right, float bottom);
