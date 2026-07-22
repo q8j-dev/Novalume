@@ -3486,8 +3486,13 @@ GuiResponse GuiButton::processTouchEvent(const shared_ptr<InputObject>& event)
 	if (!getInteractable())
 		return GuiResponse::notSunk();
 	shouldFireClickedEvent = true;
+	const bool inputOver = mouseIsOver(event->get2DPosition());
+	if (event->getUserInputState() == InputObject::INPUT_STATE_BEGIN &&
+		inputOver && getActive() && !getDraggable())
+		lastTouchEvent = event;
+	GuiResponse response = GuiResponse::notSunk();
         
-	if ( event->isTouchEvent() && mouseIsOver(event->get2DPosition()) && getActive() && !getDraggable())
+	if (event->isTouchEvent() && inputOver && getActive() && !getDraggable())
 	{
 		if( RBX::ScrollingFrame* scrollFrame = findFirstAncestorOfType<RBX::ScrollingFrame>())
 		{
@@ -3495,13 +3500,21 @@ GuiResponse GuiButton::processTouchEvent(const shared_ptr<InputObject>& event)
 			shouldFireClickedEvent = !scrollFrame->isTouchScrolling();
 
 			if (processedInput)
-			{
-				return GuiResponse::sunk();
-			}
+				response = GuiResponse::sunk();
 		}
 	}
 
-	return Super::processTouchEvent(event);
+	if (!response.wasSunk())
+		response = Super::processTouchEvent(event);
+	if (event->getUserInputState() == InputObject::INPUT_STATE_END) {
+		shared_ptr<InputObject> began = lastTouchEvent.lock();
+		if (event == began && inputOver && shouldFireClickedEvent)
+			fireActivated(event);
+		lastTouchEvent.reset();
+	}
+	else if (event->getUserInputState() == InputObject::INPUT_STATE_CANCEL)
+		lastTouchEvent.reset();
+	return response;
 }
 
 void GuiButton::fireActivated(const shared_ptr<InputObject>& event)
@@ -3626,7 +3639,16 @@ GuiResponse GuiButton::processMouseEvent(const shared_ptr<InputObject>& event)
 			<< " state=" << event->getUserInputState()
 			<< " over=" << mouseOver << " was-down=" << wasDownOver << '\n';
 
-	if (eventLeftButtonUp && wasDownOver && shouldFireClickedEvent)		{sinkEvent = true;	clicked = true; mouseButton1ClickSignal(); fireActivated(event); if (diagnoseChromeInput) std::cerr << "Chrome button activated target=" << getFullName() << '\n';}
+	if (eventLeftButtonUp && wasDownOver && shouldFireClickedEvent) {
+		sinkEvent = true;
+		clicked = true;
+		mouseButton1ClickSignal();
+		if (event->getSourceUserInputType() != InputObject::TYPE_TOUCH) {
+			fireActivated(event);
+			if (diagnoseChromeInput)
+				std::cerr << "Chrome button activated target=" << getFullName() << '\n';
+		}
+	}
 	if (eventRightButtonUp && wasDownOver && shouldFireClickedEvent)	{sinkEvent = true;	mouseButton2ClickSignal();}
 	if (mouseOver && eventLeftButtonDown)								{sinkEvent = true;	mouseButton1DownSignal(mousePosition.x, mousePosition.y);}
 	if (mouseOver && eventRightButtonDown)								{sinkEvent = true;	mouseButton2DownSignal(mousePosition.x, mousePosition.y);}

@@ -701,7 +701,11 @@ namespace RBX {
 
 	void UserInputService::updateLastInputType(const shared_ptr<InputObject>& inputObject)
 	{
-		if (lastInputType != inputObject->getUserInputType())
+		const InputObject::UserInputType inputType =
+			inputObject->getSourceUserInputType() != InputObject::TYPE_NONE
+				? inputObject->getSourceUserInputType()
+				: inputObject->getUserInputType();
+		if (lastInputType != inputType)
 		{
 			if ( (inputObject->getKeyCode() == SDLK_GAMEPAD_THUMBSTICK1 || inputObject->getKeyCode() == SDLK_GAMEPAD_THUMBSTICK2 ||
 				inputObject->getKeyCode() == SDLK_GAMEPAD_BUTTONR2 || inputObject->getKeyCode() == SDLK_GAMEPAD_BUTTONL2) &&
@@ -711,7 +715,7 @@ namespace RBX {
 			}
 
 			UI::InputFamily family = UI::INPUT_FAMILY_UNCHANGED;
-			switch (inputObject->getUserInputType())
+			switch (inputType)
 			{
 			case InputObject::TYPE_MOUSEBUTTON1:
 			case InputObject::TYPE_MOUSEBUTTON2:
@@ -742,7 +746,7 @@ namespace RBX {
 			}
 
 			const Enums::PreferredInput nextPreferredInput = UI::resolvePreferredInput(family, preferredInput);
-			lastInputType = inputObject->getUserInputType();
+			lastInputType = inputType;
 			lastInputTypeChangedSignal(lastInputType);
 			if (preferredInput != nextPreferredInput)
 			{

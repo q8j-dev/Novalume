@@ -5,6 +5,7 @@
 #include "v8datamodel/UIComponent.h"
 #include "v8datamodel/TextService.h"
 #include "v8datamodel/TextLabel.h"
+#include "v8datamodel/TextButton.h"
 #include "v8datamodel/TextBox.h"
 #include "v8datamodel/TextChatService.h"
 #include "v8datamodel/TextChannel.h"
@@ -443,6 +444,46 @@ int main()
         "UIListLayout must advance by child size and resolved padding");
     require(near(list->getAbsoluteContentSize().x, 96.0f) && near(list->getAbsoluteContentSize().y, 30.0f),
         "UIListLayout AbsoluteContentSize must describe the laid-out children");
+
+    boost::shared_ptr<GuiTextButton> touchButton = Creatable<Instance>::create<GuiTextButton>();
+    touchButton->setSize(UDim2(0.0f, 120, 0.0f, 40));
+    touchButton->handleResize(Rect2D::xywh(0.0f, 0.0f, 120.0f, 40.0f), true);
+    int touchActivations = 0;
+    int synthesizedMouseClicks = 0;
+    InputObject::UserInputType activationInputType = InputObject::TYPE_NONE;
+    rbx::signals::scoped_connection synthesizedMouseClickConnection =
+        touchButton->mouseButton1ClickSignal.connect(
+            [&synthesizedMouseClicks]() { ++synthesizedMouseClicks; });
+    rbx::signals::scoped_connection touchActivationConnection = touchButton->activatedSignal.connect(
+        [&touchActivations, &activationInputType](shared_ptr<InputObject> input, int clickCount) {
+            ++touchActivations;
+            activationInputType = input->getUserInputType();
+            require(clickCount == 1, "a first direct touch must have click count one");
+        });
+    boost::shared_ptr<InputObject> directTouch = Creatable<Instance>::create<InputObject>(
+        InputObject::TYPE_TOUCH, InputObject::INPUT_STATE_BEGIN, Vector3(20.0f, 20.0f, 0.0f), Vector3::zero(), nullptr);
+    touchButton->process(directTouch);
+    directTouch->setInputState(InputObject::INPUT_STATE_END);
+    touchButton->process(directTouch);
+    boost::shared_ptr<InputObject> synthesizedMouse = Creatable<Instance>::create<InputObject>(
+        InputObject::TYPE_MOUSEBUTTON1, InputObject::INPUT_STATE_BEGIN,
+        Vector3(20.0f, 20.0f, 0.0f), Vector3::zero(), nullptr);
+    synthesizedMouse->setSourceUserInputType(InputObject::TYPE_TOUCH);
+    touchButton->process(synthesizedMouse);
+    synthesizedMouse->setInputState(InputObject::INPUT_STATE_END);
+    touchButton->process(synthesizedMouse);
+    require(touchActivations == 1 && synthesizedMouseClicks == 1 &&
+            activationInputType == InputObject::TYPE_TOUCH,
+        "GuiButton touch must preserve one compatibility mouse click and one native Activated event");
+    boost::shared_ptr<InputObject> cancelledTouch = Creatable<Instance>::create<InputObject>(
+        InputObject::TYPE_TOUCH, InputObject::INPUT_STATE_BEGIN, Vector3(20.0f, 20.0f, 0.0f), Vector3::zero(), nullptr);
+    touchButton->process(cancelledTouch);
+    cancelledTouch->setInputState(InputObject::INPUT_STATE_CANCEL);
+    touchButton->process(cancelledTouch);
+    cancelledTouch->setInputState(InputObject::INPUT_STATE_END);
+    touchButton->process(cancelledTouch);
+    require(touchActivations == 1,
+        "a cancelled direct touch must not activate a GuiButton on a later terminal event");
 
     boost::shared_ptr<Frame> mountedListHost = Creatable<Instance>::create<Frame>();
     mountedListHost->setSize(UDim2(0.0f, 200, 0.0f, 100));

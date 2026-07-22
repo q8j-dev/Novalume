@@ -158,6 +158,10 @@ public:
             &WebHost::mouseCallback);
         emscripten_set_mousemove_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, this, true,
             &WebHost::mouseCallback);
+        emscripten_set_touchstart_callback("#canvas", this, true, &WebHost::touchCallback);
+        emscripten_set_touchmove_callback("#canvas", this, true, &WebHost::touchCallback);
+        emscripten_set_touchend_callback("#canvas", this, true, &WebHost::touchCallback);
+        emscripten_set_touchcancel_callback("#canvas", this, true, &WebHost::touchCallback);
         emscripten_set_wheel_callback("#canvas", this, true, &WebHost::wheelCallback);
         emscripten_set_focus_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, this, true,
             &WebHost::focusCallback);
@@ -419,6 +423,31 @@ private:
             .deltaY = static_cast<float>(-event->deltaY)};
         std::scoped_lock lock(self.mutex_);
         self.events_.push_back(translated);
+        return true;
+    }
+
+    static EM_BOOL touchCallback(int type, const EmscriptenTouchEvent* event,
+        void* userData)
+    {
+        auto& self = *static_cast<WebHost*>(userData);
+        const InputEvent::Kind kind = type == EMSCRIPTEN_EVENT_TOUCHSTART
+            ? InputEvent::Kind::touchDown
+            : type == EMSCRIPTEN_EVENT_TOUCHMOVE
+                ? InputEvent::Kind::touchMove
+                : type == EMSCRIPTEN_EVENT_TOUCHEND
+                    ? InputEvent::Kind::touchUp
+                    : InputEvent::Kind::touchCancel;
+        std::scoped_lock lock(self.mutex_);
+        for (int index = 0; index < event->numTouches; ++index) {
+            const EmscriptenTouchPoint& point = event->touches[index];
+            if (!point.isChanged)
+                continue;
+            self.events_.push_back(InputEvent{
+                .kind = kind,
+                .touchId = static_cast<std::uint64_t>(point.identifier),
+                .x = static_cast<float>(point.targetX),
+                .y = static_cast<float>(point.targetY)});
+        }
         return true;
     }
 

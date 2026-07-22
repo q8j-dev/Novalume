@@ -42,6 +42,7 @@ public:
                   bool verifyExperienceChat = false,
                   bool verifyCaptureGallery = false,
                   bool verifyChromeLeaderboard = false,
+                  bool verifyChromeLeaderboardTouch = false,
                   bool verifyReport = false,
                   bool verifyRespawn = false,
                   bool verifySwitchAvatar = false,

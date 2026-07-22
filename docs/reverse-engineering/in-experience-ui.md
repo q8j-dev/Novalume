@@ -98,6 +98,28 @@ and the exact top/bottom rounded-rectangle assets. Asset filenames alone are
 not sufficient evidence; imports are accepted only when a runtime-reachable
 module references them.
 
+## Native touch and responsive PlayerList proof
+
+The shared platform contract now transports native contact identity, position,
+and began/moved/ended/cancelled phase. The iOS host uses the `UITouch` identity;
+the Web host uses the browser touch identifier. PlayerRuntime retains the same
+Touch `InputObject` across that stream and lets `UserInputService` publish
+TouchEnabled, LastInputType=Touch, and PreferredInput=Touch. Compatibility
+mouse delivery remains separate and cannot duplicate `Activated`.
+
+The package-backed verifier drives the genuine Chrome overflow integration and
+normal `CoreGui.PlayerList` with touch. It proves the populated local row, the
+official dropdown avatar/header and `Examine Avatar` action, dismiss, and
+Chrome reopen lifecycle. State-aware retries observe the real mounted controls
+instead of assuming animation completion at one frame. Signed Metal runs pass
+at 640x480, 1280x720, and 1920x1080 logical viewports, and the final frames
+show the official panel bounded at the upper-right at each size. The original
+mouse path continues through the distinct Inspect-and-Buy lifecycle.
+
+This closes native touch identity and a three-size responsive PlayerList proof.
+It does not close keyboard/controller navigation, orientation and safe-area
+changes, the remaining CoreGui surfaces, or final perceptual acceptance.
+
 ## Backport rule
 
 The temporary compatibility UI is disabled and is not a deliverable. The

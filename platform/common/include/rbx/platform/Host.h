@@ -39,6 +39,10 @@ struct InputEvent final {
         pointerMove,
         pointerDown,
         pointerUp,
+        touchDown,
+        touchMove,
+        touchUp,
+        touchCancel,
         scroll,
         gamepadButtonDown,
         gamepadButtonUp,
@@ -155,6 +159,7 @@ struct InputEvent final {
     PointerButton button = PointerButton::none;
     GamepadControl gamepadControl = GamepadControl::none;
     std::uint8_t gamepadIndex = 0;
+    std::uint64_t touchId = 0;
     float x = 0.0F;
     float y = 0.0F;
     float deltaX = 0.0F;

@@ -371,6 +371,24 @@ with 30-31 final-frame draws. This is the corrected implementation target and
 desktop interaction proof, not yet a broad responsive/input-matrix or
 pixel-parity claim.
 
+The subsequent touch checkpoint preserves the package's compatibility signal
+surface while adding the current input identity that the normal presentation
+expects: one contact owns one `InputObject` from Begin through End/Cancel,
+`GuiButton.Activated` receives that Touch object once, and the synthesized
+mouse path does not create a second Activated event. This is implemented
+behavior backed by a focused native contract, not an inference from a screen
+capture.
+
+Three signed 440-frame Metal runs exercise the same Chrome and normal
+PlayerList graph at 640x480, 1280x720, and 1920x1080 logical viewports. Each
+run requires a bounded populated panel, the normal player dropdown header,
+avatar and `Examine Avatar` action, a real close, and a real reopen, then checks
+TouchEnabled, LastInputType=Touch, and PreferredInput=Touch. The captured final
+frames were reviewed after converting the renderer's raw Netpbm proof payloads
+to PNG for inspection. This is responsive mouse/touch evidence for this
+surface; it is not keyboard/controller, orientation, safe-area, or pixel-parity
+acceptance.
+
 ## Chrome Music product exclusion
 
 The supplied Studio corroboration file

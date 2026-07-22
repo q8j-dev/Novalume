@@ -486,6 +486,7 @@ namespace RBX
 		RBX::Timer<RBX::Time::Fast> activationTimer;
 	        
 		weak_ptr<InputObject> lastSelectedObjectEvent;
+		weak_ptr<InputObject> lastTouchEvent;
 	        
 		GuiResponse checkForSelectedObjectClick(const shared_ptr<InputObject>& event);
 		void fireActivated(const shared_ptr<InputObject>& event);

@@ -1,6 +1,6 @@
 # Modernization status
 
-Last updated: 2026-07-21
+Last updated: 2026-07-22
 
 ## Current phase
 
@@ -9,6 +9,40 @@ lighting, animation/R15, audio, camera/input, place compatibility, networking,
 server software, launcher/platform shells, packaging, and cross-platform
 readiness are active first. The genuine 2026 Player UI remains preserved for
 the final return; it is not replaced or treated as accepted while deferred.
+
+## Native touch and responsive PlayerList checkpoint (2026-07-22)
+
+- Added contact-preserving touch events to the shared host boundary. UIKit now
+  forwards each `UITouch` identity and distinct began/moved/ended/cancelled
+  phase, while Emscripten forwards every changed browser contact with its
+  identifier and target coordinates. The Player retains one `InputObject` per
+  contact through its complete lifetime instead of translating touch into an
+  unrelated mouse identity.
+- `UserInputService` now exposes genuine touch capability and retains Touch as
+  both last and preferred input even while the legacy compatibility mouse
+  event is delivered. `GuiButton.Activated` receives the original Touch
+  object once; the compatibility `MouseButton1Click` remains available without
+  producing a second Activated event. Cancelled streams cannot activate later.
+  The focused UI component contract proves these semantics in five consecutive
+  runs.
+- Added `--verify-chrome-leaderboard-touch`, parameterized logical window
+  dimensions, and state-aware interaction retries around the package's normal
+  Chrome transitions. The verifier opens Chrome, opens the official
+  `CoreGui.PlayerList`, selects its real local-player row, requires the normal
+  avatar header and `Examine Avatar` action, closes the panel, and reopens it
+  while asserting TouchEnabled, LastInputType=Touch, PreferredInput=Touch, and
+  rejection of `PlayerListReskin`.
+- Final signed Metal proofs passed at 640x480, 1280x720, and 1920x1080 logical
+  viewports for 440 frames. Reviewed captures show the populated official
+  panel bounded at the upper-right at each size, with compact and wide Chrome,
+  chat, and capture controls remaining inside their viewports. The original
+  400-frame mouse proof also still completes the separate Examine Avatar /
+  Inspect-and-Buy lifecycle. The complete Web and iOS Player targets compile
+  and link with the new adapters.
+- This checkpoint covers mouse and touch lifecycle/responsiveness evidence for
+  the official PlayerList. Keyboard traversal beyond the existing shortcut
+  proof, controller selection/navigation, safe-area/orientation transitions,
+  and full perceptual parity remain unfinished and are not claimed here.
 
 ## Packaging and integrity checkpoint (2026-07-21)
 

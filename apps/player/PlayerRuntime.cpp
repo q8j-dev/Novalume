@@ -888,7 +888,7 @@ struct PlayerRuntime::State final {
     RBX::Graphics::shared_ptr<RBX::Graphics::Texture> verificationColor;
     RBX::Graphics::shared_ptr<RBX::Graphics::Framebuffer> verificationFramebuffer;
     std::unordered_map<RBX::KeyCode, boost::shared_ptr<RBX::InputObject>> keyInputs;
-    std::unordered_map<int, boost::shared_ptr<RBX::InputObject>> pointerInputs;
+    std::unordered_map<std::uint64_t, boost::shared_ptr<RBX::InputObject>> pointerInputs;
     RBX::Vector3 verificationStart;
     float maximumVerificationDisplacement = 0.0F;
     float minimumR6ShoulderAngle = 0.0F;
@@ -934,6 +934,7 @@ struct PlayerRuntime::State final {
     bool verifiesExperienceChat = false;
     bool verifiesCaptureGallery = false;
     bool verifiesChromeLeaderboard = false;
+    bool verifiesChromeLeaderboardTouch = false;
     bool verifiesReport = false;
     bool verifiesRespawn = false;
     bool verifiesSwitchAvatar = false;
@@ -1112,6 +1113,7 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
     bool verifyExperienceChat,
     bool verifyCaptureGallery,
     bool verifyChromeLeaderboard,
+    bool verifyChromeLeaderboardTouch,
     bool verifyReport,
     bool verifyRespawn,
     bool verifySwitchAvatar,
@@ -1231,6 +1233,7 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
     state->verifiesExperienceChat = verifyExperienceChat;
     state->verifiesCaptureGallery = verifyCaptureGallery;
     state->verifiesChromeLeaderboard = verifyChromeLeaderboard;
+    state->verifiesChromeLeaderboardTouch = verifyChromeLeaderboardTouch;
     state->verifiesReport = verifyReport;
     state->verifiesRespawn = verifyRespawn;
     state->verifiesSwitchAvatar = verifySwitchAvatar;
@@ -3064,6 +3067,39 @@ void PlayerRuntime::handleInput(const rbx::platform::InputEvent& event)
         return;
     }
 
+    if (event.kind == HostEvent::Kind::touchDown ||
+        event.kind == HostEvent::Kind::touchMove ||
+        event.kind == HostEvent::Kind::touchUp ||
+        event.kind == HostEvent::Kind::touchCancel) {
+        input->setTouchEnabled(true);
+        const auto stateValue = event.kind == HostEvent::Kind::touchDown
+            ? RBX::InputObject::INPUT_STATE_BEGIN
+            : event.kind == HostEvent::Kind::touchMove
+                ? RBX::InputObject::INPUT_STATE_CHANGE
+                : event.kind == HostEvent::Kind::touchUp
+                    ? RBX::InputObject::INPUT_STATE_END
+                    : RBX::InputObject::INPUT_STATE_CANCEL;
+        boost::shared_ptr<RBX::InputObject>& object =
+            state->pointerInputs[event.touchId];
+        if (!object) {
+            object = RBX::Creatable<RBX::Instance>::create<RBX::InputObject>(
+                RBX::InputObject::TYPE_TOUCH, stateValue,
+                RBX::Vector3(event.x, event.y, 0.0F), RBX::Vector3::zero(),
+                state->dataModel.get());
+        } else {
+            const RBX::Vector3 previous = object->getRawPosition();
+            object->setInputState(stateValue);
+            object->setPosition(RBX::Vector3(event.x, event.y, 0.0F));
+            object->setDelta(object->getRawPosition() - previous);
+        }
+        input->dangerousFireInputEvent(object,
+            reinterpret_cast<void*>(static_cast<std::uintptr_t>(event.touchId + 1U)));
+        if (event.kind == HostEvent::Kind::touchUp ||
+            event.kind == HostEvent::Kind::touchCancel)
+            state->pointerInputs.erase(event.touchId);
+        return;
+    }
+
     if (event.kind == HostEvent::Kind::focusGained ||
         event.kind == HostEvent::Kind::focusLost) {
         const bool focused = event.kind == HostEvent::Kind::focusGained;
@@ -4030,8 +4066,9 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
                   << static_cast<unsigned int>(captureSize.y)
                   << " bytes=" << storedBytes << " ui-proof=pending\n";
     }
-    if (frameNumber == 299 || frameNumber == 329 || frameNumber == 349 ||
-        frameNumber == 369 || frameNumber == 399 ||
+    if (frameNumber == 299 || frameNumber == 319 || frameNumber == 329 ||
+        frameNumber == 349 || frameNumber == 355 || frameNumber == 369 ||
+        frameNumber == 374 || frameNumber == 399 || frameNumber == 439 ||
         (state->verifiesRespawn && frameNumber == 1799)) {
         const bool characterCamera =
             camera->getCameraType() == RBX::Camera::CUSTOM_CAMERA &&
@@ -4188,14 +4225,16 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
                 (stats->passScene.vertices >= loadedMeshVertexCount &&
                  stats->passScene.faces >= loadedMeshFaceCount));
         if (state->verifiesMovement && state->usesR15Character) {
-            if (state->verifiesChromeLeaderboard) {
+            if (state->verifiesChromeLeaderboard &&
+                !state->verifiesChromeLeaderboardTouch) {
                 state->verifiedChromeR15MeshGeometry |=
                     completeR15MeshGeometry;
                 if (frameNumber == 399 &&
                     !state->verifiedChromeR15MeshGeometry)
                     throw std::runtime_error(
                         "headless R15 verification never rendered complete MeshPart geometry");
-            } else if (!completeR15MeshGeometry) {
+            } else if (!state->verifiesChromeLeaderboardTouch &&
+                       !completeR15MeshGeometry) {
                 throw std::runtime_error(
                     "headless R15 verification found incomplete rendered MeshPart geometry");
             }
@@ -4731,7 +4770,8 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
                 RBX::Instance* mountedInspectAndBuy = diagnosticRobloxGui
                     ? diagnosticRobloxGui->findFirstChildByName("InspectAndBuy")
                     : nullptr;
-                if (state->verifiesChromeLeaderboard && frameNumber == 349) {
+                if (state->verifiesChromeLeaderboard &&
+                    !state->verifiesChromeLeaderboardTouch && frameNumber == 349) {
                     bool boundedInspectContent = false;
                     bool boundedInspectContainer = false;
                     std::size_t inspectDescendantCount = 0;
@@ -4768,7 +4808,12 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
                         throw std::runtime_error(
                             "Chrome leaderboard Examine Avatar action did not render InspectAndBuy");
                 }
-                if (state->verifiesChromeLeaderboard && frameNumber == 369) {
+                const unsigned long leaderboardClosedProofFrame =
+                    state->verifiesChromeLeaderboardTouch ? 374UL : 369UL;
+                const unsigned long leaderboardFinalProofFrame =
+                    state->verifiesChromeLeaderboardTouch ? 439UL : 399UL;
+                if (state->verifiesChromeLeaderboard &&
+                    frameNumber == leaderboardClosedProofFrame) {
                     std::cout << "InspectAndBuy closed="
                               << (mountedInspectAndBuy == nullptr) << '\n';
                     if (mountedInspectAndBuy)
@@ -4814,7 +4859,9 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
                             const RBX::Vector2 anchor = gui->getAnchorPoint();
                             const RBX::UDim2 authoredPosition = gui->getPosition();
                             const RBX::Vector2 automaticContent =
-                                gui->getAutomaticContentSize(RBX::Vector2(1280.0f, 720.0f));
+                                gui->getAutomaticContentSize(RBX::Vector2(
+                                    static_cast<float>(state->logicalWidth),
+                                    static_cast<float>(state->logicalHeight)));
                             std::cout << " visible=" << gui->getVisible()
                                       << " current=" << gui->isCurrentlyVisible()
                                       << " automatic=" << gui->getAutomaticSize()
@@ -4848,7 +4895,10 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
                                     populatedVisiblePlayerList =
                                         gui->isCurrentlyVisible() &&
                                         label->getText() == "Player";
-                            if (frameNumber == 329 && gui->isCurrentlyVisible()) {
+                            const unsigned long dropDownProofFrame =
+                                state->verifiesChromeLeaderboardTouch ? 355UL : 329UL;
+                            if (frameNumber == dropDownProofFrame &&
+                                gui->isCurrentlyVisible()) {
                                 if (fullName.ends_with(
                                         ".PlayerDropDown.InnerFrame.PlayerHeader.Background.TextContainerFrame.DisplayName"))
                                     if (RBX::TextLabel* label =
@@ -4868,16 +4918,23 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
                         }
                         std::cout << '\n';
                     }
+                    const unsigned long initialPlayerListProofFrame =
+                        state->verifiesChromeLeaderboardTouch ? 319UL : 299UL;
                     if (state->verifiesChromeLeaderboard &&
-                        (frameNumber == 299 || frameNumber == 399) &&
+                        (frameNumber == initialPlayerListProofFrame ||
+                         frameNumber == leaderboardFinalProofFrame) &&
                         (!boundedVisiblePlayerList || !populatedVisiblePlayerList))
                         throw std::runtime_error(
                             "Chrome's normal PlayerList did not render a bounded populated panel");
                     if (state->verifiesChromeLeaderboard &&
-                        frameNumber == 369 && boundedVisiblePlayerList)
+                        frameNumber == leaderboardClosedProofFrame &&
+                        boundedVisiblePlayerList)
                         throw std::runtime_error(
                             "Chrome's normal leaderboard action did not close the panel");
-                    if (state->verifiesChromeLeaderboard && frameNumber == 329 &&
+                    const unsigned long dropDownProofFrame =
+                        state->verifiesChromeLeaderboardTouch ? 355UL : 329UL;
+                    if (state->verifiesChromeLeaderboard &&
+                        frameNumber == dropDownProofFrame &&
                         (!visiblePlayerDropDownHeader ||
                          !visiblePlayerDropDownAvatar || !visibleExamineAvatar))
                         throw std::runtime_error(
@@ -4896,14 +4953,28 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
                               << (playerListConfiguration &&
                                   playerListConfiguration->getOpen()) << '\n';
                     if (state->verifiesChromeLeaderboard &&
-                        frameNumber == 369 && playerListConfiguration &&
+                        frameNumber == leaderboardClosedProofFrame &&
+                        playerListConfiguration &&
                         playerListConfiguration->getOpen())
                         throw std::runtime_error(
                             "genuine PlayerList close button did not close the panel");
-                    if (state->verifiesChromeLeaderboard && frameNumber == 399 &&
+                    if (state->verifiesChromeLeaderboard &&
+                        frameNumber == leaderboardFinalProofFrame &&
                         (!playerListConfiguration || !playerListConfiguration->getOpen()))
                         throw std::runtime_error(
                             "genuine Chrome leaderboard action did not reopen the panel");
+                }
+                if (state->verifiesChromeLeaderboardTouch &&
+                    frameNumber == leaderboardFinalProofFrame) {
+                    RBX::UserInputService* touchInput =
+                        RBX::ServiceProvider::find<RBX::UserInputService>(
+                            state->dataModel.get());
+                    if (!touchInput || !touchInput->getTouchEnabled() ||
+                        touchInput->getLastInputType() != RBX::InputObject::TYPE_TOUCH ||
+                        touchInput->getPreferredInput() !=
+                            RBX::Enums::PREFERRED_INPUT_TOUCH)
+                        throw std::runtime_error(
+                            "genuine Chrome leaderboard touch proof did not preserve touch input identity");
                 }
             }
             if (!scriptableCamera &&

@@ -13,7 +13,7 @@
 #include <stdexcept>
 #include <utility>
 
-typedef void (*RbxTouchCallback)(void*, float, float, bool, bool);
+typedef void (*RbxTouchCallback)(void*, std::uintptr_t, float, float, bool, bool, bool);
 typedef void (*RbxDocumentCallback)(void*, const char*);
 
 @interface RbxIOSMetalView : UIView {
@@ -36,33 +36,34 @@ typedef void (*RbxDocumentCallback)(void*, const char*);
     return [CAMetalLayer class];
 }
 
-- (void)forwardTouches:(NSSet<UITouch*>*)touches ended:(BOOL)ended moved:(BOOL)moved
+- (void)forwardTouches:(NSSet<UITouch*>*)touches ended:(BOOL)ended moved:(BOOL)moved cancelled:(BOOL)cancelled
 {
     for (UITouch* touch in touches) {
         CGPoint point = [touch locationInView:self];
         if (callback)
-            callback(context, point.x, point.y, ended, moved);
+            callback(context, reinterpret_cast<std::uintptr_t>(touch), point.x,
+                point.y, ended, moved, cancelled);
     }
 }
 
 - (void)touchesBegan:(NSSet<UITouch*>*)touches withEvent:(UIEvent*)event
 {
-    [self forwardTouches:touches ended:NO moved:NO];
+    [self forwardTouches:touches ended:NO moved:NO cancelled:NO];
 }
 
 - (void)touchesMoved:(NSSet<UITouch*>*)touches withEvent:(UIEvent*)event
 {
-    [self forwardTouches:touches ended:NO moved:YES];
+    [self forwardTouches:touches ended:NO moved:YES cancelled:NO];
 }
 
 - (void)touchesEnded:(NSSet<UITouch*>*)touches withEvent:(UIEvent*)event
 {
-    [self forwardTouches:touches ended:YES moved:NO];
+    [self forwardTouches:touches ended:YES moved:NO cancelled:NO];
 }
 
 - (void)touchesCancelled:(NSSet<UITouch*>*)touches withEvent:(UIEvent*)event
 {
-    [self forwardTouches:touches ended:YES moved:NO];
+    [self forwardTouches:touches ended:NO moved:NO cancelled:YES];
 }
 @end
 
@@ -260,14 +261,16 @@ private:
         float rightTrigger = 0.0F;
     };
 
-    static void queueTouch(void* context, float x, float y, bool ended, bool moved)
+    static void queueTouch(void* context, std::uintptr_t touchId, float x, float y,
+                           bool ended, bool moved, bool cancelled)
     {
         IOSHost* host = static_cast<IOSHost*>(context);
         host->events_.push_back(InputEvent{
-            .kind = ended ? InputEvent::Kind::pointerUp
-                          : moved ? InputEvent::Kind::pointerMove
-                                  : InputEvent::Kind::pointerDown,
-            .button = InputEvent::PointerButton::primary,
+            .kind = cancelled ? InputEvent::Kind::touchCancel
+                              : ended ? InputEvent::Kind::touchUp
+                                      : moved ? InputEvent::Kind::touchMove
+                                              : InputEvent::Kind::touchDown,
+            .touchId = touchId,
             .x = x,
             .y = y});
     }
