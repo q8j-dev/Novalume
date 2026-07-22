@@ -124,10 +124,6 @@ private:
     weak_ptr<StyleSheet> styleSheet;
 };
 
-// Resolves the StyleLink visible to an instance, matches its CollectionService
-// tags against StyleRule selectors, and applies the resulting native
-// properties/pseudo-elements. This is the runtime half of React.Tag and is
-// intentionally independent of Foundation's particular generated rule set.
 bool applyResolvedStyles(Instance* instance);
 bool applyResolvedStylesToSubtree(Instance* root);
 

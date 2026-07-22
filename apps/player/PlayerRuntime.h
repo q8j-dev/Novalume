@@ -43,6 +43,7 @@ public:
                   bool verifyCaptureGallery = false,
                   bool verifyChromeLeaderboard = false,
                   bool verifyChromeLeaderboardTouch = false,
+                  bool verifyChromeLeaderboardController = false,
                   bool verifyReport = false,
                   bool verifyRespawn = false,
                   bool verifySwitchAvatar = false,
@@ -72,6 +73,7 @@ public:
         findVisibleGuiPointOutsideDescendantBySuffix(
             const std::string& outerFullNameSuffix,
             const std::string& innerFullNameSuffix) const;
+    [[nodiscard]] std::optional<std::string> selectedGuiObjectFullName() const;
     [[nodiscard]] bool wantsPointerLock() const;
     [[nodiscard]] bool takeOpenDocumentRequest();
     [[nodiscard]] std::optional<std::filesystem::path>

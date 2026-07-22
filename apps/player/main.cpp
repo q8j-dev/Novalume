@@ -80,6 +80,7 @@ int rbxPlayerMain(int argc, char** argv) {
         bool verifyChromeInteraction = false;
         bool verifyChromeLeaderboard = false;
         bool verifyChromeLeaderboardTouch = false;
+        bool verifyChromeLeaderboardController = false;
         bool verifyReport = false;
         bool verifyRespawn = false;
         bool verifySwitchAvatar = false;
@@ -111,6 +112,8 @@ int rbxPlayerMain(int argc, char** argv) {
             verifyChromeLeaderboard |= argument == "--verify-chrome-leaderboard";
             verifyChromeLeaderboardTouch |=
                 argument == "--verify-chrome-leaderboard-touch";
+            verifyChromeLeaderboardController |=
+                argument == "--verify-chrome-leaderboard-controller";
             verifyReport |= argument == "--verify-report";
             verifyRespawn |= argument == "--verify-respawn";
             verifySwitchAvatar |= argument == "--verify-switch-avatar";
@@ -159,6 +162,7 @@ int rbxPlayerMain(int argc, char** argv) {
         useCurrentInExperienceUi = useCurrentInExperienceUi &&
             !useDurangoLauncher;
         verifyChromeLeaderboard |= verifyChromeLeaderboardTouch;
+        verifyChromeLeaderboard |= verifyChromeLeaderboardController;
         verifyChromeInteraction |= verifyChromeLeaderboard;
         verifyChromeInteraction |= verifyReport;
         verifyChromeInteraction |= verifyRespawn;
@@ -180,6 +184,11 @@ int rbxPlayerMain(int argc, char** argv) {
             *requestedFrameLimit < minimumTouchLeaderboardProofFrames)
             throw std::runtime_error(
                 "--verify-chrome-leaderboard-touch requires --frame-limit 440 or greater for responsive lifecycle proof");
+        constexpr int minimumControllerLeaderboardProofFrames = 440;
+        if (verifyChromeLeaderboardController && requestedFrameLimit &&
+            *requestedFrameLimit < minimumControllerLeaderboardProofFrames)
+            throw std::runtime_error(
+                "--verify-chrome-leaderboard-controller requires --frame-limit 440 or greater for navigation lifecycle proof");
         if (placePath) {
             if (!isSupportedDocument(*placePath)) {
                 throw std::runtime_error(
@@ -301,6 +310,7 @@ int rbxPlayerMain(int argc, char** argv) {
             videoVerificationPath.value_or(std::filesystem::path()),
             verifyPeoplePage, verifyExperienceChat, verifyCaptureGallery,
             verifyChromeLeaderboard, verifyChromeLeaderboardTouch,
+            verifyChromeLeaderboardController,
             verifyReport, verifyRespawn,
             verifySwitchAvatar, verifySurfaceTextures, verifyShadowMap,
             verifySkybox, verifyAudio, verifyPlaceAudio, verifyTextRendering,
@@ -312,6 +322,8 @@ int rbxPlayerMain(int argc, char** argv) {
         const int frameLimit = requestedFrameLimit.value_or(
             verifyLauncher ? 480
                 : verifyChromeLeaderboardTouch ? minimumTouchLeaderboardProofFrames
+                : verifyChromeLeaderboardController
+                    ? minimumControllerLeaderboardProofFrames
                 : (headlessVerify ? 300 : -1));
         int frame = 0;
         std::vector<double> headlessFrameMilliseconds;
@@ -339,6 +351,14 @@ int rbxPlayerMain(int argc, char** argv) {
                 .kind = rbx::platform::InputEvent::Kind::pointerUp,
                 .button = rbx::platform::InputEvent::PointerButton::primary,
                 .x = x, .y = y});
+        };
+        const auto setGamepadButton = [&runtime](
+            rbx::platform::InputEvent::GamepadControl control, bool down) {
+            runtime.handleInput(rbx::platform::InputEvent{
+                .kind = down
+                    ? rbx::platform::InputEvent::Kind::gamepadButtonDown
+                    : rbx::platform::InputEvent::Kind::gamepadButtonUp,
+                .gamepadControl = control});
         };
         while (host->pumpEvents() && (frameLimit < 0 || frame < frameLimit)) {
             const auto frameStart = std::chrono::steady_clock::now();
@@ -509,7 +529,8 @@ int rbxPlayerMain(int argc, char** argv) {
                 runtime.handleInput(rbx::platform::InputEvent{
                     .kind = rbx::platform::InputEvent::Kind::keyUp,
                     .key = rbx::platform::InputEvent::Key::enter});
-            } else if (headlessVerify && verifyChromeLeaderboard && frame == 250) {
+            } else if (headlessVerify && verifyChromeLeaderboardController &&
+                       frame == 250) {
                 if (!runtime.findVisibleGuiCenterBySuffix(
                         ".nine_dot.IntegrationIconFrame.IntegrationIcon.Close")) {
                     const auto center = runtime.findVisibleGuiCenterBySuffix(
@@ -519,7 +540,33 @@ int rbxPlayerMain(int argc, char** argv) {
                             "Chrome overflow button was not interactable");
                     clickPrimary((*center)[0], (*center)[1]);
                 }
-            } else if (headlessVerify && verifyChromeLeaderboard && frame == 260) {
+            } else if (headlessVerify && verifyChromeLeaderboardController &&
+                       frame == 260) {
+                const auto center = runtime.findBoundedGuiCenterBySuffix(
+                    ".MainCanvas.leaderboard");
+                if (!center)
+                    throw std::runtime_error(
+                        "Chrome leaderboard action was not interactable");
+                clickPrimary((*center)[0], (*center)[1]);
+                setGamepadButton(
+                    rbx::platform::InputEvent::GamepadControl::dpadDown, true);
+            } else if (headlessVerify && verifyChromeLeaderboardController &&
+                       frame == 261) {
+                setGamepadButton(
+                    rbx::platform::InputEvent::GamepadControl::dpadDown, false);
+            } else if (headlessVerify && verifyChromeLeaderboard &&
+                       !verifyChromeLeaderboardController && frame == 250) {
+                if (!runtime.findVisibleGuiCenterBySuffix(
+                        ".nine_dot.IntegrationIconFrame.IntegrationIcon.Close")) {
+                    const auto center = runtime.findVisibleGuiCenterBySuffix(
+                        ".IconHitArea_nine_dot");
+                    if (!center)
+                        throw std::runtime_error(
+                            "Chrome overflow button was not interactable");
+                    clickPrimary((*center)[0], (*center)[1]);
+                }
+            } else if (headlessVerify && verifyChromeLeaderboard &&
+                       !verifyChromeLeaderboardController && frame == 260) {
                 const auto center = runtime.findBoundedGuiCenterBySuffix(
                     ".MainCanvas.leaderboard");
                 if (!center)
@@ -537,6 +584,41 @@ int rbxPlayerMain(int argc, char** argv) {
                         "Chrome leaderboard touch action was not interactable");
                 clickPrimary((*center)[0], (*center)[1]);
             } else if (headlessVerify && verifyChromeLeaderboard &&
+                       verifyChromeLeaderboardController &&
+                       (frame == 305 || frame == 306 ||
+                        frame == 315 || frame == 316)) {
+                if (frame == 306 || frame == 316) {
+                    setGamepadButton(
+                        rbx::platform::InputEvent::GamepadControl::dpadDown, false);
+                } else {
+                    const auto selected = runtime.selectedGuiObjectFullName();
+                    if (!selected ||
+                        (selected->find("PlayerEntryContentFrame") ==
+                             std::string::npos &&
+                         selected->find("PlayerEntry_") == std::string::npos))
+                        setGamepadButton(
+                            rbx::platform::InputEvent::GamepadControl::dpadDown,
+                            true);
+                }
+            } else if (headlessVerify && verifyChromeLeaderboardController &&
+                       (frame == 325 || frame == 326)) {
+                if (frame == 326) {
+                    setGamepadButton(
+                        rbx::platform::InputEvent::GamepadControl::buttonA, false);
+                } else {
+                    const auto selected = runtime.selectedGuiObjectFullName();
+                    if (!selected ||
+                        (selected->find("PlayerEntryContentFrame") ==
+                             std::string::npos &&
+                         selected->find("PlayerEntry_") == std::string::npos))
+                        throw std::runtime_error(
+                            "controller navigation did not select the official PlayerList row: " +
+                            selected.value_or("none"));
+                    setGamepadButton(
+                        rbx::platform::InputEvent::GamepadControl::buttonA, true);
+                }
+            } else if (headlessVerify && verifyChromeLeaderboard &&
+                       !verifyChromeLeaderboardController &&
                        (frame == (verifyChromeLeaderboardTouch ? 325 : 305) ||
                         (verifyChromeLeaderboardTouch &&
                          (frame == 333 || frame == 341) &&
@@ -589,7 +671,8 @@ int rbxPlayerMain(int argc, char** argv) {
                     .button = rbx::platform::InputEvent::PointerButton::primary,
                     .x = 530.0F, .y = 462.0F});
             } else if (headlessVerify && verifyChromeLeaderboard &&
-                       !verifyChromeLeaderboardTouch && frame == 330) {
+                       !verifyChromeLeaderboardTouch &&
+                       !verifyChromeLeaderboardController && frame == 330) {
                 const auto center = runtime.findVisibleGuiCenterBySuffix(
                     ".PlayerDropDown.InnerFrame.InspectButton");
                 if (!center)
@@ -597,7 +680,8 @@ int rbxPlayerMain(int argc, char** argv) {
                         "Chrome leaderboard Examine Avatar action was not interactable");
                 clickPrimary((*center)[0], (*center)[1]);
             } else if (headlessVerify && verifyChromeLeaderboard &&
-                       !verifyChromeLeaderboardTouch && frame == 350) {
+                       !verifyChromeLeaderboardTouch &&
+                       !verifyChromeLeaderboardController && frame == 350) {
                 const auto point =
                     runtime.findVisibleGuiPointOutsideDescendantBySuffix(
                         ".InspectAndBuyContent.Content", ".Content.ContainerView");
@@ -605,8 +689,13 @@ int rbxPlayerMain(int argc, char** argv) {
                     throw std::runtime_error(
                         "Inspect And Buy overlay was not dismissible");
                 clickPrimary((*point)[0], (*point)[1]);
+            } else if (headlessVerify && verifyChromeLeaderboardController &&
+                       (frame == 345 || frame == 346)) {
+                setGamepadButton(
+                    rbx::platform::InputEvent::GamepadControl::buttonB,
+                    frame == 345);
             } else if (headlessVerify && verifyChromeLeaderboard &&
-                       frame == 360) {
+                       !verifyChromeLeaderboardController && frame == 360) {
                 const auto center = runtime.findVisibleGuiCenterBySuffix(
                     ".DismissButton");
                 if (!center)
@@ -625,7 +714,8 @@ int rbxPlayerMain(int argc, char** argv) {
                         "Chrome leaderboard dismiss button was not interactable");
                 clickPrimary((*center)[0], (*center)[1]);
             } else if (headlessVerify && verifyChromeLeaderboard &&
-                       !verifyChromeLeaderboardTouch && frame == 370) {
+                       !verifyChromeLeaderboardTouch &&
+                       !verifyChromeLeaderboardController && frame == 370) {
                 const auto center = runtime.findVisibleGuiCenterBySuffix(
                     ".IconHitArea_nine_dot");
                 if (!center)
@@ -633,7 +723,8 @@ int rbxPlayerMain(int argc, char** argv) {
                         "Chrome overflow button was not interactable");
                 clickPrimary((*center)[0], (*center)[1]);
             } else if (headlessVerify && verifyChromeLeaderboard &&
-                       !verifyChromeLeaderboardTouch && frame == 375) {
+                       !verifyChromeLeaderboardTouch &&
+                       !verifyChromeLeaderboardController && frame == 375) {
                 const auto center = runtime.findBoundedGuiCenterBySuffix(
                     ".MainCanvas.leaderboard");
                 if (!center)

@@ -10,6 +10,30 @@ server software, launcher/platform shells, packaging, and cross-platform
 readiness are active first. The genuine 2026 Player UI remains preserved for
 the final return; it is not replaced or treated as accepted while deferred.
 
+## Controller focus and PlayerList checkpoint (2026-07-22)
+
+- Added the current `GuiService:Select` contract used by the supplied
+  FocusNavigation package. A non-selectable CoreGui container now resolves to
+  its first selectable descendant and updates `SelectedCoreObject`; a focused
+  native contract exercises that behavior.
+- Restored stable controller identity by routing host gamepad events through
+  `GamepadService`'s retained per-controller objects. Begin and End now reach
+  CoreScript bindings and `GuiButton.Activated` as two states of the same
+  object instead of unrelated allocations.
+- The current `PlayerListUseFocusNavHook2` path registers entries but does not
+  request directional focus in the supplied TenFoot branch. The verified
+  compatibility setting selects the package's still-current FocusNavigation
+  path, which calls `GuiService:Select`; it does not replace or modify the
+  packaged PlayerList presentation.
+- Added `--verify-chrome-leaderboard-controller`. The 440-frame Metal proof
+  opens the official Chrome leaderboard, switches to genuine Gamepad1 input,
+  selects and activates the real TenFoot player row with D-pad/A, closes the
+  panel with B, and asserts GamepadEnabled, connection state, LastInputType,
+  PreferredInput, bounded content, and cleared selection. The original mouse
+  proof, all three touch sizes, five UI contract runs, strict code signing,
+  and complete iOS/Web Player builds also pass. Keyboard traversal remains an
+  explicit unfinished input-matrix item.
+
 ## Native touch and responsive PlayerList checkpoint (2026-07-22)
 
 - Added contact-preserving touch events to the shared host boundary. UIKit now

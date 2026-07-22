@@ -389,6 +389,33 @@ to PNG for inspection. This is responsive mouse/touch evidence for this
 surface; it is not keyboard/controller, orientation, safe-area, or pixel-parity
 acceptance.
 
+The controller checkpoint adds direct evidence for the supplied focus path.
+`FocusNavigation/EngineInterface.lua`, SHA-256
+`b312d337af8a33034f0922c8b44f60511466a7c457cc99517b5a6608f79eb870`,
+calls `GuiService:Select(guiObject)` whenever a requested focus container is
+not itself selectable. `PlayerListDisplayView.lua`, SHA-256
+`d260f3771f5e70e5643df352c2ad44b9ee33c1852f4d6bd9e927dce9bc2dcd5d`,
+requests focus for the scrolling container when the PlayerList is visible,
+directional input is preferred, and gamepad input is active. The supplied
+settings dictionary, SHA-256
+`6f1b3e3134142abbd3dbb5a48d1fd084042cf24b5a5c01eb3956d1de1deef107`,
+sets `FFlagAddNewPlayerListFocusNav=True`,
+`FFlagPlayerListUseFocusNavHook2=True`, and
+`FFlagEnableMobilePlayerListOnConsole=False`. In that exact TenFoot branch the
+hook-two path registers entries but does not call its focus acquisition path;
+the retained non-hook-two compatibility branch does call the supplied
+FocusNavigation engine interface. The runtime therefore selects that branch
+without changing the package, and implements the missing current
+`GuiService:Select` engine surface it requires.
+
+The final 440-frame controller run uses an XboxOne/TenFoot platform identity,
+retained Gamepad1 input objects, D-pad navigation, A activation, and the
+package's B close binding. It observes the selected object as the real
+`CoreGui.PlayerList...PlayerEntry_1.NameFrame.BackgroundFrame`, then observes
+selection cleared and the panel closed. This is controller navigation and
+lifecycle evidence for the official PlayerList; it is not keyboard, broad
+console-platform, or perceptual-parity acceptance.
+
 ## Chrome Music product exclusion
 
 The supplied Studio corroboration file

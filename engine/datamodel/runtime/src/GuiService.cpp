@@ -91,6 +91,8 @@ namespace RBX
 
 	static Reflection::BoundFuncDesc<GuiService, bool()> func_isTenFootInterface(
 		&GuiService::isTenFootInterface, "IsTenFootInterface", Security::None);
+	static Reflection::BoundFuncDesc<GuiService, void(shared_ptr<Instance>)> func_select(
+		&GuiService::select, "Select", "selectionParent", Security::None);
 
 	static Reflection::BoundFuncDesc<GuiService, void(std::string, shared_ptr<Instance>)> func_addSelectionGroup(&GuiService::addSelectionGroup, "AddSelectionParent", "selectionName", "selectionParent", Security::None);
 	static Reflection::BoundFuncDesc<GuiService, void(std::string, shared_ptr<const Reflection::Tuple>)> func_addSelectionGroupTuple(&GuiService::addSelectionGroup, "AddSelectionTuple", "selectionName", "selections", Security::None);
@@ -879,6 +881,44 @@ namespace RBX
 		}
 
 		return NULL;
+	}
+
+	void GuiService::select(shared_ptr<Instance> selectionParent)
+	{
+		if (!selectionParent)
+			return;
+
+		GuiObject* selected = NULL;
+		std::vector<Instance*> pending;
+		pending.push_back(selectionParent.get());
+		for (std::size_t index = 0; index < pending.size() && !selected; ++index)
+		{
+			boost::shared_ptr<const Instances> children =
+				pending[index]->getChildren().read();
+			if (!children)
+				continue;
+			for (const shared_ptr<Instance>& child : *children)
+			{
+				if (GuiObject* gui = Instance::fastDynamicCast<GuiObject>(child.get()))
+					if (gui->getSelectable())
+					{
+						selected = gui;
+						break;
+					}
+				pending.push_back(child.get());
+			}
+		}
+
+		if (!selected)
+			return;
+		if (CoreGuiService* coreGui = ServiceProvider::find<CoreGuiService>(this))
+			if (selectionParent.get() == coreGui ||
+				selectionParent->isDescendantOf(coreGui))
+			{
+				coreGui->setSelectedObject(selected);
+				return;
+			}
+		setSelectedGuiObjectLua(selected);
 	}
 
 	void GuiService::setCoreGamepadNavEnabled(bool value)

@@ -158,11 +158,6 @@ bool applyRuleProperties(Instance* target,
         if (value.isVoid())
             continue;
 
-        // Style attributes are serialized with Luau's numeric representation
-        // (double), while several native UI properties retain float or int
-        // storage. The production style resolver coerces those numeric values
-        // before reflection assignment; strict type equality silently drops
-        // rules such as BackgroundTransparency and TextSize.
         if (value.type() != descriptor->type)
         {
             if (descriptor->type == Reflection::Type::singleton<float>())
@@ -190,17 +185,23 @@ bool applyRuleProperties(Instance* target,
         if (value.type() != descriptor->type)
             continue;
 
-        // Directly authored properties outrank a stylesheet. A property still
-        // holding its concrete class default has no local declaration and can
-        // safely receive the resolved style value.
         const bool isDefault = !defaults || descriptor->equalValues(target, defaults.get());
         const bool wasStyled = target->isPropertyStyleManaged(entry.first);
         if (!isDefault && !wasStyled)
             continue;
+
+        if (defaults)
+        {
+            descriptor->setVariant(defaults.get(), value);
+            if (descriptor->equalValues(target, defaults.get()))
+            {
+                target->markPropertyStyleManaged(entry.first);
+                continue;
+            }
+        }
         descriptor->setVariant(target, value);
         target->markPropertyStyleManaged(entry.first);
-        if (!defaults || !descriptor->equalValues(target, defaults.get()))
-            changed = true;
+        changed = true;
     }
     return changed;
 }

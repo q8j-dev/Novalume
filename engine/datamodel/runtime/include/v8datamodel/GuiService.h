@@ -195,6 +195,7 @@ namespace RBX {
 		void setSelectedCoreGuiObjectLua(GuiObject* value);
 
 		GuiObject* getSelectedGuiObject();
+		void select(shared_ptr<Instance> selectionParent);
 
 		void addSelectionGroup(std::string selectionGroupName, shared_ptr<Instance> selectionParent);
 		void addSelectionGroup(std::string selectionGroupName, shared_ptr<const Reflection::Tuple> selectionTuple);

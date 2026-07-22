@@ -483,6 +483,8 @@ namespace RBX
         void setOnScreenKeyboardState(bool visible, Vector2 position, Vector2 size);
         
         static Platform getPlatform();
+		static void setPlatformOverride(Platform platform);
+		static void clearPlatformOverride();
 
 		Platform getPlatformLua() { return getPlatform(); }
 		Enums::DeviceLevel getDeviceLevel() { return Enums::DEVICE_LEVEL_HIGH; }

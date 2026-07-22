@@ -2,6 +2,8 @@
 #include "v8datamodel/CoreGuiConfiguration.h"
 #include "v8datamodel/ContextActionService.h"
 #include "v8datamodel/Frame.h"
+#include "v8datamodel/GuiService.h"
+#include "v8datamodel/PlayerGui.h"
 #include "v8datamodel/UIComponent.h"
 #include "v8datamodel/TextService.h"
 #include "v8datamodel/TextLabel.h"
@@ -306,6 +308,8 @@ int main()
     applyResolvedStyles(styledFrame.get());
     require(near(styledFrame->getBackgroundTransparency(), 1.0f),
         "stylesheet doubles must coerce to native float UI properties");
+    require(!applyResolvedStyles(styledFrame.get()),
+        "reapplying an unchanged stylesheet must be idempotent");
     styledFrame->setBackgroundTransparency(0.0f);
     require(near(styledFrame->getBackgroundTransparency(), 1.0f),
         "tagged GUI defaults assigned after mounting must re-resolve styles");
@@ -356,11 +360,6 @@ int main()
     require(near(derivedFrame->getBackgroundTransparency(), 0.2f),
         "cyclic StyleSheet derivation must terminate while preserving the local cascade");
 
-    // Foundation creates its StyleLink before its generated rules have all
-    // been parented/configured. Existing tagged descendants must be resolved
-    // again when the linked sheet changes; otherwise PlayerListContainer's
-    // authentic `auto-xy` tag remains at a zero size and is positioned beyond
-    // the right edge of the viewport.
     boost::shared_ptr<Frame> lateStyledRoot = Creatable<Instance>::create<Frame>();
     boost::shared_ptr<StyleSheet> lateStyleSheet = Creatable<Instance>::create<StyleSheet>();
     boost::shared_ptr<StyleLink> lateStyleLink = Creatable<Instance>::create<StyleLink>();
@@ -1031,6 +1030,20 @@ int main()
     boost::shared_ptr<DataModel> contentDataModel = DataModel::createDataModel(false, NULL, false);
     boost::scoped_ptr<DataModel::LegacyLock> contentDataModelLock(
         new DataModel::LegacyLock(contentDataModel, DataModelJob::Write));
+    GuiService* focusGuiService =
+        ServiceProvider::create<GuiService>(contentDataModel.get());
+    CoreGuiService* focusCoreGui =
+        ServiceProvider::create<CoreGuiService>(contentDataModel.get());
+    boost::shared_ptr<Frame> focusContainer =
+        Creatable<Instance>::create<Frame>();
+    boost::shared_ptr<GuiTextButton> focusButton =
+        Creatable<Instance>::create<GuiTextButton>();
+    focusContainer->setParent(focusCoreGui);
+    focusButton->setParent(focusContainer.get());
+    focusGuiService->select(focusContainer);
+    require(focusGuiService->getSelectedCoreGuiObjectLua() == focusButton.get(),
+        "GuiService.Select must focus a selectable descendant of a CoreGui container");
+    focusContainer->setParent(NULL);
     std::stringstream currentDecalPlace;
     currentDecalPlace
         << "<roblox version=\"4\">"

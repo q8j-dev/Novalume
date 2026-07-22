@@ -30,6 +30,7 @@
 #include "rbx/Profiler.h"
 #include "rbx/platform/Clipboard.h"
 
+#include <atomic>
 #include <boost/algorithm/string.hpp>
 
 LOGGROUP(UserInputProfile)
@@ -150,6 +151,11 @@ namespace RBX {
     const char* const sUserInputService = "UserInputService";
     
     boost::mutex UserInputService::InputEventsMutex;
+
+	namespace
+	{
+		std::atomic<int> userInputPlatformOverride(-1);
+	}
     
 	// turn this on to debug touch events
 	// will draw a square on the screen for each touch event
@@ -521,6 +527,14 @@ namespace RBX {
 		return (platform == PLATFORM_XBOXONE) || (platform == PLATFORM_PS4) || (platform == PLATFORM_PS3) || (platform == PLATFORM_XBOX360)
 			|| (platform == PLATFORM_WIIU) || (platform == PLATFORM_OUYA) || (platform == PLATFORM_ANDROIDTV) || (platform == PLATFORM_STEAMOS);
 	}
+	void UserInputService::setPlatformOverride(Platform platform)
+	{
+		userInputPlatformOverride.store(static_cast<int>(platform));
+	}
+	void UserInputService::clearPlatformOverride()
+	{
+		userInputPlatformOverride.store(-1);
+	}
 	rbx::signal<void(shared_ptr<Instance>, bool)>* UserInputService::getInputBeganEvent(bool whatever)
 	{
 		return RBX::Security::Context::current().hasPermission(RBX::Security::RobloxScript) ? &coreInputBeganEvent : &inputBeganEvent;
@@ -549,6 +563,9 @@ namespace RBX {
     
     UserInputService::Platform UserInputService::getPlatform()
     {
+		const int overridePlatform = userInputPlatformOverride.load();
+		if (overridePlatform >= 0)
+			return static_cast<Platform>(overridePlatform);
 #if defined(RBX_PLATFORM_IOS)
         return PLATFORM_IOS;
 #elif defined(__APPLE__) && !defined(RBX_PLATFORM_IOS)
