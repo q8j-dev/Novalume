@@ -762,6 +762,8 @@ RBX_REVERB_PROP(LowShelfGain);
 RBX_REVERB_PROP(ReferenceFrequency);
 RBX_REVERB_PROP(WetLevel);
 #undef RBX_REVERB_PROP
+static Reflection::BoundFuncDesc<AudioReverb, void()> funcAudioReverbReset(
+    &AudioReverb::reset, "Reset", Security::RobloxScript);
 static Reflection::BoundFuncDesc<AudioReverb,
     boost::shared_ptr<const Instances>(std::string)>
     funcAudioReverbConnectedWires(&AudioReverb::getConnectedWiresReflection,
@@ -2030,7 +2032,7 @@ AudioReverb::AudioReverb()
     , diffusion(1.0f), dryLevel(0.0f), earlyDelayTime(0.02f)
     , highCutFrequency(20000.0f), lateDelayTime(0.04f)
     , lowShelfFrequency(250.0f), lowShelfGain(0.0f)
-    , referenceFrequency(5000.0f), wetLevel(-6.0f)
+    , referenceFrequency(5000.0f), wetLevel(-6.0f), resetSerial(0)
 {
 }
 bool AudioReverb::getBypass() const { return bypass; }
@@ -2082,6 +2084,10 @@ RBX_REVERB_SETTER(LowShelfGain, lowShelfGain, -36.0f, 12.0f)
 RBX_REVERB_SETTER(ReferenceFrequency, referenceFrequency, 20.0f, 20000.0f)
 RBX_REVERB_SETTER(WetLevel, wetLevel, -80.0f, 20.0f)
 #undef RBX_REVERB_SETTER
+void AudioReverb::reset()
+{
+    resetSerial = resetSerial == 0x00ffffffu ? 0u : resetSerial + 1u;
+}
 boost::shared_ptr<const Instances>
 AudioReverb::getConnectedWiresReflection(std::string pin)
 { return getConnectedWires(pin); }

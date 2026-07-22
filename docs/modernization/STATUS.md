@@ -10,6 +10,21 @@ server software, launcher/platform shells, packaging, and cross-platform
 readiness are active first. The genuine 2026 Player UI remains preserved for
 the final return; it is not replaced or treated as accepted while deferred.
 
+## AudioReverb live-reset checkpoint (2026-07-22)
+
+- Added the missing `AudioReverb:Reset()` surface with the exact
+  `RobloxScriptSecurity` contract recorded by the supplied
+  `ed7d8193e8564b1f` API dump. Reset now publishes a fresh retained delay state
+  into every live routed voice without stopping or rebuilding its
+  `AudioPlayer`, so an accumulated diffuse tail is cleared on the next graph
+  update while authored properties and playback position remain intact.
+- The deterministic mixer regression creates an active delayed reverb tail,
+  changes the reset marker on the live voice, and requires the following mix
+  to contain no retained tail energy. Debug and Release audio contracts,
+  reflection/serialization coverage, sidechain routing, the signed 120-frame
+  installed Player audio graph, complete iOS and Web Player builds, and strict
+  installed-app code-sign verification pass.
+
 ## Native display-orientation propagation checkpoint (2026-07-22)
 
 - Added display orientation to the platform-neutral native surface and carried

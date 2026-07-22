@@ -1059,6 +1059,7 @@ int main(int argc, char** argv)
         decodedAudioEcho->getWetLevel() != -4.0f || decodedAudioEcho->getBypass() ||
         decodedAudioEcho->getConnectedWiresReflection("Input")->size() != 1 ||
         decodedAudioEcho->getConnectedWiresReflection("Output")->size() != 1 ||
+        !decodedAudioReverb->getDescriptor().findFunctionDescriptor("Reset") ||
         decodedAudioReverb->getDecayRatio() != 0.6f ||
         decodedAudioReverb->getDecayTime() != 2.0f ||
         decodedAudioReverb->getDensity() != 0.8f ||

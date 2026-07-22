@@ -963,16 +963,19 @@ int main()
         "the graph echo must emit its authored delayed wet signal");
 
     Engine graphReverbEngine({.sampleRate = 48000, .channels = 2});
+    std::vector<float> graphReverbImpulse(12000);
+    graphReverbImpulse[0] = 1.0f;
     const ClipHandle graphReverbClip = graphReverbEngine.createClip({
-        .sampleRate = 48000, .channels = 1, .samples = graphEchoImpulse});
+        .sampleRate = 48000, .channels = 1, .samples = graphReverbImpulse});
     VoiceParameters graphReverbParameters;
     graphReverbParameters.effects[0].type = VoiceEffectType::Reverb;
     graphReverbParameters.effects[0].parameters = {0.5f, 1.5f, 1.0f,
         1.0f, -80.0f, 0.01f, 20000.0f, 0.0f, 250.0f, 0.0f,
-        5000.0f, 0.0f, 2.0f};
+        5000.0f, 0.0f, 0.0f, 2.0f};
     graphReverbParameters.effectCount = 1;
-    require(static_cast<bool>(graphReverbEngine.play(graphReverbClip,
-                graphReverbParameters)),
+    const VoiceHandle graphReverbVoice = graphReverbEngine.play(
+        graphReverbClip, graphReverbParameters);
+    require(static_cast<bool>(graphReverbVoice),
         "a voice with graph reverb must start");
     std::vector<float> graphReverbMix(4096 * 2);
     require(graphReverbEngine.mix(graphReverbMix),
@@ -982,6 +985,15 @@ int main()
         graphReverbTail += std::abs(graphReverbMix[frame * 2]);
     require(graphReverbTail > 1.0f && std::abs(graphReverbMix[0]) < 0.001f,
         "the graph reverb must produce a delayed diffuse tail");
+    graphReverbParameters.effects[0].parameters[12] = 1.0f;
+    require(graphReverbEngine.setVoiceEffects(graphReverbVoice,
+                std::span<const VoiceEffect>(
+                    graphReverbParameters.effects.data(), 1)),
+        "the graph reverb reset marker must update a live voice");
+    std::vector<float> graphReverbResetMix(1024 * 2);
+    require(graphReverbEngine.mix(graphReverbResetMix) &&
+            channelEnergy(graphReverbResetMix, 0) < 0.001f,
+        "the graph reverb reset must clear its retained tail");
 
     Engine graphAnalyzerEngine({.sampleRate = 48000, .channels = 2});
     const ClipHandle graphAnalyzerClip = graphAnalyzerEngine.createClip({

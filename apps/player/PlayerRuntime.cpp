@@ -3624,6 +3624,8 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
         if (!soundService || !soundService->enabled())
             throw std::runtime_error(
                 "Player audio verification has no active SoundService mixer");
+        if (frameNumber == 80UL && state->verificationAudioReverb)
+            state->verificationAudioReverb->reset();
 
         if (state->verificationSound->isSoundLoaded() &&
             state->verificationSound->isPlaying()) {
@@ -6522,6 +6524,7 @@ void PlayerRuntime::finishVerification()
             !state->verificationAudioReverb ||
             state->verificationAudioReverb->getDecayTime() != 0.5f ||
             state->verificationAudioReverb->getWetLevel() != -18.0f ||
+            state->verificationAudioReverb->getResetSerial() != 1U ||
             !state->verificationAudioAnalyzer ||
             state->verificationAudioAnalyzer->getPeakLevel() <= 0.0f ||
             state->verificationAudioAnalyzer->getRmsLevel() <= 0.0f ||

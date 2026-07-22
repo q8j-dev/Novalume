@@ -614,6 +614,8 @@ public:
     float getLowShelfGain() const; void setLowShelfGain(float value);
     float getReferenceFrequency() const; void setReferenceFrequency(float value);
     float getWetLevel() const; void setWetLevel(float value);
+    void reset();
+    std::uint32_t getResetSerial() const { return resetSerial; }
     boost::shared_ptr<const Instances> getConnectedWiresReflection(std::string pin);
     boost::shared_ptr<const Reflection::ValueArray> getInputPinsReflection();
     boost::shared_ptr<const Reflection::ValueArray> getOutputPinsReflection();
@@ -632,6 +634,7 @@ private:
     float decayRatio, decayTime, density, diffusion, dryLevel;
     float earlyDelayTime, highCutFrequency, lateDelayTime;
     float lowShelfFrequency, lowShelfGain, referenceFrequency, wetLevel;
+    std::uint32_t resetSerial;
 };
 
 extern const char* const sAudioAnalyzer;

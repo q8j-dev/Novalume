@@ -1396,7 +1396,7 @@ struct Engine::Impl
                 effect.type == VoiceEffectType::Filter ? 4 :
                 effect.type == VoiceEffectType::PitchShifter ? 2 :
                 effect.type == VoiceEffectType::Echo ? 7 :
-                effect.type == VoiceEffectType::Reverb ? 13 :
+                effect.type == VoiceEffectType::Reverb ? 14 :
                 effect.type == VoiceEffectType::ChannelExtract ? 1 :
                 effect.type == VoiceEffectType::ChannelInject ? 1 : 3;
             for (std::size_t parameter = 0; parameter < parameterCount;
@@ -1415,10 +1415,13 @@ struct Engine::Impl
                     effects[index].type == VoiceEffectType::Reverb;
                 const std::uint32_t resetMarker = echo
                     ? static_cast<std::uint32_t>(std::max(
-                        effects[index].parameters[5], 0.0f)) : 0u;
+                        effects[index].parameters[5], 0.0f))
+                    : reverb
+                        ? static_cast<std::uint32_t>(std::max(
+                            effects[index].parameters[12], 0.0f)) : 0u;
                 const std::uint32_t ownerKey = static_cast<std::uint32_t>(
                     std::max(effects[index].parameters[
-                        echo ? 6 : reverb ? 12 : 2], 0.0f));
+                        echo ? 6 : reverb ? 13 : 2], 0.0f));
                 EffectNode::LongDelay* current =
                     node.longDelays[index].load(std::memory_order_acquire);
                 const VoiceEffectType previousType =
@@ -2108,7 +2111,7 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
                 effect.type == VoiceEffectType::Filter ? 4 :
                 effect.type == VoiceEffectType::PitchShifter ? 2 :
                 effect.type == VoiceEffectType::Echo ? 7 :
-                effect.type == VoiceEffectType::Reverb ? 13 :
+                effect.type == VoiceEffectType::Reverb ? 14 :
                 effect.type == VoiceEffectType::ChannelExtract ? 1 :
                 effect.type == VoiceEffectType::ChannelInject ? 1 :
                 effect.type == VoiceEffectType::Analyzer ? 3 : 3;
@@ -2306,11 +2309,14 @@ VoiceHandle Engine::play(ClipHandle handle, const VoiceParameters& parameters)
                         5 + 2) * impl->config.channels);
                 longDelay->resetMarker = effect.type == VoiceEffectType::Echo
                     ? static_cast<std::uint32_t>(std::max(
-                        effect.parameters[5], 0.0f)) : 0u;
+                        effect.parameters[5], 0.0f))
+                    : effect.type == VoiceEffectType::Reverb
+                        ? static_cast<std::uint32_t>(std::max(
+                            effect.parameters[12], 0.0f)) : 0u;
                 longDelay->ownerKey = static_cast<std::uint32_t>(
                     std::max(effect.parameters[effect.type ==
                         VoiceEffectType::Echo ? 6 : effect.type ==
-                        VoiceEffectType::Reverb ? 12 : 2], 0.0f));
+                        VoiceEffectType::Reverb ? 13 : 2], 0.0f));
                 Impl::EffectNode::LongDelay* published = longDelay.get();
                 voice->effects.retainedLongDelays.push_back(std::move(longDelay));
                 voice->effects.longDelays[index].store(published,
@@ -2621,7 +2627,7 @@ bool Engine::setVoiceEffects(VoiceHandle handle,
             effect.type == VoiceEffectType::Filter ? 4 :
             effect.type == VoiceEffectType::PitchShifter ? 2 :
             effect.type == VoiceEffectType::Echo ? 7 :
-            effect.type == VoiceEffectType::Reverb ? 13 :
+            effect.type == VoiceEffectType::Reverb ? 14 :
             effect.type == VoiceEffectType::ChannelExtract ? 1 :
             effect.type == VoiceEffectType::ChannelInject ? 1 : 3;
         for (std::size_t parameter = 0; parameter < parameterCount; ++parameter)
@@ -2638,9 +2644,12 @@ bool Engine::setVoiceEffects(VoiceHandle handle,
             const bool reverb = effects[index].type == VoiceEffectType::Reverb;
             const std::uint32_t resetMarker = echo
                 ? static_cast<std::uint32_t>(std::max(
-                    effects[index].parameters[5], 0.0f)) : 0u;
+                    effects[index].parameters[5], 0.0f))
+                : reverb
+                    ? static_cast<std::uint32_t>(std::max(
+                        effects[index].parameters[12], 0.0f)) : 0u;
             const std::uint32_t ownerKey = static_cast<std::uint32_t>(
-                std::max(effects[index].parameters[echo ? 6 : reverb ? 12 : 2],
+                std::max(effects[index].parameters[echo ? 6 : reverb ? 13 : 2],
                     0.0f));
             Impl::EffectNode::LongDelay* current =
                 voice->effects.longDelays[index].load(std::memory_order_acquire);

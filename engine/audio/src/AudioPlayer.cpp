@@ -336,6 +336,7 @@ AudioRoute findRoute(const AudioNode* node, float gain,
                         reverb->getLowShelfGain(),
                         reverb->getReferenceFrequency(),
                         reverb->getWetLevel(),
+                        static_cast<float>(reverb->getResetSerial()),
                         static_cast<float>(address & 0x00ffffffu)};
                 }
                 AudioRoute route = findRoute(reverb, gain, effects,
