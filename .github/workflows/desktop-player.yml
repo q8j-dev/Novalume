@@ -32,15 +32,15 @@ concurrency:
 
 jobs:
   linux:
-    name: Ubuntu 26.04 ${{ matrix.arch }} Player package
+    name: Ubuntu 24.04 ${{ matrix.arch }} Player package
     strategy:
       fail-fast: false
       matrix:
         include:
           - arch: x64
-            runner: ubuntu-26.04
+            runner: ubuntu-24.04
           - arch: arm64
-            runner: ubuntu-26.04-arm
+            runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 240
     steps:
@@ -128,13 +128,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - label: Windows 2025 x64
-            runner: windows-2025
+          - label: Windows 2022 x64
+            runner: windows-2022
             triplet: x64-windows
             build_dir: windows-x64-release
             msvc_arch: x64
           - label: Windows 11 ARM64
-            runner: windows-11-vs2026-arm
+            runner: windows-11-arm
             triplet: arm64-windows
             build_dir: windows-arm64-release
             msvc_arch: arm64
