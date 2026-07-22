@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cctype>
+#include <cmath>
 #include <cstdlib>
 #include <exception>
 #include <filesystem>
@@ -83,6 +84,7 @@ int rbxPlayerMain(int argc, char** argv) {
         bool verifyChromeLeaderboardController = false;
         bool verifyKeyboardNavigation = false;
         bool verifySafeArea = false;
+        bool verifyOrientation = false;
         bool verifyReport = false;
         bool verifyRespawn = false;
         bool verifySwitchAvatar = false;
@@ -119,6 +121,7 @@ int rbxPlayerMain(int argc, char** argv) {
             verifyKeyboardNavigation |=
                 argument == "--verify-keyboard-navigation";
             verifySafeArea |= argument == "--verify-safe-area";
+            verifyOrientation |= argument == "--verify-orientation";
             verifyReport |= argument == "--verify-report";
             verifyRespawn |= argument == "--verify-respawn";
             verifySwitchAvatar |= argument == "--verify-switch-avatar";
@@ -266,6 +269,15 @@ int rbxPlayerMain(int argc, char** argv) {
         auto surface = host->nativeSurface();
         if (verifySafeArea)
             surface.safeArea = {24.0f, 18.0f, 32.0f, 28.0f};
+        if (verifyOrientation) {
+            surface.logicalWidth = 1280;
+            surface.logicalHeight = 720;
+            surface.width = static_cast<std::uint32_t>(std::lround(
+                static_cast<double>(surface.logicalWidth) * surface.pixelDensity));
+            surface.height = static_cast<std::uint32_t>(std::lround(
+                static_cast<double>(surface.logicalHeight) * surface.pixelDensity));
+            surface.orientation = rbx::platform::DisplayOrientation::landscapeLeft;
+        }
         const auto playerListImage = assetMounts.resolve(
             "rbxasset://textures/ui/PlayerList/ViewAvatar.png", surface.pixelDensity);
         if (useCurrentInExperienceUi &&
@@ -316,7 +328,8 @@ int rbxPlayerMain(int argc, char** argv) {
         rbx::player::PlayerRuntime runtime(device.get(), resources,
             host->existingClientSettingsRoot(), runtimePlace,
             surface.width, surface.height, surface.logicalWidth,
-            surface.logicalHeight, surface.safeArea.left, surface.safeArea.top,
+            surface.logicalHeight, surface.orientation,
+            surface.safeArea.left, surface.safeArea.top,
             surface.safeArea.right, surface.safeArea.bottom,
             headlessVerify, useCurrentInExperienceUi,
             useDurangoLauncher, headlessVerify && verifyLauncher,
@@ -327,6 +340,7 @@ int rbxPlayerMain(int argc, char** argv) {
             verifyChromeLeaderboardController,
             verifyKeyboardNavigation,
             verifySafeArea,
+            verifyOrientation,
             verifyReport, verifyRespawn,
             verifySwitchAvatar, verifySurfaceTextures, verifyShadowMap,
             verifySkybox, verifyAudio, verifyPlaceAudio, verifyTextRendering,
@@ -386,6 +400,22 @@ int rbxPlayerMain(int argc, char** argv) {
                     ? rbx::platform::SafeAreaInsets{24.0f, 18.0f, 32.0f, 28.0f}
                     : rbx::platform::SafeAreaInsets{48.0f, 10.0f, 12.0f, 34.0f};
             }
+            if (verifyOrientation) {
+                const bool portrait = frame >= 150 && frame < 210;
+                currentSurface.logicalWidth = portrait ? 720U : 1280U;
+                currentSurface.logicalHeight = portrait ? 1280U : 720U;
+                currentSurface.width = static_cast<std::uint32_t>(std::lround(
+                    static_cast<double>(currentSurface.logicalWidth) *
+                    currentSurface.pixelDensity));
+                currentSurface.height = static_cast<std::uint32_t>(std::lround(
+                    static_cast<double>(currentSurface.logicalHeight) *
+                    currentSurface.pixelDensity));
+                currentSurface.orientation = portrait
+                    ? rbx::platform::DisplayOrientation::portrait
+                    : frame >= 210
+                        ? rbx::platform::DisplayOrientation::landscapeRight
+                        : rbx::platform::DisplayOrientation::landscapeLeft;
+            }
             if (currentSurface.width != 0 && currentSurface.height != 0 &&
                 currentSurface.logicalWidth != 0 &&
                 currentSurface.logicalHeight != 0 &&
@@ -397,10 +427,12 @@ int rbxPlayerMain(int argc, char** argv) {
                  currentSurface.safeArea.left != surface.safeArea.left ||
                  currentSurface.safeArea.top != surface.safeArea.top ||
                  currentSurface.safeArea.right != surface.safeArea.right ||
-                 currentSurface.safeArea.bottom != surface.safeArea.bottom)) {
+                 currentSurface.safeArea.bottom != surface.safeArea.bottom ||
+                 currentSurface.orientation != surface.orientation)) {
                 runtime.resize(currentSurface.width, currentSurface.height,
                     currentSurface.logicalWidth, currentSurface.logicalHeight,
-                    currentSurface.pixelDensity, currentSurface.safeArea.left,
+                    currentSurface.pixelDensity, currentSurface.orientation,
+                    currentSurface.safeArea.left,
                     currentSurface.safeArea.top, currentSurface.safeArea.right,
                     currentSurface.safeArea.bottom);
                 surface = currentSurface;

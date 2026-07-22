@@ -157,6 +157,20 @@ DYNAMIC_FASTFLAG(HttpZeroLatencyCaching)
 namespace rbx::player {
 namespace {
 
+RBX::Enums::ScreenOrientation screenOrientation(
+    rbx::platform::DisplayOrientation orientation)
+{
+    switch (orientation) {
+    case rbx::platform::DisplayOrientation::landscapeRight:
+        return RBX::Enums::SCREEN_ORIENTATION_LANDSCAPE_RIGHT;
+    case rbx::platform::DisplayOrientation::portrait:
+        return RBX::Enums::SCREEN_ORIENTATION_PORTRAIT;
+    case rbx::platform::DisplayOrientation::landscapeLeft:
+        return RBX::Enums::SCREEN_ORIENTATION_LANDSCAPE_LEFT;
+    }
+    throw std::invalid_argument("unknown display orientation");
+}
+
 constexpr unsigned long kLauncherFirstSettledFrame = 240;
 constexpr unsigned long kLauncherSecondSettledFrame = 420;
 
@@ -941,6 +955,7 @@ struct PlayerRuntime::State final {
     bool verifiesChromeLeaderboardController = false;
     bool verifiesKeyboardNavigation = false;
     bool verifiesSafeArea = false;
+    bool verifiesOrientation = false;
     bool overridesInputPlatform = false;
     bool keyboardNavigationActivated = false;
     bool keyboardNavigationSelectionProved = false;
@@ -954,6 +969,10 @@ struct PlayerRuntime::State final {
     boost::shared_ptr<RBX::Frame> safeAreaFrame;
     boost::shared_ptr<RBX::ScreenGui> fullViewportScreen;
     boost::shared_ptr<RBX::Frame> fullViewportFrame;
+    boost::shared_ptr<RBX::ScreenGui> orientationScreen;
+    boost::shared_ptr<RBX::Frame> orientationFrame;
+    rbx::signals::scoped_connection orientationConnection;
+    unsigned int orientationChangeCount = 0;
     bool verifiesReport = false;
     bool verifiesRespawn = false;
     bool verifiesSwitchAvatar = false;
@@ -1125,7 +1144,8 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
     const std::filesystem::path& clientSettingsRoot,
     const std::filesystem::path& placePath, unsigned int renderWidth,
     unsigned int renderHeight, unsigned int logicalWidth,
-    unsigned int logicalHeight, float safeAreaLeft, float safeAreaTop,
+    unsigned int logicalHeight, rbx::platform::DisplayOrientation orientation,
+    float safeAreaLeft, float safeAreaTop,
     float safeAreaRight, float safeAreaBottom, bool disableAudioOutput,
     bool useCurrentInExperienceUi, bool useDurangoLauncher,
     bool verifyDurangoLauncher,
@@ -1140,6 +1160,7 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
     bool verifyChromeLeaderboardController,
     bool verifyKeyboardNavigation,
     bool verifySafeArea,
+    bool verifyOrientation,
     bool verifyReport,
     bool verifyRespawn,
     bool verifySwitchAvatar,
@@ -1273,6 +1294,7 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
         verifyChromeLeaderboardController;
     state->verifiesKeyboardNavigation = verifyKeyboardNavigation;
     state->verifiesSafeArea = verifySafeArea;
+    state->verifiesOrientation = verifyOrientation;
     state->verifiesReport = verifyReport;
     state->verifiesRespawn = verifyRespawn;
     state->verifiesSwitchAvatar = verifySwitchAvatar;
@@ -1836,6 +1858,32 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
         }
         if (!localPlayer)
             throw std::runtime_error("offline Player bootstrap did not create a local player");
+        RBX::PlayerGui* playerGui =
+            localPlayer->findFirstChildOfType<RBX::PlayerGui>();
+        if (!playerGui)
+            throw std::runtime_error("offline Player bootstrap did not create PlayerGui");
+        playerGui->setCurrentScreenOrientation(screenOrientation(orientation));
+        if (verifyOrientation) {
+            State* runtimeState = state.get();
+            state->orientationConnection = playerGui->propertyChangedSignal.connect(
+                [runtimeState](const RBX::Reflection::PropertyDescriptor* property) {
+                    if (property && property->name == "CurrentScreenOrientation")
+                        ++runtimeState->orientationChangeCount;
+                });
+            state->orientationScreen =
+                RBX::Creatable<RBX::Instance>::create<RBX::ScreenGui>();
+            state->orientationScreen->setName("OrientationVerification");
+            state->orientationScreen->setScreenInsets(RBX::SCREEN_INSETS_NONE);
+            state->orientationScreen->setClipToDeviceSafeArea(false);
+            state->orientationScreen->setParent(
+                RBX::ServiceProvider::create<RBX::CoreGuiService>(
+                    state->dataModel.get()));
+            state->orientationFrame =
+                RBX::Creatable<RBX::Instance>::create<RBX::Frame>();
+            state->orientationFrame->setName("ViewportBounds");
+            state->orientationFrame->setSize(RBX::UDim2(1.0f, 0, 1.0f, 0));
+            state->orientationFrame->setParent(state->orientationScreen.get());
+        }
         localPlayer->setCanLoadCharacterAppearance(false);
         if (placePath.empty() || useDurangoLauncher)
             localPlayer->loadCharacter(true, "");
@@ -3065,7 +3113,8 @@ PlayerRuntime::~PlayerRuntime() = default;
 
 void PlayerRuntime::resize(unsigned int renderWidth, unsigned int renderHeight,
     unsigned int logicalWidth, unsigned int logicalHeight, float pixelDensity,
-    float safeAreaLeft, float safeAreaTop, float safeAreaRight,
+    rbx::platform::DisplayOrientation orientation, float safeAreaLeft,
+    float safeAreaTop, float safeAreaRight,
     float safeAreaBottom)
 {
     if (renderWidth == 0 || renderHeight == 0 ||
@@ -3099,6 +3148,13 @@ void PlayerRuntime::resize(unsigned int renderWidth, unsigned int renderHeight,
         std::max(horizontalScale, verticalScale), 1U, 3U)));
     guiService->setHardwareSafeAreaInsets(
         safeAreaLeft, safeAreaTop, safeAreaRight, safeAreaBottom);
+    if (RBX::Network::Players* players =
+            RBX::ServiceProvider::find<RBX::Network::Players>(state->dataModel.get()))
+        if (RBX::Network::Player* localPlayer = players->getLocalPlayer())
+            if (RBX::PlayerGui* playerGui =
+                    localPlayer->findFirstChildOfType<RBX::PlayerGui>())
+                playerGui->setCurrentScreenOrientation(
+                    screenOrientation(orientation));
 }
 
 void PlayerRuntime::handleInput(const rbx::platform::InputEvent& event)
@@ -4219,6 +4275,61 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
                   << ',' << expected.w << " viewport=" << safePosition.x
                   << ',' << safePosition.y << ',' << safeSize.x << ','
                   << safeSize.y << '\n';
+    }
+    if (state->verifiesOrientation &&
+        (frameNumber == 120UL || frameNumber == 180UL ||
+         frameNumber == 240UL)) {
+        const bool portrait = frameNumber == 180UL;
+        const bool landscapeRight = frameNumber == 240UL;
+        const RBX::Vector2 expectedSize = portrait
+            ? RBX::Vector2(720.0f, 1280.0f)
+            : RBX::Vector2(1280.0f, 720.0f);
+        RBX::Network::Players* players =
+            RBX::ServiceProvider::find<RBX::Network::Players>(state->dataModel.get());
+        RBX::Network::Player* localPlayer = players ? players->getLocalPlayer() : nullptr;
+        RBX::PlayerGui* playerGui = localPlayer
+            ? localPlayer->findFirstChildOfType<RBX::PlayerGui>() : nullptr;
+        RBX::GuiService* guiService =
+            RBX::ServiceProvider::find<RBX::GuiService>(state->dataModel.get());
+        RBX::CoreGuiService* coreGui =
+            RBX::ServiceProvider::find<RBX::CoreGuiService>(state->dataModel.get());
+        const RBX::Vector2 layerSize = state->orientationScreen->getAbsoluteSize();
+        const RBX::Vector2 frameSize = state->orientationFrame->getAbsoluteSize();
+        const RBX::Vector2 screenResolution = guiService
+            ? guiService->getScreenResolution() : RBX::Vector2::zero();
+        const RBX::Vector2 cameraViewport = camera
+            ? RBX::Vector2(static_cast<float>(camera->getViewport().x),
+                  static_cast<float>(camera->getViewport().y))
+            : RBX::Vector2::zero();
+        const RBX::Enums::ScreenOrientation expectedOrientation = portrait
+            ? RBX::Enums::SCREEN_ORIENTATION_PORTRAIT
+            : landscapeRight
+                ? RBX::Enums::SCREEN_ORIENTATION_LANDSCAPE_RIGHT
+                : RBX::Enums::SCREEN_ORIENTATION_LANDSCAPE_LEFT;
+        const unsigned int expectedChangeCount = frameNumber == 120UL
+            ? 0U : frameNumber == 180UL ? 1U : 2U;
+        if (!playerGui ||
+            playerGui->getCurrentScreenOrientation() != expectedOrientation ||
+            state->orientationScreen->getParent() != coreGui ||
+            layerSize != expectedSize || frameSize != expectedSize ||
+            screenResolution != expectedSize ||
+            cameraViewport != expectedSize ||
+            state->orientationChangeCount != expectedChangeCount)
+            throw std::runtime_error(RBX::format(
+                "display orientation did not reach PlayerGui and viewport layout (frame=%lu orientation=%d events=%u parented=%d layer-size=%f,%f frame-size=%f,%f screen=%f,%f camera=%f,%f)",
+                frameNumber,
+                playerGui ? static_cast<int>(
+                    playerGui->getCurrentScreenOrientation()) : -1,
+                state->orientationChangeCount,
+                state->orientationScreen->getParent() == coreGui,
+                layerSize.x, layerSize.y,
+                frameSize.x, frameSize.y,
+                screenResolution.x, screenResolution.y,
+                cameraViewport.x, cameraViewport.y));
+        std::cout << "orientation frame=" << frameNumber << " value="
+                  << static_cast<int>(expectedOrientation) << " viewport="
+                  << expectedSize.x << ',' << expectedSize.y << " events="
+                  << state->orientationChangeCount << '\n';
     }
     if (state->screenshotRequested) {
         state->screenshotRequested = false;

@@ -207,7 +207,10 @@ public:
                 .left = static_cast<float>(safeArea.left),
                 .top = static_cast<float>(safeArea.top),
                 .right = static_cast<float>(safeArea.right),
-                .bottom = static_cast<float>(safeArea.bottom)}};
+                .bottom = static_cast<float>(safeArea.bottom)},
+            .orientation = displayOrientationForDimensions(
+                static_cast<std::uint32_t>(points.size.width),
+                static_cast<std::uint32_t>(points.size.height))};
     }
 
     std::filesystem::path resourceRoot() const override {

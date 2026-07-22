@@ -132,6 +132,26 @@ public:
         [layer setContentsScale:scale];
         [layer setDrawableSize:CGSizeMake(bounds.size.width * scale,
                                           bounds.size.height * scale)];
+        DisplayOrientation orientation = displayOrientationForDimensions(
+            static_cast<std::uint32_t>(bounds.size.width),
+            static_cast<std::uint32_t>(bounds.size.height));
+        UIWindowScene* scene = [window_ windowScene];
+        if (scene) {
+            switch ([scene interfaceOrientation]) {
+            case UIInterfaceOrientationLandscapeRight:
+                orientation = DisplayOrientation::landscapeRight;
+                break;
+            case UIInterfaceOrientationLandscapeLeft:
+                orientation = DisplayOrientation::landscapeLeft;
+                break;
+            case UIInterfaceOrientationPortrait:
+            case UIInterfaceOrientationPortraitUpsideDown:
+                orientation = DisplayOrientation::portrait;
+                break;
+            default:
+                break;
+            }
+        }
         return NativeSurface{
             .window = reinterpret_cast<std::uintptr_t>(view_),
             .display = 0,
@@ -145,7 +165,8 @@ public:
                 .left = static_cast<float>(safeArea.left),
                 .top = static_cast<float>(safeArea.top),
                 .right = static_cast<float>(safeArea.right),
-                .bottom = static_cast<float>(safeArea.bottom)}};
+                .bottom = static_cast<float>(safeArea.bottom)},
+            .orientation = orientation};
     }
 
     std::filesystem::path resourceRoot() const override

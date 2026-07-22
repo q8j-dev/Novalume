@@ -16,6 +16,19 @@ struct SafeAreaInsets final {
     float bottom = 0.0F;
 };
 
+enum class DisplayOrientation : std::uint8_t {
+    landscapeLeft,
+    landscapeRight,
+    portrait
+};
+
+constexpr DisplayOrientation displayOrientationForDimensions(
+    std::uint32_t width, std::uint32_t height) noexcept
+{
+    return height > width ? DisplayOrientation::portrait
+                          : DisplayOrientation::landscapeLeft;
+}
+
 struct NativeSurface final {
     std::uintptr_t window = 0;
     std::uintptr_t display = 0;
@@ -27,6 +40,7 @@ struct NativeSurface final {
     float pixelDensity = 1.0F;
     // Insets are expressed in logical display units, like input and CoreGui.
     SafeAreaInsets safeArea;
+    DisplayOrientation orientation = DisplayOrientation::landscapeLeft;
 };
 
 // Platform adapters translate native events into this small, engine-neutral

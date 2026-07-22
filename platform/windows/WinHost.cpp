@@ -188,7 +188,8 @@ public:
             .height = height,
             .logicalWidth = static_cast<std::uint32_t>(width / density),
             .logicalHeight = static_cast<std::uint32_t>(height / density),
-            .pixelDensity = density};
+            .pixelDensity = density,
+            .orientation = displayOrientationForDimensions(width, height)};
     }
 
     std::filesystem::path resourceRoot() const override

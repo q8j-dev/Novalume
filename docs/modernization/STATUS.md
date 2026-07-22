@@ -10,6 +10,24 @@ server software, launcher/platform shells, packaging, and cross-platform
 readiness are active first. The genuine 2026 Player UI remains preserved for
 the final return; it is not replaced or treated as accepted while deferred.
 
+## Native display-orientation propagation checkpoint (2026-07-22)
+
+- Added display orientation to the platform-neutral native surface and carried
+  it into `PlayerGui.CurrentScreenOrientation` before CoreScripts observe the
+  local `PlayerGui`, then across live surface changes. UIKit preserves distinct
+  landscape-left and landscape-right values from `UIWindowScene`; macOS,
+  Windows, SDL, and Web derive portrait versus landscape from logical bounds.
+- Added `--verify-orientation`. Its 300-frame Metal proof drives
+  landscape-left at 1280x720, portrait at 720x1280, and landscape-right at
+  1280x720. It requires exact public property-notification counts of 0, 1, and
+  2 while the camera viewport, `GuiService` resolution, full-screen `ScreenGui`,
+  and descendant frame all track every transition.
+- Four repeated orientation proofs pass, including the final packaged build.
+  Five consecutive UI component contracts, screen-layout and preferred-input
+  contracts, safe-area, keyboard, official PlayerList mouse/controller
+  regressions, strict code signing, and complete iOS and Web Player builds also
+  pass.
+
 ## Native safe-area propagation checkpoint (2026-07-22)
 
 - Connected every host surface's logical safe-area insets to `GuiService` at

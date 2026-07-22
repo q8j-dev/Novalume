@@ -195,7 +195,10 @@ public:
             .logicalWidth = static_cast<std::uint32_t>(std::max(1.0, logicalWidth)),
             .logicalHeight = static_cast<std::uint32_t>(std::max(1.0, logicalHeight)),
             .pixelDensity = static_cast<float>(density),
-            .safeArea = {}};
+            .safeArea = {},
+            .orientation = displayOrientationForDimensions(
+                static_cast<std::uint32_t>(std::max(1.0, logicalWidth)),
+                static_cast<std::uint32_t>(std::max(1.0, logicalHeight)))};
     }
 
     std::filesystem::path resourceRoot() const override { return "/Resources"; }
