@@ -93,6 +93,7 @@
 #include "v8datamodel/TextChatService.h"
 #include "v8datamodel/TextChatConfiguration.h"
 #include "v8datamodel/TextService.h"
+#include "v8datamodel/TextButton.h"
 #include "v8datamodel/TextLabel.h"
 #include "v8datamodel/TextBox.h"
 #include "v8datamodel/UIComponent.h"
@@ -886,6 +887,7 @@ struct PlayerRuntime::State final {
     rbx::signals::scoped_connection openDocumentConnection;
     rbx::signals::scoped_connection r15AnimationPlayedConnection;
     rbx::signals::scoped_connection r15EmoteTriggeredConnection;
+    rbx::signals::scoped_connection keyboardNavigationActivationConnection;
     RBX::Graphics::shared_ptr<RBX::Graphics::Texture> verificationColor;
     RBX::Graphics::shared_ptr<RBX::Graphics::Framebuffer> verificationFramebuffer;
     std::unordered_map<RBX::KeyCode, boost::shared_ptr<RBX::InputObject>> keyInputs;
@@ -937,7 +939,16 @@ struct PlayerRuntime::State final {
     bool verifiesChromeLeaderboard = false;
     bool verifiesChromeLeaderboardTouch = false;
     bool verifiesChromeLeaderboardController = false;
+    bool verifiesKeyboardNavigation = false;
     bool overridesInputPlatform = false;
+    bool keyboardNavigationActivated = false;
+    bool keyboardNavigationSelectionProved = false;
+    int keyboardNavigationClickCount = 0;
+    RBX::InputObject::UserInputType keyboardNavigationInputType =
+        RBX::InputObject::TYPE_NONE;
+    boost::shared_ptr<RBX::ScreenGui> keyboardNavigationScreen;
+    boost::shared_ptr<RBX::GuiTextButton> keyboardNavigationFirstButton;
+    boost::shared_ptr<RBX::GuiTextButton> keyboardNavigationSecondButton;
     bool verifiesReport = false;
     bool verifiesRespawn = false;
     bool verifiesSwitchAvatar = false;
@@ -1061,6 +1072,7 @@ struct PlayerRuntime::State final {
         offlineChatMountConnection.disconnect();
         lightingChangedConnection.disconnect();
         openDocumentConnection.disconnect();
+        keyboardNavigationActivationConnection.disconnect();
         if (!verificationCapturePath.empty())
         {
             std::error_code error;
@@ -1120,6 +1132,7 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
     bool verifyChromeLeaderboard,
     bool verifyChromeLeaderboardTouch,
     bool verifyChromeLeaderboardController,
+    bool verifyKeyboardNavigation,
     bool verifyReport,
     bool verifyRespawn,
     bool verifySwitchAvatar,
@@ -1247,6 +1260,7 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
     state->verifiesChromeLeaderboardTouch = verifyChromeLeaderboardTouch;
     state->verifiesChromeLeaderboardController =
         verifyChromeLeaderboardController;
+    state->verifiesKeyboardNavigation = verifyKeyboardNavigation;
     state->verifiesReport = verifyReport;
     state->verifiesRespawn = verifyRespawn;
     state->verifiesSwitchAvatar = verifySwitchAvatar;
@@ -1812,6 +1826,53 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
             localPlayer->loadCharacter(true, "");
         if (!localPlayer->getCharacter())
             throw std::runtime_error("local server did not replicate a player character");
+        if (verifyKeyboardNavigation) {
+            RBX::PlayerGui* playerGui =
+                localPlayer->findFirstChildOfType<RBX::PlayerGui>();
+            if (!playerGui)
+                throw std::runtime_error(
+                    "keyboard navigation verification requires PlayerGui");
+            state->keyboardNavigationScreen =
+                RBX::Creatable<RBX::Instance>::create<RBX::ScreenGui>();
+            state->keyboardNavigationScreen->setName(
+                "KeyboardNavigationVerification");
+            state->keyboardNavigationScreen->setParent(playerGui);
+            state->keyboardNavigationFirstButton =
+                RBX::Creatable<RBX::Instance>::create<RBX::GuiTextButton>();
+            state->keyboardNavigationFirstButton->setName("FirstAction");
+            state->keyboardNavigationFirstButton->setText("First action");
+            state->keyboardNavigationFirstButton->setPosition(
+                RBX::UDim2(0.0f, 80, 0.0f, 120));
+            state->keyboardNavigationFirstButton->setSize(
+                RBX::UDim2(0.0f, 240, 0.0f, 56));
+            state->keyboardNavigationFirstButton->setParent(
+                state->keyboardNavigationScreen.get());
+            state->keyboardNavigationSecondButton =
+                RBX::Creatable<RBX::Instance>::create<RBX::GuiTextButton>();
+            state->keyboardNavigationSecondButton->setName("SecondAction");
+            state->keyboardNavigationSecondButton->setText("Second action");
+            state->keyboardNavigationSecondButton->setPosition(
+                RBX::UDim2(0.0f, 80, 0.0f, 200));
+            state->keyboardNavigationSecondButton->setSize(
+                RBX::UDim2(0.0f, 240, 0.0f, 56));
+            state->keyboardNavigationSecondButton->setParent(
+                state->keyboardNavigationScreen.get());
+            state->keyboardNavigationFirstButton->setNextSelectionDown(
+                state->keyboardNavigationSecondButton.get());
+            state->keyboardNavigationSecondButton->setNextSelectionUp(
+                state->keyboardNavigationFirstButton.get());
+            State* runtimeState = state.get();
+            state->keyboardNavigationActivationConnection =
+                state->keyboardNavigationSecondButton->activatedSignal.connect(
+                    [runtimeState](boost::shared_ptr<RBX::InputObject> input,
+                                   int clickCount) {
+                        runtimeState->keyboardNavigationActivated = true;
+                        runtimeState->keyboardNavigationClickCount = clickCount;
+                        runtimeState->keyboardNavigationInputType = input
+                            ? input->getUserInputType()
+                            : RBX::InputObject::TYPE_NONE;
+                    });
+        }
         if (useDurangoLauncher) {
             RBX::ServiceProvider::create<RBX::RunService>(
                 state->dataModel.get())->run();
@@ -3411,6 +3472,37 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
     state->cameraChangesThisFrame.clear();
     state->mouseChangesThisFrame.clear();
     state->dataModel->renderStep(1.0F / 60.0F);
+    if (state->verifiesKeyboardNavigation && frameNumber == 329UL) {
+        RBX::GuiService* guiService =
+            RBX::ServiceProvider::find<RBX::GuiService>(state->dataModel.get());
+        RBX::UserInputService* inputService =
+            RBX::ServiceProvider::find<RBX::UserInputService>(state->dataModel.get());
+        if (!guiService ||
+            guiService->getSelectedGuiObject() !=
+                state->keyboardNavigationSecondButton.get() ||
+            !state->keyboardNavigationFirstButton->isCurrentlyVisible() ||
+            !state->keyboardNavigationSecondButton->isCurrentlyVisible() ||
+            !state->keyboardNavigationActivated ||
+            state->keyboardNavigationClickCount != 1 ||
+            state->keyboardNavigationInputType !=
+                RBX::InputObject::TYPE_KEYBOARD ||
+            !inputService ||
+            inputService->getLastInputType() !=
+                RBX::InputObject::TYPE_KEYBOARD ||
+            inputService->getPreferredInput() !=
+                RBX::Enums::PREFERRED_INPUT_KEYBOARD_AND_MOUSE)
+            throw std::runtime_error(
+                "keyboard GUI navigation did not select and activate the second action");
+        state->keyboardNavigationSelectionProved = true;
+    }
+    if (state->verifiesKeyboardNavigation && frameNumber == 349UL) {
+        RBX::GuiService* guiService =
+            RBX::ServiceProvider::find<RBX::GuiService>(state->dataModel.get());
+        if (!state->keyboardNavigationSelectionProved || !guiService ||
+            guiService->getSelectedGuiObject())
+            throw std::runtime_error(
+                "keyboard GUI navigation did not clear selection on its second toggle");
+    }
     if (state->verifiesTextRendering && state->verificationTextBox) {
         if (state->verificationTextBox->getSelectionStart() < 0)
             state->verificationTextBox->captureFocus();

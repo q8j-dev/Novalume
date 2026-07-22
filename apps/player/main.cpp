@@ -81,6 +81,7 @@ int rbxPlayerMain(int argc, char** argv) {
         bool verifyChromeLeaderboard = false;
         bool verifyChromeLeaderboardTouch = false;
         bool verifyChromeLeaderboardController = false;
+        bool verifyKeyboardNavigation = false;
         bool verifyReport = false;
         bool verifyRespawn = false;
         bool verifySwitchAvatar = false;
@@ -114,6 +115,8 @@ int rbxPlayerMain(int argc, char** argv) {
                 argument == "--verify-chrome-leaderboard-touch";
             verifyChromeLeaderboardController |=
                 argument == "--verify-chrome-leaderboard-controller";
+            verifyKeyboardNavigation |=
+                argument == "--verify-keyboard-navigation";
             verifyReport |= argument == "--verify-report";
             verifyRespawn |= argument == "--verify-respawn";
             verifySwitchAvatar |= argument == "--verify-switch-avatar";
@@ -189,6 +192,11 @@ int rbxPlayerMain(int argc, char** argv) {
             *requestedFrameLimit < minimumControllerLeaderboardProofFrames)
             throw std::runtime_error(
                 "--verify-chrome-leaderboard-controller requires --frame-limit 440 or greater for navigation lifecycle proof");
+        constexpr int minimumKeyboardNavigationProofFrames = 350;
+        if (verifyKeyboardNavigation && requestedFrameLimit &&
+            *requestedFrameLimit < minimumKeyboardNavigationProofFrames)
+            throw std::runtime_error(
+                "--verify-keyboard-navigation requires --frame-limit 350 or greater for selection lifecycle proof");
         if (placePath) {
             if (!isSupportedDocument(*placePath)) {
                 throw std::runtime_error(
@@ -311,6 +319,7 @@ int rbxPlayerMain(int argc, char** argv) {
             verifyPeoplePage, verifyExperienceChat, verifyCaptureGallery,
             verifyChromeLeaderboard, verifyChromeLeaderboardTouch,
             verifyChromeLeaderboardController,
+            verifyKeyboardNavigation,
             verifyReport, verifyRespawn,
             verifySwitchAvatar, verifySurfaceTextures, verifyShadowMap,
             verifySkybox, verifyAudio, verifyPlaceAudio, verifyTextRendering,
@@ -324,6 +333,8 @@ int rbxPlayerMain(int argc, char** argv) {
                 : verifyChromeLeaderboardTouch ? minimumTouchLeaderboardProofFrames
                 : verifyChromeLeaderboardController
                     ? minimumControllerLeaderboardProofFrames
+                : verifyKeyboardNavigation
+                    ? minimumKeyboardNavigationProofFrames
                 : (headlessVerify ? 300 : -1));
         int frame = 0;
         std::vector<double> headlessFrameMilliseconds;
@@ -774,19 +785,22 @@ int rbxPlayerMain(int argc, char** argv) {
                     .button = rbx::platform::InputEvent::PointerButton::secondary,
                     .x = 640.0F, .y = 360.0F});
             } else if (headlessVerify && !verifyLauncher && !verifyPlayerList &&
-                       !verifyChromeInteraction && !verifyPlaceVisual &&
+                       !verifyChromeInteraction && !verifyKeyboardNavigation &&
+                       !verifyPlaceVisual &&
                        !placePath && frame == 245) {
                 runtime.handleInput(rbx::platform::InputEvent{
                     .kind = rbx::platform::InputEvent::Kind::keyDown,
                     .key = rbx::platform::InputEvent::Key::escape});
             } else if (headlessVerify && !verifyLauncher && !verifyPlayerList &&
-                       !verifyChromeInteraction && !verifyPlaceVisual &&
+                       !verifyChromeInteraction && !verifyKeyboardNavigation &&
+                       !verifyPlaceVisual &&
                        !placePath && frame == 246) {
                 runtime.handleInput(rbx::platform::InputEvent{
                     .kind = rbx::platform::InputEvent::Kind::keyUp,
                     .key = rbx::platform::InputEvent::Key::escape});
             } else if (headlessVerify && !verifyLauncher && !verifyPlayerList &&
-                       !verifyChromeInteraction && !verifyPeoplePage &&
+                       !verifyChromeInteraction && !verifyKeyboardNavigation &&
+                       !verifyPeoplePage &&
                        !verifyPlaceVisual && !placePath && frame == 275) {
                 // Select the genuine Settings tab after its opening tween.
                 runtime.handleInput(rbx::platform::InputEvent{
@@ -794,7 +808,8 @@ int rbxPlayerMain(int argc, char** argv) {
                     .button = rbx::platform::InputEvent::PointerButton::primary,
                     .x = 340.0F, .y = 105.0F});
             } else if (headlessVerify && !verifyLauncher && !verifyPlayerList &&
-                       !verifyChromeInteraction && !verifyPeoplePage &&
+                       !verifyChromeInteraction && !verifyKeyboardNavigation &&
+                       !verifyPeoplePage &&
                        !verifyPlaceVisual && !placePath && frame == 276) {
                 runtime.handleInput(rbx::platform::InputEvent{
                     .kind = rbx::platform::InputEvent::Kind::pointerUp,
@@ -808,6 +823,28 @@ int rbxPlayerMain(int argc, char** argv) {
                 runtime.handleInput(rbx::platform::InputEvent{
                     .kind = rbx::platform::InputEvent::Kind::keyUp,
                     .key = rbx::platform::InputEvent::Key::tab});
+            } else if (headlessVerify && verifyKeyboardNavigation &&
+                       (frame == 270 || frame == 271 ||
+                        frame == 340 || frame == 341)) {
+                runtime.handleInput(rbx::platform::InputEvent{
+                    .kind = frame == 270 || frame == 340
+                        ? rbx::platform::InputEvent::Kind::keyDown
+                        : rbx::platform::InputEvent::Kind::keyUp,
+                    .key = rbx::platform::InputEvent::Key::backslash});
+            } else if (headlessVerify && verifyKeyboardNavigation &&
+                       (frame == 290 || frame == 291)) {
+                runtime.handleInput(rbx::platform::InputEvent{
+                    .kind = frame == 290
+                        ? rbx::platform::InputEvent::Kind::keyDown
+                        : rbx::platform::InputEvent::Kind::keyUp,
+                    .key = rbx::platform::InputEvent::Key::down});
+            } else if (headlessVerify && verifyKeyboardNavigation &&
+                       (frame == 310 || frame == 311)) {
+                runtime.handleInput(rbx::platform::InputEvent{
+                    .kind = frame == 310
+                        ? rbx::platform::InputEvent::Kind::keyDown
+                        : rbx::platform::InputEvent::Kind::keyUp,
+                    .key = rbx::platform::InputEvent::Key::enter});
             } else if (headlessVerify && verifyPeoplePage && frame == 260) {
                 runtime.handleInput(rbx::platform::InputEvent{
                     .kind = rbx::platform::InputEvent::Kind::pointerDown,

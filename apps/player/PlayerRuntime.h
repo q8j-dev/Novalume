@@ -44,6 +44,7 @@ public:
                   bool verifyChromeLeaderboard = false,
                   bool verifyChromeLeaderboardTouch = false,
                   bool verifyChromeLeaderboardController = false,
+                  bool verifyKeyboardNavigation = false,
                   bool verifyReport = false,
                   bool verifyRespawn = false,
                   bool verifySwitchAvatar = false,

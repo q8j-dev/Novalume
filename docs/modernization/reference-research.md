@@ -416,6 +416,21 @@ selection cleared and the panel closed. This is controller navigation and
 lifecycle evidence for the official PlayerList; it is not keyboard, broad
 console-platform, or perceptual-parity acceptance.
 
+The keyboard checkpoint is grounded in the supplied
+`KeyboardUINavigation.lua`, SHA-256
+`30d0f5e8f9c145f94ed9a9d614c6ff6fc7ab258e5fc0ea48564c4779b6650bbe`.
+That module binds Backslash through `ContextActionService`, calls
+`GuiService:Select(PlayerGui)` when enabling keyboard navigation, and clears
+the selected object when disabling it. The 350-frame packaged proof drives
+that exact module with retained keyboard Begin/End objects, selects a visible
+two-button PlayerGui fixture through the owned `GuiService:Select` engine
+surface, follows its explicit downward selection edge, activates the exact
+second button with Enter, and then toggles navigation off. The activation
+observer requires one Keyboard-typed delivery plus Keyboard last/preferred
+input state. The fixture is verifier-only and establishes general production
+keyboard GUI traversal and activation; it is not a claim that every supplied
+CoreGui surface has received separate keyboard acceptance or perceptual review.
+
 ## Chrome Music product exclusion
 
 The supplied Studio corroboration file

@@ -10,6 +10,25 @@ server software, launcher/platform shells, packaging, and cross-platform
 readiness are active first. The genuine 2026 Player UI remains preserved for
 the final return; it is not replaced or treated as accepted while deferred.
 
+## Keyboard GUI navigation checkpoint (2026-07-22)
+
+- Added `--verify-keyboard-navigation` around the supplied current
+  `KeyboardUINavigation` CoreScript rather than a native shortcut. The packaged
+  module receives retained Keyboard `InputObject` Begin/End pairs through
+  `ContextActionService`, enables navigation with Backslash, and calls the
+  current `GuiService:Select(PlayerGui)` engine surface.
+- The 350-frame signed Metal proof selects the first visible selectable
+  descendant, follows an explicit `NextSelectionDown` edge to the second
+  `GuiTextButton`, and activates that exact button with Enter. It requires one
+  `Activated` delivery carrying a Keyboard input object and verifies
+  LastInputType=Keyboard and PreferredInput=KeyboardAndMouse before the second
+  Backslash toggle clears selection.
+- Five consecutive focused UI contracts, the separate official PlayerList
+  mouse, controller, and three-size touch proofs, strict code signing, and
+  complete iOS/Web Player builds pass with this path. The fixture exists only
+  under the explicit verifier flag; normal product UI and the supplied
+  CoreScript package remain unchanged.
+
 ## Controller focus and PlayerList checkpoint (2026-07-22)
 
 - Added the current `GuiService:Select` contract used by the supplied
@@ -31,8 +50,7 @@ the final return; it is not replaced or treated as accepted while deferred.
   panel with B, and asserts GamepadEnabled, connection state, LastInputType,
   PreferredInput, bounded content, and cleared selection. The original mouse
   proof, all three touch sizes, five UI contract runs, strict code signing,
-  and complete iOS/Web Player builds also pass. Keyboard traversal remains an
-  explicit unfinished input-matrix item.
+  and complete iOS/Web Player builds also pass.
 
 ## Native touch and responsive PlayerList checkpoint (2026-07-22)
 
@@ -64,9 +82,9 @@ the final return; it is not replaced or treated as accepted while deferred.
   Inspect-and-Buy lifecycle. The complete Web and iOS Player targets compile
   and link with the new adapters.
 - This checkpoint covers mouse and touch lifecycle/responsiveness evidence for
-  the official PlayerList. Keyboard traversal beyond the existing shortcut
-  proof, controller selection/navigation, safe-area/orientation transitions,
-  and full perceptual parity remain unfinished and are not claimed here.
+  the official PlayerList. Safe-area/orientation transitions and full
+  perceptual parity remain unfinished and are not claimed here; controller and
+  general keyboard traversal are recorded in their subsequent checkpoints.
 
 ## Packaging and integrity checkpoint (2026-07-21)
 
