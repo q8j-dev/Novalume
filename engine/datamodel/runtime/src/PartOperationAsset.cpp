@@ -8,7 +8,7 @@
 #include "G3D/CollisionDetection.h"
 #include "Network/Players.h"
 #include "Reflection/Reflection.h"
-#include "RBX/RbxTime.h"
+#include "rbx/rbxTime.h"
 #include "Util/BinaryString.h"
 #include "Util/NormalId.h"
 #include "Util/RobloxGoogleAnalytics.h"

@@ -7,7 +7,7 @@
 #include "rbx/Declarations.h"
 #include "rbx/boost.hpp"
 #include "rbx/Debug.h"
-#include "rbx/RbxTime.h"
+#include "rbx/rbxTime.h"
 #include "util/Memory.h"
 #include "boost/intrusive/list.hpp"
 
@@ -126,4 +126,3 @@ public:
 	
 
 }}	// namespace
-

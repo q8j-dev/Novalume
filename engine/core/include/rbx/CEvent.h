@@ -1,7 +1,7 @@
 #pragma once
 #include "boost/noncopyable.hpp"
 #include "RbxFormat.h"
-#include "rbx/RbxTime.h"
+#include "rbx/rbxTime.h"
 
 #include <boost/thread.hpp>
 
@@ -45,4 +45,3 @@ namespace RBX
 		static int WaitForSingleObject(CEvent& event, int milliseconds);
 	};
 }
-
