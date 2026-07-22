@@ -2760,6 +2760,32 @@ static int lerpVector2(lua_State *L)
 	return 1;
 }
 
+static int minVector2(lua_State *L)
+{
+	RBX::Vector2 result = Bridge<RBX::Vector2>::getObject(L, 1);
+	for (int index = 2; index <= lua_gettop(L); ++index)
+	{
+		const RBX::Vector2& value = Bridge<RBX::Vector2>::getObject(L, index);
+		result.x = std::min(result.x, value.x);
+		result.y = std::min(result.y, value.y);
+	}
+	Bridge<RBX::Vector2>::pushNewObject(L, result);
+	return 1;
+}
+
+static int maxVector2(lua_State *L)
+{
+	RBX::Vector2 result = Bridge<RBX::Vector2>::getObject(L, 1);
+	for (int index = 2; index <= lua_gettop(L); ++index)
+	{
+		const RBX::Vector2& value = Bridge<RBX::Vector2>::getObject(L, index);
+		result.x = std::max(result.x, value.x);
+		result.y = std::max(result.y, value.y);
+	}
+	Bridge<RBX::Vector2>::pushNewObject(L, result);
+	return 1;
+}
+
 template<>
 int Bridge<RBX::Vector2>::on_index(const RBX::Vector2& object, const char* name, lua_State *L)
 {
@@ -2786,6 +2812,16 @@ int Bridge<RBX::Vector2>::on_index(const RBX::Vector2& object, const char* name,
 	if (strcmp(name,"lerp")==0 || strcmp(name,"Lerp")==0)
 	{
 		lua_pushcfunction(L, lerpVector2);
+		return 1;
+	}
+	if (strcmp(name,"min")==0 || strcmp(name,"Min")==0)
+	{
+		lua_pushcfunction(L, minVector2);
+		return 1;
+	}
+	if (strcmp(name,"max")==0 || strcmp(name,"Max")==0)
+	{
+		lua_pushcfunction(L, maxVector2);
 		return 1;
 	}
 

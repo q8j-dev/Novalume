@@ -26,6 +26,8 @@
 #include "v8datamodel/DataModel.h"
 #include "v8datamodel/Decal.h"
 #include "v8datamodel/ExperienceNotificationService.h"
+#include "v8datamodel/StarterPlayerService.h"
+#include "v8datamodel/UserInputService.h"
 #include "v8datamodel/Animator.h"
 #include "humanoid/Humanoid.h"
 #include "v8datamodel/Workspace.h"
@@ -986,7 +988,8 @@ int main()
         "Content must preserve the recovered none, URI, and numeric asset source contracts");
 
     boost::shared_ptr<DataModel> contentDataModel = DataModel::createDataModel(false, NULL, false);
-    DataModel::LegacyLock contentDataModelLock(contentDataModel, DataModelJob::Write);
+    boost::scoped_ptr<DataModel::LegacyLock> contentDataModelLock(
+        new DataModel::LegacyLock(contentDataModel, DataModelJob::Write));
     std::stringstream currentDecalPlace;
     currentDecalPlace
         << "<roblox version=\"4\">"
@@ -1487,13 +1490,18 @@ int main()
         Security::RobloxGameScript_, ProtectedString::fromTrustedSource(
             "local marketplace = game:GetService('MarketplaceService')\n"
             "local social = game:GetService('SocialService')\n"
+            "local bulkLegacy = marketplace.PromptBulkPurchaseRequested:Connect(function() end)\n"
             "local bulk = marketplace.PromptBulkPurchaseRequestedV2:Connect(function() end)\n"
             "local share = social.OpenShareSheetWithLink:Connect(function() end)\n"
             "local valid = Enum.MarketplaceBulkPurchasePromptStatus.Completed.Value == 1 "
             "and Enum.MarketplaceBulkPurchasePromptStatus.Aborted.Value == 2 "
             "and Enum.MarketplaceBulkPurchasePromptStatus.Error.Value == 3\n"
+            "bulkLegacy:Disconnect()\n"
             "bulk:Disconnect()\n"
             "share:Disconnect()\n"
+            "local players = game:GetService('Players')\n"
+            "valid = valid and typeof(players.CreateHumanoidModelFromUserId) == 'function'\n"
+            "valid = valid and typeof(players.CreateHumanoidModelFromUserIdAsync) == 'function'\n"
             "return valid"),
         "CurrentMarketplaceAndSocialEvents", Reflection::Tuple());
     require(currentServiceEvents->at(0).convert<bool>(),
@@ -1525,6 +1533,44 @@ int main()
             "UserInputServiceAppUISizes", Reflection::Tuple());
     require(appUiSizeResult->at(0).convert<bool>(),
         "UserInputService app UI sizes must preserve all four insets and notify only changed properties");
+
+    UserInputService* currentInput =
+        ServiceProvider::create<UserInputService>(contentDataModel.get());
+    currentInput->setOnScreenKeyboardState(true,
+        Vector2(0.0f, 420.0f), Vector2(1280.0f, 300.0f));
+    std::auto_ptr<Reflection::Tuple> keyboardStateResult =
+        scriptContext->executeInNewThread(
+            Security::RobloxGameScript_, ProtectedString::fromTrustedSource(
+                "local input = game:GetService('UserInputService')\n"
+                "return input.OnScreenKeyboardVisible, input.OnScreenKeyboardPosition, input.OnScreenKeyboardSize"),
+            "UserInputServiceOnScreenKeyboard", Reflection::Tuple());
+    require(keyboardStateResult->values.size() == 3 &&
+            keyboardStateResult->at(0).convert<bool>() &&
+            keyboardStateResult->at(1).convert<Vector2>() == Vector2(0.0f, 420.0f) &&
+            keyboardStateResult->at(2).convert<Vector2>() == Vector2(1280.0f, 300.0f),
+        "UserInputService must expose the native on-screen keyboard geometry used by Foundation overlays");
+    currentInput->setOnScreenKeyboardState(false, Vector2::zero(), Vector2::zero());
+
+    StarterPlayerService* starterPlayer =
+        ServiceProvider::create<StarterPlayerService>(contentDataModel.get());
+    require(starterPlayer->getUserEmotesEnabled(),
+        "StarterPlayer.UserEmotesEnabled must default to enabled");
+    starterPlayer->setUserEmotesEnabled(false);
+    require(!starterPlayer->getUserEmotesEnabled(),
+        "StarterPlayer.UserEmotesEnabled must retain its authored setting");
+
+    std::auto_ptr<Reflection::Tuple> vector2ExtremaResult =
+        scriptContext->executeInNewThread(
+            Security::GameScript_, ProtectedString::fromTrustedSource(
+                "local a = Vector2.new(4, -3)\n"
+                "local b = Vector2.new(-2, 8)\n"
+                "local c = Vector2.new(1, 5)\n"
+                "return a:Min(b, c), a:Max(b, c)"),
+            "Vector2Extrema", Reflection::Tuple());
+    require(vector2ExtremaResult->values.size() == 2 &&
+            vector2ExtremaResult->at(0).convert<Vector2>() == Vector2(-2.0f, -3.0f) &&
+            vector2ExtremaResult->at(1).convert<Vector2>() == Vector2(4.0f, 8.0f),
+        "Vector2 Min and Max must apply component-wise across every argument");
 
     std::auto_ptr<Reflection::Tuple> raycastResult = scriptContext->executeInNewThread(
         Security::GameScript_, ProtectedString::fromTrustedSource(
@@ -1967,6 +2013,7 @@ int main()
     coreConfiguration->getPlayerListConfiguration()->setOpen(true);
     require(coreConfiguration->getPlayerListConfiguration()->getOpen(),
         "PlayerListConfiguration.Open must preserve the native Player UI state contract");
-
+    contentDataModelLock.reset();
+    DataModel::closeDataModel(contentDataModel);
     return 0;
 }

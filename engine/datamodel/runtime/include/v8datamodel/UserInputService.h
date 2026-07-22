@@ -109,6 +109,9 @@ namespace RBX
         Vector2 navBarSize;
         Vector2 bottomBarSize;
         Vector2 rightBarSize;
+        bool onScreenKeyboardVisible;
+        Vector2 onScreenKeyboardPosition;
+        Vector2 onScreenKeyboardSize;
 
 		InputObject::UserInputType lastInputType;
         Enums::PreferredInput preferredInput;
@@ -474,6 +477,10 @@ namespace RBX
         Vector2 getRightBarSize() const { return rightBarSize; }
         void sendAppUISizes(Vector2 rightBar, Vector2 bottomBar,
             Vector2 navBar, Vector2 statusBar);
+        bool getOnScreenKeyboardVisible() const { return onScreenKeyboardVisible; }
+        Vector2 getOnScreenKeyboardPosition() const { return onScreenKeyboardPosition; }
+        Vector2 getOnScreenKeyboardSize() const { return onScreenKeyboardSize; }
+        void setOnScreenKeyboardState(bool visible, Vector2 position, Vector2 size);
         
         static Platform getPlatform();
 
@@ -541,6 +548,12 @@ namespace RBX
             prop_BottomBarSize;
         static Reflection::PropDescriptor<UserInputService, Vector2>
             prop_RightBarSize;
+        static Reflection::PropDescriptor<UserInputService, bool>
+            prop_OnScreenKeyboardVisible;
+        static Reflection::PropDescriptor<UserInputService, Vector2>
+            prop_OnScreenKeyboardPosition;
+        static Reflection::PropDescriptor<UserInputService, Vector2>
+            prop_OnScreenKeyboardSize;
 
 		// VR
 		bool getVREnabled() const { return vrEnabled; }

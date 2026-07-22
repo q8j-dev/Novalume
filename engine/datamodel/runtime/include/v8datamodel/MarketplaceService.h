@@ -122,6 +122,8 @@ namespace RBX {
 			shared_ptr<const Reflection::ValueTable>, long long, long long,
 			shared_ptr<const Reflection::ValueTable>, shared_ptr<const Reflection::ValueTable>)>
 			promptBulkPurchaseRequestedV2;
+		rbx::signal<void(shared_ptr<Instance>, shared_ptr<const Reflection::ValueArray>,
+			long long, long long)> promptBulkPurchaseRequested;
 		rbx::signal<void(shared_ptr<Instance>,
 			Enums::MarketplaceBulkPurchasePromptStatus,
 			shared_ptr<const Reflection::ValueTable>)> promptBulkPurchaseFinished;

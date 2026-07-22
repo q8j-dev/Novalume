@@ -30,6 +30,7 @@ static Reflection::EnumPropDescriptor<StarterPlayerService, StarterPlayerService
 static Reflection::PropDescriptor<StarterPlayerService, bool> prop_enableMouseLockOption("EnableMouseLockOption", "Controls", &StarterPlayerService::getEnableMouseLockOption, &StarterPlayerService::setEnableMouseLockOption);
 static Reflection::PropDescriptor<StarterPlayerService, bool> prop_autoJumpEnabled("AutoJumpEnabled", "Mobile", &StarterPlayerService::getAutoJumpEnabled, &StarterPlayerService::setAutoJumpEnabled);
 static Reflection::PropDescriptor<StarterPlayerService, bool> prop_loadCharacterAppearance("LoadCharacterAppearance", "Character", &StarterPlayerService::getLoadCharacterAppearance, &StarterPlayerService::setLoadCharacterAppearance);
+static Reflection::PropDescriptor<StarterPlayerService, bool> prop_userEmotesEnabled("UserEmotesEnabled", "Character", &StarterPlayerService::getUserEmotesEnabled, &StarterPlayerService::setUserEmotesEnabled);
 
 static Reflection::EnumPropDescriptor<StarterPlayerService, Camera::CameraMode> prop_cameraMode("CameraMode", "Camera", &StarterPlayerService::getCameraMode, &StarterPlayerService::setCameraMode);
 static Reflection::PropDescriptor<StarterPlayerService, float> prop_cameraMaxZoomDistance("CameraMaxZoomDistance", "Camera", &StarterPlayerService::getCameraMaxZoomDistance, &StarterPlayerService::setCameraMaxZoomDistance);
@@ -114,6 +115,7 @@ StarterPlayerService::StarterPlayerService()
 	, computerMovementMode(StarterPlayerService::DEV_COMPUTER_MOVEMENT_MODE_USER)
 	, autoJumpEnabled(true)
 	, loadCharacterAppearance(true)
+	, userEmotesEnabled(true)
 {
 	Instance::setName(sStarterPlayerService);
 }
@@ -208,6 +210,15 @@ void StarterPlayerService::setLoadCharacterAppearance(bool value)
 			loadCharacterAppearance = value;
 			raisePropertyChanged(prop_loadCharacterAppearance);
 		}
+	}
+}
+
+void StarterPlayerService::setUserEmotesEnabled(bool value)
+{
+	if (userEmotesEnabled != value)
+	{
+		userEmotesEnabled = value;
+		raisePropertyChanged(prop_userEmotesEnabled);
 	}
 }
 

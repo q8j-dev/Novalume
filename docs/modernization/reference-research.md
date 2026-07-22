@@ -356,16 +356,20 @@ establish the package relationship.
 | `ExtraContent/scripts/CoreScripts/Modules/Chrome/Integrations/OverflowMenu.lua` | `959613058d43498ef413f58e20300f5a1360c26acf5e9a44ea57635881b6d668` | the `leaderboard` activation delegates visibility to `PlayerListManager` |
 | `ExtraContent/scripts/CoreScripts/Modules/Chrome/Integrations/Pages/People.lua` | `6897150c2c130d54289e130f7e01b335d2db6a3085f020e32fb0e70f0ba34c74` | registers separate id `people` and opens the in-game menu `PlayersPage`; it is not the leaderboard integration |
 | `ExtraContent/scripts/CoreScripts/Modules/PlayerList/PlayerListController.lua` | `b248633832fd1e6f97303aecead39a8852a989de016c8d653421efbf31edf728` | selects the reskin only when `FFlagPlayerListReskin` is enabled |
+| `ExtraContent/scripts/CoreScripts/Modules/PlayerList/Components/Presentation/PlayerDropDown.lua` | `721efdfc2d7221501d1047ea9237a6ad4d4edf02e78b14006dcb5a9b4a462ee1` | the normal presentation renders `DropDownPlayerHeader`, labels the official action `Examine Avatar`, and invokes `GuiService:InspectPlayerFromUserIdWithCtx(..., "leaderBoard")` |
+| `ExtraContent/scripts/CoreScripts/Modules/PlayerList/Components/Presentation/DropDownPlayerHeader.lua` | `7b36ba3bd9eb3f782f8398a1f893193030f30f3f9e06174c72a71e1fad21128a` | renders the selected player's display name, username, and `rbxthumb://type=AvatarHeadShot` image |
+| `ExtraContent/scripts/CoreScripts/Modules/PlayerList/Components/Presentation/DropDownButton.lua` | `26a3e3143efe8f09da958839528245ae1f40d0d3286c0a125c0c3f3ec736a7ad` | supplies the normal dropdown action-button structure exercised by native hit testing |
 
 With no local reskin override, three consecutive 400-frame packaged runs report
 `PlayerListReskin2=false` and mount `CoreGui.PlayerList`. The normal package
 tree produces a bounded compact upper-right surface and a populated local
-`Player` entry. The verifier opens it from Chrome, dismisses it through its own
-close button, reopens it from Chrome, and rejects the reskin root; all three
-runs exited 0 with 22 final-frame draws. A 2560x1440 native-pixel capture was
-visually inspected and shows the compact surface in the upper-right. This is
-the corrected implementation target and desktop interaction proof, not yet a
-responsive/input-matrix or pixel-parity claim.
+`Player` entry. The verifier opens it from Chrome, selects the local row,
+requires the normal avatar header and `Examine Avatar` action, mounts and
+dismisses the responsive Inspect & Buy surface, closes PlayerList, reopens it,
+and rejects the reskin root. Three consecutive final packaged runs exited 0
+with 30-31 final-frame draws. This is the corrected implementation target and
+desktop interaction proof, not yet a broad responsive/input-matrix or
+pixel-parity claim.
 
 ## Chrome Music product exclusion
 
@@ -474,12 +478,18 @@ MarketplaceService event payloads required after activating `Examine Avatar`:
 |---|---|---|
 | `ExtraContent/scripts/CoreScripts/Modules/InspectAndBuy/Components/InspectAndBuyBaseContainer.lua` | `8f24c2e6b0a79ff90cc98cdc01c82663df204005d467d9dde854ef8c810855d6` | subscribes to `PromptBulkPurchaseFinished(player, status, result)` and consumes `result.Items` |
 | `ExtraContent/scripts/CoreScripts/Modules/InspectAndBuy/Components/InspectAndBuy.lua` | `498b3115da3f38788f40a8a2ed4a18e1b1bfd829a634997c93b7efec8ba94712` | connects `PromptBundlePurchaseFinished` to the existing `(player, itemId, isPurchased)` callback |
+| `ExtraContent/scripts/CoreScripts/Modules/InspectAndBuy/Components/Container.lua` | `19a588c9cab8dfbfabbefcccf6a0eaf8b482c58d044198967e49ebb12b6bf538` | the wide overlay's `Activated` route calls `GuiService:CloseInspectMenu()` while the inner container consumes activation |
 
 The owned native descriptors implement those event surfaces independently.
-The next unchanged-package failures are the separate legacy
-`PromptBulkPurchaseRequested` member and
-`Players:CreateHumanoidModelFromUserId`; no Lua substitute event or canned
-avatar model was added.
+The unchanged action next required legacy `PromptBulkPurchaseRequested`,
+variadic `Vector2:Min`/`Max`, and both reflected
+`Players:CreateHumanoidModelFromUserId` names. Those native contracts are now
+implemented. For the offline local identity only, the model request reuses the
+packaged R15 character appearance and local player name; it does not add a Lua
+substitute event, canned UI result, or enabled remote endpoint. The final
+verifier requires an 83-descendant bounded responsive surface and proves its
+official outside-overlay close route unmounts `RobloxGui.InspectAndBuy` before
+Chrome and PlayerList reopen.
 
 ## Foundation `UDim2` constructor compatibility
 

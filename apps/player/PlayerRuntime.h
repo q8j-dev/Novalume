@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <filesystem>
 #include <memory>
 #include <optional>
@@ -62,6 +63,14 @@ public:
                 float pixelDensity);
     void renderFrame(unsigned long frameNumber);
     void handleInput(const rbx::platform::InputEvent& event);
+    [[nodiscard]] std::optional<std::array<float, 2>>
+        findVisibleGuiCenterBySuffix(const std::string& fullNameSuffix) const;
+    [[nodiscard]] std::optional<std::array<float, 2>>
+        findBoundedGuiCenterBySuffix(const std::string& fullNameSuffix) const;
+    [[nodiscard]] std::optional<std::array<float, 2>>
+        findVisibleGuiPointOutsideDescendantBySuffix(
+            const std::string& outerFullNameSuffix,
+            const std::string& innerFullNameSuffix) const;
     [[nodiscard]] bool wantsPointerLock() const;
     [[nodiscard]] bool takeOpenDocumentRequest();
     [[nodiscard]] std::optional<std::filesystem::path>

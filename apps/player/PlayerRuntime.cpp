@@ -914,6 +914,7 @@ struct PlayerRuntime::State final {
     std::string r15AnimationPlayedName;
     std::string r15EmoteError;
     bool usesR15Character = false;
+    bool verifiedChromeR15MeshGeometry = false;
     AvatarRigVariant avatarRig = AvatarRigVariant::R6;
     bool usesCurrentInExperienceUi = false;
     bool usesDurangoLauncher = false;
@@ -3147,6 +3148,141 @@ void PlayerRuntime::handleInput(const rbx::platform::InputEvent& event)
     firePointerEvent(type);
 }
 
+std::optional<std::array<float, 2>>
+PlayerRuntime::findVisibleGuiCenterBySuffix(
+    const std::string& fullNameSuffix) const
+{
+    RBX::DataModel::LegacyLock lock(
+        state->dataModel.get(), RBX::DataModelJob::Write);
+    RBX::CoreGuiService* coreGui =
+        RBX::ServiceProvider::find<RBX::CoreGuiService>(state->dataModel.get());
+    if (!coreGui)
+        return std::nullopt;
+
+    std::optional<std::array<float, 2>> descendantCenter;
+    boost::shared_ptr<const RBX::Instances> descendants = coreGui->getDescendants();
+    for (const boost::shared_ptr<RBX::Instance>& descendant : *descendants) {
+        const std::string fullName = descendant->getFullName();
+        const bool exactMatch = fullName.ends_with(fullNameSuffix);
+        if (!exactMatch && fullName.find(fullNameSuffix) == std::string::npos)
+            continue;
+        RBX::GuiObject* gui =
+            RBX::Instance::fastDynamicCast<RBX::GuiObject>(descendant.get());
+        if (!gui || !gui->isCurrentlyVisible())
+            continue;
+        const RBX::Vector2 position = gui->getAbsolutePosition();
+        const RBX::Vector2 size = gui->getAbsoluteSize();
+        if (size.x <= 0.0f || size.y <= 0.0f)
+            continue;
+        const float x = position.x + size.x * 0.5f;
+        const float y = position.y + size.y * 0.5f;
+        if (x >= 0.0f && y >= 0.0f &&
+            x < static_cast<float>(state->logicalWidth) &&
+            y < static_cast<float>(state->logicalHeight)) {
+            if (exactMatch)
+                return std::array<float, 2>{x, y};
+            if (!descendantCenter)
+                descendantCenter = std::array<float, 2>{x, y};
+        }
+    }
+    return descendantCenter;
+}
+
+std::optional<std::array<float, 2>>
+PlayerRuntime::findBoundedGuiCenterBySuffix(
+    const std::string& fullNameSuffix) const
+{
+    RBX::DataModel::LegacyLock lock(
+        state->dataModel.get(), RBX::DataModelJob::Write);
+    RBX::CoreGuiService* coreGui =
+        RBX::ServiceProvider::find<RBX::CoreGuiService>(state->dataModel.get());
+    if (!coreGui)
+        return std::nullopt;
+
+    boost::shared_ptr<const RBX::Instances> descendants = coreGui->getDescendants();
+    for (const boost::shared_ptr<RBX::Instance>& descendant : *descendants) {
+        if (!descendant->getFullName().ends_with(fullNameSuffix))
+            continue;
+        RBX::GuiObject* gui =
+            RBX::Instance::fastDynamicCast<RBX::GuiObject>(descendant.get());
+        if (!gui || !gui->getVisible())
+            continue;
+        const RBX::Vector2 position = gui->getAbsolutePosition();
+        const RBX::Vector2 size = gui->getAbsoluteSize();
+        if (size.x <= 0.0f || size.y <= 0.0f)
+            continue;
+        const float x = position.x + size.x * 0.5f;
+        const float y = position.y + size.y * 0.5f;
+        if (x >= 0.0f && y >= 0.0f &&
+            x < static_cast<float>(state->logicalWidth) &&
+            y < static_cast<float>(state->logicalHeight))
+            return std::array<float, 2>{x, y};
+    }
+    return std::nullopt;
+}
+
+std::optional<std::array<float, 2>>
+PlayerRuntime::findVisibleGuiPointOutsideDescendantBySuffix(
+    const std::string& outerFullNameSuffix,
+    const std::string& innerFullNameSuffix) const
+{
+    RBX::DataModel::LegacyLock lock(
+        state->dataModel.get(), RBX::DataModelJob::Write);
+    RBX::CoreGuiService* coreGui =
+        RBX::ServiceProvider::find<RBX::CoreGuiService>(state->dataModel.get());
+    if (!coreGui)
+        return std::nullopt;
+
+    RBX::GuiObject* outer = nullptr;
+    RBX::GuiObject* inner = nullptr;
+    boost::shared_ptr<const RBX::Instances> descendants = coreGui->getDescendants();
+    for (const boost::shared_ptr<RBX::Instance>& descendant : *descendants) {
+        RBX::GuiObject* gui =
+            RBX::Instance::fastDynamicCast<RBX::GuiObject>(descendant.get());
+        if (!gui || !gui->getVisible())
+            continue;
+        const std::string fullName = descendant->getFullName();
+        if (fullName.ends_with(outerFullNameSuffix))
+            outer = gui;
+        if (fullName.ends_with(innerFullNameSuffix))
+            inner = gui;
+    }
+    if (!outer || !inner)
+        return std::nullopt;
+
+    const RBX::Vector2 outerPosition = outer->getAbsolutePosition();
+    const RBX::Vector2 outerSize = outer->getAbsoluteSize();
+    const RBX::Vector2 innerPosition = inner->getAbsolutePosition();
+    const RBX::Vector2 innerSize = inner->getAbsoluteSize();
+    const float inset = 8.0f;
+    const std::array<std::array<float, 2>, 4> candidates{{
+        {outerPosition.x + inset, outerPosition.y + inset},
+        {outerPosition.x + outerSize.x - inset, outerPosition.y + inset},
+        {outerPosition.x + inset, outerPosition.y + outerSize.y - inset},
+        {outerPosition.x + outerSize.x - inset,
+         outerPosition.y + outerSize.y - inset},
+    }};
+    for (const std::array<float, 2>& candidate : candidates) {
+        const bool insideOuter =
+            candidate[0] >= outerPosition.x &&
+            candidate[1] >= outerPosition.y &&
+            candidate[0] < outerPosition.x + outerSize.x &&
+            candidate[1] < outerPosition.y + outerSize.y;
+        const bool insideInner =
+            candidate[0] >= innerPosition.x &&
+            candidate[1] >= innerPosition.y &&
+            candidate[0] < innerPosition.x + innerSize.x &&
+            candidate[1] < innerPosition.y + innerSize.y;
+        const bool insideViewport =
+            candidate[0] >= 0.0f && candidate[1] >= 0.0f &&
+            candidate[0] < static_cast<float>(state->logicalWidth) &&
+            candidate[1] < static_cast<float>(state->logicalHeight);
+        if (insideOuter && !insideInner && insideViewport)
+            return candidate;
+    }
+    return std::nullopt;
+}
+
 bool PlayerRuntime::wantsPointerLock() const
 {
     RBX::DataModel::LegacyLock lock(
@@ -3894,7 +4030,8 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
                   << static_cast<unsigned int>(captureSize.y)
                   << " bytes=" << storedBytes << " ui-proof=pending\n";
     }
-    if (frameNumber == 299 || frameNumber == 349 || frameNumber == 399 ||
+    if (frameNumber == 299 || frameNumber == 329 || frameNumber == 349 ||
+        frameNumber == 369 || frameNumber == 399 ||
         (state->verifiesRespawn && frameNumber == 1799)) {
         const bool characterCamera =
             camera->getCameraType() == RBX::Camera::CUSTOM_CAMERA &&
@@ -4043,15 +4180,26 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
                       << " provider=" << (meshContentProvider ? "yes" : "no") << '\n';
         const std::size_t expectedMeshPartCount =
             state->avatarRig == AvatarRigVariant::R15 ? 14U : 15U;
-        if (state->verifiesMovement && state->usesR15Character &&
-            (meshPartCount != expectedMeshPartCount ||
-             loadedMeshPartCount != meshPartCount ||
-             loadedMeshVertexCount == 0 || loadedMeshFaceCount == 0 ||
-             (!scriptableCamera &&
-                 (stats->passScene.vertices < loadedMeshVertexCount ||
-                  stats->passScene.faces < loadedMeshFaceCount))))
-            throw std::runtime_error(
-                "headless R15 verification found incomplete rendered MeshPart geometry");
+        const bool completeR15MeshGeometry =
+            meshPartCount == expectedMeshPartCount &&
+            loadedMeshPartCount == meshPartCount &&
+            loadedMeshVertexCount > 0 && loadedMeshFaceCount > 0 &&
+            (scriptableCamera ||
+                (stats->passScene.vertices >= loadedMeshVertexCount &&
+                 stats->passScene.faces >= loadedMeshFaceCount));
+        if (state->verifiesMovement && state->usesR15Character) {
+            if (state->verifiesChromeLeaderboard) {
+                state->verifiedChromeR15MeshGeometry |=
+                    completeR15MeshGeometry;
+                if (frameNumber == 399 &&
+                    !state->verifiedChromeR15MeshGeometry)
+                    throw std::runtime_error(
+                        "headless R15 verification never rendered complete MeshPart geometry");
+            } else if (!completeR15MeshGeometry) {
+                throw std::runtime_error(
+                    "headless R15 verification found incomplete rendered MeshPart geometry");
+            }
+        }
         if (state->verifiesMovement &&
             state->avatarRig == AvatarRigVariant::R15Plus && character) {
             boost::shared_ptr<const RBX::Instances> descendants =
@@ -4578,6 +4726,55 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
                 }
                 RBX::Instance* mountedPlayerList =
                     diagnosticCoreGui->findFirstChildByName("PlayerList");
+                RBX::ScreenGui* diagnosticRobloxGui =
+                    diagnosticCoreGui->getRobloxScreenGui().get();
+                RBX::Instance* mountedInspectAndBuy = diagnosticRobloxGui
+                    ? diagnosticRobloxGui->findFirstChildByName("InspectAndBuy")
+                    : nullptr;
+                if (state->verifiesChromeLeaderboard && frameNumber == 349) {
+                    bool boundedInspectContent = false;
+                    bool boundedInspectContainer = false;
+                    std::size_t inspectDescendantCount = 0;
+                    std::cout << "InspectAndBuy mounted="
+                              << (mountedInspectAndBuy != nullptr);
+                    if (mountedInspectAndBuy) {
+                        boost::shared_ptr<const RBX::Instances> inspectDescendants =
+                            mountedInspectAndBuy->getDescendants();
+                        inspectDescendantCount = inspectDescendants->size();
+                        for (const boost::shared_ptr<RBX::Instance>& descendant :
+                             *inspectDescendants) {
+                            RBX::GuiObject* gui =
+                                RBX::Instance::fastDynamicCast<RBX::GuiObject>(
+                                    descendant.get());
+                            if (!gui || !gui->getVisible())
+                                continue;
+                            const std::string fullName = descendant->getFullName();
+                            const RBX::Vector2 size = gui->getAbsoluteSize();
+                            if (fullName.ends_with(
+                                    ".InspectAndBuyContent.Content"))
+                                boundedInspectContent =
+                                    size.x > 0.0f && size.y > 0.0f;
+                            if (fullName.ends_with(".Content.ContainerView"))
+                                boundedInspectContainer =
+                                    size.x > 0.0f && size.y > 0.0f;
+                        }
+                    }
+                    std::cout << " descendants=" << inspectDescendantCount
+                              << " bounded-content=" << boundedInspectContent
+                              << " bounded-container=" << boundedInspectContainer
+                              << '\n';
+                    if (!mountedInspectAndBuy || !boundedInspectContent ||
+                        !boundedInspectContainer || inspectDescendantCount < 50U)
+                        throw std::runtime_error(
+                            "Chrome leaderboard Examine Avatar action did not render InspectAndBuy");
+                }
+                if (state->verifiesChromeLeaderboard && frameNumber == 369) {
+                    std::cout << "InspectAndBuy closed="
+                              << (mountedInspectAndBuy == nullptr) << '\n';
+                    if (mountedInspectAndBuy)
+                        throw std::runtime_error(
+                            "Inspect And Buy overlay action did not close the menu");
+                }
                 RBX::Instance* reskinnedPlayerList =
                     diagnosticCoreGui->findFirstChildByName("PlayerListReskin");
                 if (state->usesCurrentInExperienceUi && reskinnedPlayerList)
@@ -4591,6 +4788,9 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
                         mountedPlayerList->getDescendants();
                     bool boundedVisiblePlayerList = false;
                     bool populatedVisiblePlayerList = false;
+                    bool visiblePlayerDropDownHeader = false;
+                    bool visiblePlayerDropDownAvatar = false;
+                    bool visibleExamineAvatar = false;
                     std::cout << "PlayerList descendants="
                               << playerListDescendants->size() << '\n';
                     for (const boost::shared_ptr<RBX::Instance>& descendant :
@@ -4648,6 +4848,23 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
                                     populatedVisiblePlayerList =
                                         gui->isCurrentlyVisible() &&
                                         label->getText() == "Player";
+                            if (frameNumber == 329 && gui->isCurrentlyVisible()) {
+                                if (fullName.ends_with(
+                                        ".PlayerDropDown.InnerFrame.PlayerHeader.Background.TextContainerFrame.DisplayName"))
+                                    if (RBX::TextLabel* label =
+                                            RBX::Instance::fastDynamicCast<RBX::TextLabel>(gui))
+                                        visiblePlayerDropDownHeader =
+                                            label->getText() == "Player";
+                                if (fullName.ends_with(
+                                        ".PlayerDropDown.InnerFrame.PlayerHeader.AvatarImage"))
+                                    visiblePlayerDropDownAvatar = true;
+                                if (fullName.ends_with(
+                                        ".PlayerDropDown.InnerFrame.InspectButton.HoverBackground.Text"))
+                                    if (RBX::TextLabel* label =
+                                            RBX::Instance::fastDynamicCast<RBX::TextLabel>(gui))
+                                        visibleExamineAvatar =
+                                            label->getText() == "Examine Avatar";
+                            }
                         }
                         std::cout << '\n';
                     }
@@ -4657,9 +4874,14 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
                         throw std::runtime_error(
                             "Chrome's normal PlayerList did not render a bounded populated panel");
                     if (state->verifiesChromeLeaderboard &&
-                        frameNumber == 349 && boundedVisiblePlayerList)
+                        frameNumber == 369 && boundedVisiblePlayerList)
                         throw std::runtime_error(
                             "Chrome's normal leaderboard action did not close the panel");
+                    if (state->verifiesChromeLeaderboard && frameNumber == 329 &&
+                        (!visiblePlayerDropDownHeader ||
+                         !visiblePlayerDropDownAvatar || !visibleExamineAvatar))
+                        throw std::runtime_error(
+                            "Chrome's normal PlayerList did not render the official player context menu");
                 }
                 std::cout << "visible CoreGui objects=" << visibleGuiCount << '\n';
                 if (RBX::CoreGuiConfiguration* configuration =
@@ -4674,7 +4896,7 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
                               << (playerListConfiguration &&
                                   playerListConfiguration->getOpen()) << '\n';
                     if (state->verifiesChromeLeaderboard &&
-                        frameNumber == 349 && playerListConfiguration &&
+                        frameNumber == 369 && playerListConfiguration &&
                         playerListConfiguration->getOpen())
                         throw std::runtime_error(
                             "genuine PlayerList close button did not close the panel");

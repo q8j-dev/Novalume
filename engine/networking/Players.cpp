@@ -157,6 +157,14 @@ static Reflection::BoundYieldFuncDesc<Players, shared_ptr<Instance>(int)>
     func_getHumanoidDescriptionFromUserId(
         &Players::getHumanoidDescriptionFromUserId,
         "GetHumanoidDescriptionFromUserId", "userId", Security::None);
+static Reflection::BoundYieldFuncDesc<Players, shared_ptr<Instance>(int)>
+    func_createHumanoidModelFromUserId(
+        &Players::createHumanoidModelFromUserId,
+        "CreateHumanoidModelFromUserId", "userId", Security::None);
+static Reflection::BoundYieldFuncDesc<Players, shared_ptr<Instance>(int)>
+    func_createHumanoidModelFromUserIdAsync(
+        &Players::createHumanoidModelFromUserId,
+        "CreateHumanoidModelFromUserIdAsync", "userId", Security::None);
 static Reflection::BoundFuncDesc<Players, shared_ptr<Instance>(int)> func_getPlayerByUserId(&Players::getPlayerInstanceByID, "GetPlayerByUserId", "userId", Security::None);
 
 Reflection::RemoteEventDesc<Players, void(int)> Players::event_requestCloudEditKick(
@@ -326,6 +334,11 @@ void Players::onReceivedRawGetUserIdError(weak_ptr<DataModel> weakDataModel, std
 
 void Players::getNameFromUserId(int userId, boost::function<void(std::string)> resumeFunction, boost::function<void(std::string)> errorFunction)
 {
+	if (localPlayer && localPlayer->getUserID() == userId)
+	{
+		resumeFunction(localPlayer->getName());
+		return;
+	}
 	if (RBX::HttpRbxApiService* apiService = RBX::ServiceProvider::find<RBX::HttpRbxApiService>(this))
 	{
 		apiService->getAsync(format(FString::GetUserNameUrl.c_str(), userId), true, RBX::PRIORITY_DEFAULT,
@@ -461,7 +474,11 @@ void Players::getCharacterAppearance(int userId, boost::function<void (shared_pt
 
 	DataModel* dataModel = DataModel::get(this);
 	ContentProvider* contentProvider = ServiceProvider::create<ContentProvider>(this);
-	if (dataModel && dataModel->isStudio() && dataModel->getPlaceID() == 0)
+	const bool localOfflineAppearance = localPlayer &&
+		localPlayer->getUserID() == userId &&
+		!localPlayer->getCanLoadCharacterAppearance();
+	if ((dataModel && dataModel->isStudio() && dataModel->getPlaceID() == 0) ||
+		localOfflineAppearance)
 	{
 		contentProvider->loadContent(
 			ContentId::fromAssets("avatar/characterR15.rbxm"),
@@ -507,6 +524,36 @@ void Players::getHumanoidDescriptionFromUserId(int userId,
 	// R15 scale values.  Keeping this as a real HumanoidDescription means the
 	// same ApplyDescription path is exercised by offline places.
 	resumeFunction(Creatable<Instance>::create<HumanoidDescription>());
+}
+
+void Players::createHumanoidModelFromUserId(int userId,
+	boost::function<void (shared_ptr<Instance>)> resumeFunction,
+	boost::function<void (std::string)> errorFunction)
+{
+	if (userId <= 0)
+	{
+		errorFunction("Players:CreateHumanoidModelFromUserId() got invalid userId");
+		return;
+	}
+
+	getCharacterAppearance(userId,
+		[resumeFunction, errorFunction](shared_ptr<Instance> appearance)
+		{
+			shared_ptr<ModelInstance> model =
+				Instance::fastSharedDynamicCast<ModelInstance>(appearance);
+			if (!model || !Humanoid::modelIsCharacter(model.get()))
+			{
+				errorFunction(
+					"Players:CreateHumanoidModelFromUserId() could not load character");
+				return;
+			}
+			resumeFunction(model);
+		},
+		[errorFunction](std::string error)
+		{
+			errorFunction(
+				"Players:CreateHumanoidModelFromUserId() failed because " + error);
+		});
 }
 
 void Players::onReceivedRawGetUserNameSuccess(weak_ptr<DataModel> weakDataModel, std::string response, boost::function<void(std::string)> resumeFunction, boost::function<void(std::string)> errorFunction)

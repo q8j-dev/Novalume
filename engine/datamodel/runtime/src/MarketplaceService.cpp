@@ -63,6 +63,13 @@ namespace RBX
 		&MarketplaceService::promptRobloxSubscriptionPurchaseRequested, "PromptRobloxSubscriptionPurchaseRequested", Security::RobloxScript);
 	static Reflection::EventDesc<MarketplaceService,
 		void(shared_ptr<Instance>, shared_ptr<const Reflection::ValueArray>,
+			long long, long long)>
+		event_promptBulkPurchaseRequested(
+			&MarketplaceService::promptBulkPurchaseRequested,
+			"PromptBulkPurchaseRequested", "player", "displayData",
+			"purchaserRobuxBalance", "orderTotalRobux", Security::RobloxScript);
+	static Reflection::EventDesc<MarketplaceService,
+		void(shared_ptr<Instance>, shared_ptr<const Reflection::ValueArray>,
 			shared_ptr<const Reflection::ValueTable>, long long, long long,
 			shared_ptr<const Reflection::ValueTable>, shared_ptr<const Reflection::ValueTable>)>
 		event_promptBulkPurchaseRequestedV2(

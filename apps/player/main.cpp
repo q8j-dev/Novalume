@@ -294,6 +294,16 @@ int rbxPlayerMain(int argc, char** argv) {
         if (headlessVerify && frameLimit > 60)
             headlessFrameMilliseconds.reserve(static_cast<std::size_t>(
                 std::min(frameLimit, 245) - 60));
+        const auto clickPrimary = [&runtime](float x, float y) {
+            runtime.handleInput(rbx::platform::InputEvent{
+                .kind = rbx::platform::InputEvent::Kind::pointerDown,
+                .button = rbx::platform::InputEvent::PointerButton::primary,
+                .x = x, .y = y});
+            runtime.handleInput(rbx::platform::InputEvent{
+                .kind = rbx::platform::InputEvent::Kind::pointerUp,
+                .button = rbx::platform::InputEvent::PointerButton::primary,
+                .x = x, .y = y});
+        };
         while (host->pumpEvents() && (frameLimit < 0 || frame < frameLimit)) {
             const auto frameStart = std::chrono::steady_clock::now();
             const auto currentSurface = host->nativeSurface();
@@ -373,6 +383,8 @@ int rbxPlayerMain(int argc, char** argv) {
                     .kind = rbx::platform::InputEvent::Kind::keyDown,
                     .key = rbx::platform::InputEvent::Key::d,
                     .text = 'd'});
+                if (verifyChromeInteraction)
+                    clickPrimary(94.0F, 34.0F);
             } else if (headlessVerify && !verifyLauncher && !verifySurfaceTextures && !verifyShadowMap &&
                        !verifySkybox && !verifyTextRendering && !verifyPlaceVisual &&
                        (frame == 110 || frame == 120 || frame == 130)) {
@@ -461,26 +473,30 @@ int rbxPlayerMain(int argc, char** argv) {
                 runtime.handleInput(rbx::platform::InputEvent{
                     .kind = rbx::platform::InputEvent::Kind::keyUp,
                     .key = rbx::platform::InputEvent::Key::enter});
-            } else if (headlessVerify && verifyChromeInteraction && frame == 100) {
-                runtime.handleInput(rbx::platform::InputEvent{
-                    .kind = rbx::platform::InputEvent::Kind::pointerDown,
-                    .button = rbx::platform::InputEvent::PointerButton::primary,
-                    .x = 94.0F, .y = 34.0F});
-            } else if (headlessVerify && verifyChromeInteraction && frame == 101) {
-                runtime.handleInput(rbx::platform::InputEvent{
-                    .kind = rbx::platform::InputEvent::Kind::pointerUp,
-                    .button = rbx::platform::InputEvent::PointerButton::primary,
-                    .x = 94.0F, .y = 34.0F});
+            } else if (headlessVerify && verifyChromeLeaderboard && frame == 250) {
+                if (!runtime.findVisibleGuiCenterBySuffix(
+                        ".nine_dot.IntegrationIconFrame.IntegrationIcon.Close")) {
+                    const auto center = runtime.findVisibleGuiCenterBySuffix(
+                        ".IconHitArea_nine_dot");
+                    if (!center)
+                        throw std::runtime_error(
+                            "Chrome overflow button was not interactable");
+                    clickPrimary((*center)[0], (*center)[1]);
+                }
             } else if (headlessVerify && verifyChromeLeaderboard && frame == 260) {
-                runtime.handleInput(rbx::platform::InputEvent{
-                    .kind = rbx::platform::InputEvent::Kind::pointerDown,
-                    .button = rbx::platform::InputEvent::PointerButton::primary,
-                    .x = 170.0F, .y = 264.0F});
-            } else if (headlessVerify && verifyChromeLeaderboard && frame == 261) {
-                runtime.handleInput(rbx::platform::InputEvent{
-                    .kind = rbx::platform::InputEvent::Kind::pointerUp,
-                    .button = rbx::platform::InputEvent::PointerButton::primary,
-                    .x = 170.0F, .y = 264.0F});
+                const auto center = runtime.findBoundedGuiCenterBySuffix(
+                    ".MainCanvas.leaderboard");
+                if (!center)
+                    throw std::runtime_error(
+                        "Chrome leaderboard action was not interactable");
+                clickPrimary((*center)[0], (*center)[1]);
+            } else if (headlessVerify && verifyChromeLeaderboard && frame == 305) {
+                const auto center = runtime.findVisibleGuiCenterBySuffix(
+                    ".PlayerEntryContentFrame");
+                if (!center)
+                    throw std::runtime_error(
+                        "Chrome leaderboard player row was not interactable");
+                clickPrimary((*center)[0], (*center)[1]);
             } else if (headlessVerify && verifyReport && frame == 260) {
                 runtime.handleInput(rbx::platform::InputEvent{
                     .kind = rbx::platform::InputEvent::Kind::pointerDown,
@@ -522,35 +538,41 @@ int rbxPlayerMain(int argc, char** argv) {
                     .button = rbx::platform::InputEvent::PointerButton::primary,
                     .x = 530.0F, .y = 462.0F});
             } else if (headlessVerify && verifyChromeLeaderboard && frame == 330) {
-                runtime.handleInput(rbx::platform::InputEvent{
-                    .kind = rbx::platform::InputEvent::Kind::pointerDown,
-                    .button = rbx::platform::InputEvent::PointerButton::primary,
-                    .x = 1125.0F, .y = 72.0F});
-            } else if (headlessVerify && verifyChromeLeaderboard && frame == 331) {
-                runtime.handleInput(rbx::platform::InputEvent{
-                    .kind = rbx::platform::InputEvent::Kind::pointerUp,
-                    .button = rbx::platform::InputEvent::PointerButton::primary,
-                    .x = 1125.0F, .y = 72.0F});
+                const auto center = runtime.findVisibleGuiCenterBySuffix(
+                    ".PlayerDropDown.InnerFrame.InspectButton");
+                if (!center)
+                    throw std::runtime_error(
+                        "Chrome leaderboard Examine Avatar action was not interactable");
+                clickPrimary((*center)[0], (*center)[1]);
             } else if (headlessVerify && verifyChromeLeaderboard && frame == 350) {
-                runtime.handleInput(rbx::platform::InputEvent{
-                    .kind = rbx::platform::InputEvent::Kind::pointerDown,
-                    .button = rbx::platform::InputEvent::PointerButton::primary,
-                    .x = 94.0F, .y = 34.0F});
-            } else if (headlessVerify && verifyChromeLeaderboard && frame == 351) {
-                runtime.handleInput(rbx::platform::InputEvent{
-                    .kind = rbx::platform::InputEvent::Kind::pointerUp,
-                    .button = rbx::platform::InputEvent::PointerButton::primary,
-                    .x = 94.0F, .y = 34.0F});
+                const auto point =
+                    runtime.findVisibleGuiPointOutsideDescendantBySuffix(
+                        ".InspectAndBuyContent.Content", ".Content.ContainerView");
+                if (!point)
+                    throw std::runtime_error(
+                        "Inspect And Buy overlay was not dismissible");
+                clickPrimary((*point)[0], (*point)[1]);
+            } else if (headlessVerify && verifyChromeLeaderboard && frame == 360) {
+                const auto center = runtime.findVisibleGuiCenterBySuffix(
+                    ".DismissButton");
+                if (!center)
+                    throw std::runtime_error(
+                        "Chrome leaderboard dismiss button was not interactable");
+                clickPrimary((*center)[0], (*center)[1]);
             } else if (headlessVerify && verifyChromeLeaderboard && frame == 370) {
-                runtime.handleInput(rbx::platform::InputEvent{
-                    .kind = rbx::platform::InputEvent::Kind::pointerDown,
-                    .button = rbx::platform::InputEvent::PointerButton::primary,
-                    .x = 170.0F, .y = 264.0F});
-            } else if (headlessVerify && verifyChromeLeaderboard && frame == 371) {
-                runtime.handleInput(rbx::platform::InputEvent{
-                    .kind = rbx::platform::InputEvent::Kind::pointerUp,
-                    .button = rbx::platform::InputEvent::PointerButton::primary,
-                    .x = 170.0F, .y = 264.0F});
+                const auto center = runtime.findVisibleGuiCenterBySuffix(
+                    ".IconHitArea_nine_dot");
+                if (!center)
+                    throw std::runtime_error(
+                        "Chrome overflow button was not interactable");
+                clickPrimary((*center)[0], (*center)[1]);
+            } else if (headlessVerify && verifyChromeLeaderboard && frame == 375) {
+                const auto center = runtime.findBoundedGuiCenterBySuffix(
+                    ".MainCanvas.leaderboard");
+                if (!center)
+                    throw std::runtime_error(
+                        "Chrome leaderboard reopen action was not interactable");
+                clickPrimary((*center)[0], (*center)[1]);
             } else if (headlessVerify && !verifyLauncher && frame == 185) {
                 runtime.handleInput(rbx::platform::InputEvent{
                     .kind = rbx::platform::InputEvent::Kind::pointerDown,

@@ -66,6 +66,7 @@ namespace RBX {
 
 		bool autoJumpEnabled;
 		bool loadCharacterAppearance;
+		bool userEmotesEnabled;
 
 	protected:
 		typedef DescribedCreatable<StarterPlayerService, Instance, sStarterPlayerService, Reflection::ClassDescriptor::PERSISTENT_LOCAL> Super;
@@ -120,6 +121,8 @@ namespace RBX {
 
 		void setLoadCharacterAppearance(bool value);
 		bool getLoadCharacterAppearance() const { return loadCharacterAppearance; }
+		void setUserEmotesEnabled(bool value);
+		bool getUserEmotesEnabled() const { return userEmotesEnabled; }
 	};
 
 }	// namespace 

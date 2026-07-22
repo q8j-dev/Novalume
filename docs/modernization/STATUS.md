@@ -335,16 +335,29 @@ the final return; it is not replaced or treated as accepted while deferred.
   package's normal flag selection and mounts `CoreGui.PlayerList`, while a
   verifier rejects any `CoreGui.PlayerListReskin` root. The normal branch
   renders the compact upper-right 166-pixel PlayerList with its local `Player`
-  row. A strict 400-frame verifier now opens it from Chrome, requires a bounded
-  populated `CoreGui.PlayerList`, closes it through the package's own compact
-  dismiss button, reopens it from Chrome, and rejects any
-  `CoreGui.PlayerListReskin` root. Three consecutive packaged bgfx/Metal runs
-  passed with 22 final-frame draws, the 2560x1440 capture was visually
-  inspected, and the bundle passes strict code-sign verification. This proves
-  the corrected official branch and round trip at the current desktop size;
-  responsive/input-matrix and pixel-parity acceptance remain incomplete. All
-  earlier reskin/context-card results are diagnostic dependency evidence only
-  and do not close a leaderboard checkpoint.
+  row. The strict 400-frame verifier now derives every interaction from live
+  package geometry: it opens `leaderboard`, selects the local row, requires the
+  normal `PlayerDropDown` with the `Player` avatar header and `Examine Avatar`,
+  activates that action, requires the 83-descendant responsive
+  `RobloxGui.InspectAndBuy` surface, closes it through its official outside
+  overlay, dismisses PlayerList, and reopens a populated PlayerList from
+  Chrome. It also rejects any `CoreGui.PlayerListReskin` root and requires the
+  Inspect & Buy root to unmount before reopen. Three consecutive packaged
+  bgfx/Metal runs passed with 30-31 final-frame draws, and the bundle passes
+  strict code-sign verification. This proves the corrected official desktop branch,
+  context menu, inspect action, and round trip; a broader responsive/input
+  matrix and pixel-parity acceptance remain incomplete. All earlier
+  reskin/context-card results are diagnostic dependency evidence only and do
+  not close a leaderboard checkpoint.
+- Repaired the native contracts reached by the unchanged Inspect & Buy path:
+  `UserInputService` exposes current on-screen-keyboard state and geometry,
+  `StarterPlayer.UserEmotesEnabled` is writable and defaults true, `Vector2`
+  implements variadic component-wise `Min`/`Max`, MarketplaceService exposes
+  legacy `PromptBulkPurchaseRequested`, and Players exposes both
+  `CreateHumanoidModelFromUserId` names. Offline requests for the real local
+  user now reuse the packaged R15 appearance and local name without enabling a
+  remote endpoint. Five consecutive focused UI-component runs passed after
+  adding deterministic DataModel shutdown to that test executable.
 - Removed Music from the current Chrome product through Chrome's genuine
   integration-availability path. The supplied `music_entrypoint` still exists
   in the immutable reference package, but an owned product policy applies

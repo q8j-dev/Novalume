@@ -190,6 +190,18 @@ namespace RBX {
         UserInputService::prop_RightBarSize("RightBarSize", category_Data,
             &UserInputService::getRightBarSize, NULL,
             Reflection::PropertyDescriptor::SCRIPTING, Security::RobloxScript);
+    Reflection::PropDescriptor<UserInputService, bool>
+        UserInputService::prop_OnScreenKeyboardVisible(
+            "OnScreenKeyboardVisible", category_Data,
+            &UserInputService::getOnScreenKeyboardVisible, NULL);
+    Reflection::PropDescriptor<UserInputService, Vector2>
+        UserInputService::prop_OnScreenKeyboardPosition(
+            "OnScreenKeyboardPosition", category_Data,
+            &UserInputService::getOnScreenKeyboardPosition, NULL);
+    Reflection::PropDescriptor<UserInputService, Vector2>
+        UserInputService::prop_OnScreenKeyboardSize(
+            "OnScreenKeyboardSize", category_Data,
+            &UserInputService::getOnScreenKeyboardSize, NULL);
     static Reflection::BoundFuncDesc<UserInputService,
         void(Vector2, Vector2, Vector2, Vector2)> func_sendAppUISizes(
             &UserInputService::sendAppUISizes, "SendAppUISizes", "rightBarSize",
@@ -320,6 +332,9 @@ namespace RBX {
         navBarSize(Vector2::zero()),
         bottomBarSize(Vector2::zero()),
         rightBarSize(Vector2::zero()),
+        onScreenKeyboardVisible(false),
+        onScreenKeyboardPosition(Vector2::zero()),
+        onScreenKeyboardSize(Vector2::zero()),
         localCharacterJumpEnabled(true),
         wrapMode(WRAP_AUTO),
         modalEnabled(false),
@@ -414,6 +429,26 @@ namespace RBX {
         {
             statusBarSize = statusBar;
             raisePropertyChanged(prop_StatusBarSize);
+        }
+    }
+
+    void UserInputService::setOnScreenKeyboardState(bool visible,
+        Vector2 position, Vector2 size)
+    {
+        if (onScreenKeyboardVisible != visible)
+        {
+            onScreenKeyboardVisible = visible;
+            raisePropertyChanged(prop_OnScreenKeyboardVisible);
+        }
+        if (onScreenKeyboardPosition != position)
+        {
+            onScreenKeyboardPosition = position;
+            raisePropertyChanged(prop_OnScreenKeyboardPosition);
+        }
+        if (onScreenKeyboardSize != size)
+        {
+            onScreenKeyboardSize = size;
+            raisePropertyChanged(prop_OnScreenKeyboardSize);
         }
     }
 

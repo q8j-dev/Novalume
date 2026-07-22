@@ -255,6 +255,9 @@ namespace Network {
 		void getHumanoidDescriptionFromUserId(int userId,
 			boost::function<void (shared_ptr<Instance>)> resumeFunction,
 			boost::function<void (std::string)> errorFunction);
+		void createHumanoidModelFromUserId(int userId,
+			boost::function<void (shared_ptr<Instance>)> resumeFunction,
+			boost::function<void (std::string)> errorFunction);
 
 		int getMaxPlayers() const;
 		int getPreferredPlayers() const;
