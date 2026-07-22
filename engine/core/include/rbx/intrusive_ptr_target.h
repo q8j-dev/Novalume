@@ -79,6 +79,14 @@ namespace rbx
 		inline quick_intrusive_ptr_target() { refs = 0; }
 		friend void boost::intrusive_ptr_add_ref<>(const quick_intrusive_ptr_target<T, Count, maxRefs>* p);
 		friend void boost::intrusive_ptr_release<>(const quick_intrusive_ptr_target<T, Count, maxRefs>* p);
+		friend void intrusive_ptr_add_ref(const T* p)
+		{
+			boost::intrusive_ptr_add_ref(static_cast<const quick_intrusive_ptr_target*>(p));
+		}
+		friend void intrusive_ptr_release(const T* p)
+		{
+			boost::intrusive_ptr_release(static_cast<const quick_intrusive_ptr_target*>(p));
+		}
 	};
 #pragma pack(pop)	
 
@@ -133,6 +141,14 @@ namespace rbx
 		friend bool boost::intrusive_ptr_expired<>(const intrusive_ptr_target<T, Count, maxStrong, maxWeak>* p);
 		friend bool boost::intrusive_ptr_try_lock<>(const intrusive_ptr_target<T, Count, maxStrong, maxWeak>* p);
 		friend void boost::intrusive_ptr_weak_release<>(const intrusive_ptr_target<T, Count, maxStrong, maxWeak>* p);
+		friend void intrusive_ptr_add_ref(const T* p)
+		{
+			boost::intrusive_ptr_add_ref(static_cast<const intrusive_ptr_target*>(p));
+		}
+		friend void intrusive_ptr_release(const T* p)
+		{
+			boost::intrusive_ptr_release(static_cast<const intrusive_ptr_target*>(p));
+		}
 	};	 
 }
 

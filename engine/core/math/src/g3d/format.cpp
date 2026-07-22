@@ -17,7 +17,7 @@
 #   pragma warning (disable : 4530)
 #endif // _MSC_VER
 
-#if !defined(G3D_IOS) && !defined(__ANDROID__)
+#ifdef _MSC_VER
 #define CALLSPEC __cdecl
 #else
 #define CALLSPEC
