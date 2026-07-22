@@ -382,9 +382,21 @@ unset(_rbx_skip_install_rules)
 
 set(BGFX_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(BGFX_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(BGFX_BUILD_TOOLS ON CACHE BOOL "" FORCE)
-set(BGFX_BUILD_TOOLS_BIN2C ON CACHE BOOL "" FORCE)
-set(BGFX_BUILD_TOOLS_SHADER ON CACHE BOOL "" FORCE)
+if(CMAKE_CROSSCOMPILING)
+    set(RBX_HOST_SHADERC "" CACHE FILEPATH
+        "Host bgfx shaderc executable used while cross-compiling")
+    if(NOT EXISTS "${RBX_HOST_SHADERC}")
+        message(FATAL_ERROR
+            "Cross-compiling requires -DRBX_HOST_SHADERC=/absolute/path/to/a host shaderc executable")
+    endif()
+    set(BGFX_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
+    set(BGFX_BUILD_TOOLS_BIN2C OFF CACHE BOOL "" FORCE)
+    set(BGFX_BUILD_TOOLS_SHADER OFF CACHE BOOL "" FORCE)
+else()
+    set(BGFX_BUILD_TOOLS ON CACHE BOOL "" FORCE)
+    set(BGFX_BUILD_TOOLS_BIN2C ON CACHE BOOL "" FORCE)
+    set(BGFX_BUILD_TOOLS_SHADER ON CACHE BOOL "" FORCE)
+endif()
 set(BGFX_BUILD_TOOLS_GEOMETRY OFF CACHE BOOL "" FORCE)
 set(BGFX_BUILD_TOOLS_TEXTURE OFF CACHE BOOL "" FORCE)
 set(BGFX_INSTALL OFF CACHE BOOL "" FORCE)
@@ -397,5 +409,14 @@ FetchContent_Declare(rbx_bgfx_cmake
     GIT_SHALLOW FALSE
     GIT_SUBMODULES "")
 FetchContent_MakeAvailable(rbx_bgfx_cmake)
+
+if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+    foreach(property LINK_LIBRARIES INTERFACE_LINK_LIBRARIES)
+        get_target_property(rbx_bgfx_links bgfx "${property}")
+        string(REPLACE " -framework IOKit" "" rbx_bgfx_links
+            "${rbx_bgfx_links}")
+        set_property(TARGET bgfx PROPERTY "${property}" "${rbx_bgfx_links}")
+    endforeach()
+endif()
 
 include("${rbx_bgfx_cmake_SOURCE_DIR}/cmake/bgfxToolUtils.cmake")

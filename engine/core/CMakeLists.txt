@@ -79,12 +79,14 @@ if(APPLE)
         _LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION)
 endif()
 
-if(APPLE)
+if(APPLE AND CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     target_link_libraries(rbx-core PRIVATE
         OpenSSL::Crypto
         "-framework ApplicationServices"
         "-framework CoreFoundation"
         "-framework IOKit")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+    target_link_libraries(rbx-core PRIVATE OpenSSL::Crypto)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_link_libraries(rbx-core PRIVATE OpenSSL::Crypto)
 elseif(WIN32)

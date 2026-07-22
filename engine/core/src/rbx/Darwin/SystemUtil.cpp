@@ -6,10 +6,7 @@
 #include <mach/mach.h>
 #include <mach/machine.h>
 
-#if RBX_PLATFORM_IOS
-std::string getFriendlyDeviceName();
-std::string getDeviceOSVersion();
-#else
+#if !RBX_PLATFORM_IOS
 #include <ApplicationServices/ApplicationServices.h>
 #include <IOKit/IOKitLib.h>
 #include <IOKit/kext/KextManager.h>
@@ -211,7 +208,7 @@ namespace SystemUtil
     std::string deviceName()
     {
 #if RBX_PLATFORM_IOS
-        return getFriendlyDeviceName();
+        return sysctlbynamestring("hw.machine");
 #else
         return "Mac";
 #endif
@@ -222,7 +219,8 @@ namespace SystemUtil
     std::string osVer()
     {
 #if RBX_PLATFORM_IOS
-        return getDeviceOSVersion();
+        const std::string version = sysctlbynamestring("kern.osversion");
+        return version.empty() ? "iOS" : "iOS " + version;
 #else
         const std::string version = sysctlbynamestring("kern.osproductversion");
         return version.empty() ? "macOS" : "macOS " + version;

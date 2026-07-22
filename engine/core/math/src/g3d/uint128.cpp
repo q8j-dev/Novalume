@@ -10,15 +10,7 @@
 
 #include "g3d/uint128.h"
 
-// NA: 11-1-2012, allow access MACRO TARGET_IPHONE_SIMULATOR, testing with this man
-#if RBX_PLATFORM_IOS
-#include "TargetConditionals.h"
-#endif // RBX_PLATFORM_IOS
-
 namespace G3D {
-
-// NA: 11/1/2012, this part of code cause iOS GCC crash, we comment out for the iOS device build and leave it for simulator build
-#if (!RBX_PLATFORM_IOS) || (RBX_PLATFORM_IOS && TARGET_IPHONE_SIMULATOR)
 
 
 /** Adds two 64-bit integers, placing the result and the overflow into 64-bit integers.*/
@@ -162,5 +154,4 @@ uint128 uint128::operator&(const uint128& x) {
     return uint128(hi & x.hi, lo & x.lo);
 }
 
-#endif // TARGET_IPHONE_SIMULATOR
 }

@@ -34,7 +34,7 @@ set(RBX_PLAYER_SHARED_SOURCES
     format_string.cpp
     RobloxServicesTools.cpp
     SimpleJSON.cpp)
-if(APPLE)
+if(APPLE AND CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     list(APPEND RBX_PLAYER_SHARED_SOURCES Mac/CookiesEngine.cpp)
 elseif(WIN32)
     list(APPEND RBX_PLAYER_SHARED_SOURCES Win/CookiesEngine.cpp)
@@ -71,7 +71,7 @@ target_include_directories(rbx-player-shared
         "${CMAKE_SOURCE_DIR}/Library/SDL2/include")
 
 target_link_libraries(rbx-player-shared PUBLIC Roblox::Core)
-if(APPLE)
+if(APPLE AND CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     target_link_libraries(rbx-player-shared PRIVATE "-framework CoreFoundation")
 endif()
 target_compile_features(rbx-player-shared PUBLIC cxx_std_20)

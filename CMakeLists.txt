@@ -87,6 +87,10 @@ endif()
 
 include(RbxDependencies)
 
+if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+    add_compile_definitions(RBX_PLATFORM_IOS=1)
+endif()
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     set(RBX_LEGACY_CASE_COMPAT_DIR
         "${CMAKE_BINARY_DIR}/generated/case-sensitive-include")
@@ -144,6 +148,8 @@ add_subdirectory(engine/animation)
 add_subdirectory(platform/common)
 if(APPLE AND CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     add_subdirectory(platform/macos)
+elseif(APPLE AND CMAKE_SYSTEM_NAME STREQUAL "iOS")
+    add_subdirectory(platform/ios)
 elseif(WIN32)
     add_subdirectory(platform/windows)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")

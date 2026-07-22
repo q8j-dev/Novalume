@@ -104,8 +104,18 @@ if(WIN32)
     target_link_libraries(RobloxPlayerLegacy PRIVATE shell32)
 endif()
 
+if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+    target_sources(RobloxPlayer PRIVATE ios/PlayerEntrypoint.mm)
+    target_sources(RobloxPlayerLegacy PRIVATE ios/PlayerEntrypoint.mm)
+    target_link_libraries(RobloxPlayer PRIVATE "-framework UIKit")
+    target_link_libraries(RobloxPlayerLegacy PRIVATE "-framework UIKit")
+    set(RBX_PLAYER_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info-iOS.plist.in")
+else()
+    set(RBX_PLAYER_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in")
+endif()
+
 set_target_properties(RobloxPlayer PROPERTIES
-    MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in"
+    MACOSX_BUNDLE_INFO_PLIST "${RBX_PLAYER_INFO_PLIST}"
     MACOSX_BUNDLE_BUNDLE_NAME "Roblox"
     MACOSX_BUNDLE_GUI_IDENTIFIER "com.roblox.offline-player"
     MACOSX_BUNDLE_INFO_STRING "Shared cross-platform Roblox player"
@@ -113,7 +123,7 @@ set_target_properties(RobloxPlayer PROPERTIES
     MACOSX_BUNDLE_BUNDLE_VERSION "1")
 
 set_target_properties(RobloxPlayerLegacy PROPERTIES
-    MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in"
+    MACOSX_BUNDLE_INFO_PLIST "${RBX_PLAYER_INFO_PLIST}"
     MACOSX_BUNDLE_BUNDLE_NAME "Roblox Legacy UI Test"
     MACOSX_BUNDLE_GUI_IDENTIFIER "dev.q8j.novalume.legacy-ui-test"
     MACOSX_BUNDLE_INFO_STRING "Novalume legacy UI and avatar test player"
@@ -730,6 +740,7 @@ if(APPLE)
             "${RBX_FFMPEG_ROOT}/share/sources/ffmpeg"
             "${RBX_LEGACY_PLAYER_RESOURCE_DIR}/sources/FFmpeg"
         VERBATIM)
+    if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     set_property(TARGET RobloxPlayer APPEND PROPERTY LINK_DEPENDS
         "${CMAKE_SOURCE_DIR}/cmake/BundleMacOSRuntimeDependencies.cmake")
     set_property(TARGET RobloxPlayerLegacy APPEND PROPERTY LINK_DEPENDS
@@ -794,6 +805,7 @@ if(APPLE)
         DEPENDS RobloxPlayerLegacy
         COMMENT "Installing the legacy UI test Player outside protected Desktop storage"
         VERBATIM)
+    endif()
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")

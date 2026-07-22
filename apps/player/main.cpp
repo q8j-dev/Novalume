@@ -679,7 +679,7 @@ int rbxPlayerMain(int argc, char** argv) {
     }
 }
 
-#if !defined(_WIN32)
+#if !defined(_WIN32) && !RBX_PLATFORM_IOS
 int main(int argc, char** argv)
 {
     try {

@@ -49,7 +49,7 @@ target_compile_definitions(rbx-math PRIVATE
 target_compile_options(rbx-math PRIVATE
     $<$<COMPILE_LANG_AND_ID:CXX,AppleClang>:-Wno-deprecated-declarations>)
 
-if(APPLE)
+if(APPLE AND CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     target_compile_definitions(rbx-math PRIVATE __FP__=1)
     target_link_libraries(rbx-math PUBLIC "-framework CoreServices")
 endif()

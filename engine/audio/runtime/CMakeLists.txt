@@ -10,6 +10,14 @@ target_include_directories(rbx-audio-runtime
 target_include_directories(rbx-audio-runtime SYSTEM PRIVATE
     "${MINIAUDIO_INCLUDE_DIR}")
 target_link_libraries(rbx-audio-runtime PUBLIC Roblox::AudioContracts Roblox::FFmpeg)
+if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+    set_source_files_properties(../src/MiniaudioImplementation.cpp
+        PROPERTIES LANGUAGE OBJCXX)
+    target_link_libraries(rbx-audio-runtime PRIVATE
+        "-framework AudioToolbox"
+        "-framework AVFoundation"
+        "-framework CoreAudio")
+endif()
 target_compile_features(rbx-audio-runtime PUBLIC cxx_std_20)
 rbx_enable_warnings(rbx-audio-runtime)
 
