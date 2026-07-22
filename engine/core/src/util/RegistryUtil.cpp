@@ -304,7 +304,7 @@ bool RegistryUtil::writeString(const std::string& key, const std::string& valueD
 
 
 // static helpers
-static HKEY getKeyFromString(const char* str, UINT32 length) {
+static HKEY getKeyFromString(const char* str, size_t length) {
     RBXASSERT(str);
 
     if (str) {
