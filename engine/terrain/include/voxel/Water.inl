@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Voxel/Util.h"
+#include "voxel/Util.h"
 
 namespace RBX { namespace Voxel {
 
@@ -134,4 +134,3 @@ Cell interpretAsWaterCell(const BoxType* reader, const Cell& cell,
 
 } // Water
 } }
-

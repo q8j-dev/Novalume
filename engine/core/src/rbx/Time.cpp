@@ -321,7 +321,6 @@ Time Time::now<Time::Fast>()
 		if (inited.swap(1) == 0)
 		{
 			startMMTimer();
-			FLog::Init(nowFastSec);
 		}
 	
 	Time result;

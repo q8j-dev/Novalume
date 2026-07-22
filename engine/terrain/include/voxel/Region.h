@@ -153,6 +153,6 @@ public:
 
 } }
 
-#include "Voxel/Region.inl"
-#include "Voxel/Region.iterator.inl"
-#include "Voxel/Region.xline_iterator.inl"
+#include "voxel/Region.inl"
+#include "voxel/Region.iterator.inl"
+#include "voxel/Region.xline_iterator.inl"
