@@ -32,6 +32,8 @@ target_link_libraries(rbx-text-shaping-tests PRIVATE
 rbx_enable_warnings(rbx-text-shaping-tests)
 target_compile_options(rbx-text-shaping-tests PRIVATE
     $<$<COMPILE_LANG_AND_ID:CXX,AppleClang>:-Wno-enum-constexpr-conversion>)
+target_link_options(rbx-text-shaping-tests PRIVATE
+    $<$<BOOL:${EMSCRIPTEN}>:-sNODERAWFS=1;-O1>)
 set(RBX_TEXT_SHAPING_FALLBACK_ARGS)
 if(RBX_PLAYER_REFERENCE_ROOT AND EXISTS
     "${RBX_PLAYER_REFERENCE_ROOT}/content/fonts/NotoNaskhArabicUI-Regular.ttf" AND EXISTS
@@ -93,6 +95,8 @@ add_test(NAME asset-mount-contract COMMAND rbx-asset-mount-tests)
 
 add_executable(rbx-place-package-tests unit/PlacePackageTests.cpp)
 target_link_libraries(rbx-place-package-tests PRIVATE Roblox::Assets)
+target_link_options(rbx-place-package-tests PRIVATE
+    $<$<BOOL:${EMSCRIPTEN}>:-O1>)
 rbx_enable_warnings(rbx-place-package-tests)
 add_test(NAME place-package-contract COMMAND rbx-place-package-tests)
 
@@ -167,6 +171,8 @@ if(RBX_PLAYER_REFERENCE_ROOT AND EXISTS
         _LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR=1)
     target_compile_options(rbx-in-experience-model-load-tests PRIVATE
         $<$<COMPILE_LANG_AND_ID:CXX,AppleClang>:-Wno-enum-constexpr-conversion>)
+    target_link_options(rbx-in-experience-model-load-tests PRIVATE
+        $<$<BOOL:${EMSCRIPTEN}>:-sNODERAWFS=1;-O1>)
     add_test(NAME in-experience-model-load
         COMMAND rbx-in-experience-model-load-tests
             "${RBX_PLAYER_REFERENCE_ROOT}/ExtraContent/models/InExperience/InExperience.rbxm")
@@ -183,6 +189,8 @@ if(RBX_PLAYER_REFERENCE_ROOT AND EXISTS
         Roblox::AudioDataModel Roblox::DataModelRuntime Roblox::RuntimeSupport
         Roblox::AvatarHumanoid Roblox::NetworkingRuntime Roblox::TerrainRuntime
         Roblox::PlayerShared Roblox::PlatformRuntime Roblox::PlatformHost)
+    target_link_options(rbx-data-model-patch-tests PRIVATE
+        $<$<BOOL:${EMSCRIPTEN}>:-O1;-sNODERAWFS=1>)
     target_compile_definitions(rbx-data-model-patch-tests PRIVATE
         _LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR=1)
     target_compile_options(rbx-data-model-patch-tests PRIVATE
@@ -250,6 +258,8 @@ if(RBX_PLAYER_REFERENCE_ROOT AND EXISTS
     add_dependencies(rbx-in-experience-luau-bytecode-tests
         rbx-in-experience-luau-fixture
         rbx-in-experience-playerlist-luau-fixture)
+    target_link_options(rbx-in-experience-luau-bytecode-tests PRIVATE
+        $<$<BOOL:${EMSCRIPTEN}>:-sNODERAWFS=1;-O1>)
     rbx_enable_warnings(rbx-in-experience-luau-bytecode-tests)
     add_test(NAME in-experience-luau-bytecode
         COMMAND rbx-in-experience-luau-bytecode-tests
@@ -275,6 +285,8 @@ if(RBX_STUDIO_REFERENCE_ROOT AND EXISTS
         _LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR=1)
     target_compile_options(rbx-avatar-runtime-model-tests PRIVATE
         $<$<COMPILE_LANG_AND_ID:CXX,AppleClang>:-Wno-enum-constexpr-conversion>)
+    target_link_options(rbx-avatar-runtime-model-tests PRIVATE
+        $<$<BOOL:${EMSCRIPTEN}>:-sNODERAWFS=1;-O1>)
     add_test(NAME avatar-runtime-model-contract
         COMMAND rbx-avatar-runtime-model-tests "${RBX_STUDIO_REFERENCE_ROOT}")
     set_tests_properties(avatar-runtime-model-contract PROPERTIES
@@ -299,6 +311,8 @@ if(EXISTS "${RBX_SELECTED_MODERN_PLACE_ROOT}/${RBX_SELECTED_MODERN_PLACE_NAME}.r
         _LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR=1)
     target_compile_options(rbx-modern-place-serialization-tests PRIVATE
         $<$<COMPILE_LANG_AND_ID:CXX,AppleClang>:-Wno-enum-constexpr-conversion>)
+    target_link_options(rbx-modern-place-serialization-tests PRIVATE
+        $<$<BOOL:${EMSCRIPTEN}>:-sNODERAWFS=1;-O1>)
     add_test(NAME modern-place-serialization-contract
         COMMAND "${Python3_EXECUTABLE}"
             "${CMAKE_SOURCE_DIR}/tests/integration/test_modern_place_pair.py"
@@ -312,6 +326,8 @@ endif()
 
 add_executable(rbx-audio-runtime-tests unit/AudioEngineTests.cpp)
 target_link_libraries(rbx-audio-runtime-tests PRIVATE Roblox::AudioRuntime)
+target_link_options(rbx-audio-runtime-tests PRIVATE
+    $<$<BOOL:${EMSCRIPTEN}>:-sNODERAWFS=1;-O1>)
 target_compile_definitions(rbx-audio-runtime-tests PRIVATE
     "RBX_TEST_STREAMING_OGG=\"${CMAKE_SOURCE_DIR}/PlatformContent/durango/sounds/ui/Shell/RobloxMusic.ogg\"")
 if(APPLE)
@@ -418,6 +434,7 @@ if(APPLE)
         add_test(NAME player-baseplate-metal-render
             COMMAND "$<TARGET_FILE:RobloxPlayer>"
                 --headless-verify
+                --frame-limit 600
                 --render-proof "${RBX_BASEPLATE_RENDER_PROOF}")
         set_tests_properties(player-baseplate-metal-render PROPERTIES
             TIMEOUT 30
@@ -530,6 +547,7 @@ if(APPLE)
             COMMAND "$<TARGET_FILE:RobloxPlayer>"
                 --headless-verify
                 --verify-viewport-rendering
+                --frame-limit 600
                 --render-proof "${RBX_VIEWPORT_RENDER_PROOF}")
         set_tests_properties(player-viewport-frame-metal-render PROPERTIES
             TIMEOUT 30
@@ -543,6 +561,7 @@ if(APPLE)
             COMMAND "$<TARGET_FILE:RobloxPlayer>"
                 --headless-verify
                 --verify-video-rendering "${RBX_MEDIA_FIXTURE}"
+                --frame-limit 600
                 --render-proof "${RBX_VIDEO_RENDER_PROOF}")
         set_tests_properties(player-video-frame-metal-render PROPERTIES
             TIMEOUT 30

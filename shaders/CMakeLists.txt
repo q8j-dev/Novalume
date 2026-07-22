@@ -15,6 +15,7 @@ file(GLOB RBX_SCENE_SHADER_SOURCES CONFIGURE_DEPENDS
 
 if(EMSCRIPTEN)
     set(RBX_SCENE_GLSL_PLATFORM "asm.js")
+    set(RBX_SCENE_GLSL_PROFILE_ARGS --profile 300_es)
 elseif(WIN32)
     set(RBX_SCENE_GLSL_PLATFORM "windows")
 elseif(UNIX AND NOT APPLE)
@@ -44,6 +45,7 @@ add_custom_command(
         --varying-def "${RBX_SCENE_VARYING_DEF}"
         --bgfx-include "${BGFX_DIR}/src"
         --platform "${RBX_SCENE_GLSL_PLATFORM}"
+        ${RBX_SCENE_GLSL_PROFILE_ARGS}
         --output "${RBX_SCENE_SHADER_PACK}"
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
         "${CMAKE_CURRENT_SOURCE_DIR}/shaders.json"
@@ -152,25 +154,40 @@ if(CMAKE_CROSSCOMPILING)
         set(profiles spirv 120 100_es metal)
         set(platforms linux ios ios ios)
         set(directories spirv glsl essl metal)
+        if(EMSCRIPTEN)
+            list(APPEND profiles wgsl)
+            list(APPEND platforms asm.js)
+            list(APPEND directories wgsl)
+        endif()
         foreach(profile platform directory IN ZIP_LISTS
                 profiles platforms directories)
             set(output "${RBX_SHADER_OUTPUT_DIR}/${directory}/${shader_name}.bin")
+            set(shader_input "${source}")
+            if(profile STREQUAL "wgsl")
+                get_filename_component(shader_stem "${source}" NAME_WE)
+                set(shader_input
+                    "${CMAKE_CURRENT_SOURCE_DIR}/source/${shader_stem}_wgsl.hlsl")
+                set(shader_compile_options --raw)
+            else()
+                set(shader_compile_options
+                    -i "${BGFX_DIR}/src"
+                    -i "${CMAKE_CURRENT_SOURCE_DIR}/include"
+                    --varyingdef "${RBX_VARYING_DEF}")
+            endif()
             add_custom_command(
                 OUTPUT "${output}"
                 COMMAND "${CMAKE_COMMAND}" -E make_directory
                     "${RBX_SHADER_OUTPUT_DIR}/${directory}"
                 COMMAND "${RBX_SHADERC_EXECUTABLE}"
-                    -f "${source}"
-                    -i "${BGFX_DIR}/src"
-                    -i "${CMAKE_CURRENT_SOURCE_DIR}/include"
+                    -f "${shader_input}"
                     -o "${output}"
                     --platform "${platform}"
                     --type "${kind}"
-                    --varyingdef "${RBX_VARYING_DEF}"
                     --profile "${profile}"
+                    ${shader_compile_options}
                     -O 3
                     --Werror
-                MAIN_DEPENDENCY "${source}"
+                MAIN_DEPENDENCY "${shader_input}"
                 DEPENDS "${RBX_VARYING_DEF}" "${RBX_SHADERC_DEPENDENCY}"
                 VERBATIM)
             list(APPEND outputs "${output}")

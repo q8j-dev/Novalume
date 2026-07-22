@@ -853,15 +853,36 @@ namespace RBX
         }
         else if (desc.type == Reflection::Type::singleton<G3D::Color3>())
         {
-            readFormatExpected(stream, bpfColor3);
-            
-			std::vector<float> r, g, b;
-			readFloatVector(stream, r, instances.size());
-			readFloatVector(stream, g, instances.size());
-			readFloatVector(stream, b, instances.size());
-			
-			for (size_t i = 0; i < instances.size(); ++i)
-				setPropertyValue(desc, instances[i], G3D::Color3(r[i], g[i], b[i]));
+			char format;
+			readRaw(stream, format);
+			if (format == bpfColor3)
+			{
+				std::vector<float> r, g, b;
+				readFloatVector(stream, r, instances.size());
+				readFloatVector(stream, g, instances.size());
+				readFloatVector(stream, b, instances.size());
+
+				for (size_t i = 0; i < instances.size(); ++i)
+					setPropertyValue(desc, instances[i], G3D::Color3(r[i], g[i], b[i]));
+			}
+			else if (format == bpfColor3uint8)
+			{
+				const size_t count = instances.size();
+				if (stream.offset + count * 3 > stream.datasize)
+					throw RBX::runtime_error("Read offset is out of bounds while reading %d bytes", (int)count * 3);
+
+				for (size_t i = 0; i < count; ++i)
+				{
+					const G3D::Color3uint8 color(
+						(unsigned char)stream.data[stream.offset + i],
+						(unsigned char)stream.data[stream.offset + count + i],
+						(unsigned char)stream.data[stream.offset + count * 2 + i]);
+					setPropertyValue(desc, instances[i], G3D::Color3(color));
+				}
+				stream.offset += count * 3;
+			}
+			else
+				throw RBX::runtime_error("Unexpected color format %d", format);
         }
         else if (desc.type == Reflection::Type::singleton<G3D::Rect2D>())
         {
@@ -1842,6 +1863,8 @@ namespace RBX
 		readString(stream, propertyName);
 	
 		const Reflection::PropertyDescriptor* propertyDesc = typeDesc->findPropertyDescriptor(propertyName.c_str());
+		if (!propertyDesc && propertyName == "Color3uint8")
+			propertyDesc = typeDesc->findPropertyDescriptor("Color");
 	
 		if (propertyDesc && propertyDesc->canXmlRead())
 		{

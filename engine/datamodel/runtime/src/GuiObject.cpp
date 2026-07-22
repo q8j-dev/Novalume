@@ -429,7 +429,7 @@ void GuiObject::UpdateTween(Tween& tween, GuiObject* obj, boost::function<void(G
 		if(tween.delayTime <= 0)
 		{
 			updateFunc(obj, tween.start);
-			tween.elapsedTime += std::abs<float>(tween.delayTime);
+			tween.elapsedTime += std::abs(tween.delayTime);
 		}
 		else
 		{

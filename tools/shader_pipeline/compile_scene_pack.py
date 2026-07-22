@@ -138,6 +138,103 @@ def read_stages(path: Path) -> dict[str, str]:
     return stages
 
 
+def read_sampler_stages(
+    source_root: Path, description: dict[str, object]
+) -> dict[str, int]:
+    import re
+
+    source = expand_hlsl(Path(str(description["source"])), source_root)
+    declarations = re.findall(
+        r"\b(?:TEX_DECLARE(?:2D|3D|CUBE)|LGRID_SAMPLER)"
+        r"\(\s*([A-Za-z_]\w*)\s*,\s*(\d+)\s*\)",
+        source,
+    )
+    result: dict[str, int] = {}
+    for name, stage_text in declarations:
+        stage = int(stage_text)
+        previous = result.setdefault(name, stage)
+        if previous != stage:
+            raise ValueError(
+                f"sampler {name} has conflicting stages in {description['source']}"
+            )
+    return result
+
+
+def translate_essl(
+    name: str, source: bytes, stage: str, sampler_stages: dict[str, int]
+) -> bytes:
+    import re
+
+    text = source.decode("utf-8")
+    text = re.sub(
+        r"^#version\s+\d+\s*$",
+        "precision highp float;\nprecision highp int;\n"
+        "precision highp sampler2D;\nprecision highp samplerCube;\n"
+        "precision highp sampler3D;\nprecision highp sampler2DShadow;\n"
+        "precision highp sampler2DArray;\nprecision highp sampler2DArrayShadow;\n"
+        "precision highp isampler2D;\nprecision highp isampler3D;\n"
+        "precision highp isampler2DArray;\nprecision highp usampler2D;\n"
+        "precision highp usampler3D;\nprecision highp usampler2DArray;",
+        text,
+        count=1,
+        flags=re.MULTILINE,
+    )
+    text = re.sub(r"\btexture2D\s*\(", "texture(", text)
+    text = re.sub(r"\btextureCube\s*\(", "texture(", text)
+    text = re.sub(r"\bvoid\s+main\s*\(\s*\)", "void main()", text, count=1)
+    for sampler_name, sampler_stage in sampler_stages.items():
+        text = re.sub(
+            rf"\b{re.escape(sampler_name)}\b",
+            f"s{sampler_stage}_{sampler_name}",
+            text,
+        )
+    if stage == "vertex":
+        attributes = {
+            "vertex": "a_position",
+            "normal": "a_normal",
+            "colour": "a_color0",
+            "secondary_colour": "a_color1",
+            "uv0": "a_texcoord0",
+            "uv1": "a_texcoord1",
+            "uv2": "a_texcoord2",
+            "uv3": "a_texcoord3",
+        }
+        for source_name, target_name in attributes.items():
+            text = re.sub(rf"\b{source_name}\b", target_name, text)
+    if stage == "fragment":
+        targets = [int(value) for value in re.findall(r"gl_FragData\[(\d+)\]", text)]
+        if targets:
+            size = max(targets) + 1
+            text = text.replace(
+                "precision highp int;",
+                f"precision highp int;\nout vec4 bgfx_FragData[{size}];",
+                1,
+            )
+            text = text.replace("gl_FragData", "bgfx_FragData")
+    return text.encode("utf-8")
+
+
+def patch_essl_fragment_outputs(bytecode: bytes) -> bytes:
+    cursor = 12
+    uniform_count = struct.unpack_from("<H", bytecode, cursor)[0]
+    cursor += 2
+    for _ in range(uniform_count):
+        name_size = bytecode[cursor]
+        cursor += 1 + name_size + 10
+    shader_size = struct.unpack_from("<I", bytecode, cursor)[0]
+    shader_start = cursor + 4
+    shader_end = shader_start + shader_size
+    shader = bytecode[shader_start:shader_end].replace(
+        b"_glFragData", b"bgfx_FragData"
+    )
+    return (
+        bytecode[:cursor]
+        + struct.pack("<I", len(shader))
+        + shader
+        + bytecode[shader_end:]
+    )
+
+
 def compile_shader(
     shaderc: Path,
     name: str,
@@ -150,8 +247,14 @@ def compile_shader(
     raw: bool,
     varying_def: Path | None,
     include_paths: list[Path],
+    sampler_stages: dict[str, int],
 ) -> bytes:
-    source_path = directory / f"{name}{'.glsl' if raw else '.sc'}"
+    compiler_raw = raw
+    translated_raw = raw and profile.endswith("_es")
+    if translated_raw:
+        source = translate_essl(name, source, stage, sampler_stages)
+        compiler_raw = False
+    source_path = directory / f"{name}{'.glsl' if compiler_raw else '.sc'}"
     output_path = directory / f"{name}.bin"
     source_path.write_bytes(source)
     hlsl_backend = (
@@ -184,7 +287,7 @@ def compile_shader(
         "--profile",
         profile,
     ]
-    if raw:
+    if compiler_raw:
         command.append("--raw")
     else:
         if varying_def is None:
@@ -198,7 +301,10 @@ def compile_shader(
     if process.returncode:
         details = process.stderr.strip() or process.stdout.strip()
         raise RuntimeError(f"shaderc failed for {name}:\n{details}")
-    return output_path.read_bytes()
+    result = output_path.read_bytes()
+    if translated_raw and stage == "fragment":
+        result = patch_essl_fragment_outputs(result)
+    return result
 
 
 def write_pack(path: Path, entries: list[tuple[str, bytes]]) -> None:
@@ -240,6 +346,9 @@ def main() -> int:
     arguments = parser.parse_args()
 
     descriptions = json.loads(arguments.shader_db.read_text(encoding="utf-8"))
+    descriptions_by_name = {
+        str(description["name"]): description for description in descriptions
+    }
     stages = read_stages(arguments.shader_db)
     compiled: list[tuple[str, bytes]] = []
     with tempfile.TemporaryDirectory(prefix="rbx-scene-shaders-") as temporary:
@@ -301,6 +410,9 @@ def main() -> int:
                         raw,
                         arguments.varying_def,
                         arguments.bgfx_include,
+                        read_sampler_stages(
+                            arguments.source_root, descriptions_by_name[name]
+                        ),
                     ),
                 )
             )

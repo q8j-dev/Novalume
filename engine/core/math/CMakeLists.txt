@@ -15,7 +15,9 @@ add_library(rbx-math STATIC EXCLUDE_FROM_ALL
     ${RBX_G3D_PNG_SOURCES}
     ${RBX_G3D_ZIP_SOURCES})
 add_library(Roblox::Math ALIAS rbx-math)
-find_package(ZLIB REQUIRED)
+if(NOT TARGET ZLIB::ZLIB)
+    find_package(ZLIB REQUIRED)
+endif()
 
 target_include_directories(rbx-math
     PUBLIC

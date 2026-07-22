@@ -31,6 +31,7 @@ target_include_directories(RobloxPlayer PRIVATE
 target_compile_definitions(RobloxPlayer PRIVATE
     _LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR=1)
 target_compile_options(RobloxPlayer PRIVATE
+    $<$<BOOL:${EMSCRIPTEN}>:-fwasm-exceptions>
     $<$<COMPILE_LANG_AND_ID:CXX,AppleClang>:-Wno-enum-constexpr-conversion>)
 rbx_enable_warnings(RobloxPlayer)
 
@@ -122,6 +123,27 @@ set_target_properties(RobloxPlayer PROPERTIES
     MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
     MACOSX_BUNDLE_BUNDLE_VERSION "1")
 
+if(EMSCRIPTEN)
+    set_target_properties(RobloxPlayer PROPERTIES SUFFIX ".html")
+    target_link_options(RobloxPlayer PRIVATE
+        --use-port=emdawnwebgpu
+        -fwasm-exceptions
+        --emit-symbol-map
+        --shell-file "${CMAKE_SOURCE_DIR}/platform/web/shell.html"
+        "SHELL:--preload-file apps/player/Resources@/Resources"
+        "SHELL:-sPROXY_TO_PTHREAD=1"
+        "SHELL:-sASSERTIONS=1"
+        "SHELL:-sPTHREAD_POOL_SIZE=8"
+        "SHELL:-sOFFSCREEN_FRAMEBUFFER=1"
+        "SHELL:-sALLOW_MEMORY_GROWTH=0"
+        "SHELL:-sINITIAL_MEMORY=805306368"
+        "SHELL:-sSTACK_SIZE=5242880"
+        "SHELL:-sEXPORTED_RUNTIME_METHODS=['ccall']"
+        "SHELL:-sENVIRONMENT=web,worker")
+    set_property(TARGET RobloxPlayer APPEND PROPERTY LINK_DEPENDS
+        "${CMAKE_SOURCE_DIR}/platform/web/shell.html")
+endif()
+
 set_target_properties(RobloxPlayerLegacy PROPERTIES
     MACOSX_BUNDLE_INFO_PLIST "${RBX_PLAYER_INFO_PLIST}"
     MACOSX_BUNDLE_BUNDLE_NAME "Roblox Legacy UI Test"
@@ -139,6 +161,12 @@ else()
     set(RBX_PLAYER_RESOURCE_DIR "$<TARGET_FILE_DIR:RobloxPlayer>/Resources")
     set(RBX_LEGACY_PLAYER_RESOURCE_DIR
         "$<TARGET_FILE_DIR:RobloxPlayerLegacy>/Resources")
+endif()
+
+if(EMSCRIPTEN)
+    set(RBX_PLAYER_PACKAGE_PHASE PRE_LINK)
+else()
+    set(RBX_PLAYER_PACKAGE_PHASE POST_BUILD)
 endif()
 
 set(RBX_RESOURCE_MANIFEST "${CMAKE_BINARY_DIR}/generated/resources/manifest.json")
@@ -509,7 +537,7 @@ set_property(TARGET RobloxPlayer APPEND PROPERTY LINK_DEPENDS
 set_property(TARGET RobloxPlayerLegacy APPEND PROPERTY LINK_DEPENDS
     ${RBX_DURANGO_LAUNCHER_FILES})
 
-add_custom_command(TARGET RobloxPlayer POST_BUILD
+add_custom_command(TARGET RobloxPlayer ${RBX_PLAYER_PACKAGE_PHASE}
     COMMAND "${CMAKE_COMMAND}" -E copy_directory
         "${CMAKE_SOURCE_DIR}/content"
         "${RBX_PLAYER_RESOURCE_DIR}/content"
@@ -539,6 +567,14 @@ add_custom_command(TARGET RobloxPlayer POST_BUILD
         "${CMAKE_SOURCE_DIR}/THIRD_PARTY_NOTICES.md"
         "${RBX_PLAYER_RESOURCE_DIR}/THIRD_PARTY_NOTICES.md"
     COMMENT "Packaging owned shaders and source-tree Roblox resources")
+
+if(EMSCRIPTEN)
+    add_custom_command(TARGET RobloxPlayer ${RBX_PLAYER_PACKAGE_PHASE}
+        COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+            "${CMAKE_BINARY_DIR}/generated/shaders/shaders_bgfx-glsl.pack"
+            "${RBX_PLAYER_RESOURCE_DIR}/shaders/shaders_bgfx-gles.pack"
+        COMMENT "Packaging the browser OpenGL ES scene shader archive")
+endif()
 
 add_custom_command(TARGET RobloxPlayerLegacy POST_BUILD
     COMMAND "${CMAKE_COMMAND}" -E copy_directory
@@ -572,7 +608,7 @@ add_custom_command(TARGET RobloxPlayerLegacy POST_BUILD
     COMMENT "Packaging the isolated legacy UI and avatar test player")
 
 if(RBX_PLAYER_CJK_FONT)
-    add_custom_command(TARGET RobloxPlayer POST_BUILD
+    add_custom_command(TARGET RobloxPlayer ${RBX_PLAYER_PACKAGE_PHASE}
         COMMAND "${CMAKE_COMMAND}" -E make_directory
             "${RBX_PLAYER_RESOURCE_DIR}/PlatformContent/pc/fonts"
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
@@ -589,7 +625,7 @@ if(RBX_PLAYER_CJK_FONT)
 endif()
 
 if(RBX_UI_OVERLAY_ROOT)
-    add_custom_command(TARGET RobloxPlayer POST_BUILD
+    add_custom_command(TARGET RobloxPlayer ${RBX_PLAYER_PACKAGE_PHASE}
         COMMAND "${CMAKE_COMMAND}" -E rm -rf
             "${RBX_PLAYER_RESOURCE_DIR}/overlays/player-2026"
         COMMAND "${CMAKE_COMMAND}" -E copy_directory
@@ -597,7 +633,7 @@ if(RBX_UI_OVERLAY_ROOT)
             "${RBX_PLAYER_RESOURCE_DIR}/overlays/player-2026"
         COMMENT "Packaging only the scoped, hash-verified in-game Player UI overlay")
 
-    add_custom_command(TARGET RobloxPlayer POST_BUILD
+    add_custom_command(TARGET RobloxPlayer ${RBX_PLAYER_PACKAGE_PHASE}
         COMMAND "${CMAKE_COMMAND}" -E make_directory
             "${RBX_PLAYER_RESOURCE_DIR}/models/InExperience"
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
@@ -610,7 +646,7 @@ if(RBX_UI_OVERLAY_ROOT)
 endif()
 
 if(RBX_AVATAR_RUNTIME_ROOT)
-    add_custom_command(TARGET RobloxPlayer POST_BUILD
+    add_custom_command(TARGET RobloxPlayer ${RBX_PLAYER_PACKAGE_PHASE}
         COMMAND "${CMAKE_COMMAND}" -E rm -rf
             "${RBX_PLAYER_RESOURCE_DIR}/overlays/avatar-runtime"
         COMMAND "${CMAKE_COMMAND}" -E copy_directory
@@ -627,7 +663,7 @@ if(RBX_AVATAR_RUNTIME_ROOT)
 endif()
 
 if(RBX_STUDIO_RUNTIME_ROOT)
-    add_custom_command(TARGET RobloxPlayer POST_BUILD
+    add_custom_command(TARGET RobloxPlayer ${RBX_PLAYER_PACKAGE_PHASE}
         COMMAND "${CMAKE_COMMAND}" -E rm -rf
             "${RBX_PLAYER_RESOURCE_DIR}/overlays/studio-runtime"
         COMMAND "${CMAKE_COMMAND}" -E copy_directory
@@ -644,7 +680,7 @@ if(RBX_STUDIO_RUNTIME_ROOT)
 endif()
 
 if(RBX_CURRENT_PLAYER_SCRIPTS_MODEL)
-    add_custom_command(TARGET RobloxPlayer POST_BUILD
+    add_custom_command(TARGET RobloxPlayer ${RBX_PLAYER_PACKAGE_PHASE}
         COMMAND "${CMAKE_COMMAND}" -E make_directory
             "${RBX_PLAYER_RESOURCE_DIR}/content/scripts"
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different
@@ -667,7 +703,7 @@ if(RBX_CURRENT_PLAYER_SCRIPTS_MODEL)
 endif()
 
 if(APPLE)
-    add_custom_command(TARGET RobloxPlayer POST_BUILD
+    add_custom_command(TARGET RobloxPlayer ${RBX_PLAYER_PACKAGE_PHASE}
         COMMAND "${CMAKE_COMMAND}" -E copy
             "${CMAKE_SOURCE_DIR}/docs/modernization/player.spdx.json"
             "${RBX_PLAYER_RESOURCE_DIR}/player.spdx.json"
@@ -686,7 +722,7 @@ if(APPLE)
         if(NOT EXISTS "${license_file}")
             message(FATAL_ERROR "Missing ${component} license file: ${license_file}")
         endif()
-        add_custom_command(TARGET RobloxPlayer POST_BUILD
+        add_custom_command(TARGET RobloxPlayer ${RBX_PLAYER_PACKAGE_PHASE}
             COMMAND "${CMAKE_COMMAND}" -E make_directory
                 "${RBX_PLAYER_RESOURCE_DIR}/licenses/${component}"
             COMMAND "${CMAKE_COMMAND}" -E copy_if_different
@@ -726,7 +762,7 @@ if(APPLE)
     rbx_package_apple_license(Boost "${CMAKE_SOURCE_DIR}/Library/boost/LICENSE_1_0.txt")
     rbx_package_apple_license(LZ4 "${CMAKE_SOURCE_DIR}/third_party/lz4_historical/LICENSE")
 
-    add_custom_command(TARGET RobloxPlayer POST_BUILD
+    add_custom_command(TARGET RobloxPlayer ${RBX_PLAYER_PACKAGE_PHASE}
         COMMAND "${CMAKE_COMMAND}" -E rm -rf
             "${RBX_PLAYER_RESOURCE_DIR}/sources/FFmpeg"
         COMMAND "${CMAKE_COMMAND}" -E copy_directory
@@ -745,7 +781,7 @@ if(APPLE)
         "${CMAKE_SOURCE_DIR}/cmake/BundleMacOSRuntimeDependencies.cmake")
     set_property(TARGET RobloxPlayerLegacy APPEND PROPERTY LINK_DEPENDS
         "${CMAKE_SOURCE_DIR}/cmake/BundleMacOSRuntimeDependencies.cmake")
-    add_custom_command(TARGET RobloxPlayer POST_BUILD
+    add_custom_command(TARGET RobloxPlayer ${RBX_PLAYER_PACKAGE_PHASE}
         COMMAND "${CMAKE_COMMAND}"
             "-DAPP_BUNDLE=$<TARGET_BUNDLE_DIR:RobloxPlayer>"
             "-DSEARCH_DIRECTORIES=${RBX_FFMPEG_ROOT}/lib"
@@ -759,7 +795,7 @@ if(APPLE)
             -P "${CMAKE_SOURCE_DIR}/cmake/BundleMacOSRuntimeDependencies.cmake"
         VERBATIM)
 
-    add_custom_command(TARGET RobloxPlayer POST_BUILD
+    add_custom_command(TARGET RobloxPlayer ${RBX_PLAYER_PACKAGE_PHASE}
         COMMAND codesign --force --deep --sign -
             "$<TARGET_BUNDLE_DIR:RobloxPlayer>"
         COMMENT "Ad-hoc signing the completed local RobloxPlayer bundle")

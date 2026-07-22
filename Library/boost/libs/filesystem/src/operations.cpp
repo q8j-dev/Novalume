@@ -43,7 +43,7 @@
 
 #   include <sys/types.h>
 #   include <sys/stat.h>
-#   if defined(__wasm)
+#   if defined(__wasm) && !defined(__EMSCRIPTEN__)
 // WASI does not have statfs or statvfs.
 #   elif !defined(__APPLE__) && !defined(__OpenBSD__) && !defined(__ANDROID__) && !defined(__VXWORKS__)
 #     include <sys/statvfs.h>
@@ -1526,7 +1526,7 @@ void create_symlink(const path& to, const path& from, error_code* ec)
 BOOST_FILESYSTEM_DECL
 path current_path(error_code* ec)
 {
-# if defined(__wasm)
+# if defined(__wasm) && !defined(__EMSCRIPTEN__)
   emit_error(BOOST_ERROR_NOT_SUPPORTED, ec, "boost::filesystem::current_path");
   return path();
 # elif defined(BOOST_POSIX_API)
@@ -1597,7 +1597,7 @@ path current_path(error_code* ec)
 BOOST_FILESYSTEM_DECL
 void current_path(const path& p, system::error_code* ec)
 {
-# if defined(UNDER_CE) || defined(__wasm)
+# if defined(UNDER_CE) || (defined(__wasm) && !defined(__EMSCRIPTEN__))
   emit_error(BOOST_ERROR_NOT_SUPPORTED, p, ec, "boost::filesystem::current_path");
 # else
   error(!BOOST_SET_CURRENT_DIRECTORY(p.c_str()) ? BOOST_ERRNO : 0,
@@ -1896,7 +1896,7 @@ void permissions(const path& p, perms prms, system::error_code* ec)
   if ((prms & add_perms) && (prms & remove_perms))  // precondition failed
     return;
 
-# if defined(__wasm)
+# if defined(__wasm) && !defined(__EMSCRIPTEN__)
   emit_error(BOOST_ERROR_NOT_SUPPORTED, p, ec, "boost::filesystem::permissions");
 # elif defined(BOOST_POSIX_API)
   error_code local_ec;
@@ -2152,7 +2152,7 @@ space_info space(const path& p, error_code* ec)
   if (ec)
     ec->clear();
 
-# if defined(__wasm)
+# if defined(__wasm) && !defined(__EMSCRIPTEN__)
 
   emit_error(BOOST_ERROR_NOT_SUPPORTED, p, ec, "boost::filesystem::space");
 

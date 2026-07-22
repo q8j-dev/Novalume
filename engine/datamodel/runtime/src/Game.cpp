@@ -69,7 +69,7 @@ namespace RBX {
 	void Game::globalInit(bool isStudio)
 	{
 		RBX::Http::CookieSharingPolicy cookieSharingPolicy;
-#if defined(RBX_PLATFORM_IOS) || defined(__ANDROID__)
+#if defined(RBX_PLATFORM_IOS) || defined(__ANDROID__) || defined(__EMSCRIPTEN__)
         cookieSharingPolicy = RBX::Http::CookieSharingSingleProcessMultipleThreads;
 #elif defined(RBX_PLATFORM_DURANGO)
 		cookieSharingPolicy = RBX::Http::CookieSharingSingleProcessMultipleThreads;

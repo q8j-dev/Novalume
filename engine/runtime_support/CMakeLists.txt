@@ -1,3 +1,8 @@
+set(RBX_HTTP_PLATFORM_SOURCE src/Shared/HttpPlatformImpl.cpp)
+if(EMSCRIPTEN)
+    set(RBX_HTTP_PLATFORM_SOURCE src/Shared/HttpPlatformImplWeb.cpp)
+endif()
+
 add_library(rbx-runtime-support STATIC EXCLUDE_FROM_ALL
     src/Action.cpp
     src/Analytics.cpp
@@ -11,7 +16,7 @@ add_library(rbx-runtime-support STATIC EXCLUDE_FROM_ALL
     src/HttpAsync.cpp
     src/Shared/Http.cpp
     src/Shared/HttpCacheEntry.cpp
-    src/Shared/HttpPlatformImpl.cpp
+    ${RBX_HTTP_PLATFORM_SOURCE}
     src/IndexedMesh.cpp
     src/IndexedTree.cpp
     src/KeywordFilter.cpp
@@ -74,7 +79,13 @@ target_include_directories(rbx-runtime-support
         "${CMAKE_SOURCE_DIR}/Library/SDL2/include")
 target_link_libraries(rbx-runtime-support PUBLIC
     Roblox::Core Roblox::Math Roblox::Security Roblox::Reflection Roblox::ValueTypes
-    Roblox::DataModelRuntime Roblox::Simulation Roblox::BoostRuntime CURL::libcurl)
+    Roblox::DataModelRuntime Roblox::Simulation Roblox::BoostRuntime)
+if(EMSCRIPTEN)
+    target_compile_options(rbx-runtime-support PRIVATE -pthread)
+    target_link_options(rbx-runtime-support PUBLIC "SHELL:-sFETCH=1" -pthread)
+else()
+    target_link_libraries(rbx-runtime-support PUBLIC CURL::libcurl)
+endif()
 
 target_compile_features(rbx-runtime-support PUBLIC cxx_std_20)
 target_compile_definitions(rbx-runtime-support PRIVATE

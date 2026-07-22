@@ -42,12 +42,12 @@ if(APPLE AND CMAKE_SYSTEM_NAME STREQUAL "Darwin")
             IMPORTED_LOCATION "${RBX_FFMPEG_ROOT}/lib/lib${component}.dylib")
         target_link_libraries(rbx-ffmpeg INTERFACE rbx-ffmpeg-${component})
     endforeach()
-elseif(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "iOS" OR EMSCRIPTEN)
     foreach(component avformat avcodec avutil swscale swresample)
         if(NOT EXISTS "${RBX_FFMPEG_ROOT}/lib/lib${component}.a")
             message(FATAL_ERROR
-                "iOS builds require the pinned static FFmpeg 8.1.2 tree. "
-                "Run tools/dependencies/build-ffmpeg.sh ios-arm64.")
+                "Apple mobile and browser builds require the pinned static FFmpeg 8.1.2 tree. "
+                "Run tools/dependencies/build-ffmpeg.sh for the target platform.")
         endif()
     endforeach()
     if(NOT EXISTS "${RBX_FFMPEG_ROOT}/include/libavformat/avformat.h")
@@ -63,6 +63,10 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "iOS")
         "${RBX_FFMPEG_ROOT}/lib/libswscale.a"
         "${RBX_FFMPEG_ROOT}/lib/libswresample.a"
         "${RBX_FFMPEG_ROOT}/lib/libavutil.a")
+    if(EMSCRIPTEN)
+        target_compile_options(rbx-ffmpeg INTERFACE -pthread)
+        target_link_options(rbx-ffmpeg INTERFACE -pthread)
+    endif()
 else()
     pkg_check_modules(RBX_FFMPEG REQUIRED IMPORTED_TARGET
         libavformat>=62.0 libavcodec>=62.0 libavutil>=60.0
@@ -195,6 +199,10 @@ set(DRACO_TRANSCODER_SUPPORTED OFF CACHE BOOL "" FORCE)
 set(DRACO_ANIMATION_ENCODING OFF CACHE BOOL "" FORCE)
 set(DRACO_MAYA_PLUGIN OFF CACHE BOOL "" FORCE)
 set(DRACO_UNITY_PLUGIN OFF CACHE BOOL "" FORCE)
+if(EMSCRIPTEN)
+    get_filename_component(RBX_EMSCRIPTEN_ROOT "${CMAKE_CXX_COMPILER}" DIRECTORY)
+    set(ENV{EMSCRIPTEN} "${RBX_EMSCRIPTEN_ROOT}")
+endif()
 FetchContent_Declare(rbx_draco
     GIT_REPOSITORY https://github.com/google/draco.git
     GIT_TAG ${RBX_DRACO_REVISION}
@@ -249,6 +257,10 @@ set(protobuf_WITH_ZLIB OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(rbx_bx rbx_bimg rbx_bgfx rbx_miniaudio rbx_abseil rbx_protobuf)
 
+if(EMSCRIPTEN AND TARGET bimg_encode)
+    set_target_properties(bimg_encode PROPERTIES EXCLUDE_FROM_ALL TRUE)
+endif()
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     # The native Linux shell uses SDL3's runtime-selected X11/Wayland path.
     # Keep it static and exclude SDL's examples/tests from the engine graph.
@@ -273,10 +285,30 @@ set(BIMG_DIR "${rbx_bimg_SOURCE_DIR}" CACHE PATH "Pinned bimg source" FORCE)
 set(BGFX_DIR "${rbx_bgfx_SOURCE_DIR}" CACHE PATH "Pinned bgfx source" FORCE)
 set(MINIAUDIO_INCLUDE_DIR "${rbx_miniaudio_SOURCE_DIR}" CACHE PATH
     "Pinned miniaudio include directory" FORCE)
+set(Protobuf_DIR "${rbx_protobuf_BINARY_DIR}" CACHE PATH "" FORCE)
 
 # GameNetworkingSockets is the native transport for the Player.  Keep its
 # public types behind engine/networking contracts so browser and future host
 # adapters do not leak third-party socket types into replication code.
+if(EMSCRIPTEN)
+    set(RBX_OPENSSL_ROOT "" CACHE PATH
+        "Pinned OpenSSL 3.5.7 installation built for WebAssembly")
+    if(NOT EXISTS "${RBX_OPENSSL_ROOT}/include/openssl/evp.h" OR
+       NOT EXISTS "${RBX_OPENSSL_ROOT}/lib/libcrypto.a")
+        message(FATAL_ERROR
+            "Web builds require the pinned OpenSSL 3.5.7 WebAssembly archive. "
+            "Set -DRBX_OPENSSL_ROOT=/absolute/path/to/openssl; create one with "
+            "tools/dependencies/build-openssl.sh emscripten-wasm32.")
+    endif()
+    set(OPENSSL_INCLUDE_DIR "${RBX_OPENSSL_ROOT}/include" CACHE PATH "" FORCE)
+    set(OPENSSL_CRYPTO_LIBRARY "${RBX_OPENSSL_ROOT}/lib/libcrypto.a" CACHE FILEPATH "" FORCE)
+    if(NOT TARGET OpenSSL::Crypto)
+        add_library(OpenSSL::Crypto STATIC IMPORTED GLOBAL)
+        set_target_properties(OpenSSL::Crypto PROPERTIES
+            IMPORTED_LOCATION "${OPENSSL_CRYPTO_LIBRARY}"
+            INTERFACE_INCLUDE_DIRECTORIES "${OPENSSL_INCLUDE_DIR}")
+    endif()
+else()
 set(BUILD_STATIC_LIB ON CACHE BOOL "" FORCE)
 set(BUILD_SHARED_LIB OFF CACHE BOOL "" FORCE)
 set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
@@ -331,7 +363,6 @@ else()
             INTERFACE_LINK_LIBRARIES "${CMAKE_DL_LIBS}")
     endif()
 endif()
-set(Protobuf_DIR "${rbx_protobuf_BINARY_DIR}" CACHE PATH "" FORCE)
 
 FetchContent_Declare(rbx_gns
     GIT_REPOSITORY https://github.com/ValveSoftware/GameNetworkingSockets.git
@@ -379,6 +410,7 @@ set(CMAKE_SKIP_INSTALL_RULES TRUE)
 add_subdirectory("${rbx_gns_SOURCE_DIR}" "${rbx_gns_BINARY_DIR}")
 set(CMAKE_SKIP_INSTALL_RULES "${_rbx_skip_install_rules}")
 unset(_rbx_skip_install_rules)
+endif()
 
 set(BGFX_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(BGFX_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -402,6 +434,10 @@ set(BGFX_BUILD_TOOLS_TEXTURE OFF CACHE BOOL "" FORCE)
 set(BGFX_INSTALL OFF CACHE BOOL "" FORCE)
 set(BGFX_CUSTOM_TARGETS OFF CACHE BOOL "" FORCE)
 set(BGFX_CONFIG_RENDERER_METAL ON CACHE BOOL "" FORCE)
+if(EMSCRIPTEN)
+    set(BGFX_CONFIG_RENDERER_WEBGPU ON CACHE BOOL "" FORCE)
+    set(BGFX_OPENGLES_VERSION 30 CACHE STRING "" FORCE)
+endif()
 
 FetchContent_Declare(rbx_bgfx_cmake
     GIT_REPOSITORY https://github.com/bkaradzic/bgfx.cmake.git

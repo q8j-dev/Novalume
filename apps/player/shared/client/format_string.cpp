@@ -5,10 +5,14 @@
 #include "format_string.h"
 
 
-#if defined(__APPLE__) || defined(__ANDROID__)
+#if defined(__APPLE__) || defined(__ANDROID__) || defined(__EMSCRIPTEN__)
 inline int _vscprintf(const char* format, va_list argptr) 
 {
-	return vsnprintf(NULL, 0, format, argptr);
+	va_list copy;
+	va_copy(copy, argptr);
+	const int result = vsnprintf(NULL, 0, format, copy);
+	va_end(copy);
+	return result;
 }
 static const size_t _TRUNCATE = 0;
 inline int vsnprintf_s(char *buffer,
@@ -223,4 +227,3 @@ std::vector<std::wstring> splitOn(
 
     return tokens;
 }
-

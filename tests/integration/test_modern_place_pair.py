@@ -4,18 +4,26 @@
 from __future__ import annotations
 
 import re
+import shutil
 import subprocess
 import sys
 
 
 PATTERN = re.compile(
-    r"inventory instances=(\d+) parts=(\d+) scripts=(\d+) prompts=(\d+) fontFaces=(\d+)"
+    r"^inventory instances=(\d+) parts=(\d+) scripts=(\d+) prompts=(\d+) fontFaces=(\d+)",
+    re.MULTILINE,
 )
 
 
 def inspect(executable: str, path: str) -> tuple[int, ...]:
+    command = [executable, path]
+    if executable.endswith(".js"):
+        node = shutil.which("node")
+        if node is None:
+            raise RuntimeError("Node.js is required to run the Web place inspector")
+        command = [node, executable, path]
     completed = subprocess.run(
-        [executable, path], check=False, text=True,
+        command, check=False, text=True,
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=30,
     )
     if completed.returncode != 0:

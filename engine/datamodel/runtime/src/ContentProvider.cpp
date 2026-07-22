@@ -1207,6 +1207,8 @@ namespace RBX
             fs::path platformAssetFolderModifier = "../PlatformContent/durango/";
 #elif defined(RBX_PLATFORM_IOS)
             fs::path platformAssetFolderModifier = "../ios/";
+#elif defined(__EMSCRIPTEN__)
+            fs::path platformAssetFolderModifier = "../PlatformContent/pc/";
 #elif defined(__APPLE__) || defined(_WIN32) || defined(__linux__)
             fs::path platformAssetFolderModifier = "../PlatformContent/pc/";
 #   if  ENABLE_XBOX_STUDIO_BUILD

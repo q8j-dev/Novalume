@@ -20,6 +20,7 @@ stage="$stage_root$logical_prefix"
 case "$platform" in
     macos-arm64)
         arch=arm64
+        target_os=darwin
         sdk=macosx
         deployment_target=13.0
         deployment_flag="-mmacosx-version-min=$deployment_target"
@@ -27,9 +28,14 @@ case "$platform" in
         required_library=libavformat.dylib
         export MACOSX_DEPLOYMENT_TARGET="$deployment_target"
         cross_options=(--disable-cross-compile)
+        tool_options=()
+        feature_options=()
+        extra_cflags="-arch $arch $deployment_flag"
+        extra_ldflags="-arch $arch $deployment_flag -Wl,-headerpad_max_install_names"
         ;;
     ios-arm64)
         arch=arm64
+        target_os=darwin
         sdk=iphoneos
         deployment_target=15.0
         deployment_flag="-miphoneos-version-min=$deployment_target"
@@ -37,9 +43,24 @@ case "$platform" in
         required_library=libavformat.a
         export IPHONEOS_DEPLOYMENT_TARGET="$deployment_target"
         cross_options=(--enable-cross-compile)
+        tool_options=()
+        feature_options=()
+        extra_cflags="-arch $arch $deployment_flag"
+        extra_ldflags="-arch $arch $deployment_flag -Wl,-headerpad_max_install_names"
+        ;;
+    emscripten-wasm32)
+        arch=wasm32
+        target_os=none
+        linkage_options=(--disable-shared --enable-static)
+        required_library=libavformat.a
+        cross_options=(--enable-cross-compile)
+        tool_options=(--cc=emcc --cxx=em++ --ar=emar --ranlib=emranlib --nm=emnm --strip=emstrip)
+        feature_options=(--disable-asm --disable-inline-asm --enable-pthreads --disable-w32threads --disable-os2threads)
+        extra_cflags="-pthread"
+        extra_ldflags="-pthread"
         ;;
     *)
-        echo "usage: $0 macos-arm64|ios-arm64" >&2
+        echo "usage: $0 macos-arm64|ios-arm64|emscripten-wasm32" >&2
         exit 2
         ;;
 esac
@@ -64,21 +85,25 @@ fi
 
 cmake -E rm -rf "$build" "$stage_root"
 mkdir -p "$build"
-export SDKROOT
-SDKROOT=$(xcrun --sdk "$sdk" --show-sdk-path)
-cc=$(xcrun --sdk "$sdk" --find clang)
-if [[ "$platform" == ios-* ]]; then
-    cross_options+=("--sysroot=$SDKROOT")
+if [[ "$target_os" == darwin ]]; then
+    export SDKROOT
+    SDKROOT=$(xcrun --sdk "$sdk" --show-sdk-path)
+    cc=$(xcrun --sdk "$sdk" --find clang)
+    tool_options+=("--cc=$cc")
+    if [[ "$platform" == ios-* ]]; then
+        cross_options+=("--sysroot=$SDKROOT")
+    fi
 fi
 
 cd "$build"
 "$source/configure" \
     --prefix="$logical_prefix" \
     --arch="$arch" \
-    --target-os=darwin \
-    --cc="$cc" \
+    --target-os="$target_os" \
+    "${tool_options[@]}" \
     "${cross_options[@]}" \
     "${linkage_options[@]}" \
+    "${feature_options[@]}" \
     --enable-pic \
     --disable-gpl \
     --disable-nonfree \
@@ -95,8 +120,8 @@ cd "$build"
     --disable-avdevice \
     --disable-avfilter \
     --disable-hwaccels \
-    --extra-cflags="-arch $arch $deployment_flag -ffile-prefix-map=$source=ffmpeg-$version/source -fdebug-prefix-map=$source=ffmpeg-$version/source -ffile-prefix-map=$build=ffmpeg-$version/build -fdebug-prefix-map=$build=ffmpeg-$version/build" \
-    --extra-ldflags="-arch $arch $deployment_flag -Wl,-headerpad_max_install_names"
+    --extra-cflags="$extra_cflags -ffile-prefix-map=$source=ffmpeg-$version/source -fdebug-prefix-map=$source=ffmpeg-$version/source -ffile-prefix-map=$build=ffmpeg-$version/build -fdebug-prefix-map=$build=ffmpeg-$version/build" \
+    --extra-ldflags="$extra_ldflags"
 sed -i '' "s|$source|ffmpeg-$version/source|g; s|$build|ffmpeg-$version/build|g" config.h
 make -j2
 make install DESTDIR="$stage_root"

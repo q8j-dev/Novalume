@@ -705,8 +705,13 @@ void SceneManager::renderBegin(DeviceContext* context, const RenderCamera& camer
         globalShaderData.FadeDistance_GlowFactor.w = glow->getGlowIntensity();
     }
 
+#if defined(__EMSCRIPTEN__)
+    blur->update(viewWidth, viewHeight, PostProcessSettings());
+    imageProcess->update(viewWidth, viewHeight, PostProcessSettings());
+#else
     blur->update(viewWidth, viewHeight, postProcessSettings);
     imageProcess->update(viewWidth, viewHeight, postProcessSettings);
+#endif
 
 	// Render shadow map
     ShadowMap* shadowMap = pickShadowMap(frm->GetQualityLevel());
@@ -887,7 +892,7 @@ void SceneManager::renderView(DeviceContext* context, Framebuffer* mainFramebuff
 
     // The final scene resolve writes the main framebuffer.  Submit screen-space
     // UI afterwards so deferred rendering cannot overwrite CoreGui pixels.
-    {
+	{
 		RBXPROFILER_SCOPE("Render", "UI");
 		RBXPROFILER_SCOPE("GPU", "UI");
 
@@ -905,7 +910,7 @@ void SceneManager::renderView(DeviceContext* context, Framebuffer* mainFramebuff
 				: viewHeight;
 			visualEngine->getVertexStreamer()->render2D(context, uiWidth, uiHeight, stats->passUI);
 		}
-    }
+	}
 }
 
 void SceneManager::renderViewport(DeviceContext* context, Framebuffer* framebuffer,
@@ -1102,6 +1107,10 @@ void SceneManager::updateMSAA(unsigned width, unsigned height)
 
 void SceneManager::updateGBuffer(unsigned width, unsigned height)
 {
+#if defined(__EMSCRIPTEN__)
+    gbuffer.reset();
+    return;
+#endif
     if (gbufferError || msaa)
     {
         gbuffer.reset();

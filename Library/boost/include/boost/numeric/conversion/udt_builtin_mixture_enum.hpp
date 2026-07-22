@@ -14,13 +14,14 @@ namespace boost { namespace numeric
 {
   enum udt_builtin_mixture_enum
   {
-     builtin_to_builtin
+     udt_builtin_mixture_before = -1
+    ,builtin_to_builtin
     ,builtin_to_udt
     ,udt_to_builtin
     ,udt_to_udt
+    ,udt_builtin_mixture_after
   } ;
 
 } } // namespace boost::numeric
 
 #endif
-

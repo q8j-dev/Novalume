@@ -35,8 +35,19 @@ case "$platform" in
         sdk=
         deployment_target=
         ;;
+    emscripten-wasm32)
+        configure_target=linux-generic32
+        sdk=
+        deployment_target=
+        export CC=emcc
+        export CXX=em++
+        export AR=emar
+        export RANLIB=emranlib
+        export NM=emnm
+        export CFLAGS=-pthread
+        ;;
     *)
-        echo "usage: $0 macos-arm64|ios-arm64|linux-x64|linux-arm64" >&2
+        echo "usage: $0 macos-arm64|ios-arm64|linux-x64|linux-arm64|emscripten-wasm32" >&2
         exit 2
         ;;
 esac
@@ -67,11 +78,15 @@ mkdir -p "$build_source"
 git -C "$source" archive "$revision" | tar -xf - -C "$build_source"
 
 cd "$build_source"
+configure_options=(no-apps no-docs no-dso no-jitter no-module no-shared no-tests)
+if [[ "$platform" == emscripten-* ]]; then
+    configure_options+=(no-afalgeng no-asm no-threads)
+fi
 ./Configure "$configure_target" \
     --prefix="$logical_prefix" \
     --openssldir="$logical_prefix/ssl" \
     --libdir=lib \
-    no-apps no-docs no-dso no-jitter no-module no-shared no-tests
+    "${configure_options[@]}"
 make -j2
 make install_sw DESTDIR="$stage_root"
 mkdir -p "$stage/share/licenses/openssl"

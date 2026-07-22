@@ -14,10 +14,12 @@ namespace boost { namespace numeric
 {
   enum int_float_mixture_enum
   {
-     integral_to_integral
+     int_float_mixture_before = -1
+    ,integral_to_integral
     ,integral_to_float
     ,float_to_integral
     ,float_to_float
+    ,int_float_mixture_after
   } ;
 
 } } // namespace boost::numeric
@@ -25,5 +27,4 @@ namespace boost { namespace numeric
 #endif
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////
-
 

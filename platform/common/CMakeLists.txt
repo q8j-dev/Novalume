@@ -9,7 +9,8 @@ target_link_libraries(rbx-platform-recent-documents PUBLIC Roblox::PlatformContr
 target_compile_features(rbx-platform-recent-documents PUBLIC cxx_std_20)
 rbx_enable_warnings(rbx-platform-recent-documents)
 
-if(NOT APPLE AND NOT WIN32 AND NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
+if(NOT APPLE AND NOT WIN32 AND NOT CMAKE_SYSTEM_NAME STREQUAL "Linux" AND
+   NOT EMSCRIPTEN)
     add_library(rbx-platform-clipboard STATIC src/ClipboardStub.cpp)
     add_library(Roblox::PlatformClipboard ALIAS rbx-platform-clipboard)
     target_link_libraries(rbx-platform-clipboard PUBLIC Roblox::PlatformContract)

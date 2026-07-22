@@ -3,6 +3,9 @@
 #include "GfxCore/States.h"
 
 #include <bgfx/bgfx.h>
+#if defined(__EMSCRIPTEN__)
+#include <emscripten/html5_webgl.h>
+#endif
 
 #include <algorithm>
 #include <array>
@@ -986,16 +989,8 @@ public:
         auto* replacement = dynamic_cast<FramebufferBgfx*>(value);
         if (value && !replacement)
             throw std::invalid_argument("attempted to bind a non-bgfx framebuffer");
-        if (replacement == framebuffer) return;
-        if (view == std::numeric_limits<bgfx::ViewId>::max())
-            throw std::runtime_error("frame exceeded the bgfx view limit");
         framebuffer = replacement;
-        ++view;
-        bgfx::FrameBufferHandle handle = BGFX_INVALID_HANDLE;
-        if (framebuffer) handle = framebuffer->getHandle();
-        bgfx::setViewFrameBuffer(view, handle);
-        bgfx::setViewRect(view, 0, 0, static_cast<std::uint16_t>(framebuffer->getWidth()),
-                          static_cast<std::uint16_t>(framebuffer->getHeight()));
+        advanceView();
     }
     void clearFramebuffer(unsigned int mask, const float color[4], float depth,
                           unsigned int stencil) override {
@@ -1024,9 +1019,11 @@ public:
             sourceValue->getWidth() != destinationValue->getWidth() ||
             sourceValue->getHeight() != destinationValue->getHeight())
             throw std::invalid_argument("framebuffer copy resources are incompatible");
+        advanceView();
         bgfx::blit(view, destinationValue->getHandle(), 0, 0, color->getHandle(), 0, 0,
                    static_cast<std::uint16_t>(sourceValue->getWidth()),
                    static_cast<std::uint16_t>(sourceValue->getHeight()));
+        advanceView();
     }
     void resolveFramebuffer(Framebuffer* source, Framebuffer* destination,
                             unsigned int mask) override {
@@ -1038,9 +1035,11 @@ public:
             sourceValue->getWidth() != destinationValue->getWidth() ||
             sourceValue->getHeight() != destinationValue->getHeight())
             throw std::invalid_argument("framebuffer resolve resources are incompatible");
+        advanceView();
         bgfx::blit(view, destinationColor->getHandle(), 0, 0, sourceColor->getHandle(), 0, 0,
                    static_cast<std::uint16_t>(sourceValue->getWidth()),
                    static_cast<std::uint16_t>(sourceValue->getHeight()));
+        advanceView();
     }
     void discardFramebuffer(Framebuffer*, unsigned int) override {}
     void bindProgram(ShaderProgram* value) override {
@@ -1213,6 +1212,18 @@ private:
         bgfx::setState(drawState);
         bgfx::submit(view, requireProgram().getHandle());
     }
+    void advanceView() {
+        const bgfx::Caps* caps = bgfx::getCaps();
+        if (!caps || static_cast<std::uint32_t>(view) + 1U >= caps->limits.maxViews)
+            throw std::runtime_error("frame exceeded the bgfx view limit");
+        ++view;
+        bgfx::FrameBufferHandle handle = BGFX_INVALID_HANDLE;
+        if (framebuffer != mainFramebuffer)
+            handle = framebuffer->getHandle();
+        bgfx::setViewFrameBuffer(view, handle);
+        bgfx::setViewRect(view, 0, 0, static_cast<std::uint16_t>(framebuffer->getWidth()),
+                          static_cast<std::uint16_t>(framebuffer->getHeight()));
+    }
     unsigned int anisotropy = 1;
     struct TextureBinding final {
         bgfx::TextureHandle handle = BGFX_INVALID_HANDLE;
@@ -1307,6 +1318,10 @@ DeviceContext* DeviceBgfx::beginFrame() {
 void DeviceBgfx::endFrame() {
     if (!frameActive) throw std::logic_error("no GfxCore frame is active");
     bgfx::frame();
+#if defined(__EMSCRIPTEN__)
+    if (bgfx::getRendererType() == bgfx::RendererType::OpenGLES)
+        emscripten_webgl_commit_frame();
+#endif
     frameActive = false;
 }
 void DeviceBgfx::resize(unsigned int newWidth, unsigned int newHeight,

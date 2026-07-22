@@ -61,6 +61,7 @@ endif()
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries" FORCE)
@@ -78,6 +79,17 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(RbxCompilerWarnings)
+
+if(EMSCRIPTEN)
+    add_compile_options(-pthread -msimd128 -msse4.2 -fwasm-exceptions)
+    add_link_options(-pthread -msimd128 -msse4.2 -fwasm-exceptions
+        -sINITIAL_MEMORY=268435456 -sSTACK_SIZE=1048576)
+    add_compile_definitions(
+        BOOST_THREAD_POSIX=1
+        RBX_PLATFORM_WEB=1
+        _LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR=1
+        _LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION=1)
+endif()
 
 if(APPLE)
     # bgfx's Metal implementation contains Objective-C++ translation units, so
@@ -154,6 +166,8 @@ elseif(WIN32)
     add_subdirectory(platform/windows)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     add_subdirectory(platform/linux)
+elseif(EMSCRIPTEN)
+    add_subdirectory(platform/web)
 endif()
 add_subdirectory(engine/datamodel/runtime)
 add_subdirectory(engine/runtime_support)

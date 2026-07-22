@@ -87,6 +87,7 @@
 #include "v8datamodel/PlayerGui.h"
 #include "v8datamodel/ScreenGui.h"
 #include "v8datamodel/ServerScriptService.h"
+#include "v8datamodel/StarterPlayerService.h"
 #include "v8datamodel/Frame.h"
 #include "v8datamodel/Sky.h"
 #include "v8datamodel/TextChatService.h"
@@ -355,12 +356,14 @@ void initializeRuntime(const std::filesystem::path& clientSettingsRoot)
         static RBX::FactoryRegistrator factoryObjects;
         RBX::Http::init(RBX::Http::WinHttp,
             RBX::Http::CookieSharingSingleProcessMultipleThreads);
+#if !defined(__EMSCRIPTEN__)
         try {
             loadDesktopClientSettings();
         } catch (const std::exception& error) {
             std::cerr << "PCDesktopClient settings unavailable; using packaged defaults: "
                       << error.what() << '\n';
         }
+#endif
         loadIxpFlagValues(clientSettingsRoot);
         RBX::GameSettings::singleton();
         RBX::LuaSettings::singleton();
@@ -725,14 +728,14 @@ public:
         catalogRequestCount.fetch_add(1, std::memory_order_relaxed);
         if (result)
             result->clear();
-        return -1;
+        return 0;
     }
     int fetchInventoryInfo(
         boost::shared_ptr<RBX::Reflection::ValueArray> result) override
     {
         if (result)
             result->clear();
-        return -1;
+        return 0;
     }
     int getPlatformPartyMembers(
         boost::shared_ptr<RBX::Reflection::ValueArray> result) override
@@ -740,14 +743,14 @@ public:
         partyRequestCount.fetch_add(1, std::memory_order_relaxed);
         if (result)
             result->clear();
-        return -1;
+        return 0;
     }
     int getInGamePlayers(
         boost::shared_ptr<RBX::Reflection::ValueArray> result) override
     {
         if (result)
             result->clear();
-        return -1;
+        return 0;
     }
     RBX::PlatformPurchaseResult requestPurchase(const std::string&) override
     {
@@ -838,6 +841,22 @@ private:
     std::atomic<unsigned int> catalogRequestCount{0};
     std::atomic<unsigned int> partyRequestCount{0};
 };
+
+RBX::PartInstance* findPartByName(RBX::Instance* root, const char* name)
+{
+    if (!root)
+        return nullptr;
+    if (RBX::PartInstance* direct = RBX::Instance::fastDynamicCast<RBX::PartInstance>(
+            root->findFirstChildByName(name)))
+        return direct;
+    boost::shared_ptr<const RBX::Instances> descendants = root->getDescendants();
+    for (const boost::shared_ptr<RBX::Instance>& descendant : *descendants)
+        if (descendant->getName() == name)
+            if (RBX::PartInstance* part =
+                    RBX::Instance::fastDynamicCast<RBX::PartInstance>(descendant.get()))
+                return part;
+    return nullptr;
+}
 
 } // namespace
 
@@ -1255,6 +1274,11 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
                 state->serverDataModel.get())->setBaseUrl("https://www.roblox.com/");
             RBX::ServiceProvider::create<RBX::ProximityPromptService>(
                 state->serverDataModel.get());
+            state->localServer =
+                RBX::ServiceProvider::create<RBX::Network::Server>(
+                    state->serverDataModel.get());
+            RBX::ServiceProvider::create<RBX::StarterPlayerService>(
+                state->serverDataModel.get());
             RBX::ScriptContext* serverScriptContext =
                 RBX::ServiceProvider::create<RBX::ScriptContext>(
                     state->serverDataModel.get());
@@ -1277,6 +1301,7 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
             Serializer serializer;
             serializer.load(input, state->serverDataModel.get());
             state->serverDataModel->processAfterLoad();
+            state->serverDataModel->workspaceLoadedSignal();
             if (verifyPlaceAudio) {
                 std::vector<boost::shared_ptr<RBX::Soundscape::SoundChannel>>
                     authoredSounds;
@@ -1295,9 +1320,6 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
                 }
             }
 
-            state->localServer =
-                RBX::ServiceProvider::create<RBX::Network::Server>(
-                    state->serverDataModel.get());
             state->localServer->start(0, 0);
             // Execute the package bootstrap before RunService releases authored
             // server Scripts. This gives an offline replacement for a live
@@ -1799,13 +1821,6 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
         if (verifyRespawn)
             state->initialRespawnCharacter = localPlayer->getCharacter();
 
-        // GeometryGenerator normally requests MeshPart payloads on its first
-        // scene update.  A headless proof can reach its final frame before a
-        // heavier R15+ body finishes that asynchronous request, even though
-        // every exact packaged mesh is locally available.  Prime the same
-        // MeshContentProvider synchronously before VisualEngine binds the
-        // scene so the proof measures rendered avatar geometry rather than
-        // content-request timing.
         const bool verifiesHeadlessMovement =
             disableAudioOutput && !useDurangoLauncher &&
             !verifySurfaceTextures && !verifyShadowMap &&
@@ -2622,10 +2637,15 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
                 model->visitDescendants([&descendants](boost::shared_ptr<RBX::Instance> instance) {
                     descendants.push_back(instance);
                 });
+                std::size_t coloredPartIndex = 0;
                 for (const boost::shared_ptr<RBX::Instance>& descendant : descendants)
                     if (RBX::PartInstance* part =
-                            RBX::Instance::fastDynamicCast<RBX::PartInstance>(descendant.get()))
+                            RBX::Instance::fastDynamicCast<RBX::PartInstance>(descendant.get())) {
                         part->setAnchored(true);
+                        part->setColor((coloredPartIndex++ & 1U) == 0U
+                            ? RBX::BrickColor::brickRed()
+                            : RBX::BrickColor::brickBlue());
+                    }
             }
 
             boost::shared_ptr<RBX::Camera> viewportCamera =
@@ -2836,8 +2856,7 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
                 terrain->getVoxelGrid()->setCell(RBX::Vector3int16(3, y, 0), cell,
                     RBX::Voxel::CELL_MATERIAL_Grass);
         }
-        RBX::PartInstance* baseplate = RBX::Instance::fastDynamicCast<RBX::PartInstance>(
-            workspace->findFirstChildByName("Baseplate"));
+        RBX::PartInstance* baseplate = findPartByName(workspace, "BasePlate");
         if (!baseplate)
             throw std::runtime_error("ShadowMap proof could not find Baseplate CastShadow control");
         baseplate->setCastShadow(false);
@@ -2889,8 +2908,13 @@ PlayerRuntime::PlayerRuntime(RBX::Graphics::Device* device,
     }
     RBX::Camera* camera = workspace->getCamera();
     state->visualEngine->setCamera(*camera, camera->getCameraFocus().translation);
-    configureLighting(*state->visualEngine,
-        *RBX::ServiceProvider::create<RBX::Lighting>(state->dataModel.get()));
+    RBX::Lighting* runtimeLighting =
+        RBX::ServiceProvider::create<RBX::Lighting>(state->dataModel.get());
+    if (state->verifiesShadowMap) {
+        runtimeLighting->setGlobalShadows(true);
+        runtimeLighting->setTechnology(RBX::Lighting::TECHNOLOGY_SHADOW_MAP);
+    }
+    configureLighting(*state->visualEngine, *runtimeLighting);
     if (state->verifiesShadowMap) {
         RBX::Lighting* lighting =
             RBX::ServiceProvider::create<RBX::Lighting>(state->dataModel.get());
@@ -3601,14 +3625,9 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
         camera->setCameraCoordinateFrame(skyCamera);
         camera->setCameraFocus(RBX::CoordinateFrame(RBX::Vector3(40.0f, 5.0f, 0.0f)));
     }
-    if (state->verifiesShadowMap && (frameNumber == 81 || frameNumber == 82)) {
-        RBX::Lighting* lighting =
-            RBX::ServiceProvider::create<RBX::Lighting>(state->dataModel.get());
-        lighting->setGlobalShadows(frameNumber == 82);
-    }
     if (state->verifiesShadowMap && frameNumber == 55) {
-        RBX::PartInstance* baseplate = RBX::Instance::fastDynamicCast<RBX::PartInstance>(
-            state->dataModel->getWorkspace()->findFirstChildByName("Baseplate"));
+        RBX::PartInstance* baseplate = findPartByName(
+            state->dataModel->getWorkspace(), "BasePlate");
         if (!baseplate)
             throw std::runtime_error("ShadowMap proof could not find Baseplate CastShadow control");
         baseplate->setCastShadow(true);
@@ -3726,52 +3745,66 @@ void PlayerRuntime::renderFrame(unsigned long frameNumber)
                 camera->getCameraCoordinateFrame();
         }
     }
-    if (state->verifiesShadowMap && (frameNumber == 80 || frameNumber == 81)) {
+    if (state->verifiesShadowMap && frameNumber == 80) {
         const RBX::RenderStats* stats = state->visualEngine->getRenderStats();
         RBX::Graphics::SceneManager* scene =
             state->visualEngine->getSceneManager();
-        std::vector<std::uint8_t>& capture = frameNumber == 80
-            ? state->shadowEnabledPixels
-            : state->shadowDisabledPixels;
-        capture.resize(static_cast<std::size_t>(state->width) * state->height * 4U);
-        target->download(capture.data(), static_cast<unsigned int>(capture.size()));
-        if (frameNumber == 80) {
-            state->shadowCasterBatches = stats->passShadow.batches;
-            if (!scene->isShadowMapEnabled() || stats->passShadow.batches < 12)
-                throw std::runtime_error(
-                    "ShadowMap proof did not submit character, BasePart, and terrain caster passes");
-            const RBX::Graphics::shared_ptr<RBX::Graphics::Texture>& shadowTexture =
-                scene->getShadowMap().getTexture();
-            state->shadowMapWidth = shadowTexture ? shadowTexture->getWidth() : 0U;
-            state->shadowCascadeCount = scene->getShadowCascadeCount();
-            state->shadowCascadeInfo = scene->getShadowCascadeInfo();
-            if (!shadowTexture || state->shadowMapWidth < 256 ||
-                state->shadowMapWidth != shadowTexture->getHeight())
-                throw std::runtime_error(
-                    "ShadowMap caster pass did not publish a valid square render target");
-            if (state->shadowCascadeCount != 3 ||
-                state->shadowCascadeInfo.x <= 0 ||
-                state->shadowCascadeInfo.y <= state->shadowCascadeInfo.x)
-                throw std::runtime_error(RBX::format(
-                    "high-quality ShadowMap did not publish three ordered atlas cascades (count=%u splits=%f,%f)",
-                    state->shadowCascadeCount, state->shadowCascadeInfo.x,
-                    state->shadowCascadeInfo.y));
-        } else {
-            if (scene->isShadowMapEnabled() || stats->passShadow.batches != 0)
-                throw std::runtime_error(
-                    "GlobalShadows=false did not disable the ShadowMap caster pass");
-            for (std::size_t index = 0; index < capture.size(); index += 4U) {
-                const int enabled = state->shadowEnabledPixels[index] +
-                    state->shadowEnabledPixels[index + 1U] +
-                    state->shadowEnabledPixels[index + 2U];
-                const int disabled = capture[index] + capture[index + 1U] +
-                    capture[index + 2U];
-                state->shadowDarkenedPixels += enabled + 24 < disabled;
-            }
-            if (state->shadowDarkenedPixels < 64U)
-                throw std::runtime_error(
-                    "ShadowMap caster pass ran but did not darken visible scene pixels");
+        state->shadowEnabledPixels.resize(
+            static_cast<std::size_t>(state->width) * state->height * 4U);
+        target->download(state->shadowEnabledPixels.data(),
+            static_cast<unsigned int>(state->shadowEnabledPixels.size()));
+        state->shadowCasterBatches = stats->passShadow.batches;
+        if (!scene->isShadowMapEnabled() || stats->passShadow.batches < 12)
+            throw std::runtime_error(
+                "ShadowMap proof did not submit character, BasePart, and terrain caster passes");
+        const RBX::Graphics::shared_ptr<RBX::Graphics::Texture>& shadowTexture =
+            scene->getShadowMap().getTexture();
+        state->shadowMapWidth = shadowTexture ? shadowTexture->getWidth() : 0U;
+        state->shadowCascadeCount = scene->getShadowCascadeCount();
+        state->shadowCascadeInfo = scene->getShadowCascadeInfo();
+        if (!shadowTexture || state->shadowMapWidth < 256 ||
+            state->shadowMapWidth != shadowTexture->getHeight())
+            throw std::runtime_error(
+                "ShadowMap caster pass did not publish a valid square render target");
+        if (state->shadowCascadeCount != 3 ||
+            state->shadowCascadeInfo.x <= 0 ||
+            state->shadowCascadeInfo.y <= state->shadowCascadeInfo.x)
+            throw std::runtime_error(RBX::format(
+                "high-quality ShadowMap did not publish three ordered atlas cascades (count=%u splits=%f,%f)",
+                state->shadowCascadeCount, state->shadowCascadeInfo.x,
+                state->shadowCascadeInfo.y));
+
+        RBX::Lighting* lighting =
+            RBX::ServiceProvider::create<RBX::Lighting>(state->dataModel.get());
+        lighting->setGlobalShadows(false);
+        configureLighting(*state->visualEngine, *lighting);
+        RBX::Graphics::DeviceContext* disabledContext = state->device->beginFrame();
+        scene->renderScene(disabledContext, target,
+            state->visualEngine->getCamera(), state->logicalWidth,
+            state->logicalHeight);
+        state->device->endFrame();
+        state->shadowDisabledPixels.resize(state->shadowEnabledPixels.size());
+        target->download(state->shadowDisabledPixels.data(),
+            static_cast<unsigned int>(state->shadowDisabledPixels.size()));
+        if (scene->isShadowMapEnabled() ||
+            state->visualEngine->getRenderStats()->passShadow.batches != 0)
+            throw std::runtime_error(
+                "GlobalShadows=false did not disable the ShadowMap caster pass");
+        for (std::size_t index = 0; index < state->shadowDisabledPixels.size();
+             index += 4U) {
+            const int enabled = state->shadowEnabledPixels[index] +
+                state->shadowEnabledPixels[index + 1U] +
+                state->shadowEnabledPixels[index + 2U];
+            const int disabled = state->shadowDisabledPixels[index] +
+                state->shadowDisabledPixels[index + 1U] +
+                state->shadowDisabledPixels[index + 2U];
+            state->shadowDarkenedPixels += enabled + 24 < disabled;
         }
+        lighting->setGlobalShadows(true);
+        configureLighting(*state->visualEngine, *lighting);
+        if (state->shadowDarkenedPixels < 64U)
+            throw std::runtime_error(
+                "ShadowMap caster pass ran but did not darken visible scene pixels");
     }
     if (state->screenshotRequested) {
         state->screenshotRequested = false;
@@ -4810,7 +4843,7 @@ void PlayerRuntime::writeFrameProof(const std::filesystem::path& outputPath)
             const unsigned int x = static_cast<unsigned int>(pixelIndex % state->width);
             const unsigned int y = static_cast<unsigned int>(pixelIndex / state->width);
             if (x >= state->width / 2U && x + 1U < state->width &&
-                y >= state->height / 10U && y < state->height * 9U / 10U) {
+                y >= state->height / 10U && y + 1U < state->height * 9U / 10U) {
                 const std::uint8_t nextRed = pixels[index + 4U];
                 const std::uint8_t nextGreen = pixels[index + 5U];
                 const std::uint8_t nextBlue = pixels[index + 6U];
@@ -4823,11 +4856,24 @@ void PlayerRuntime::writeFrameProof(const std::filesystem::path& outputPath)
                 baseplateGridContrastPixels +=
                     highest - lowest < 20U && nextHighest - nextLowest < 20U &&
                     std::abs(luminance - nextLuminance) >= 5;
+                const std::size_t below = index + state->width * 4U;
+                const std::uint8_t belowRed = pixels[below];
+                const std::uint8_t belowGreen = pixels[below + 1U];
+                const std::uint8_t belowBlue = pixels[below + 2U];
+                const std::uint8_t belowLowest =
+                    std::min({belowRed, belowGreen, belowBlue});
+                const std::uint8_t belowHighest =
+                    std::max({belowRed, belowGreen, belowBlue});
+                const int belowLuminance =
+                    (belowRed + belowGreen + belowBlue) / 3;
+                baseplateGridContrastPixels +=
+                    highest - lowest < 20U && belowHighest - belowLowest < 20U &&
+                    std::abs(luminance - belowLuminance) >= 5;
             }
             spawnTextureDarkPixels +=
-                x >= state->width * 2U / 5U && x < state->width * 3U / 5U &&
-                y >= state->height * 2U / 5U && y < state->height * 3U / 4U &&
-                highest < 64U && highest - lowest < 30U;
+                x >= state->width * 17U / 25U && x < state->width * 23U / 25U &&
+                y >= state->height * 53U / 100U && y < state->height * 18U / 25U &&
+                highest < 112U && highest - lowest < 30U;
         }
         if (state->usesCurrentInExperienceUi) {
             const std::size_t pixelIndex = index / 4U;
@@ -4905,6 +4951,13 @@ void PlayerRuntime::writeFrameProof(const std::filesystem::path& outputPath)
     if (!varied)
         throw std::runtime_error("render proof contains only a flat clear color");
     const std::size_t pixelCount = pixels.size() / 4U;
+    std::cout << "render proof pixels=" << pixelCount
+              << " buckets=" << bucketCount
+              << " lit=" << litSurfacePixels
+              << " first-rgba=" << static_cast<unsigned int>(pixels[0]) << ','
+              << static_cast<unsigned int>(pixels[1]) << ','
+              << static_cast<unsigned int>(pixels[2]) << ','
+              << static_cast<unsigned int>(pixels[3]) << '\n';
     if (bucketCount < 32U || litSurfacePixels < pixelCount / 10U) {
         throw std::runtime_error(
             "render proof is missing a textured, lit 3D scene");
@@ -5201,14 +5254,14 @@ void PlayerRuntime::finishVerification()
         std::string unsupportedResponse = "must be cleared";
         double unsupportedHeroValue = 1.0;
         if (automaticCatalogRequests == 0 || automaticPartyRequests == 0 ||
-            state->launcherPlatform->fetchCatalogInfo(unsupportedValues) >= 0 ||
+            state->launcherPlatform->fetchCatalogInfo(unsupportedValues) != 0 ||
             !unsupportedValues->empty())
             throw std::runtime_error(
-                "desktop AppShell catalog probe did not remain explicitly unsupported");
+                "desktop AppShell catalog probe did not return an empty offline result");
         unsupportedValues->push_back(RBX::Reflection::Variant(
             std::string("must be cleared")));
         unsupportedResponse = "must be cleared";
-        if (state->launcherPlatform->getPlatformPartyMembers(unsupportedValues) >= 0 ||
+        if (state->launcherPlatform->getPlatformPartyMembers(unsupportedValues) != 0 ||
             !unsupportedValues->empty() ||
             state->launcherPlatform->fetchFriends(RBX::InputObject::TYPE_NONE,
                 &unsupportedResponse) >= 0 || !unsupportedResponse.empty() ||
@@ -5258,16 +5311,16 @@ void PlayerRuntime::finishVerification()
                 "desktop AppShell fabricated Xbox credential state");
         unsupportedValues->push_back(RBX::Reflection::Variant(
             std::string("must be cleared")));
-        if (state->launcherPlatform->fetchInventoryInfo(unsupportedValues) >= 0 ||
+        if (state->launcherPlatform->fetchInventoryInfo(unsupportedValues) != 0 ||
             !unsupportedValues->empty())
             throw std::runtime_error(
-                "desktop AppShell fabricated Xbox inventory state");
+                "desktop AppShell inventory probe did not return an empty offline result");
         unsupportedValues->push_back(RBX::Reflection::Variant(
             std::string("must be cleared")));
-        if (state->launcherPlatform->getInGamePlayers(unsupportedValues) >= 0 ||
+        if (state->launcherPlatform->getInGamePlayers(unsupportedValues) != 0 ||
             !unsupportedValues->empty())
             throw std::runtime_error(
-                "desktop AppShell fabricated Xbox multiplayer-session state");
+                "desktop AppShell session probe did not return an empty offline result");
         if (state->launcherPlatform->launchPlatformUri(
                 "file:///not-approved") >= 0 ||
             takeExternalUriRequest().has_value())

@@ -67,7 +67,7 @@ Inventory inventory(RBX::DataModel& dataModel)
         if (RBX::DecalTexture* texture =
                 RBX::Instance::fastDynamicCast<RBX::DecalTexture>(instance.get())) {
             ++result.textures;
-            if (texture->getTexture().toString() == "rbxassetid://3255302920") {
+            if (texture->getTexture().getAssetId() == "3255302920") {
                 ++result.wallpaperTextures;
                 result.wallpaperFaces |= 1U << static_cast<unsigned int>(texture->getFace());
             }
@@ -138,13 +138,15 @@ Inventory addedInventory(const Inventory& after, const Inventory& before)
 
 int main(int argc, char** argv)
 {
+    try
+    {
     if (argc != 2)
         throw std::runtime_error("expected one selected modern place");
     static std::once_flag registration;
     std::call_once(registration, [] { static RBX::FactoryRegistrator registrator; });
 
     boost::shared_ptr<RBX::DataModel> dataModel = RBX::DataModel::createDataModel(
-        true, new RBX::NullVerb(nullptr, ""), false);
+        false, new RBX::NullVerb(nullptr, ""), false);
     RBX::ServiceProvider::create<RBX::ProximityPromptService>(dataModel.get());
     RBX::Soundscape::SoundService* soundService =
         RBX::ServiceProvider::create<RBX::Soundscape::SoundService>(
@@ -161,6 +163,14 @@ int main(int argc, char** argv)
     loadPlace(argv[1], *dataModel);
     const Inventory afterBinary = inventory(*dataModel);
     const Inventory binary = addedInventory(afterBinary, baseline);
+    std::cerr << "loaded inventory instances=" << binary.instances
+              << " parts=" << binary.parts << " scripts=" << binary.scripts
+              << " prompts=" << binary.prompts << " fontFaces=" << binary.fontFaces
+              << " textures=" << binary.textures
+              << " wallpaperTextures=" << binary.wallpaperTextures
+              << " yellowParts=" << binary.yellowParts
+              << " postEffects=" << binary.postEffects
+              << " atmospheres=" << binary.atmospheres << '\n';
     if (binary.instances < 4000 || binary.parts < 700 || binary.scripts < 10 ||
         binary.prompts != 1 || binary.fontFaces < 10 ||
         binary.fondamentoFaces != 2 || binary.merriweatherFaces != 2 ||
@@ -1170,4 +1180,10 @@ int main(int argc, char** argv)
               << " atmospheres=" << binary.atmospheres
               << '\n';
     return 0;
+    }
+    catch (const std::exception& error)
+    {
+        std::cerr << "modern place contract failed: " << error.what() << '\n';
+        return 1;
+    }
 }

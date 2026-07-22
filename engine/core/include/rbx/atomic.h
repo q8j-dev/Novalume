@@ -1,7 +1,7 @@
 #pragma once
 
 #if defined(RBX_PLATFORM_IOS) || defined(__APPLE__) || defined(__ANDROID__) || \
-    defined(__linux__)
+    defined(__linux__) || defined(__EMSCRIPTEN__)
 namespace rbx
 {
     template<typename T>

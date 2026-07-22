@@ -5,7 +5,9 @@
 #include "simd/simd_types.h"
 #include <xmmintrin.h>
 #include <emmintrin.h>
+#if !defined( __EMSCRIPTEN__ )
 #include <mmintrin.h>
+#endif
 
 namespace RBX
 {

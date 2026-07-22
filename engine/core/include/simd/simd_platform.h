@@ -18,6 +18,8 @@
 
 #if defined( RBX_SIMD_X86 ) || defined( RBX_SIMD_X64 )
 #define RBX_SIMD_USE_SSE
+#elif defined( __wasm_simd128__ )
+#define RBX_SIMD_USE_SSE
 #elif defined( RBX_SIMD_ARM )
 #define RBX_SIMD_USE_NEON
 #endif
@@ -25,7 +27,9 @@
 #ifdef RBX_SIMD_USE_SSE
 #include <xmmintrin.h>
 #include <emmintrin.h>
+#if !defined( __EMSCRIPTEN__ )
 #include <mmintrin.h>
+#endif
 #endif
 
 #ifdef RBX_SIMD_USE_NEON

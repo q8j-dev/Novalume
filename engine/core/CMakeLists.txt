@@ -23,7 +23,11 @@ set(RBX_CORE_SOURCES
     src/util/StreamHelpers.cpp
     include/rbx/RbxDbgInfo.cpp)
 
-if(APPLE)
+if(EMSCRIPTEN)
+    list(APPEND RBX_CORE_SOURCES
+        src/rbx/Web/SystemUtil.cpp
+        src/rbx/Unix/Crypt.cpp)
+elseif(APPLE)
     list(APPEND RBX_CORE_SOURCES
         src/rbx/Darwin/SystemUtil.cpp
         src/rbx/Unix/Crypt.cpp)
@@ -79,7 +83,9 @@ if(APPLE)
         _LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION)
 endif()
 
-if(APPLE AND CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+if(EMSCRIPTEN)
+    target_link_libraries(rbx-core PRIVATE OpenSSL::Crypto)
+elseif(APPLE AND CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     target_link_libraries(rbx-core PRIVATE
         OpenSSL::Crypto
         "-framework ApplicationServices"

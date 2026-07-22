@@ -56,6 +56,9 @@
     #define G3D_LINUX
 #elif defined(__ANDROID__)
     #define G3D_ANDROID
+#elif defined(__EMSCRIPTEN__)
+    #define G3D_WEB
+    #define G3D_LINUX
 #elif defined(__linux__)
     #define G3D_LINUX
 #elif defined(__APPLE__)

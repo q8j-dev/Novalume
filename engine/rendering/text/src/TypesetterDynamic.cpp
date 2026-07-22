@@ -254,7 +254,7 @@ FASTINTVARIABLE(FontSizePadding, 1)
 						++runEnd;
 					FT_Face runFace = getFace(faceIndex);
 					hb_font_t* runFont = getHbFont(faceIndex);
-					FT_Size_RequestRec_ request = {FT_SIZE_REQUEST_TYPE_REAL_DIM, 0, (size + FInt::FontSizePadding) * 64, 0, 0};
+					FT_Size_RequestRec_ request = {FT_SIZE_REQUEST_TYPE_REAL_DIM, 0, static_cast<FT_Long>((size + FInt::FontSizePadding) * 64), 0, 0};
 					if (!runFace || !runFont || FT_Request_Size(runFace, &request) != FT_Err_Ok)
 					{
 						output->insert(output->end(), input.begin() + runStart, input.begin() + runEnd);
@@ -415,7 +415,7 @@ FASTINTVARIABLE(FontSizePadding, 1)
 				FT_Face glyphFace = getFace(faceIndex);
 				if (!glyphFace)
 					return false;
-				FT_Size_RequestRec_ request = {FT_SIZE_REQUEST_TYPE_REAL_DIM, 0,  (size + FInt::FontSizePadding) * 64, 0, 0};
+				FT_Size_RequestRec_ request = {FT_SIZE_REQUEST_TYPE_REAL_DIM, 0, static_cast<FT_Long>((size + FInt::FontSizePadding) * 64), 0, 0};
 				FT_Error error = FT_Request_Size(glyphFace, &request);
                 RBXASSERT(error == FT_Err_Ok);
                 if (error)

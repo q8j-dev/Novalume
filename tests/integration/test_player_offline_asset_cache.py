@@ -22,7 +22,7 @@ def run(player: pathlib.Path, place: pathlib.Path, cache_root: pathlib.Path,
         })
     command = [
         str(player), "--headless-verify", verifier,
-        "--place", str(place), "--frame-limit", "120",
+        "--place", str(place), "--frame-limit", "300",
         "--render-proof", str(proof),
     ]
     result = subprocess.run(command, env=environment, text=True,

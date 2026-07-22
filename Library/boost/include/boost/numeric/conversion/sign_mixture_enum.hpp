@@ -14,10 +14,12 @@ namespace boost { namespace numeric
 {
   enum sign_mixture_enum
   {
-     unsigned_to_unsigned
+     sign_mixture_before = -1
+    ,unsigned_to_unsigned
     ,signed_to_signed
     ,signed_to_unsigned
     ,unsigned_to_signed
+    ,sign_mixture_after
   } ;
 
 } } // namespace boost::numeric
@@ -25,5 +27,4 @@ namespace boost { namespace numeric
 #endif
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////
-
 

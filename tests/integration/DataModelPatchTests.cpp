@@ -16,10 +16,13 @@
 #include "v8datamodel/ScreenGui.h"
 #include "security/SecurityContext.h"
 
+#include <iostream>
 #include <stdexcept>
 
 int main(int argc, char** argv)
 {
+    try
+    {
     if (argc != 3)
         throw std::runtime_error("expected bundled patch and checksum paths");
 
@@ -63,4 +66,10 @@ int main(int argc, char** argv)
     }
     RBX::DataModel::closeDataModel(dataModel);
     return 0;
+    }
+    catch (const std::exception& error)
+    {
+        std::cerr << "data-model patch contract failed: " << error.what() << '\n';
+        return 1;
+    }
 }

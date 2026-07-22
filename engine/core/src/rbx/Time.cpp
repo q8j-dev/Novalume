@@ -22,6 +22,10 @@
 #include <mach/mach_time.h>
 #endif
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 #if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
 #include "MMSystem.h"
 #pragma comment (lib, "Winmm.lib")
@@ -138,6 +142,8 @@ return static_cast<double>(tinfo.numer/(double)tinfo.denom * 1e-9);
     
 #elif defined(__ANDROID__) || defined(__linux__)
     return 1e-9;
+#elif defined(__EMSCRIPTEN__)
+    return 1e-6;
     
 #endif
 }
@@ -159,6 +165,8 @@ long long Time::getTickCount(){
     clock_gettime(CLOCK_MONOTONIC, &now);
 
     return static_cast<long long>(now.tv_sec) * 1000000000LL + now.tv_nsec;
+#elif defined(__EMSCRIPTEN__)
+    return static_cast<long long>(emscripten_get_now() * 1000.0);
 #endif
 }
 long long Time::getStart()

@@ -35,6 +35,9 @@
 #endif // ROBLOX
 
 #include <stdint.h>
+#if defined(G3D_LINUX)
+#include <sys/time.h>
+#endif
 
 namespace G3D {
 

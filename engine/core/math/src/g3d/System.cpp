@@ -25,8 +25,10 @@
 #include "g3d/units.h"
 #include <time.h>
 
+#include <algorithm>
 #include <cstring>
 #include <cstdio>
+#include <thread>
 
 // Uncomment the following line to turn off G3D::System memory
 // allocation and use the operating system's malloc.
@@ -260,6 +262,14 @@ void System::init() {
             m_operatingSystem = "Windows";
         }
     
+#    elif defined(G3D_WEB)
+
+        m_operatingSystem = "WebAssembly browser";
+        m_cpuArch = "wasm32";
+        m_cpuVendor = "WebAssembly";
+        m_numCores = static_cast<int>(std::max(1U, std::thread::hardware_concurrency()));
+        m_cpuSpeed = 1000;
+
 #    elif defined(G3D_LINUX) || defined(G3D_FREEBSD)
 
         {
@@ -446,7 +456,9 @@ std::string& System::appName() {
 std::string System::currentProgramFilename() {
     char filename[2048];
 
-#   ifdef G3D_WIN32
+#   ifdef G3D_WEB
+    return "/RobloxPlayer";
+#   elif defined(G3D_WIN32)
     {
         GetModuleFileNameA(NULL, filename, sizeof(filename));
     } 
