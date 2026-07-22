@@ -1,9 +1,9 @@
-#include "V8DataModel/TextChatService.h"
+#include "v8datamodel/TextChatService.h"
 
 #include "rbx/core/EngineFeatures.h"
-#include "V8DataModel/Folder.h"
-#include "V8DataModel/TextChannel.h"
-#include "V8DataModel/TextChatConfiguration.h"
+#include "v8datamodel/Folder.h"
+#include "v8datamodel/TextChannel.h"
+#include "v8datamodel/TextChatConfiguration.h"
 #include "network/Player.h"
 #include "network/Players.h"
 

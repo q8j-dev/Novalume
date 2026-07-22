@@ -93,7 +93,7 @@
 
 #if defined(CAT_OS_WINDOWS)
 # include <cat/port/WindowsInclude.hpp>
-# include <wincrypt.h>
+# include <WinCrypt.h>
 #endif
 
 #if !defined(CAT_NO_ENTROPY_THREAD)

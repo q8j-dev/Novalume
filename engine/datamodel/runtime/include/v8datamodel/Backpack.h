@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "V8DataModel/Hopper.h"
+#include "v8datamodel/Hopper.h"
 #include "Script/IScriptFilter.h"
 
 namespace RBX {
@@ -21,4 +21,4 @@ namespace RBX {
 	};
 
 
-}	// namespace 
+}	// namespace

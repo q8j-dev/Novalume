@@ -2,7 +2,7 @@
 
 #include "stdafx.h"
 #include "UserInputUtil.h"
-#include "Util/UserInputBase.h"
+#include "util/UserInputBase.h"
 #include "util/standardout.h"
 #include "SDLGameController.h"
 

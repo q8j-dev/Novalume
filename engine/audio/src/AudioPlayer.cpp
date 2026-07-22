@@ -2,8 +2,8 @@
 
 #include "audio/Sound.h"
 #include "audio/SoundService.h"
-#include "Reflection/Reflection.h"
-#include "V8DataModel/PartInstance.h"
+#include "reflection/reflection.h"
+#include "v8datamodel/PartInstance.h"
 #include "lua/lua.hpp"
 
 #include <algorithm>

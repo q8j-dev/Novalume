@@ -1,7 +1,7 @@
 /* Copyright 2003-2005 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8DataModel/BasicPartInstance.h"
-#include "V8World/Primitive.h"
+#include "v8datamodel/BasicPartInstance.h"
+#include "v8world/Primitive.h"
 
 DYNAMIC_FASTFLAGVARIABLE(SpheresAllowedCustom, false)
 DYNAMIC_FASTFLAG(FormFactorDeprecated)

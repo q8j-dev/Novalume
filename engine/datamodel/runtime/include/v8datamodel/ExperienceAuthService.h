@@ -1,7 +1,7 @@
 #pragma once
 
-#include "V8Tree/Service.h"
-#include "V8DataModel/InteractionEnums.h"
+#include "v8tree/Service.h"
+#include "v8datamodel/InteractionEnums.h"
 
 namespace RBX {
 

@@ -1,6 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
-#include "rbx/crypt.h"
+#include "rbx/Crypt.h"
 
 using namespace boost;
 
@@ -25,5 +25,4 @@ BOOST_AUTO_TEST_CASE(NegativeTest)
 #endif
 
 BOOST_AUTO_TEST_SUITE_END()
-
 

@@ -1,8 +1,8 @@
 #include <boost/test/unit_test.hpp>
 
-#include "Voxel/Util.h"
+#include "voxel/Util.h"
 #include "VoxelCellUtilV1Deprecated.h"
-#include "V8DataModel/MegaCluster.h"
+#include "v8datamodel/MegaCluster.h"
 
 using namespace RBX;
 

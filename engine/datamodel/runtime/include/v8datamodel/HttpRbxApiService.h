@@ -1,11 +1,11 @@
 #pragma once 
-#include "Reflection/Reflection.h"
-#include "V8Tree/Instance.h"
-#include "V8Tree/Service.h"
+#include "reflection/reflection.h"
+#include "v8tree/Instance.h"
+#include "v8tree/Service.h"
 #include "rbx/RunningAverage.h"
 #include "v8datamodel/HttpService.h"
-#include "Util/Http.h"
-#include "Util/DoubleEndedVector.h"
+#include "util/Http.h"
+#include "util/DoubleEndedVector.h"
 
 DYNAMIC_FASTINT(PercentApiRequestsRecordGoogleAnalytics)
 

@@ -1,7 +1,7 @@
-#include "V8DataModel/MemStorageService.h"
+#include "v8datamodel/MemStorageService.h"
 
 #include "Script/ScriptContext.h"
-#include "Util/standardout.h"
+#include "util/standardout.h"
 
 #include <vector>
 

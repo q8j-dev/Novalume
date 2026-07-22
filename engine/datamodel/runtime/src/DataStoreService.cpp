@@ -1,12 +1,12 @@
 
-#include "V8DataModel/DataStoreService.h"
-#include "V8DataModel/DataModel.h"
+#include "v8datamodel/DataStoreService.h"
+#include "v8datamodel/DataModel.h"
 #include "v8datamodel/DataStore.h"
-#include "Network/Players.h"
-#include "Util/RobloxGoogleAnalytics.h"
+#include "network/Players.h"
+#include "util/RobloxGoogleAnalytics.h"
 
 #include "util/Analytics.h"
-#include "Util/RobloxGoogleAnalytics.h"
+#include "util/RobloxGoogleAnalytics.h"
 
 LOGGROUP(DataStore);
 

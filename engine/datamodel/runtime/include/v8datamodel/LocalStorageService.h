@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Script/ThreadRef.h"
-#include "V8Tree/Service.h"
+#include "v8tree/Service.h"
 
 #include <filesystem>
 #include <map>

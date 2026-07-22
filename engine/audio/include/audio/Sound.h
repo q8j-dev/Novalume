@@ -3,7 +3,7 @@
 #pragma once
 
 #include "v8tree/Instance.h"
-#include "Reflection/Event.h"
+#include "reflection/Event.h"
 #include "audio/AudioEngine.h"
 
 namespace RBX 

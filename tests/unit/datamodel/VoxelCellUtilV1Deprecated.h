@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Util/G3DCore.h"
-#include "Voxel/Cell.h"
+#include "util/G3DCore.h"
+#include "voxel/Cell.h"
 #include "rbx/Debug.h"
 
 ////////////////////////////////////////////////////////////////////////////////

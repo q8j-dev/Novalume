@@ -10,15 +10,15 @@
 
 #include "network/PacketBuffer.h"
 
-#include "V8Tree/Service.h"
+#include "v8tree/Service.h"
 #include "util/standardout.h"
 #include "network/Player.h"
 #include "Peer.h"
 #include "Replicator.h"
 #include "NetworkFilter.h"
 #include "PropertySynchronization.h"
-#include "v8datamodel/partinstance.h"
-#include "v8datamodel/value.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/Value.h"
 
 #include "network/NetworkTypes.h"
 #include "network/NetworkTypes.h"

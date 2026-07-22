@@ -1,8 +1,8 @@
 #include "stdafx.h"
-#include "Util/Axes.h"
+#include "util/Axes.h"
 #include "util/Utilities.h"
-#include "Reflection/Type.h"
-#include "Reflection/EnumConverter.h"
+#include "reflection/Type.h"
+#include "reflection/EnumConverter.h"
 
 namespace RBX
 {
@@ -162,4 +162,3 @@ bool StringConverter<RBX::Axes>::convertToValue(const std::string& text, Axes& v
 }
 
 }
-

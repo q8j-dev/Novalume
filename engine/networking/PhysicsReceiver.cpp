@@ -10,14 +10,14 @@
 #include "Replicator.h"
 #include "Util.h"
 
-#include "V8DataModel/PartInstance.h"
-#include "V8DataModel/Workspace.h"
-#include "V8DataModel/PhysicsService.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/PhysicsService.h"
 
-#include "V8World/World.h"
-#include "V8World/Primitive.h"
-#include "V8World/Assembly.h"
-#include "V8World/Joint.h"
+#include "v8world/World.h"
+#include "v8world/Primitive.h"
+#include "v8world/Assembly.h"
+#include "v8world/Joint.h"
 #include "v8world/Mechanism.h"
 
 #include "util/standardout.h"
@@ -872,4 +872,3 @@ void PhysicsReceiver::renderPartMovementPath(Adorn* adorn)
         adorn->line3d(wp.startPos, wp.endPos, wp.color);
     }
 }
-

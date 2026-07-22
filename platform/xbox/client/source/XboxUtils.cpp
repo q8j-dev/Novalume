@@ -6,7 +6,7 @@
 #include "RobloxServicesTools.h"
 #include "v8datamodel/FastLogSettings.h"
 #include "v8datamodel/DataModel.h"
-#include "util/http.h"
+#include "util/Http.h"
 
 #include "v8datamodel/DataModelJob.h"
 

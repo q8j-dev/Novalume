@@ -1,10 +1,10 @@
-#include "V8DataModel/UIComponent.h"
+#include "v8datamodel/UIComponent.h"
 
-#include "V8DataModel/GuiObject.h"
-#include "V8DataModel/InputObject.h"
-#include "V8DataModel/UserInputService.h"
+#include "v8datamodel/GuiObject.h"
+#include "v8datamodel/InputObject.h"
+#include "v8datamodel/UserInputService.h"
 #include "Script/ScriptContext.h"
-#include "Util/StandardOut.h"
+#include "util/standardout.h"
 #include "rbx/ui/ScreenLayout.h"
 
 #include <algorithm>

@@ -2,10 +2,10 @@
 // but this service is responsible for sending the appropriate signals around, and exposing a lua call to our users.
 // There is also a nifty function exposed called "GetProductInfo" that will return a table from the web with properties about an assetId
 #pragma once 
-#include "V8Tree/Service.h"
-#include "V8Tree/Instance.h"
-#include "V8DataModel/Remote.h"
-#include "V8DataModel/InteractionEnums.h"
+#include "v8tree/Service.h"
+#include "v8tree/Instance.h"
+#include "v8datamodel/Remote.h"
+#include "v8datamodel/InteractionEnums.h"
 
 namespace RBX {
 	class DataModel;

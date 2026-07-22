@@ -1,7 +1,7 @@
-#include "V8DataModel/LocalStorageService.h"
+#include "v8datamodel/LocalStorageService.h"
 
 #include "Script/ScriptContext.h"
-#include "Util/standardout.h"
+#include "util/standardout.h"
 
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>

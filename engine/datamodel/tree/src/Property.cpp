@@ -1,10 +1,10 @@
 
-#include "V8Tree/Property.h"
+#include "v8tree/Property.h"
 #include "rbx/Debug.h"
 
-#include "Util/BrickColor.h"
-#include "Util/Region3.h"
-#include "Util/Region3int16.h"
+#include "util/BrickColor.h"
+#include "util/Region3.h"
+#include "util/Region3Int16.h"
 #include "util/CellID.h"
 #include "util/PhysicalProperties.h"
 #include "util/Content.h"

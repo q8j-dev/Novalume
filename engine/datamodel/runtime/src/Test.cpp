@@ -1,8 +1,8 @@
 
-#include "V8DataModel/Test.h"
-#include "V8DataModel/PhysicsSettings.h"
+#include "v8datamodel/Test.h"
+#include "v8datamodel/PhysicsSettings.h"
 #include "Network/../../NetworkSettings.h"
-#include "V8DataModel/TimerService.h"
+#include "v8datamodel/TimerService.h"
 #include "Script/script.h"
 #include "Script/ScriptContext.h"
 #include "util/RunStateOwner.h"

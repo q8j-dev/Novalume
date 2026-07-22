@@ -2,9 +2,9 @@
 
 #include "rbx/test/DataModelFixture.h"
 #include "Script/ModuleScript.h"
-#include "Script/Script.h"
-#include "V8DataModel/BasicPartInstance.h"
-#include "V8DataModel/Value.h"
+#include "Script/script.h"
+#include "v8datamodel/BasicPartInstance.h"
+#include "v8datamodel/Value.h"
 
 using namespace RBX;
 

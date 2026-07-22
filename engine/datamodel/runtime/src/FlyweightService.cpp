@@ -1,11 +1,11 @@
 /* Copyright 2014 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8DataModel/FlyweightService.h"
-#include "V8DataModel/DataModel.h"
+#include "v8datamodel/FlyweightService.h"
+#include "v8datamodel/DataModel.h"
 #include "v8datamodel/Value.h"
-#include "Util/RobloxGoogleAnalytics.h"
-#include "Util/MD5Hasher.h"
-#include "Network/Players.h"
+#include "util/RobloxGoogleAnalytics.h"
+#include "util/MD5Hasher.h"
+#include "network/Players.h"
 
 FASTFLAG(StudioCSGAssets)
 DYNAMIC_FASTFLAGVARIABLE(DoNotCleanCSGDictionaryOnPublishInCloudEdit, true)

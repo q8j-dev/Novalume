@@ -4,8 +4,8 @@
 
 #include "Replicator.h"
 #include "rbx/Debug.h"
-#include "V8DataModel/DataModel.h"
-#include "Network/Players.h"
+#include "v8datamodel/DataModel.h"
+#include "network/Players.h"
 #include "util/MemoryStats.h"
 #include "Replicator.StreamJob.h"
 LOGGROUP(NetworkStepsMultipliers)
@@ -146,4 +146,3 @@ private:
 };
 
 }}
-

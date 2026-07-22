@@ -1,5 +1,5 @@
 #include "Script/ModuleScript.h"
-#include "Util/MD5Hasher.h"
+#include "util/MD5Hasher.h"
 
 #include "lua/lua.hpp"
 

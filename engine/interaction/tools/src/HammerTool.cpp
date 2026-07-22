@@ -1,10 +1,10 @@
 /* Copyright 2003-2005 ROBLOX Corporation, All Rights Reserved */
 
 #include "Tool/HammerTool.h"
-#include "V8DataModel/Workspace.h"
-#include "V8DataModel/PartInstance.h"
-#include "V8DataModel/Explosion.h"
-#include "V8World/Primitive.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/Explosion.h"
+#include "v8world/Primitive.h"
 #include "audio/SoundService.h"
 #include "audio/SoundWorld.h"
 #include "SelectState.h"

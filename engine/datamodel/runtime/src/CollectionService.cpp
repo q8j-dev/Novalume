@@ -1,8 +1,8 @@
 
-#include "V8DataModel/CollectionService.h"
-#include "V8DataModel/Bindable.h"
-#include "V8DataModel/Configuration.h"
-#include "V8DataModel/StyleSheet.h"
+#include "v8datamodel/CollectionService.h"
+#include "v8datamodel/Bindable.h"
+#include "v8datamodel/Configuration.h"
+#include "v8datamodel/StyleSheet.h"
 #include "Script/LuaSignalBridge.h"
 
 namespace RBX

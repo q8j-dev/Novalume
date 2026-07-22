@@ -1,7 +1,7 @@
 #pragma once
 
-#include "V8Tree/Service.h"
-#include "script/IScriptFilter.h"
+#include "v8tree/Service.h"
+#include "Script/IScriptFilter.h"
 
 namespace RBX {
 

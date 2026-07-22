@@ -18,15 +18,15 @@
 // Roblox Headers
 #include "GfxBase/ViewBase.h"
 #include "Script/ScriptContext.h"
-#include "Util/ProtectedString.h"
-#include "V8DataModel/DataModel.h"
-#include "V8DataModel/PluginManager.h"
-#include "V8DataModel/Stats.h"
-#include "V8DataModel/Workspace.h"
+#include "util/ProtectedString.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/PluginManager.h"
+#include "v8datamodel/Stats.h"
+#include "v8datamodel/Workspace.h"
 #include "v8datamodel/ContentProvider.h"
-#include "V8Xml/Serializer.h"
-#include "V8Xml/WebParser.h"
-#include "V8Xml/XmlSerializer.h"
+#include "v8xml/Serializer.h"
+#include "v8xml/WebParser.h"
+#include "v8xml/XmlSerializer.h"
 
 // Roblox Studio Headers
 #include "AuthoringSettings.h"
@@ -42,15 +42,15 @@
 #include "IRobloxDoc.h"
 #include "QtUtilities.h"
 
-#include "Util/RobloxGoogleAnalytics.h"
+#include "util/RobloxGoogleAnalytics.h"
 #include "PluginAction.h"
 
 #include "CSGOperations.h"
 #include "v8datamodel/PartOperation.h"
-#include "V8DataModel/NonReplicatedCSGDictionaryService.h"
-#include "V8DataModel/ChangeHistory.h"
-#include "V8Xml/SerializerBinary.h"
-#include "V8Tree/Service.h"
+#include "v8datamodel/NonReplicatedCSGDictionaryService.h"
+#include "v8datamodel/ChangeHistory.h"
+#include "v8xml/SerializerBinary.h"
+#include "v8tree/Service.h"
 
 #include "rbx/make_shared.h"
 

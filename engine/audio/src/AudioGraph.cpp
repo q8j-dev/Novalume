@@ -1,11 +1,11 @@
 #include "audio/AudioGraph.h"
 
-#include "Network/Player.h"
-#include "Reflection/Reflection.h"
-#include "V8DataModel/Attachment.h"
-#include "V8DataModel/Camera.h"
-#include "V8DataModel/PartInstance.h"
-#include "V8DataModel/PVInstance.h"
+#include "network/Player.h"
+#include "reflection/reflection.h"
+#include "v8datamodel/Attachment.h"
+#include "v8datamodel/Camera.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/PVInstance.h"
 #include "audio/SoundService.h"
 #include "lua/lua.hpp"
 

@@ -1,6 +1,6 @@
 /* Copyright 2003-2005 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8DataModel/Platform.h"
+#include "v8datamodel/Platform.h"
 
 namespace RBX {
 

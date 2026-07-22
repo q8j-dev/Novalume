@@ -1,6 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
-#include "Util/HeapValue.h"
+#include "util/HeapValue.h"
 
 using namespace RBX;
 

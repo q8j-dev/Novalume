@@ -1,7 +1,7 @@
-#include "V8DataModel/EventIngestService.h"
+#include "v8datamodel/EventIngestService.h"
 
-#include "Util/Guid.h"
-#include "Util/Http.h"
+#include "util/Guid.h"
+#include "util/Http.h"
 
 #include <algorithm>
 #include <cctype>

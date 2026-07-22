@@ -3,7 +3,7 @@
 #pragma once
 
 #include "rbx/Debug.h"
-#include "Util/IndexedMesh.h"
+#include "util/IndexedMesh.h"
 #include "Primitive.h"
 #include <set>
 

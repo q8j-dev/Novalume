@@ -10,9 +10,9 @@
 #include "RobloxDocManager.h"
 #include "RobloxStudioVerbs.h"
 #include "RobloxIDEDoc.h"
-#include "V8DataModel/DataModel.h"
+#include "v8datamodel/DataModel.h"
 #include "RobloxMainWindow.h"
-#include "Util/RobloxGoogleAnalytics.h"
+#include "util/RobloxGoogleAnalytics.h"
 
 // Qt Headers
 #include <QMessageBox>
@@ -100,5 +100,4 @@ void KeepSavedChangesDialog::onCancel()
     dialogResult = Cancel;
     close();
 }
-
 

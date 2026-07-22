@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Gui/GUI.h"
-#include "V8Tree/Verb.h"
+#include "v8tree/Verb.h"
 
 namespace RBX
 {

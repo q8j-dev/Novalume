@@ -14,9 +14,9 @@
 
 #include "SDL_scancode.h"
 
-#include "Util/KeyCode.h"
-#include "G3D/Vector3.h"
-#include "G3D/Vector2int16.h"
+#include "util/KeyCode.h"
+#include "g3d/Vector3.h"
+#include "g3d/Vector2int16.h"
 #include "v8tree/Instance.h"
 
 

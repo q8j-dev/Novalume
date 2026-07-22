@@ -1,6 +1,6 @@
 /* Copyright 2003-2007 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8DataModel/CylinderMesh.h"
+#include "v8datamodel/CylinderMesh.h"
 
 using namespace RBX;
 

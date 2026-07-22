@@ -25,10 +25,10 @@
 #include "lauxlib.h"
 
 // BEGIN ROBLOX CHANGES
-#include "Util/ProtectedString.h"
-#include "Util/MD5Hasher.h"
-#include "V8DataModel/DataModel.h"
-#include "V8DataModel/HackDefines.h"
+#include "util/ProtectedString.h"
+#include "util/MD5Hasher.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/HackDefines.h"
 // END ROBLOX CHANGES
 
 #define FREELIST_REF	0	/* free list of references */
@@ -672,4 +672,3 @@ LUALIB_API lua_State *luaL_newstate (void) {
   if (L) lua_atpanic(L, &panic);
   return L;
 }
-

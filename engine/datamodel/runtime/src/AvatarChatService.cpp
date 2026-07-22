@@ -1,4 +1,4 @@
-#include "V8DataModel/AvatarChatService.h"
+#include "v8datamodel/AvatarChatService.h"
 
 namespace RBX {
 

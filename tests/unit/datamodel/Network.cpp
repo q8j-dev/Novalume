@@ -2,16 +2,16 @@
 
 #include "rbx/test/DataModelFixture.h"
 #include "rbx/test/Base.UnitTest.Lib.h"
-#include "v8dataModel/BasicPartInstance.h"
-#include "V8DataModel/JointInstance.h"
-#include "V8DataModel/Lighting.h"
-#include "v8dataModel/Workspace.h"
+#include "v8datamodel/BasicPartInstance.h"
+#include "v8datamodel/JointInstance.h"
+#include "v8datamodel/Lighting.h"
+#include "v8datamodel/Workspace.h"
 #include "v8tree/Instance.h"
-#include "Network/Players.h"
+#include "network/Players.h"
 #include "rbx/test/ScopedFastFlagSetting.h"
 #include "v8datamodel/VehicleSeat.h"
 #include "reflection/reflection.h"
-#include "script/script.h"
+#include "Script/script.h"
 
 namespace RBX
 {

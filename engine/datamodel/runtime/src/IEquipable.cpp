@@ -1,9 +1,9 @@
 /* Copyright 2003-2007 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8DataModel/IEquipable.h"
+#include "v8datamodel/IEquipable.h"
 
-#include "V8DataModel/PartInstance.h"
-#include "V8DataModel/JointInstance.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/JointInstance.h"
 #include "rbx/Debug.h"
 
 

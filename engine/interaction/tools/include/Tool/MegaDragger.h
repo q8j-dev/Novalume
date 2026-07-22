@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "Util/Object.h"
-#include "Util/G3DCore.h"
+#include "util/Object.h"
+#include "util/G3DCore.h"
 #include "Tool/DragUtilities.h"
 #include "Tool/DragTypes.h"
 //#include <vector>

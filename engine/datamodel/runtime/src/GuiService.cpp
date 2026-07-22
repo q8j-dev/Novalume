@@ -3,22 +3,22 @@
 #include "security/ProtectionMarkers.h"
 #endif
 
-#include "V8DataModel/GuiObject.h"
-#include "V8DataModel/GuiService.h"
-#include "V8DataModel/PlayerGui.h"
+#include "v8datamodel/GuiObject.h"
+#include "v8datamodel/GuiService.h"
+#include "v8datamodel/PlayerGui.h"
 #include "v8datamodel/ScreenGui.h"
-#include "V8DataModel/JointsService.h"
+#include "v8datamodel/JointsService.h"
 #include "v8datamodel/Workspace.h"
 #include "v8datamodel/MegaCluster.h"
 #include "v8datamodel/ContextActionService.h"
 #include "v8datamodel/GamepadService.h"
 #include "Script/ScriptContext.h"
-#include "Network/Players.h"
-#include "V8DataModel/CollectionService.h"
-#include "V8DataModel/DialogRoot.h" 
-#include "V8DataModel/PartInstance.h"
-#include "V8DataModel/Bindable.h"
-#include "V8DataModel/GameBasicSettings.h"
+#include "network/Players.h"
+#include "v8datamodel/CollectionService.h"
+#include "v8datamodel/DialogRoot.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/Bindable.h"
+#include "v8datamodel/GameBasicSettings.h"
 
 #include <boost/algorithm/string.hpp>
 

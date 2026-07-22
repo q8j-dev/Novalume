@@ -30,9 +30,9 @@
 #include "RobloxMainWindow.h"
 #include "RobloxCookieJar.h"
 
-#include "Util/RobloxGoogleAnalytics.h"
-#include "Util/MachineIdUploader.h"
-#include "V8DataModel/ContentProvider.h"
+#include "util/RobloxGoogleAnalytics.h"
+#include "util/MachineIdUploader.h"
+#include "v8datamodel/ContentProvider.h"
 #include "RobloxWebDoc.h"
 #include "RobloxDocManager.h"
 

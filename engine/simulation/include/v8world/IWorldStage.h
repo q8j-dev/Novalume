@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "V8Kernel/IStage.h"
+#include "v8kernel/IStage.h"
 #include "rbx/Debug.h"
-#include "Util/G3DCore.h"
+#include "util/G3DCore.h"
 
 namespace RBX {
 

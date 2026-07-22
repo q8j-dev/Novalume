@@ -1,5 +1,5 @@
 
-#include "V8World/Mesh.h"
+#include "v8world/Mesh.h"
 #include "util/Math.h"
 
 namespace RBX {

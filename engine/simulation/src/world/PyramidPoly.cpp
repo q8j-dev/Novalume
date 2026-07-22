@@ -1,10 +1,10 @@
 
-#include "V8World/PyramidPoly.h"
-#include "V8World/Mesh.h"
+#include "v8world/PyramidPoly.h"
+#include "v8world/Mesh.h"
 
-#include "V8World/GeometryPool.h"
-#include "V8World/PyramidMesh.h"
-#include "Util/Math.h"
+#include "v8world/GeometryPool.h"
+#include "v8world/PyramidMesh.h"
+#include "util/Math.h"
 
 
 namespace RBX {

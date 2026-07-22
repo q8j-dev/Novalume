@@ -1,7 +1,7 @@
 #include "stdafx.h"
-#include "Util/Base64BinaryOutputStream.h"
+#include "util/Base64BinaryOutputStream.h"
 
-#include "Rbx/Debug.h"
+#include "rbx/Debug.h"
 
 namespace RBX {
 

@@ -3,13 +3,13 @@
 #undef min
 #undef max
 
-#include "Util/Statistics.h"
+#include "util/Statistics.h"
 
 #include <sstream>
 #include <algorithm>
 
 #include "RbxFormat.h"
-#include "util/StandardOut.h"
+#include "util/standardout.h"
 #include "util/Http.h"
 #include "format_string.h"
 #include "SimpleJSON.h"

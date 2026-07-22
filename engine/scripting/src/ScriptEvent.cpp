@@ -4,9 +4,9 @@
 #include "Script/ScriptContext.h"
 #include "lua/lua.hpp"
 #include "util/standardout.h"
-#include "script/LuaInstanceBridge.h"
+#include "Script/LuaInstanceBridge.h"
 #include "rbx/rbxTime.h"
-#include "script/LuaSettings.h"
+#include "Script/LuaSettings.h"
 #include "FastLog.h"
 
 DYNAMIC_FASTFLAGVARIABLE(FixYieldThrottling, false)

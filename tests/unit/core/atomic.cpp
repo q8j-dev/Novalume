@@ -2,7 +2,7 @@
 #include "concurrent.h"
 
 #include "rbx/atomic.h"
-#include "rbx/boost.hpp"
+#include "rbx/Boost.hpp"
 
 namespace AtomicTest
 {

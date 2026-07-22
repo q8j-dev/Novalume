@@ -4,7 +4,7 @@
 #include "ShaderD3D9.h"
 #include "TextureD3D9.h"
 #include "FramebufferD3D9.h"
-#include "D3dx9math.h"
+#include "d3dx9math.h"
 
 #include <d3d9.h>
 #include "GfxCore/pix.h"

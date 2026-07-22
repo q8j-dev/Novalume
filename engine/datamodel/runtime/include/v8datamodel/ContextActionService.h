@@ -9,16 +9,16 @@
 
 #pragma once
 
-#include "Util/TextureId.h"
-#include "Util/UDim.h"
+#include "util/TextureId.h"
+#include "util/UDim.h"
 
-#include "gui/GuiEvent.h"
+#include "Gui/GuiEvent.h"
 
-#include "V8Tree/Service.h"
+#include "v8tree/Service.h"
 #include "v8datamodel/InputObject.h"
 #include "v8datamodel/InteractionEnums.h"
 
-#include "script/ThreadRef.h"
+#include "Script/ThreadRef.h"
 
 namespace RBX {
     

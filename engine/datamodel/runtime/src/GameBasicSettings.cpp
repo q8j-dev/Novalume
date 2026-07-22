@@ -1,6 +1,6 @@
 
-#include "V8DataModel/GameBasicSettings.h"
-#include "Util/RobloxGoogleAnalytics.h"
+#include "v8datamodel/GameBasicSettings.h"
+#include "util/RobloxGoogleAnalytics.h"
 #include "rbx/Profiler.h"
 
 using namespace RBX;

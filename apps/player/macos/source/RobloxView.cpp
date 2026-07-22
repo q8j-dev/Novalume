@@ -2,38 +2,38 @@
 #include "Roblox.h"
 
 #include "GfxBase/ViewBase.h"
-#include "v8datamodel/datamodel.h"
-#include "v8datamodel/workspace.h"
-#include "v8datamodel/camera.h"
-#include "v8datamodel/game.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/Camera.h"
+#include "v8datamodel/Game.h"
 #include "v8datamodel/InputObject.h"
 #include "v8datamodel/GuiService.h"
 #include "FunctionMarshaller.h"
-#include "Util/StandardOut.h"
-#include "Util/FileSystem.h"
+#include "util/standardout.h"
+#include "util/FileSystem.h"
 #include "rbx/SystemUtil.h"
 #include "rbx/Tasks/Coordinator.h"
 #include "UserInput.h"
-#include "Util/IMetric.h"
-#include "Util/Object.h"
+#include "util/IMetric.h"
+#include "util/Object.h"
 #include "GfxBase/RenderSettings.h"
 #include "GfxBase/FrameRateManager.h"
 #include "v8datamodel/BaseRenderJob.h"
 #include "v8datamodel/UserController.h"
 #include "v8datamodel/UserInputService.h"
-#include "Util/Statistics.h"
+#include "util/Statistics.h"
 #include "v8datamodel/ContentProvider.h"
-#include "script/ScriptContext.h"
+#include "Script/ScriptContext.h"
 #include "v8xml/Serializer.h"
 #include "rbx/CEvent.h"
 #include "GameVerbs.h"
-#include "Network/Players.h"
+#include "network/Players.h"
 #include "../ClientBase/RenderSettingsItem.h"
 
 
 #include <boost/iostreams/copy.hpp>
 
-#include "V8DataModel/GameBasicSettings.h"
+#include "v8datamodel/GameBasicSettings.h"
 
 LOGGROUP(PlayerShutdownLuaTimeoutSeconds)
 
@@ -745,5 +745,4 @@ void RobloxView::setUIMessage_(const std::string& message)
             gs->setUiMessage(GuiService::UIMESSAGE_INFO, message);
     }
 }
-
 

@@ -1,11 +1,11 @@
 
-#include "V8DataModel/FriendService.h"
-#include "V8DataModel/DataModel.h"
-#include "Network/Players.h"
-#include "V8Xml/WebParser.h"
-#include "Util/Http.h"
+#include "v8datamodel/FriendService.h"
+#include "v8datamodel/DataModel.h"
+#include "network/Players.h"
+#include "v8xml/WebParser.h"
+#include "util/Http.h"
 #include "rbx/Log.h"
-#include "Util/LuaWebService.h"
+#include "util/LuaWebService.h"
 #include "v8datamodel/HttpRbxApiService.h"
 
 namespace RBX

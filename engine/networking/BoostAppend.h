@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rbx/boost.hpp"
+#include "rbx/Boost.hpp"
 
 
 namespace RBX {
@@ -11,4 +11,3 @@ namespace RBX {
 namespace boost {
 	std::size_t hash_value(const shared_ptr<RBX::PartInstance>& b);
 }
-

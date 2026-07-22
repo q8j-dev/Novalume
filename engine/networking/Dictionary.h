@@ -6,7 +6,7 @@
 #include <map>
 #include "network/PacketBuffer.h"
 #include "boost/noncopyable.hpp"
-#include "reflection/property.h"
+#include "reflection/Property.h"
 #include "util/Guid.h"
 #include "util/BinaryString.h"
 #include "StreamingUtil.h"

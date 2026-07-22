@@ -1,6 +1,6 @@
 /* Copyright 2014 ROBLOX Corporation, All Rights Reserved */
 #pragma once
-#include "rbx/boost.hpp"
+#include "rbx/Boost.hpp"
 #include <boost/unordered_map.hpp>
 #include <vector>
 #include "util/Extents.h"

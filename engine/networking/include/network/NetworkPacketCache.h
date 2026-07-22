@@ -3,8 +3,8 @@
 #include "network/PacketBuffer.h"
 
 
-#include "V8Tree/Service.h"
-#include "v8datamodel/partinstance.h"
+#include "v8tree/Service.h"
+#include "v8datamodel/PartInstance.h"
 #include "rbx/signal.h"
 #include <boost/unordered/unordered_map.hpp>
 
@@ -122,4 +122,3 @@ namespace RBX {
 		};
 	}
 }
-

@@ -1,14 +1,14 @@
 #include "stdafx.h"
 
-#include "Util/Utilities.h"
+#include "util/Utilities.h"
 #include "rbx/Debug.h"
 #include "RbxAssert.h"
-#include "G3D/g3dmath.h"
-#include "G3D/Random.h"
+#include "g3d/g3dmath.h"
+#include "g3d/Random.h"
 #include <limits>
 #include "boost/lexical_cast.hpp"
 #include <boost/algorithm/string/case_conv.hpp>
-#include "Util/Http.h"
+#include "util/Http.h"
 
 DYNAMIC_FASTINTVARIABLE(ExternalHttpResponseTimeoutMillis, 30000)
 DYNAMIC_FASTINTVARIABLE(ExternalHttpRequestSizeLimitKB, 1024)
@@ -33,9 +33,9 @@ std::string RBX::Http::lastCsrfToken = "";
 boost::mutex RBX::Http::lastCsrfTokenMutex;
 
 #if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-#include "objbase.h"
+#include "ObjBase.h"
 #include <windows.h>
-#include <wincrypt.h>
+#include <WinCrypt.h>
 
 std::string RBX::sha1(const std::string& source)
 {

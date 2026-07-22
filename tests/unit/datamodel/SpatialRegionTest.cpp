@@ -1,6 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
-#include "Util/SpatialRegion.h"
+#include "util/SpatialRegion.h"
 
 using namespace RBX;
 

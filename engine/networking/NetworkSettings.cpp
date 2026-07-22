@@ -1,5 +1,5 @@
 #include "NetworkSettings.h"
-#include "Util/Statistics.h"
+#include "util/Statistics.h"
 #include "NetworkProfiler.h"
 #include "util/MemoryStats.h"
 #include "v8datamodel/Workspace.h"

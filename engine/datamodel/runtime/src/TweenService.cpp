@@ -1,10 +1,10 @@
 
-#include "V8DataModel/TweenService.h"
-#include "V8DataModel/GuiObject.h"
+#include "v8datamodel/TweenService.h"
+#include "v8datamodel/GuiObject.h"
 #include "util/RunStateOwner.h"
 #include "network/Players.h"
 
-#include "reflection/enumconverter.h"
+#include "reflection/EnumConverter.h"
 
 #include <algorithm>
 #include <cmath>

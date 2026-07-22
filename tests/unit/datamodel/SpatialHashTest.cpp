@@ -1,6 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
-#include "rbx/debug.h"
+#include "rbx/Debug.h"
 #include "RbxFormat.h"
 #include <iostream>
 

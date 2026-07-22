@@ -1,4 +1,4 @@
-#include "V8DataModel/FaceAnimatorService.h"
+#include "v8datamodel/FaceAnimatorService.h"
 
 namespace RBX {
 const char* const sFaceAnimatorService = "FaceAnimatorService";

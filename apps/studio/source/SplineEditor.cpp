@@ -21,8 +21,8 @@
 #include "UpdateUIManager.h"
 #include "v8datamodel/ChangeHistory.h"
 
-#include "G3D/Vector4.h"
-#include "G3d/g3dmath.h"
+#include "g3d/Vector4.h"
+#include "g3d/g3dmath.h"
 using G3D::Vector4;
 using G3D::clamp;
 
@@ -1203,7 +1203,6 @@ void SplineEditorAdapter::onClosed()
     onEdited(true);
     delete this;
 }
-
 
 
 

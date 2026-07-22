@@ -2,10 +2,10 @@
 
 #include "rbx/intrusive_ptr_target.h"
 #include "boost/intrusive_ptr.hpp"
-#include "rbx/boost.hpp"
+#include "rbx/Boost.hpp"
 #include "rbx/threadsafe.h"
 #include "rbx/Countable.h"
-#include "reflection/type.h"
+#include "reflection/Type.h"
 
 struct lua_State;
 

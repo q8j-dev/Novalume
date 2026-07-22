@@ -1,4 +1,4 @@
-#include "Voxel/Cell.h"
+#include "voxel/Cell.h"
 
 namespace RBX { namespace Voxel {
 

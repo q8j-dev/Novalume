@@ -1,10 +1,10 @@
 /* Copyright 2003-2007 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8DataModel/Visit.h"
-#include "util/StandardOut.h"
-#include "Network/Player.h"
-#include "Network/Players.h"
-#include "Util/Http.h"
+#include "v8datamodel/Visit.h"
+#include "util/standardout.h"
+#include "network/Player.h"
+#include "network/Players.h"
+#include "util/Http.h"
 
 #include <boost/thread/xtime.hpp>
 
@@ -75,6 +75,5 @@ void Visit::setPing(std::string url, int interval)
 		// Just stop the current ping thread:
 		pingThread.reset();
 }
-
 
 

@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "Util/UDim.h"
+#include "util/UDim.h"
 #include "util/Utilities.h"
 
 #include <sstream>
@@ -133,4 +133,3 @@ UDim2 UDim2::operator- () const
 {
 	return UDim2(-x, -y);
 }
-

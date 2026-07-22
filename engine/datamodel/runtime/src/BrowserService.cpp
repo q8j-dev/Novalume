@@ -1,6 +1,6 @@
-#include "V8DataModel/BrowserService.h"
+#include "v8datamodel/BrowserService.h"
 
-#include "V8DataModel/GuiService.h"
+#include "v8datamodel/GuiService.h"
 
 namespace RBX {
 

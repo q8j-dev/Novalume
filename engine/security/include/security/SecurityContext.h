@@ -1,7 +1,7 @@
 
 #pragma once
-#include "rbxformat.h"
-#include "rbx/boost.hpp"
+#include "RbxFormat.h"
+#include "rbx/Boost.hpp"
 #include "g3d/format.h"
 
 namespace boost
@@ -114,4 +114,3 @@ namespace RBX
 		};
 	}
 }
-

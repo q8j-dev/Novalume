@@ -1,6 +1,6 @@
 
-#include "V8DataModel/GameSettings.h"
-#include "V8DataModel/GameBasicSettings.h"
+#include "v8datamodel/GameSettings.h"
+#include "v8datamodel/GameBasicSettings.h"
 
 namespace RBX {
 	namespace Reflection {
@@ -93,4 +93,3 @@ void GameSettings::setVideoQualitySetting(VideoQuality value)
 		raisePropertyChanged(prop_videoSettings);
 	}
 }
-

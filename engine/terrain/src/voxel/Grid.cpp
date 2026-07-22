@@ -1,9 +1,9 @@
-#include "Voxel/Grid.h"
+#include "voxel/Grid.h"
 
 #include "rbx/Debug.h"
-#include "Util/G3DCore.h"
-#include "Voxel/Cell.h"
-#include "Voxel/Util.h"
+#include "util/G3DCore.h"
+#include "voxel/Cell.h"
+#include "voxel/Util.h"
 
 #include <boost/unordered_map.hpp>
 

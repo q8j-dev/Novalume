@@ -1,8 +1,8 @@
 
-#include "V8DataModel/PlatformService.h"
-#include "V8DataModel/DataModel.h"
+#include "v8datamodel/PlatformService.h"
+#include "v8datamodel/DataModel.h"
 
-#include "Reflection/EnumConverter.h"
+#include "reflection/EnumConverter.h"
 
 extern void dprintf( const char* fmt, ... );
 

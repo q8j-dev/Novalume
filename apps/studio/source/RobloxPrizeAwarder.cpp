@@ -18,7 +18,7 @@
 #include <QCryptographicHash>
 
 // Roblox headers
-#include "V8DataModel/FastLogSettings.h"
+#include "v8datamodel/FastLogSettings.h"
 
 // Roblox Studio headers
 #include "RobloxNetworkAccessManager.h"

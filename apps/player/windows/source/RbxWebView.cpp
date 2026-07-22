@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "RbxWebView.h"
-#include <Exdispid.h> // platform SDK header
+#include <ExDispid.h> // platform SDK header
 #include "util/FileSystem.h"
 #include "util/Statistics.h"
 #include "util/Http.h"

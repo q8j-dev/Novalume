@@ -7,7 +7,7 @@
  *
  */
 
-#include "Util/StandardOut.h"
+#include "util/standardout.h"
 #include <v8datamodel/TeleportService.h>
 #include <semaphore.h>
 #include <v8datamodel/FastLogSettings.h>

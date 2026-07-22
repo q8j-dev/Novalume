@@ -13,14 +13,14 @@
 
 #include "gSOAP/generated/RCCServiceSoap.nsmap"
 #include "gSOAP/generated/soapRCCServiceSoapService.h"
-#include "logmanager.h"
-#include "rbx/boost.hpp"
-#include "Util/WinHeap.h"
-#include "Util/StandardOut.h"
+#include "LogManager.h"
+#include "rbx/Boost.hpp"
+#include "util/WinHeap.h"
+#include "util/standardout.h"
 #include "rbx/TaskScheduler.h"
-#include "Util/Statistics.h"
+#include "util/Statistics.h"
 #include "util/Http.h"
-#include "v8datamodel/datamodel.h"
+#include "v8datamodel/DataModel.h"
 #include "OperationalSecurity.h"
 
 #pragma optimize( "", off ) 

@@ -1,6 +1,6 @@
 
 #include "Script/LuaEnum.h"
-#include "Reflection/EnumConverter.h"
+#include "reflection/EnumConverter.h"
 
 
 using namespace RBX;

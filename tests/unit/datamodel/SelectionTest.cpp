@@ -2,8 +2,8 @@
 
 #include "rbx/test/DataModelFixture.h"
 #include "rbx/test/ScopedFastFlagSetting.h"
-#include "V8DataModel/BasicPartInstance.h"
-#include "V8DataModel/Selection.h"
+#include "v8datamodel/BasicPartInstance.h"
+#include "v8datamodel/Selection.h"
 
 using namespace RBX;
 

@@ -1,10 +1,10 @@
 #pragma once
 
 #include "reflection/Function.h"
-#include "script/LuaAtomicClasses.h"
-#include "script/LuaEnum.h"
-#include "script/ThreadRef.h"
-#include "script/LuaInstanceBridge.h"
+#include "Script/LuaAtomicClasses.h"
+#include "Script/LuaEnum.h"
+#include "Script/ThreadRef.h"
+#include "Script/LuaInstanceBridge.h"
 #include "rbx/make_shared.h"
 #include "rbx/DenseHash.h"
 #include "util/ProtectedString.h"

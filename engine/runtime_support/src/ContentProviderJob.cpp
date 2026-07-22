@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "Util/ContentProviderJob.h"
+#include "util/ContentProviderJob.h"
 #include "v8datamodel/DataModel.h"
 
 #include "rbx/Profiler.h"

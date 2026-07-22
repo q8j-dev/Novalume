@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Util/G3DCore.h"
+#include "util/G3DCore.h"
 #include "rbx/Debug.h"
 
 namespace RBX {

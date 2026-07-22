@@ -12,7 +12,7 @@
 
 #include <QListWidgetItem>
 
-#include "V8Tree/Instance.h"
+#include "v8tree/Instance.h"
 
 class InsertObjectListWidgetItem : public QListWidgetItem
 {
@@ -31,4 +31,3 @@ private:
 	boost::shared_ptr<RBX::Instance>	m_instance;
 	std::string		m_preferredParent;
 };
-

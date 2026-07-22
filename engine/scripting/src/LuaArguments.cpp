@@ -1,5 +1,5 @@
 
-#include "script/LuaArguments.h"
+#include "Script/LuaArguments.h"
 #include "util/ProtectedString.h"
 
 DYNAMIC_FASTFLAGVARIABLE(LuaCrashOnIncorrectTables, false)

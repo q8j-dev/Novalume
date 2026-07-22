@@ -1,10 +1,10 @@
 #include <boost/test/unit_test.hpp>
 
 #include "rbx/test/DataModelFixture.h"
-#include "v8dataModel/BasicPartInstance.h"
-#include "v8dataModel/Workspace.h"
-#include "v8dataModel/Hopper.h"
-#include "script/script.h"
+#include "v8datamodel/BasicPartInstance.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/Hopper.h"
+#include "Script/script.h"
 #include "network/Players.h"
 
 using namespace RBX;
@@ -219,4 +219,3 @@ BOOST_AUTO_TEST_CASE(SecurePlayerReplication)
 
 
 BOOST_AUTO_TEST_SUITE_END()
-

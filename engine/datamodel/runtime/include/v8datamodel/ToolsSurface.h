@@ -2,13 +2,13 @@
 
 #pragma once
 
-#include "V8DataModel/MouseCommand.h"
-#include "V8Xml/Reference.h"
-#include "V8Tree/Verb.h"
+#include "v8datamodel/MouseCommand.h"
+#include "v8xml/Reference.h"
+#include "v8tree/Verb.h"
 #include "Tool/ICancelableTool.h"
 #include "util/NormalId.h"
 #include "util/InsertMode.h"
-#include "V8DataModel/Decal.h"
+#include "v8datamodel/Decal.h"
 #include "v8datamodel/Surface.h"
 
 

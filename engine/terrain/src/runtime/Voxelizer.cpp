@@ -1,4 +1,4 @@
-#include "Voxel/Voxelizer.h"
+#include "voxel/Voxelizer.h"
 #include <boost/scoped_ptr.hpp>
 #include "rbx/DenseHash.h"
 #include "v8world/Primitive.h"

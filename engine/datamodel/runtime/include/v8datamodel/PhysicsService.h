@@ -1,12 +1,12 @@
 #pragma once
 
-#include "V8Tree/Service.h"
-#include "V8World/SendPhysics.h"
-#include "Util/ConcurrencyValidator.h"
-#include "RBX/Intrusive/Set.h"
-#include "V8DataModel/PartInstance.h"
-#include "V8DataModel/Workspace.h"
-#include "Util/BinaryString.h"
+#include "v8tree/Service.h"
+#include "v8world/SendPhysics.h"
+#include "util/ConcurrencyValidator.h"
+#include "rbx/Intrusive/Set.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/Workspace.h"
+#include "util/BinaryString.h"
 
 #include <array>
 #include <string>

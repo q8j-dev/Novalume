@@ -1,8 +1,8 @@
-#include "V8DataModel/TextChannel.h"
+#include "v8datamodel/TextChannel.h"
 
-#include "V8DataModel/TextChatService.h"
-#include "Network/Player.h"
-#include "Network/Players.h"
+#include "v8datamodel/TextChatService.h"
+#include "network/Player.h"
+#include "network/Players.h"
 
 #include <algorithm>
 #include <atomic>

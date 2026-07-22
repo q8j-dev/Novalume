@@ -5,16 +5,16 @@
 #define NOMINMAX
 
 // Grrrr! Need to include this before windows.h
-#include "winsock2.h"
+#include "WinSock2.h"
 #include "windows.h"
-#include "Util/Http.h"
+#include "util/Http.h"
 
 #include "winhttp.h"
 
 #pragma comment (lib , "Winhttp.lib")
 #include "atlutil.h"
 #include "g3d/format.h"
-#include "Util/MD5Hasher.h"
+#include "util/MD5Hasher.h"
 
 #include <sstream>
 

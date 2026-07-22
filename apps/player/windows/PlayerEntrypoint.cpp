@@ -1,7 +1,7 @@
 #include "PlayerMain.h"
 
 #include <Windows.h>
-#include <shellapi.h>
+#include <ShellAPI.h>
 
 #include <stdexcept>
 #include <string>

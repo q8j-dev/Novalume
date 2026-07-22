@@ -1,6 +1,6 @@
 #pragma once
 
-#include "V8World/Joint.h"
+#include "v8world/Joint.h"
 
 namespace RBX {
 
@@ -56,4 +56,3 @@ namespace RBX {
 	};
 
 } // namespace
-

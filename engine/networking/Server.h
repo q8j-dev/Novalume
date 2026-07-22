@@ -4,15 +4,15 @@
 
 #include "network/NetworkTypes.h"
 
-#include "Network/NetworkPacketCache.h"
-#include "Network/Player.h"
+#include "network/NetworkPacketCache.h"
+#include "network/Player.h"
 #include "Peer.h"
 #include "Replicator.h"
 
-#include "Util/ProtectedString.h"
-#include "Util/standardout.h"
-#include "V8DataModel/PartInstance.h"
-#include "V8Tree/Service.h"
+#include "util/ProtectedString.h"
+#include "util/standardout.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8tree/Service.h"
 
 #include "network/NetworkTypes.h"
 #include <boost/bimap.hpp>

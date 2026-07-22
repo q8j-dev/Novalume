@@ -5,7 +5,7 @@
 #include "network/PacketBuffer.h"
 
 #include "PhysicsSender.h"
-#include "V8World/SimJob.h"
+#include "v8world/SimJob.h"
 #include "rbx/rbxTime.h"
 
 namespace RBX { 

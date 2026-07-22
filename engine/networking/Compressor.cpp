@@ -2,7 +2,7 @@
 
 #include "Compressor.h"
 #include "Replicator.h"
-#include "Util/Quaternion.h"
+#include "util/Quaternion.h"
 
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/stream.hpp>
@@ -208,5 +208,4 @@ Compressor::CompressionType Compressor::readCompressionType(RBX::Network::Packet
 	CompressionType answer = static_cast<CompressionType>(temp);
 	return answer;
 }
-
 

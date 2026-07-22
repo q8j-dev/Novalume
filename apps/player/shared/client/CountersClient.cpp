@@ -2,7 +2,7 @@
 
 #include "CountersClient.h"
 #include "windows.h"
-#include "wininet.h"
+#include "WinInet.h"
 #include "atlutil.h"
 #include "RobloxServicesTools.h"
 

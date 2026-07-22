@@ -9,8 +9,8 @@
 #include "GfxCore/Framebuffer.h"
 #include "GfxCore/Texture.h"
 
-#include "V8DataModel/Camera.h"
-#include "V8DataModel/DataModel.h"
+#include "v8datamodel/Camera.h"
+#include "v8datamodel/DataModel.h"
 
 namespace RBX {
 namespace Graphics {

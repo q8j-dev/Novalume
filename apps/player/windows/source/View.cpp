@@ -3,7 +3,7 @@
 
 #include "v8datamodel/DebugSettings.h"
 #include "v8datamodel/GameBasicSettings.h"
-#include "script/ScriptContext.h"
+#include "Script/ScriptContext.h"
 #include "FunctionMarshaller.h"
 #include "GameVerbs.h"
 #include "LogManager.h"

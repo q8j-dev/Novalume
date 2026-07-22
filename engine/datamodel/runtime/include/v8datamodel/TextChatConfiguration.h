@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Util/Font.h"
-#include "Util/G3DCore.h"
-#include "Util/KeyCode.h"
-#include "V8DataModel/UIComponent.h"
-#include "V8Tree/Instance.h"
+#include "util/Font.h"
+#include "util/G3DCore.h"
+#include "util/KeyCode.h"
+#include "v8datamodel/UIComponent.h"
+#include "v8tree/Instance.h"
 
 namespace RBX {
 

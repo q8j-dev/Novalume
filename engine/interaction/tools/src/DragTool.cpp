@@ -1,7 +1,7 @@
 /* Copyright 2003-2005 ROBLOX Corporation, All Rights Reserved */
 
 #include "Tool/DragTool.h"
-#include "V8DataModel/PartInstance.h"
+#include "v8datamodel/PartInstance.h"
 #include "Tool/PartDragTool.h"
 #include "Tool/GroupDragTool.h"
 #include "Tool/LuaDragTool.h"

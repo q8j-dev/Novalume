@@ -1,12 +1,12 @@
-#include "V8DataModel/ModernAvatar.h"
+#include "v8datamodel/ModernAvatar.h"
 
-#include "V8DataModel/MeshPart.h"
-#include "V8DataModel/Workspace.h"
-#include "V8World/Assembly.h"
-#include "V8World/Motor6DJoint.h"
-#include "V8World/MotorJoint.h"
-#include "V8World/RotateJoint.h"
-#include "V8World/Primitive.h"
+#include "v8datamodel/MeshPart.h"
+#include "v8datamodel/Workspace.h"
+#include "v8world/Assembly.h"
+#include "v8world/Motor6DJoint.h"
+#include "v8world/MotorJoint.h"
+#include "v8world/RotateJoint.h"
+#include "v8world/Primitive.h"
 
 #include <algorithm>
 #include <cmath>

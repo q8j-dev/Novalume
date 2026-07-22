@@ -1,6 +1,6 @@
-#include "Voxel/Grid.h"
+#include "voxel/Grid.h"
 
-#include "Voxel/Cell.h"
+#include "voxel/Cell.h"
 
 #include "rbx/Profiler.h"
 

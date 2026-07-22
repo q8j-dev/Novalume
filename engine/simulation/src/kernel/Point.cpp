@@ -1,7 +1,7 @@
 /* Copyright 2003-2007 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8Kernel/Point.h"
-#include "V8Kernel/Body.h"
+#include "v8kernel/Point.h"
+#include "v8kernel/Body.h"
 
 
 namespace RBX {
@@ -46,4 +46,3 @@ void Point::setWorldPos(const Vector3& _worldPos)
 		
 
 } // namespace RBX
-

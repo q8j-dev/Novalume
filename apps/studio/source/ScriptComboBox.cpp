@@ -13,7 +13,7 @@
 
 // Roblox Headers
 #include "util/RbxStringTable.h"
-#include "script/ScriptContext.h"
+#include "Script/ScriptContext.h"
 #include "util/UDim.h"
 
 // Roblox Studio Headers

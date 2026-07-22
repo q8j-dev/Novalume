@@ -1,6 +1,6 @@
-#include "V8DataModel/ThumbnailEnums.h"
+#include "v8datamodel/ThumbnailEnums.h"
 
-#include "reflection/enumconverter.h"
+#include "reflection/EnumConverter.h"
 
 namespace RBX {
 namespace Reflection {

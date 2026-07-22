@@ -1,7 +1,7 @@
 /* Copyright 2003-2009 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8DataModel/SurfaceSelection.h"
-#include "V8DataModel/PartInstance.h"
+#include "v8datamodel/SurfaceSelection.h"
+#include "v8datamodel/PartInstance.h"
 #include "AppDraw/DrawAdorn.h"
 #include "AppDraw/Draw.h"
 

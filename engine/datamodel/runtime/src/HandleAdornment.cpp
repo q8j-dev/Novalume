@@ -4,15 +4,15 @@
  * Created by Tyler Berg on 3/24/2015
  */
 
-#include "V8DataModel/HandleAdornment.h"
+#include "v8datamodel/HandleAdornment.h"
 #include "v8datamodel/PartInstance.h"
 #include "v8datamodel/ModelInstance.h"
 #include "AppDraw/DrawAdorn.h"
 #include "AppDraw/Draw.h"
 #include "v8datamodel/PVInstance.h"
 #include "v8datamodel/MouseCommand.h"
-#include "V8DataModel/Workspace.h"
-#include "G3D/CollisionDetection.h"
+#include "v8datamodel/Workspace.h"
+#include "g3d/CollisionDetection.h"
 
 namespace RBX {
 

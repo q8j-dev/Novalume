@@ -1,4 +1,4 @@
-#include "V8DataModel/CoreGuiConfiguration.h"
+#include "v8datamodel/CoreGuiConfiguration.h"
 
 namespace RBX {
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Util/G3DCore.h"
-#include "Voxel/Util.h"
+#include "util/G3DCore.h"
+#include "voxel/Util.h"
 
 namespace RBX { namespace Voxel {
 

@@ -10,7 +10,7 @@
 #include <QPainter>
 #include <QStyleOption>
 #include <QtnStyleHelpers.h>
-#include <QRgb.h>
+#include <qrgb.h>
 
 // Roblox headers
 #include "util/BrickColor.h"

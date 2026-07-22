@@ -1,10 +1,10 @@
 /* Copyright 2014 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8DataModel/CSGDictionaryService.h"
+#include "v8datamodel/CSGDictionaryService.h"
 #include "v8datamodel/PartOperation.h"
 #include "v8datamodel/Value.h"
-#include "Util/RobloxGoogleAnalytics.h"
-#include "V8DataModel/NonReplicatedCSGDictionaryService.h"
+#include "util/RobloxGoogleAnalytics.h"
+#include "v8datamodel/NonReplicatedCSGDictionaryService.h"
 
 FASTFLAG(StudioCSGAssets)
 FASTFLAG(CSGLoadFromCDN)

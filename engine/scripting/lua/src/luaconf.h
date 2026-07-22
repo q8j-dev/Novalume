@@ -13,8 +13,8 @@
 
 #include "boost/shared_ptr.hpp"
 #include "boost/weak_ptr.hpp"
-#include "script/ScriptContext.h"
-#include "security/securityContext.h"
+#include "Script/ScriptContext.h"
+#include "security/SecurityContext.h"
 #include "security/ApiSecurity.h"
 #include "security/FuzzyTokens.h"
 #if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
@@ -31,7 +31,7 @@
 #undef check
 #endif
 
-#include "RBX/Debug.h"
+#include "rbx/Debug.h"
 
 namespace RBX
 {

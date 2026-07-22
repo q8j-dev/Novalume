@@ -1,8 +1,8 @@
 #pragma once
 
-#include "V8DataModel/PartInstance.h"
-#include "Util/MeshId.h"
-#include "Util/TextureId.h"
+#include "v8datamodel/PartInstance.h"
+#include "util/MeshId.h"
+#include "util/TextureId.h"
 
 namespace RBX
 {

@@ -6,7 +6,7 @@
 
 #include "rbx/rbxTime.h"
 #include "v8datamodel/Stats.h"
-#include "V8DataModel/DataModel.h"
+#include "v8datamodel/DataModel.h"
 #include "util/Guid.h"
 #include "util/Http.h"
 #include "util/HttpAsync.h"
@@ -170,4 +170,3 @@ void RBX::Network::ConstructModerationFilterTextParamsAndHeaders(
     outHeaders["placeId"] = boost::lexical_cast<std::string>(placeID);
 	outHeaders["gameInstanceID"] = gameInstanceID;
 }
-

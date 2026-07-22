@@ -1,7 +1,7 @@
 #pragma once
 
-#include "V8DataModel/Attachment.h"
-#include "V8DataModel/IAnimatableJoint.h"
+#include "v8datamodel/Attachment.h"
+#include "v8datamodel/IAnimatableJoint.h"
 
 namespace RBX
 {

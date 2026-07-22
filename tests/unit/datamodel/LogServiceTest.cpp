@@ -1,6 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
-#include "V8DataModel/LogService.h"
+#include "v8datamodel/LogService.h"
 
 using namespace RBX;
 

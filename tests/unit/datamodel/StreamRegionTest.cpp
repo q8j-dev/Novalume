@@ -1,8 +1,8 @@
 #include <boost/test/unit_test.hpp>
 
-#include "Util/StreamRegion.h"
-#include "Util/SpatialRegion.h"
-#include "Voxel/Util.h"
+#include "util/StreamRegion.h"
+#include "util/SpatialRegion.h"
+#include "voxel/Util.h"
 
 using namespace RBX;
 

@@ -2,15 +2,15 @@
 
 #pragma once
 
-#include "Reflection/Reflection.h"
-#include "Reflection/Event.h"
-#include "V8Tree/Property.h"
-#include "V8Xml/Reference.h"
-#include "V8Tree/Verb.h"
+#include "reflection/reflection.h"
+#include "reflection/Event.h"
+#include "v8tree/Property.h"
+#include "v8xml/Reference.h"
+#include "v8tree/Verb.h"
 
 #include "rbx/Countable.h"
-#include "Util/Guid.h"
-#include "Util/BinaryString.h"
+#include "util/Guid.h"
+#include "util/BinaryString.h"
 
 #include <vector>
 #include <map>

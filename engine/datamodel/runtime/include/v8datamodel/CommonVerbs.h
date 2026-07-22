@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include "V8DataModel/DataModel.h"
-#include "V8DataModel/Commands.h"
-#include "V8DataModel/ToolsPart.h"
-#include "V8DataModel/ToolsSurface.h"
-#include "V8DataModel/ToolsModel.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/Commands.h"
+#include "v8datamodel/ToolsPart.h"
+#include "v8datamodel/ToolsSurface.h"
+#include "v8datamodel/ToolsModel.h"
 #include "Tool/ToolsArrow.h"
 #include "Tool/ResizeTool.h"
 #include "Tool/HammerTool.h"
@@ -19,13 +19,13 @@
 #include "Tool/MoveResizeJoinTool.h"
 #include "Tool/AdvMoveTool.h"
 #include "Tool/AdvRotateTool.h"
-#include "V8DataModel/UndoRedo.h"
-#include "V8DataModel/InputObject.h"
-#include "V8Tree/Instance.h"
-#include "V8Tree/Service.h"
-#include "Util/Runstateowner.h"
+#include "v8datamodel/UndoRedo.h"
+#include "v8datamodel/InputObject.h"
+#include "v8tree/Instance.h"
+#include "v8tree/Service.h"
+#include "util/RunStateOwner.h"
 
-#include "Util/InsertMode.h"
+#include "util/InsertMode.h"
 
 class XmlElement;
 

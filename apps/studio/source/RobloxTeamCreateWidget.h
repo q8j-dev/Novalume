@@ -14,7 +14,7 @@
 #include "ui_TeamCreate.h"
 
 #include "rbx/signal.h"
-#include "Util/HttpAsync.h"
+#include "util/HttpAsync.h"
 
 #include "PlayersDataManager.h"
 
@@ -306,4 +306,3 @@ private:
 	bool                                           m_bCanManageCurrentPlace;
 	bool                                           m_bLoginButtonClicked;
 };
-

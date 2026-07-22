@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Util/ContentId.h"
-#include "V8Tree/Service.h"
+#include "util/ContentId.h"
+#include "v8tree/Service.h"
 
 #include "rbx/signal.h"
 

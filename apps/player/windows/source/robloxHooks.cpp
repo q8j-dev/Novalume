@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "functionHooks.h"
-#include "robloxHooks.h"
+#include "RobloxHooks.h"
 #include "v8datamodel/HackDefines.h"
 #include "security/FuzzyTokens.h"
 #include "security/ApiSecurity.h"
@@ -8,7 +8,7 @@
 #include "v8datamodel/FastLogSettings.h"
 #include "security/ProtectionMarkers.h"
 #include <windows.h>
-#include <psapi.h>
+#include <Psapi.h>
 
 namespace
 {

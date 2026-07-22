@@ -1,4 +1,4 @@
-#include "V8DataModel/TelemetryService.h"
+#include "v8datamodel/TelemetryService.h"
 
 namespace RBX {
 

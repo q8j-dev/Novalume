@@ -12,7 +12,7 @@
 #include <QHeaderView>
 
 // Roblox Headers
-#include "script/ScriptContext.h"
+#include "Script/ScriptContext.h"
 #include "v8datamodel/DataModel.h"
 #include "rbx/TaskScheduler.h"
 #include "rbx/TaskScheduler.Job.h"
@@ -329,5 +329,4 @@ void RobloxScriptReview::onSectionClicked(int index)
 	if(!isSortingEnabled())
 		setSortingEnabled(true);
 }
-
 

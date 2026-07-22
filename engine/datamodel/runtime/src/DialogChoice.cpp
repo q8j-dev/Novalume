@@ -1,6 +1,6 @@
 
-#include "V8DataModel/DialogChoice.h"
-#include "V8DataModel/DialogRoot.h"
+#include "v8datamodel/DialogChoice.h"
+#include "v8datamodel/DialogRoot.h"
 
 DYNAMIC_FASTFLAGVARIABLE(FilteringEnabledDialogFix, false);
 

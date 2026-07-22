@@ -1,5 +1,5 @@
 
-#include "V8DataModel/TextService.h"
+#include "v8datamodel/TextService.h"
 #include "rbx/ui/TextTruncate.h"
 
 FASTFLAGVARIABLE(TypesettersReleaseResources, true);

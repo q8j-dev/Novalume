@@ -12,9 +12,9 @@
 
 // Roblox Headers
 #include "Script/LuaSourceContainer.h"
-#include "Util/standardout.h"
-#include "Util/ContentId.h"
-#include "V8DataModel/PluginManager.h"
+#include "util/standardout.h"
+#include "util/ContentId.h"
+#include "v8datamodel/PluginManager.h"
 
 // Roblox Studio Headers
 #include "DocDockManager.h"

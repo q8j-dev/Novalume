@@ -1,9 +1,9 @@
 /* Copyright 2003-2005 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8Kernel/SimBody.h"
-#include "V8Kernel/Body.h"
-#include "V8Kernel/Constants.h"
-#include "Util/Units.h"
+#include "v8kernel/SimBody.h"
+#include "v8kernel/Body.h"
+#include "v8kernel/Constants.h"
+#include "util/Units.h"
 
 namespace RBX {
 

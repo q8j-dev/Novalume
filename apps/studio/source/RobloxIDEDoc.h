@@ -24,11 +24,11 @@
 // Roblox Headers
 #include "GfxBase/ViewBase.h"
 #include "v8datamodel/Game.h"
-#include "tool/DragTypes.h"
+#include "Tool/DragTypes.h"
 #include "rbx/signal.h"
 #include "rbx/BaldPtr.h"
 #include "util/G3DCore.h"
-#include "tool/DragTypes.h"
+#include "Tool/DragTypes.h"
 
 // Roblox Studio Headers
 #include "CloudEditAdornable.h"
@@ -36,7 +36,7 @@
 #include "SelectionHighlightAdornable.h"
 
 // 3rd. party
-#include "Filewatcher/FileWatcher.h"
+#include "filewatcher/FileWatcher.h"
 
 class XmlElement;
 class RobloxView;

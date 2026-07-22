@@ -9,7 +9,7 @@
 // Roblox Headers
 #include "v8datamodel/DebugSettings.h"
 #include "v8datamodel/GameBasicSettings.h"
-#include "V8DataModel/PartInstance.h"
+#include "v8datamodel/PartInstance.h"
 #include "util/standardout.h"
 #include "rbx/SystemUtil.h"
 
@@ -341,4 +341,3 @@ void CRenderSettingsItem::setObjExportMergeByMaterial(bool value)
 	SET_VAR_NOREG(T, boolName, boolVar, Category)
 
 SET_VAR(bool, EagerBulkExecution, eagerBulkExecution, "Performance")
-

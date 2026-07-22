@@ -1,6 +1,6 @@
-#include "V8DataModel/VRService.h"
+#include "v8datamodel/VRService.h"
 
-#include "V8DataModel/DataModel.h"
+#include "v8datamodel/DataModel.h"
 
 namespace RBX {
 

@@ -3,8 +3,8 @@
 #pragma once
 
 #include <string>
-#include "V8Tree/Instance.h"
-#include "Util/Velocity.h"
+#include "v8tree/Instance.h"
+#include "util/Velocity.h"
 #include "network/PacketBuffer.h"
 #include <boost/any.hpp>
 

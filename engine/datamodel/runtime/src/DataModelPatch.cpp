@@ -1,14 +1,14 @@
-#include "V8DataModel/DataModelPatch.h"
+#include "v8datamodel/DataModelPatch.h"
 
 #include "Script/CoreScript.h"
 #include "Script/ModuleScript.h"
-#include "V8DataModel/CorePackages.h"
-#include "V8DataModel/DataModel.h"
-#include "V8DataModel/LocalizationTable.h"
-#include "V8DataModel/PlayerGui.h"
-#include "V8DataModel/ScreenGui.h"
-#include "V8DataModel/Value.h"
-#include "V8Xml/SerializerV2.h"
+#include "v8datamodel/CorePackages.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/LocalizationTable.h"
+#include "v8datamodel/PlayerGui.h"
+#include "v8datamodel/ScreenGui.h"
+#include "v8datamodel/Value.h"
+#include "v8xml/SerializerV2.h"
 
 #include <openssl/evp.h>
 

@@ -1,12 +1,12 @@
 #pragma once
 #include <string>
-#include "Util/BrickColor.h"
-#include "Util/TextureId.h"
+#include "util/BrickColor.h"
+#include "util/TextureId.h"
 #include "Gui/ProfanityFilter.h"
 #include "Gui/GuiDraw.h"
-#include "Util/ContentFilter.h"
-#include "V8DataModel/GuiObject.h"
-#include "V8DataModel/UIComponent.h"
+#include "util/ContentFilter.h"
+#include "v8datamodel/GuiObject.h"
+#include "v8datamodel/UIComponent.h"
 
 namespace RBX
 {

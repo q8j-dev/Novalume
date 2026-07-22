@@ -10,15 +10,15 @@
 
 #include <boost/test/unit_test.hpp>
 #include <boost/scoped_ptr.hpp>
-#include "Util/Http.h"
-#include "Util/Guid.h"
+#include "util/Http.h"
+#include "util/Guid.h"
 #include <sstream>
 #include "rbx/test/ScopedFastFlagSetting.h"
 #include "rbx/test/test_tools.h"
 #include "rbx/test/DataModelFixture.h"
 
 #include "Server.h"
-#include "V8Xml/WebParser.h"
+#include "v8xml/WebParser.h"
 #include "v8datamodel/HttpRbxApiService.h"
 
 BOOST_AUTO_TEST_SUITE(HTTPSuite)
@@ -271,4 +271,3 @@ BOOST_AUTO_TEST_CASE(API_PROXY_HTTP_ASYNC_POST_TESTS)
 
 
 BOOST_AUTO_TEST_SUITE_END()
-

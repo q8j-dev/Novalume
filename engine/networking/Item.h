@@ -5,7 +5,7 @@
 #include "network/PacketBuffer.h"
 
 #include "rbx/Declarations.h"
-#include "rbx/boost.hpp"
+#include "rbx/Boost.hpp"
 #include "rbx/Debug.h"
 #include "rbx/rbxTime.h"
 #include "util/Memory.h"

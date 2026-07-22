@@ -2,8 +2,8 @@
 
 #include "rbx/test/DataModelFixture.h"
 #include "audio/SoundService.h"
-#include "V8DataModel/GlobalSettings.h"
-#include "V8Tree/Service.h"
+#include "v8datamodel/GlobalSettings.h"
+#include "v8tree/Service.h"
 
 using namespace RBX;
 

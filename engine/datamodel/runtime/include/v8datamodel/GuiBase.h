@@ -3,9 +3,9 @@
 #pragma once
 
 #include "Gui/GuiEvent.h"
-#include "Util/G3DCore.h"
-#include "V8DataModel/InputObject.h"
-#include "V8DataModel/UserInputService.h"
+#include "util/G3DCore.h"
+#include "v8datamodel/InputObject.h"
+#include "v8datamodel/UserInputService.h"
 #include "GfxBase/IAdornable.h"
 
 namespace RBX {
@@ -44,4 +44,3 @@ namespace RBX {
 		typedef DescribedNonCreatable<GuiBase, Instance, sGuiBase> Super;
 	};
 }
-

@@ -1,11 +1,11 @@
 /* Copyright 2003-2005 ROBLOX Corporation, All Rights Reserved */
 
 
-#include "V8DataModel/PhysicsInstructions.h"		// TODO - minimize these includes, and in the .h file
-#include "V8DataModel/Workspace.h"
+#include "v8datamodel/PhysicsInstructions.h"		// TODO - minimize these includes, and in the .h file
+#include "v8datamodel/Workspace.h"
 #include "v8datamodel/PhysicsSettings.h"
-#include "V8World/World.h"
-#include "Network/Player.h"
+#include "v8world/World.h"
+#include "network/Player.h"
 
 LOGGROUP(CyclicExecutiveThrottling)
 

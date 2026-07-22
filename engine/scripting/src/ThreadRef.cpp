@@ -6,8 +6,8 @@
 #include "Script/script.h"
 #include "lua/lua.hpp"
 #include "lua/LuaBridge.h"
-#include "rbxformat.h"
-#include "reflection/property.h"
+#include "RbxFormat.h"
+#include "reflection/Property.h"
 #include "util/standardout.h"
 #include <rbx/make_shared.h>
 

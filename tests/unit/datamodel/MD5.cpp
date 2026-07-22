@@ -8,7 +8,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/scoped_ptr.hpp>
 
-#include "util/MD5hasher.h"
+#include "util/MD5Hasher.h"
 
 static const char *ZERO_LENGTH_HASH = "d41d8cd98f00b204e9800998ecf8427e";
 static const char *QBF_HASH         = "bfb85e401a205cde01d17164bd3de689";

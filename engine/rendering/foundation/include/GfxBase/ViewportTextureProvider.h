@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GfxBase/TextureProxyBase.h"
-#include "Util/G3DCore.h"
+#include "util/G3DCore.h"
 #include "boost/shared_ptr.hpp"
 #include <string>
 

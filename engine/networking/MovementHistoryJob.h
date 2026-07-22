@@ -2,7 +2,7 @@
 
 #include "network/NetworkTypes.h"
 
-#include "V8DataModel/DataModelJob.h"
+#include "v8datamodel/DataModelJob.h"
 
 namespace RBX { 
 
@@ -31,4 +31,3 @@ namespace Network {
 	
 }
 }
-

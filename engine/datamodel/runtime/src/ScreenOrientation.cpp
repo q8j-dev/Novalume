@@ -1,6 +1,6 @@
-#include "V8DataModel/ScreenOrientation.h"
+#include "v8datamodel/ScreenOrientation.h"
 
-#include "reflection/enumconverter.h"
+#include "reflection/EnumConverter.h"
 
 namespace RBX {
 namespace Reflection {

@@ -41,8 +41,8 @@ using namespace cat;
 
 // Include and link to various Windows libraries needed to collect system info
 #include <Psapi.h>
-#include <Lmcons.h>   // LAN-MAN constants for "UNLEN" username max length
-#include <Iphlpapi.h> // GetAdaptersInfo()
+#include <LMCons.h>   // LAN-MAN constants for "UNLEN" username max length
+#include <IPHlpApi.h> // GetAdaptersInfo()
 #include <Process.h>  // _beginthreadex()
 
 #pragma comment(lib, "iphlpapi")

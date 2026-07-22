@@ -1,9 +1,9 @@
 
-#include "V8World/WedgePoly.h"
+#include "v8world/WedgePoly.h"
 
-#include "V8World/GeometryPool.h"
-#include "V8World/WedgeMesh.h"
-#include "Util/Math.h"
+#include "v8world/GeometryPool.h"
+#include "v8world/WedgeMesh.h"
+#include "util/Math.h"
 
 
 namespace RBX {

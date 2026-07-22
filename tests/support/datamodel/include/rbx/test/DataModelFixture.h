@@ -2,22 +2,22 @@
 
 // Helpful utility classes you can use to do DataModel-driven tests
 
-#include "v8datamodel/datamodel.h"
+#include "v8datamodel/DataModel.h"
 #include "v8datamodel/factoryregistration.h"
 #include "v8datamodel/GameSettings.h"
 #include "v8datamodel/DebugSettings.h"
 #include "v8datamodel/PhysicsSettings.h"
 #include "v8datamodel/CommonVerbs.h"
-#include "script/LuaSettings.h"
-#include "Util/Http.h"
-#include "Util/Profiling.h"
-#include "Util/StandardOut.h"
-#include "script/LuaSettings.h"
-#include "script/ScriptContext.h"
-#include "Network/API.h"
-#include "Network/Players.h"
+#include "Script/LuaSettings.h"
+#include "util/Http.h"
+#include "util/Profiling.h"
+#include "util/standardout.h"
+#include "Script/LuaSettings.h"
+#include "Script/ScriptContext.h"
+#include "network/api.h"
+#include "network/Players.h"
 #include "rbx/test/test_tools.h"
-#include "gui/ProfanityFilter.h"
+#include "Gui/ProfanityFilter.h"
 
 // Use this fixture to create a DataModel
 class DataModelFixture

@@ -24,10 +24,10 @@
 #include "v8datamodel/ChangeHistory.h"
 #include "v8datamodel/GuiObject.h"
 #include "Script/ModuleScript.h"
-#include "script/script.h"
+#include "Script/script.h"
 #include "util/ScopedAssign.h"
 #include "util/BrickColor.h"
-#include "ReflectionMetaData.h"
+#include "ReflectionMetadata.h"
 #include "v8datamodel/PlayerGui.h"
 
 // Roblox Studio Headers

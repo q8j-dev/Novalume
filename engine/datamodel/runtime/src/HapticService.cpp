@@ -8,7 +8,7 @@
 
 
 
-#include "V8DataModel/HapticService.h"
+#include "v8datamodel/HapticService.h"
 
 namespace RBX
 {
@@ -133,4 +133,3 @@ namespace RBX
 	}
 
 } // namespace RBX
-

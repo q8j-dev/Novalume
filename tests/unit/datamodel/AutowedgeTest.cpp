@@ -2,9 +2,9 @@
 
 #include "Client.h"
 #include "rbx/test/DataModelFixture.h"
-#include "V8DataModel/DataModel.h"
-#include "V8DataModel/Explosion.h"
-#include "V8DataModel/MegaCluster.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/Explosion.h"
+#include "v8datamodel/MegaCluster.h"
 
 using namespace RBX;
 using namespace RBX::Voxel;

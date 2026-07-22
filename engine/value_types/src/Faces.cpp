@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "Util/Faces.h"
+#include "util/Faces.h"
 #include "util/Utilities.h"
 
 namespace RBX
@@ -71,4 +71,3 @@ bool StringConverter<Faces>::convertToValue(const std::string& text, Faces& valu
 	return true;
 }
 }
-

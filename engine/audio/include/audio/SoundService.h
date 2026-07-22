@@ -2,14 +2,14 @@
 
 #pragma once
 
-#include "V8Tree/Service.h"
-#include "V8datamodel/DataModel.h"
-#include "V8DataModel/Stats.h"
-#include "V8DataModel/InteractionEnums.h"
+#include "v8tree/Service.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/Stats.h"
+#include "v8datamodel/InteractionEnums.h"
 #include "audio/SoundWorld.h"
 #include "audio/SoundChannel.h"
-#include "Reflection/Event.h"
-#include "Util/IHasLocation.h"
+#include "reflection/Event.h"
+#include "util/IHasLocation.h"
 
 #include <array>
 #include <cstdint>

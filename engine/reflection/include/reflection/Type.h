@@ -6,7 +6,7 @@
 #include <boost/static_assert.hpp>
 #include <boost/type_traits/is_arithmetic.hpp>
 #include <boost/type_traits/is_float.hpp>
-#include <util/utilities.h>
+#include <util/Utilities.h>
 
 #include <boost/unordered_map.hpp>
 #include <list>

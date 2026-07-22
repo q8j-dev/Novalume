@@ -1,9 +1,9 @@
 #pragma once
 
 #include "rbx/signal.h"
-#include "reflection/type.h"
-#include "Reflection/reflection.h"
-#include "Reflection/Event.h"
+#include "reflection/Type.h"
+#include "reflection/reflection.h"
+#include "reflection/Event.h"
 
 /*
 

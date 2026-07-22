@@ -10,11 +10,11 @@
 #include "v8datamodel/ContentProvider.h"
 #include "v8datamodel/Test.h"
 #include "v8datamodel/Workspace.h"
-#include "V8DataModel/PhysicsSettings.h"
-#include "script/script.h"
-#include "script/ScriptContext.h"
+#include "v8datamodel/PhysicsSettings.h"
+#include "Script/script.h"
+#include "Script/ScriptContext.h"
 
-#include "Network/GameConfigurer.h"
+#include "network/GameConfigurer.h"
 #include "../NetworkSettings.h"
 
 #include "rbx/CEvent.h"
@@ -513,4 +513,3 @@ boost::unit_test::test_suite* init_unit_test_suite( int argc, char* argv[] )
 	init_unit_test();
 	return 0;
 }
-

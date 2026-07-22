@@ -17,7 +17,7 @@
 #include <QQueue>
 
 #include "rbx/signal.h"
-#include "Util/HttpAsync.h"
+#include "util/HttpAsync.h"
 
 namespace RBX {
 	class DataModel;

@@ -1,4 +1,4 @@
-#include "Voxel/Serializer.h"
+#include "voxel/Serializer.h"
 
 namespace RBX { namespace Voxel {
 

@@ -7,10 +7,10 @@
 #include "ControllerBuffer.h"
 
 #include "util/KeyCode.h"
-#include "Util/G3DCore.h"
+#include "util/G3DCore.h"
 
 
-#include "V8Tree/Service.h"
+#include "v8tree/Service.h"
 #include "v8datamodel/InputObject.h"
 #include "v8datamodel/HapticService.h"
 

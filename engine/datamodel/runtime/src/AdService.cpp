@@ -6,10 +6,10 @@
 //
 //
 
-#include "V8DataModel/AdService.h"
-#include "V8DataModel/UserInputService.h"
+#include "v8datamodel/AdService.h"
+#include "v8datamodel/UserInputService.h"
 #include "v8datamodel/HttpRbxApiService.h"
-#include "Network/Players.h"
+#include "network/Players.h"
 #include "v8xml/WebParser.h"
 
 FASTFLAGVARIABLE(EnableVideoAds, true)

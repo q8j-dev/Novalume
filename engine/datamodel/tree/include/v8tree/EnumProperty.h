@@ -5,8 +5,8 @@
 #include <vector>
 #include <map>
 
-#include "reflection/enumconverter.h"
-#include "V8Tree/Property.h"
+#include "reflection/EnumConverter.h"
+#include "v8tree/Property.h"
 
 namespace RBX {
 

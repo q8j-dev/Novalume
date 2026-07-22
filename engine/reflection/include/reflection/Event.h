@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "reflection/type.h"
+#include "reflection/Type.h"
 #include "reflection/member.h"
 #include "security/SecurityContext.h"
 #include "util/standardout.h"
@@ -14,7 +14,7 @@
 
 #include "rbx/Countable.h"
 #include "rbx/signal.h"
-#include "reflection/type.h"
+#include "reflection/Type.h"
 
 namespace RBX
 {

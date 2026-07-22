@@ -2,8 +2,8 @@
 
 #include <sstream>
 
-#include "V8Xml/XmlElement.h"
-#include "V8Xml/XmlSerializer.h"
+#include "v8xml/XmlElement.h"
+#include "v8xml/XmlSerializer.h"
 
 using namespace RBX;
 
@@ -54,4 +54,3 @@ BOOST_AUTO_TEST_CASE(StringToInt)
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-

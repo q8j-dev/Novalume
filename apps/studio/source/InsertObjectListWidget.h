@@ -13,7 +13,7 @@
 #include <QListWidget>
 
 #include "rbx/signal.h"
-#include "Reflection/Property.h"
+#include "reflection/Property.h"
 
 class QListWidgetItem;
 

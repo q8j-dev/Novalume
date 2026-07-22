@@ -1,7 +1,7 @@
-#include "V8DataModel/ThirdPartyUserService.h"
+#include "v8datamodel/ThirdPartyUserService.h"
 
 #if defined(RBX_PLATFORM_DURANGO) || defined(RBX_PLATFORM_UWP)
-#include "V8DataModel/PlatformService.h"
+#include "v8datamodel/PlatformService.h"
 #endif
 
 namespace RBX {

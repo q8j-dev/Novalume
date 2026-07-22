@@ -11,7 +11,7 @@
 #include "xdpevents.h"
 #include "XboxUtils.h"
 
-#include "Marshaller.h"
+#include "marshaller.h"
 #include "RenderJob.h"
 #include "ControllerBuffer.h"
 #include "UserTranslator.h"
@@ -31,7 +31,7 @@
 #include "v8datamodel/GamepadService.h"
 #include "v8datamodel/FastLogSettings.h"
 #include "v8datamodel/GameSettings.h"
-#include "V8DataModel/GameBasicSettings.h"
+#include "v8datamodel/GameBasicSettings.h"
 #include "v8datamodel/ModelInstance.h"
 
 #include "v8xml/WebParser.h"
@@ -40,18 +40,18 @@
 #include "GfxBase/RenderSettings.h"
 #include "GfxBase/FrameRateManager.h"
 
-#include "Network/Players.h"
-#include "Network/Player.h"
+#include "network/Players.h"
+#include "network/Player.h"
 
 #include "RenderSettingsItem.h"
-#include "script/ScriptContext.h"
+#include "Script/ScriptContext.h"
 #include "util/Statistics.h"
 
 #include "g3d/g3dmath.h"
 
-#include "Util/StandardOut.h"
+#include "util/standardout.h"
 #include "audio/SoundService.h"
-#include "Util/HttpPlatformImpl.h"
+#include "util/HttpPlatformImpl.h"
 
 
 FASTINTVARIABLE(CheckValidSessionInterval, 60)	 // validation check 

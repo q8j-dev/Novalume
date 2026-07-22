@@ -1,8 +1,8 @@
-#include "V8DataModel/LocalizationService.h"
+#include "v8datamodel/LocalizationService.h"
 
-#include "V8DataModel/PlayerGui.h"
-#include "V8DataModel/LocalizationTable.h"
-#include "Network/Player.h"
+#include "v8datamodel/PlayerGui.h"
+#include "v8datamodel/LocalizationTable.h"
+#include "network/Player.h"
 
 #include <algorithm>
 #include <cctype>

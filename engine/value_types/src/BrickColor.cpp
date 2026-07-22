@@ -1,7 +1,7 @@
 /* Copyright 2003-2006 ROBLOX Corporation, All Rights Reserved */
 #include "stdafx.h"
 
-#include "Util/BrickColor.h"
+#include "util/BrickColor.h"
 #include <map>
 #include <assert.h>
 #include "rbx/Debug.h"
@@ -792,4 +792,3 @@ namespace RBX {
 		return hasher(c.asInt());
 	}
 }
-

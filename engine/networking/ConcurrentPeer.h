@@ -6,7 +6,7 @@
 
 #include "boost/noncopyable.hpp"
 #include "boost/shared_ptr.hpp"
-#include "V8DataModel/DataModelJob.h"
+#include "v8datamodel/DataModelJob.h"
 #include "rbx/threadsafe.h"
 
 #include <deque>

@@ -21,7 +21,7 @@
 #include "RobloxNetworkAccessManager.h"
 #include "RobloxSettings.h"
 #include "QtUtilities.h"
-#include "Util/RobloxGoogleAnalytics.h"
+#include "util/RobloxGoogleAnalytics.h"
 
 #include <QWebElement>
 

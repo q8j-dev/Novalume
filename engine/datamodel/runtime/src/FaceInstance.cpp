@@ -1,6 +1,6 @@
 
-#include "V8DataModel/FaceInstance.h"
-#include "V8DataModel/PartInstance.h"
+#include "v8datamodel/FaceInstance.h"
+#include "v8datamodel/PartInstance.h"
 #include "AppDraw/DrawAdorn.h"
 
 using namespace RBX;

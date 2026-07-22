@@ -14,10 +14,10 @@
 
 #include <Windows.h>
 
-#include <mstcpip.h>
-#include <winsock2.h>
+#include <MSTcpIP.h>
+#include <WinSock2.h>
 #include <ws2ipdef.h>
-#include <ws2tcpip.h>
+#include <WS2tcpip.h>
 #include <tchar.h>
 #include <collection.h>
 #include <ppltasks.h>
@@ -36,5 +36,4 @@
 #ifdef _TITLE
 #include <pix.h>
 #endif
-#include "Common/macros.h"
-
+#include "common/macros.h"

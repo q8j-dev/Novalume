@@ -1,10 +1,10 @@
 
 #include "./v8datamodel/Sky.h"
 
-#include "g3d/gimage.h"
+#include "g3d/GImage.h"
 #include "util/standardout.h"
-#include "Util/RobloxGoogleAnalytics.h"
-#include "v8datamodel/contentprovider.h"
+#include "util/RobloxGoogleAnalytics.h"
+#include "v8datamodel/ContentProvider.h"
 
 const char* const RBX::sSky = "Sky";
 

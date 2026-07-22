@@ -2,11 +2,11 @@
 #include "rbx/test/Base.UnitTest.Lib.h"
 #include "rbx/test/ScopedFastFlagSetting.h"
 
-#include "script/script.h"
-#include "v8tree/instance.h"
-#include "v8dataModel/BasicPartInstance.h"
+#include "Script/script.h"
+#include "v8tree/Instance.h"
+#include "v8datamodel/BasicPartInstance.h"
 #include "v8datamodel/PartInstance.h"
-#include "v8dataModel/Tool.h"
+#include "v8datamodel/Tool.h"
 #include "rbx/test/DataModelFixture.h"
 
 extern const char* const sInstanceTest;
@@ -576,4 +576,3 @@ BOOST_AUTO_TEST_SUITE(Instance)
 	}
 
 	BOOST_AUTO_TEST_SUITE_END()
-

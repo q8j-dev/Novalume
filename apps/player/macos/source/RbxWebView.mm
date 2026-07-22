@@ -11,7 +11,7 @@
 
 #include "RobloxView.h"
 #include "v8datamodel/GuiService.h"
-#include "v8datamodel/Datamodel.h"
+#include "v8datamodel/DataModel.h"
 
 FASTSTRING(ClientExternalBrowserUserAgent)
 

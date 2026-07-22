@@ -13,7 +13,7 @@
 typedef int socklen_t;
 // IP_DONTFRAGMENT is different between winsock 1 and winsock 2.  Therefore, Winsock2.h must be linked againt Ws2_32.lib
 // winsock.h must be linked against WSock32.lib.  If these two are mixed up the flag won't work correctly
-#include <winsock2.h>
+#include <WinSock2.h>
 #else
 #define closesocket close
 #include <unistd.h>

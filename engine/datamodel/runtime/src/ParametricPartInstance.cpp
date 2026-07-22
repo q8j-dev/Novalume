@@ -1,8 +1,8 @@
 /* Copyright 2003-2005 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8DataModel/ParametricPartInstance.h"
-#include "V8World/Primitive.h"
-#include "V8World/Poly.h"
+#include "v8datamodel/ParametricPartInstance.h"
+#include "v8world/Primitive.h"
+#include "v8world/Poly.h"
 
 namespace RBX
 {

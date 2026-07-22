@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "reflection/type.h"
+#include "reflection/Type.h"
 #include "v8datamodel/DataModel.h"
 #include "v8datamodel/UserInputService.h"
 #include "v8datamodel/GamepadService.h"

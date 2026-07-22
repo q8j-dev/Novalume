@@ -1,7 +1,7 @@
-#include "V8DataModel/MicroProfilerService.h"
+#include "v8datamodel/MicroProfilerService.h"
 
-#include "V8DataModel/DataModel.h"
-#include "Util/FileSystem.h"
+#include "v8datamodel/DataModel.h"
+#include "util/FileSystem.h"
 #include "rbx/Profiler.h"
 
 #include <boost/filesystem.hpp>

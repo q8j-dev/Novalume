@@ -6,12 +6,12 @@
 #include "Streaming.h"
 #include "NetworkSettings.h"
 #include "Item.h"
-#include "Network/api.h"
+#include "network/api.h"
 #include "network/NetworkTypes.h"
-#include "V8Tree/Instance.h"
-#include "Util/RunStateOwner.h"
-#include "Util/Region2.h"
-#include "V8DataModel/DataModelJob.h"
+#include "v8tree/Instance.h"
+#include "util/RunStateOwner.h"
+#include "util/Region2.h"
+#include "v8datamodel/DataModelJob.h"
 #include "queue"
 
 namespace RBX { 

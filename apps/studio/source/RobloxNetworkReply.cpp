@@ -12,7 +12,7 @@
 #include <QEventLoop>
 
 // Roblox headers
-#include "Rbx/debug.h"
+#include "rbx/Debug.h"
 
 // Roblox Studio headers
 #include "RobloxNetworkAccessManager.h"

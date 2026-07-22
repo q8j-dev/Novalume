@@ -1,7 +1,7 @@
-#include "V8DataModel/PolicyService.h"
+#include "v8datamodel/PolicyService.h"
 
-#include "V8DataModel/LocalizationService.h"
-#include "reflection/enumconverter.h"
+#include "v8datamodel/LocalizationService.h"
+#include "reflection/EnumConverter.h"
 
 #include <algorithm>
 

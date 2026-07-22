@@ -1,6 +1,6 @@
-#include "V8DataModel/GuiLayerCollector.h"
+#include "v8datamodel/GuiLayerCollector.h"
 
-#include "V8DataModel/GuiObject.h"
+#include "v8datamodel/GuiObject.h"
 #include "v8datamodel/TextBox.h"
 #include "v8datamodel/ScrollingFrame.h"
 #include "reflection/Object.h"

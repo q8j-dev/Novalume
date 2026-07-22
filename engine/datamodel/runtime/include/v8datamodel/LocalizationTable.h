@@ -1,7 +1,7 @@
 #pragma once
 
-#include "V8Tree/Instance.h"
-#include "Reflection/Type.h"
+#include "v8tree/Instance.h"
+#include "reflection/Type.h"
 
 #include <map>
 

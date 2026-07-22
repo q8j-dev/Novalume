@@ -1,12 +1,12 @@
 #include "stdafx.h"
 #include "WebBrowserAxDialog.h"
-#include <Exdispid.h> // platform SDK header
+#include <ExDispid.h> // platform SDK header
 #include "util/FileSystem.h"
 #include "util/Statistics.h"
 #include "util/Http.h"
 #include "v8datamodel/DataModel.h"
-#include "V8DataModel/GameSettings.h"
-#include "V8DataModel/GameBasicSettings.h"
+#include "v8datamodel/GameSettings.h"
+#include "v8datamodel/GameBasicSettings.h"
 #include "v8datamodel/PlayerGui.h"
 #include "format_string.h"
 

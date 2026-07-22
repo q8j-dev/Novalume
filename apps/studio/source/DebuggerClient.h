@@ -15,7 +15,7 @@
 
 // Roblox Headers
 #include "rbx/signal.h"
-#include "script/DebuggerManager.h"
+#include "Script/DebuggerManager.h"
 
 // Qt Headers
 #include <QObject>
@@ -326,5 +326,4 @@ private:
 	bool                                                m_isModifiedByKeyBoard;
 	bool                                                m_ignoreAutoRepeatEvent;
 };
-
 

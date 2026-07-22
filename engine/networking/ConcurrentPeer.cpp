@@ -2,7 +2,7 @@
 
 #include "NetworkSettings.h"
 #include "util/standardout.h"
-#include "v8datamodel/datamodel.h"
+#include "v8datamodel/DataModel.h"
 
 #include <algorithm>
 #include <array>

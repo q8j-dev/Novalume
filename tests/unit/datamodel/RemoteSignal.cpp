@@ -8,9 +8,9 @@
 #include "rbx/test/test_tools.h"
 
 #include "rbx/test/DataModelFixture.h"
-#include "v8dataModel/Workspace.h"
-#include "v8dataModel/EventReplicator.h"
-#include "Network/Players.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/EventReplicator.h"
+#include "network/Players.h"
 
 using namespace RBX;
 
@@ -328,4 +328,3 @@ BOOST_AUTO_TEST_CASE(EventReplicator)
 
 
 BOOST_AUTO_TEST_SUITE_END()
-

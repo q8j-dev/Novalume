@@ -7,8 +7,8 @@
 #undef min
 #undef max
 
-#include "util/StandardOut.h"
-#include "rbx/boost.hpp"
+#include "util/standardout.h"
+#include "rbx/Boost.hpp"
 #include "Roblox.h"
 
 using namespace RBX;
@@ -149,4 +149,3 @@ FunctionMarshaller::StaticData::~StaticData()
 //	for (std::map<DWORD, FunctionMarshaller*>::iterator iter = windows.begin(); iter != windows.end(); ++iter)
 //		iter->second->DestroyWindow();
 }
-

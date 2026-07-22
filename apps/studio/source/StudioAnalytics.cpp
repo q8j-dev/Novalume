@@ -3,7 +3,7 @@
 #include "LuaSourceBuffer.h"
 
 #include "util/Utilities.h"
-#include "Util/RobloxGoogleAnalytics.h"
+#include "util/RobloxGoogleAnalytics.h"
 
 #include "v8datamodel/Remote.h"
 #include "v8datamodel/PartInstance.h"

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Humanoid/Balancing.h"
+#include "humanoid/Balancing.h"
 
 namespace RBX {
 
@@ -48,4 +48,3 @@ namespace RBX {
 
 	} // namespace HUMAN
 }	// namespace
-

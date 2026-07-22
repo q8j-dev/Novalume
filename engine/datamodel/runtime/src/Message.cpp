@@ -1,13 +1,13 @@
 /* Copyright 2003-2005 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8DataModel/Message.h"
-#include "Util/G3DCore.h"
-#include "Util/Rect.h"
+#include "v8datamodel/Message.h"
+#include "util/G3DCore.h"
+#include "util/Rect.h"
 #include "AppDraw/DrawPrimitives.h"
 #include "GfxBase/Adorn.h"
 
 
-#include "Network/Player.h"
+#include "network/Player.h"
 #include "Gui/ProfanityFilter.h"
 
 

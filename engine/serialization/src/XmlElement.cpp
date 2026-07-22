@@ -1,9 +1,9 @@
 
 #include "RbxAssert.h"
-#include "V8Xml/XmlElement.h"
-#include "V8Xml/XmlSerializer.h"
-#include "Util/Guid.h"
-#include "Util/Utilities.h"
+#include "v8xml/XmlElement.h"
+#include "v8xml/XmlSerializer.h"
+#include "util/Guid.h"
+#include "util/Utilities.h"
 #include "rbx/Debug.h"
 #include "reflection/Object.h"
 #include <stdlib.h>

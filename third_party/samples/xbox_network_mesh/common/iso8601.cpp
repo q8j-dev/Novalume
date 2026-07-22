@@ -12,7 +12,7 @@
 // http://www.iso.org/iso/en/prods-services/popstds/datesandtime.html
 
 #include "pch.h"
-#include "ISO8601.h"
+#include "iso8601.h"
 
 #define ISO8601_MAX_USED_CCH 26 // Max amount of characters when generating ISO 8601 strings: YYYY-MM-DDThh:mm:ss.ssssZ + terminating zero
 

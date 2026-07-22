@@ -1,9 +1,9 @@
 /* Copyright 2003-2005 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8DataModel/DebugSettings.h"
-#include "V8DataModel/DataModel.h"
-#include "util/profiling.h"
-#include "util/http.h"
+#include "v8datamodel/DebugSettings.h"
+#include "v8datamodel/DataModel.h"
+#include "util/Profiling.h"
+#include "util/Http.h"
 #include "rbx/ProcessPerfCounter.h"
 #include "Script/LuaMemory.h"
 #include "v8world/Block.h"

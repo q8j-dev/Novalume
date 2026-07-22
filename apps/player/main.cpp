@@ -7,7 +7,7 @@
 #include "rbx/platform/Host.h"
 #include "rbx/platform/Utf8Path.h"
 #include "GfxCore/Device.h"
-#include "V8DataModel/LocalStorageService.h"
+#include "v8datamodel/LocalStorageService.h"
 #include "util/Http.h"
 
 #include <algorithm>

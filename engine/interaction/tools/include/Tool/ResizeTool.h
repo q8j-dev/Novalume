@@ -4,7 +4,7 @@
 
 #include "Tool/ToolsArrow.h"
 #include "AppDraw/HandleType.h"
-#include "Util/NormalId.h"
+#include "util/NormalId.h"
 
 namespace RBX {
 

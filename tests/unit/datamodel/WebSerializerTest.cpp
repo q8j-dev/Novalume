@@ -1,9 +1,9 @@
 #include <boost/test/unit_test.hpp>
-#include "V8Xml/WebSerializer.h"
-#include "V8Xml/WebParser.h"
-#include "V8DataModel/BasicPartInstance.h"
-#include "V8DataModel/ModelInstance.h"
-#include "V8DataModel/JointInstance.h"
+#include "v8xml/WebSerializer.h"
+#include "v8xml/WebParser.h"
+#include "v8datamodel/BasicPartInstance.h"
+#include "v8datamodel/ModelInstance.h"
+#include "v8datamodel/JointInstance.h"
 
 using namespace RBX;
 

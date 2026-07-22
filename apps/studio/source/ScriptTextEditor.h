@@ -27,7 +27,7 @@
 #include "rbx/signal.h"
 #include "reflection/Property.h"
 
-#include "script/ScriptAnalyzer.h"
+#include "Script/ScriptAnalyzer.h"
 
 // Roblox Studio Headers
 #include "FindDialog.h"
@@ -376,5 +376,4 @@ private:
 	typedef RBX::DenseHashMap<const char*, std::pair<int, std::string>, RBX::Reflection::StringHashPredicate, RBX::Reflection::StringEqualPredicate> WikiLookup;
 	static WikiLookup						wikiLookup;
 };
-
 

@@ -3,9 +3,9 @@
 #include "reflection/Type.h"
 #include "rbx/CEvent.h"
 #include "Script/LuaSourceContainer.h"
-#include "Util/ContentId.h"
-#include "Util/HttpAsync.h"
-#include "V8DataModel/ContentProvider.h"
+#include "util/ContentId.h"
+#include "util/HttpAsync.h"
+#include "v8datamodel/ContentProvider.h"
 
 #include <QIcon>
 #include <QPointer>

@@ -2,9 +2,9 @@
 
 #include "Server.h"
 
-#include "Network/API.h"
-#include "Network/NetworkClusterPacketCache.h"
-#include "Network/Players.h"
+#include "network/api.h"
+#include "network/NetworkClusterPacketCache.h"
+#include "network/Players.h"
 #include "ConcurrentPeer.h"
 #include "NetworkSettings.h"
 #include "NetworkOwnerJob.h"
@@ -13,19 +13,19 @@
 
 #include "Script/ModuleScript.h"
 #include "Script/script.h"
-#include "Util/http.h"
-#include "Util/RobloxGoogleAnalytics.h"
-#include "Util/Statistics.h"
+#include "util/Http.h"
+#include "util/RobloxGoogleAnalytics.h"
+#include "util/Statistics.h"
 #include "audio/SoundService.h"
-#include "V8DataModel/DataModel.h"
-#include "V8DataModel/partinstance.h"
-#include "V8DataModel/Workspace.h"			// TODO - move distributed physics switch somewhere else
-#include "V8DataModel/message.h"
-#include "V8DataModel/MegaCluster.h"
-#include "V8datamodel/TimerService.h"
-#include "V8World/Assembly.h"
-#include "V8World/Mechanism.h"
-#include "V8World/Primitive.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/Workspace.h"			// TODO - move distributed physics switch somewhere else
+#include "v8datamodel/Message.h"
+#include "v8datamodel/MegaCluster.h"
+#include "v8datamodel/TimerService.h"
+#include "v8world/Assembly.h"
+#include "v8world/Mechanism.h"
+#include "v8world/Primitive.h"
 
 #include "network/NetworkTypes.h"
 #include <boost/thread/xtime.hpp>
@@ -39,7 +39,7 @@
 
 #include "FastLog.h"
 
-#include "script/LuaVM.h"
+#include "Script/LuaVM.h"
 
 DYNAMIC_LOGGROUP(NetworkJoin)
 

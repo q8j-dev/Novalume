@@ -1,12 +1,12 @@
 /* Copyright 2003-2005 ROBLOX Corporation, All Rights Reserved */
 #include "stdafx.h"
 
-#include "V8DataModel/ContentProvider.h"
-#include "Util/AnimationId.h"
+#include "v8datamodel/ContentProvider.h"
+#include "util/AnimationId.h"
 
 
-#include "V8DataModel/Workspace.h"
-#include "V8DataModel/Camera.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/Camera.h"
 
 #include "util/standardout.h"
 
@@ -95,4 +95,4 @@ bool TypedPropertyDescriptor<RBX::AnimationId>::setStringValue(DescribedBase* in
 }
 
 } // namespace Reflection
-} // namespace RBX 
+} // namespace RBX

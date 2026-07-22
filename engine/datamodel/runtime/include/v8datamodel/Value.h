@@ -1,9 +1,9 @@
 #pragma once
 
-#include "v8tree/instance.h"
-#include "V8DataModel/Configuration.h"
-#include "Util/BinaryString.h"
-#include "Util/BrickColor.h"
+#include "v8tree/Instance.h"
+#include "v8datamodel/Configuration.h"
+#include "util/BinaryString.h"
+#include "util/BrickColor.h"
 #include "Script/LuaVM.h"
 
 #if defined(RBX_SECURE_DOUBLE)

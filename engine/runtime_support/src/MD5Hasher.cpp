@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
-#include "Util/MD5Hasher.h"
-#include "Util/StandardOut.h"
+#include "util/MD5Hasher.h"
+#include "util/standardout.h"
 #include "StringConv.h"
 
 

@@ -59,7 +59,7 @@ SocketLayerOverride *SocketLayer::slo=0;
 
 #if   defined(_WIN32)
 #include "WSAStartupSingleton.h"
-#include <ws2tcpip.h> // 'IP_DONTFRAGMENT' 'IP_TTL'
+#include <WS2tcpip.h> // 'IP_DONTFRAGMENT' 'IP_TTL'
 #elif defined SN_TARGET_PSP2
 #else
 #include <unistd.h>

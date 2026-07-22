@@ -1,10 +1,10 @@
 /* Copyright 2003-2007 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8DataModel/ScriptMouseCommand.h"
-#include "V8DataModel/Workspace.h"
-#include "V8DataModel/Mouse.h"
-#include "Network/Players.h"
-#include "Network/Player.h"
+#include "v8datamodel/ScriptMouseCommand.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/Mouse.h"
+#include "network/Players.h"
+#include "network/Player.h"
 
 
 namespace RBX {

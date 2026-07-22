@@ -11,7 +11,7 @@
 #include <QTextCursor>
 
 // Roblox Headers
-#include "script/ScriptContext.h"
+#include "Script/ScriptContext.h"
 #include "v8datamodel/DataModel.h"
 
 // Roblox Studio Headers

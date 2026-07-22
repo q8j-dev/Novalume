@@ -1,6 +1,6 @@
 
 #include "Item.h"
-#include "streaming.h"
+#include "Streaming.h"
 
 namespace RBX { 
 namespace Network {
@@ -159,4 +159,3 @@ void ItemQueue::push_front_preserve_timestamp(Item* item)
 
 
 }}	// namespace
-

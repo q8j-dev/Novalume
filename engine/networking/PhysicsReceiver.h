@@ -8,7 +8,7 @@
 #include "MechanismItem.h"
 #include "ReplicatorStats.h"
 #include "rbx/Declarations.h"
-#include "rbx/boost.hpp"
+#include "rbx/Boost.hpp"
 #include <vector>
 
 #include "network/NetworkTypes.h"

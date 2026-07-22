@@ -30,7 +30,7 @@
 #include "v8datamodel/StudioPluginHost.h"
 #include "rbx/Debug.h"
 #include "rbx/BaldPtr.h"
-#include "tool/DragTypes.h"
+#include "Tool/DragTypes.h"
 #include "Roblox.h"
 #include "StudioAnalytics.h"
 #include "util/Http.h"
@@ -373,4 +373,3 @@ private:
 public:
 	PersistentVariable m_editScriptActions, m_mouseActions, m_inserts;
 };
-

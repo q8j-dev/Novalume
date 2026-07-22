@@ -5,12 +5,12 @@
 #include "ClusterUpdateBuffer.h"
 #include "rbx/test/ScopedFastFlagSetting.h"
 #include "Replicator.h"
-#include "Security/SecurityContext.h"
+#include "security/SecurityContext.h"
 #include "Server.h"
 #include "ServerReplicator.h"
 #include "Util/stringbuffer.h"
-#include "Util/VarInt.h"
-#include "V8DataModel/MegaCluster.h"
+#include "util/VarInt.h"
+#include "v8datamodel/MegaCluster.h"
 
 using namespace RBX;
 using namespace Network;

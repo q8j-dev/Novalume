@@ -2,7 +2,7 @@
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
 
-#include "Util/ThreadPool.h"
+#include "util/ThreadPool.h"
 
 using namespace RBX;
 

@@ -16,7 +16,7 @@
 #include <QTreeWidget>
 
 #include "rbx/signal.h"
-#include "script/ScriptAnalyzer.h"
+#include "Script/ScriptAnalyzer.h"
 #include "v8datamodel/DataModel.h"
 
 #include "LuaSourceBuffer.h"

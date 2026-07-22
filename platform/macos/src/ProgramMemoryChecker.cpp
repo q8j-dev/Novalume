@@ -1,7 +1,7 @@
-#include "Util/ProgramMemoryChecker.h"
+#include "util/ProgramMemoryChecker.h"
 #include "rbx/rbxTime.h"
-#include "Util/MachOBaseAddr.h"
-#include "Util/xxhash.h"
+#include "util/MachOBaseAddr.h"
+#include "util/xxhash.h"
 
 #if defined(__has_feature)
 #	define ADDRESS_SANITIZER __has_feature(address_sanitizer)

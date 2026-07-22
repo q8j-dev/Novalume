@@ -3,10 +3,10 @@
 #pragma once
 
 #include "v8tree/Instance.h"
-#include "Reflection/Event.h"
+#include "reflection/Event.h"
 #include "audio/Sound.h"
 #include "audio/SoundGroups.h"
-#include "Util/RunStateOwner.h"
+#include "util/RunStateOwner.h"
 #include "v8datamodel/NumberRange.h"
 
 namespace RBX {

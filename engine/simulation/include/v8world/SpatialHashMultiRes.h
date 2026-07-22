@@ -1,9 +1,9 @@
 #pragma once
 
-#include "V8World/BasicSpatialHashPrimitive.h"
-#include "Util/G3DCore.h"
-#include "Util/Memory.h"
-#include "Util/ConcurrencyValidator.h"
+#include "v8world/BasicSpatialHashPrimitive.h"
+#include "util/G3DCore.h"
+#include "util/Memory.h"
+#include "util/ConcurrencyValidator.h"
 #include "rbx/Debug.h"
 #include "rbx/object_pool.h"
 

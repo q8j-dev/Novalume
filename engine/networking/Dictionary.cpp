@@ -1,7 +1,7 @@
 /* Copyright 2003-2009 ROBLOX Corporation, All Rights Reserved */
 
 #include "Dictionary.h"
-#include "streaming.h"
+#include "Streaming.h"
 #include "util/RobloxGoogleAnalytics.h"
 #include <boost/functional/hash/hash.hpp>
 

@@ -8,7 +8,7 @@
 #include "StringUtils.h"
 #include "ChatManagerEvents.h"
 #include "ChatPacker.h"
-#include "ChatUnPacker.h"
+#include "ChatUnpacker.h"
 #include "AudioDeviceInfo.h"
 #include "RemoteChatUser.h"
 #include "RemoteAudioDevice.h"

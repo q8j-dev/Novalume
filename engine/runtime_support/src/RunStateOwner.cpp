@@ -1,19 +1,19 @@
 #include "stdafx.h"
 
-#include "Util/RunStateOwner.h"
+#include "util/RunStateOwner.h"
 #include "rbx/Debug.h"
 
-#include "V8DataModel/Workspace.h"
-#include "V8DataModel/DataModel.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/DataModel.h"
 #include "v8kernel/Constants.h"
 #include "Script/ScriptContext.h"
-#include "Util/Profiling.h"
+#include "util/Profiling.h"
 #include "util/standardout.h"
-#include "Network/Players.h"
+#include "network/Players.h"
 #include "rbx/Log.h"
-#include "V8DataModel/HackDefines.h"
-#include "V8World/Tolerance.h"
-#include "script/ThreadRef.h"
+#include "v8datamodel/HackDefines.h"
+#include "v8world/Tolerance.h"
+#include "Script/ThreadRef.h"
 
 #include "rbx/Profiler.h"
 

@@ -1,15 +1,15 @@
 /* Copyright 2003-2005 ROBLOX Corporation, All Rights Reserved */
 
 #include "Gui/GuiDraw.h"
-#include "V8Kernel/Constants.h"
-#include "V8DataModel/PVInstance.h"
+#include "v8kernel/Constants.h"
+#include "v8datamodel/PVInstance.h"
 #include "AppDraw/Draw.h"
-#include "Util/Utilities.h"
-#include "Util/Math.h"
+#include "util/Utilities.h"
+#include "util/Math.h"
 #include "AppDraw/DrawPrimitives.h"
 
 #include "GfxBase/Adorn.h"
-#include "v8datamodel/contentprovider.h"
+#include "v8datamodel/ContentProvider.h"
 
 namespace RBX {
 

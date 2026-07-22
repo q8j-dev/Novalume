@@ -1,16 +1,16 @@
 #include "stdafx.h"
 
-#include "Util/AsyncHttpQueue.h"
-#include "V8DataModel/DataModel.h"
-#include "V8DataModel/Stats.h"
+#include "util/AsyncHttpQueue.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/Stats.h"
 #include "v8datamodel/ContentProvider.h"
-#include "Network/Api.h"
+#include "network/api.h"
 
 #if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
 #include "winhttp.h" //Used for StatusCode Defines
 #endif
 
-#include "Util/SafeToLower.h"
+#include "util/SafeToLower.h"
 #include "util/standardout.h"
 #include "rbx/make_shared.h"
 

@@ -21,7 +21,7 @@
 #include <QPixmapCache>
 
 // 3rd Party Headers
-#include "G3D/Vector3.h"
+#include "g3d/Vector3.h"
 
 // Roblox Headers
 #include "v8datamodel/DataModel.h"
@@ -42,7 +42,7 @@
 #include "util/BrickColor.h"
 #include "util/PhysicalProperties.h"
 #include "reflection/reflection.h"
-#include "tool/ToolsArrow.h"
+#include "Tool/ToolsArrow.h"
 #include "reflection/Type.h"
 #include "v8datamodel/NumberSequence.h"
 #include "v8datamodel/NumberRange.h"

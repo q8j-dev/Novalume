@@ -1,8 +1,8 @@
 #include "Script/ModuleScript.h"
-#include "V8DataModel/FactoryRegistration.h"
-#include "V8DataModel/LocalizationTable.h"
-#include "V8DataModel/Value.h"
-#include "V8Xml/SerializerV2.h"
+#include "v8datamodel/factoryregistration.h"
+#include "v8datamodel/LocalizationTable.h"
+#include "v8datamodel/Value.h"
+#include "v8xml/SerializerV2.h"
 
 #include <fstream>
 #include <iostream>

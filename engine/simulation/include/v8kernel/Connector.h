@@ -2,10 +2,10 @@
 
 #pragma once
 
-#include "Util/NormalID.h"
+#include "util/NormalId.h"
 #include "rbx/Debug.h"
-#include "Util/Memory.h"
-#include "Util/Math.h"
+#include "util/Memory.h"
+#include "util/Math.h"
 
 
 namespace RBX {

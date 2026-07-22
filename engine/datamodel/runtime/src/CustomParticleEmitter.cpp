@@ -1,5 +1,5 @@
 #include "v8datamodel/CustomParticleEmitter.h"
-#include "Util/RobloxGoogleAnalytics.h"
+#include "util/RobloxGoogleAnalytics.h"
 
 #define CAT_VIS category_Appearance
 #define CAT_EMISSION "Emission"

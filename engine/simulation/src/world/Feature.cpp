@@ -1,6 +1,6 @@
 /* Copyright 2003-2005 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8World/Feature.h"
+#include "v8world/Feature.h"
 
 namespace RBX {
 

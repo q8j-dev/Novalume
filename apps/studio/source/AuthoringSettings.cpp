@@ -11,10 +11,10 @@
 
 // Roblox Headers
 #include "v8datamodel/Camera.h"
-#include "tool/ToolsArrow.h"
-#include "tool/AdvRunDragger.h"
+#include "Tool/ToolsArrow.h"
+#include "Tool/AdvRunDragger.h"
 #include "AppDraw/Draw.h"
-#include "script/script.h"
+#include "Script/script.h"
 
 // Roblox Studio Headers
 #include "AuthoringSettings.h"

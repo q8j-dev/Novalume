@@ -1,5 +1,5 @@
 
-#include "script/LuaCoreFunctions.h"
+#include "Script/LuaCoreFunctions.h"
 #include "Script/ScriptContext.h"
 #include "rbx/Profiler.h"
 

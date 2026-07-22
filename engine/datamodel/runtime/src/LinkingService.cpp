@@ -1,6 +1,6 @@
-#include "V8DataModel/LinkingService.h"
+#include "v8datamodel/LinkingService.h"
 
-#include "V8DataModel/GuiService.h"
+#include "v8datamodel/GuiService.h"
 
 #include <algorithm>
 #include <cctype>

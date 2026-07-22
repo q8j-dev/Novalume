@@ -2,16 +2,16 @@
 
 #include "Tool/AdvMoveTool.h"
 
-#include "V8DataModel/Workspace.h"
-#include "V8DataModel/PartInstance.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/PartInstance.h"
 #include "Tool/Dragger.h"
-#include "V8World/World.h"
-#include "V8World/ContactManager.h"
-#include "Util/Math.h"
-#include "Util/HitTest.h"
+#include "v8world/World.h"
+#include "v8world/ContactManager.h"
+#include "util/Math.h"
+#include "util/HitTest.h"
 #include "audio/Sound.h"
 #include "AppDraw/DrawAdorn.h"
-#include "v8datamodel/changehistory.h"
+#include "v8datamodel/ChangeHistory.h"
 
 // TODO - move rotation specific stuff to AdvRotateTool
 // TODO - move generic stuff down to the Arrow layer to reduce some redundancy with

@@ -2,8 +2,8 @@
 
 #include "AppDraw/HitTest.h"
 #include "GfxBase/Part.h"
-#include "G3D/CollisionDetection.h"
-#include "G3D/Capsule.h"
+#include "g3d/CollisionDetection.h"
+#include "g3d/Capsule.h"
 
 namespace RBX {
 

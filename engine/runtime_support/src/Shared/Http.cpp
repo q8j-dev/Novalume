@@ -19,7 +19,7 @@
 #include "util/Statistics.h"
 #include "util/ThreadPool.h"
 #include "util/Analytics.h"
-#include "Util/RobloxGoogleAnalytics.h"
+#include "util/RobloxGoogleAnalytics.h"
 
 #include "rbx/TaskScheduler.h"
 

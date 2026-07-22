@@ -13,7 +13,7 @@
 #include "Script/script.h"
 #include "MobileDevelopmentDeployer.h"
 #include "AuthoringSettings.h"
-#include "G3D/Random.h"
+#include "g3d/Random.h"
 
 #define PAIR_CODE_SIZE 4
 #define RBX_DEV_PORT 1313

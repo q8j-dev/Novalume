@@ -1,9 +1,9 @@
 
 #include "v8datamodel/ServerScriptService.h"
 #include "v8datamodel/Folder.h"
-#include "script/script.h"
-#include "script/CoreScript.h"
-#include "script/ModuleScript.h"
+#include "Script/script.h"
+#include "Script/CoreScript.h"
+#include "Script/ModuleScript.h"
 #include "network/Players.h"
 
 using namespace RBX;

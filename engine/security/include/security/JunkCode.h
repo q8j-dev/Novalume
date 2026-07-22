@@ -2,7 +2,7 @@
 
 #if defined(_WIN32) && defined(_M_IX86) && !defined(RBX_STUDIO_BUILD) && \
     !defined(RBX_PLATFORM_DURANGO)
-#include "Security/RandomConstant.h"
+#include "security/RandomConstant.h"
 
 // This is junk code generation.  All of this is intended to be inlined
 // and generally do nothing.

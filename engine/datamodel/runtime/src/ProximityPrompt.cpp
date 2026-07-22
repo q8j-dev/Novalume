@@ -1,15 +1,15 @@
-#include "V8DataModel/ProximityPrompt.h"
+#include "v8datamodel/ProximityPrompt.h"
 
-#include "Network/Player.h"
-#include "Network/Players.h"
-#include "Util/RunStateOwner.h"
-#include "V8DataModel/Attachment.h"
-#include "V8DataModel/DataModel.h"
-#include "V8DataModel/ModelInstance.h"
-#include "V8DataModel/PartInstance.h"
-#include "V8DataModel/Raycast.h"
-#include "V8DataModel/UserInputService.h"
-#include "V8DataModel/Workspace.h"
+#include "network/Player.h"
+#include "network/Players.h"
+#include "util/RunStateOwner.h"
+#include "v8datamodel/Attachment.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/ModelInstance.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/Raycast.h"
+#include "v8datamodel/UserInputService.h"
+#include "v8datamodel/Workspace.h"
 
 #include <algorithm>
 #include <limits>

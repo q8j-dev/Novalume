@@ -1,6 +1,6 @@
 
-#include "V8Xml/WebSerializer.h"
-#include "V8Xml/Serializer.h"
+#include "v8xml/WebSerializer.h"
+#include "v8xml/Serializer.h"
 #include "rbx/make_shared.h"
 
 namespace RBX

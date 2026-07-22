@@ -1,4 +1,4 @@
-#include "script/LuaVM.h"
+#include "Script/LuaVM.h"
 
 #include "util/Guid.h"
 #include "util/ProtectedString.h"

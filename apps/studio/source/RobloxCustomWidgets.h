@@ -19,7 +19,7 @@ namespace RBX {
     class DataModel;
 }
 #include "v8datamodel/MouseCommand.h"
-#include "tool/ToolsArrow.h"
+#include "Tool/ToolsArrow.h"
 
 #include "RobloxTreeWidget.h"
 

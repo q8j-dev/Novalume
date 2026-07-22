@@ -11,7 +11,7 @@
 #include "CheckSum.h"
 #include "network/NetworkTypes.h"
 #include "Rand.h"
-#include "RBXASSERT.h"
+#include "RbxAssert.h"
 #include <string.h>
 #include "Rijndael.h"
 //#include "Types.h"

@@ -1,4 +1,4 @@
-#include "V8DataModel/GenericChallengeService.h"
+#include "v8datamodel/GenericChallengeService.h"
 
 namespace RBX {
 

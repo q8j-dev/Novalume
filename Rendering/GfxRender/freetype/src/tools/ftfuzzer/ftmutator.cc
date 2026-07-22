@@ -37,7 +37,7 @@
 #include <memory>
 #include <vector>
 
-#include <archive.h>
+#include <Archive.h>
 #include <archive_entry.h>
 
 #include "FuzzerInterface.h"

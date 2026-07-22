@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Util/G3DCore.h"
-#include "Voxel/Cell.h"
+#include "util/G3DCore.h"
+#include "voxel/Cell.h"
 #include "rbx/Debug.h"
-#include "Util/Extents.h"
-#include "Util/Region3int16.h"
+#include "util/Extents.h"
+#include "util/Region3Int16.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // This file has methods for reading and writing individual voxel cells

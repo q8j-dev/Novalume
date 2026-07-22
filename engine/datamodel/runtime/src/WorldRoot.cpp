@@ -1,4 +1,4 @@
-#include "V8DataModel/WorldRoot.h"
+#include "v8datamodel/WorldRoot.h"
 
 namespace RBX {
 

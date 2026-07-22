@@ -2,8 +2,8 @@
 
 #include "rbx/test/DataModelFixture.h"
 #include "rbx/test/ScopedFastFlagSetting.h"
-#include "V8DataModel/MegaCluster.h"
-#include "V8DataModel/Workspace.h"
+#include "v8datamodel/MegaCluster.h"
+#include "v8datamodel/Workspace.h"
 
 using namespace RBX;
 using namespace RBX::Voxel;

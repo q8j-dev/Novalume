@@ -13,14 +13,14 @@
 #include "UpdateUIManager.h"
 #include "RobloxServicesTools.h"
 
-#include "Util/ContentId.h"
-#include "Util/LuaWebService.h"
-#include "Util/RobloxGoogleAnalytics.h"
-#include "V8DataModel/ContentProvider.h"
-#include "V8DataModel/DataModel.h"
-#include "V8DataModel/Decal.h"
-#include "V8DataModel/PartOperationAsset.h"
-#include "V8Xml/WebParser.h"
+#include "util/ContentId.h"
+#include "util/LuaWebService.h"
+#include "util/RobloxGoogleAnalytics.h"
+#include "v8datamodel/ContentProvider.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/Decal.h"
+#include "v8datamodel/PartOperationAsset.h"
+#include "v8xml/WebParser.h"
 
 #include <QFileDialog>
 #include <QFileInfo>

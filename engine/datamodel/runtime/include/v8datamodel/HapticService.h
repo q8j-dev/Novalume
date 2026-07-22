@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include "V8Tree/Service.h"
-#include "V8DataModel/InputObject.h"
+#include "v8tree/Service.h"
+#include "v8datamodel/InputObject.h"
 
 namespace RBX
 {

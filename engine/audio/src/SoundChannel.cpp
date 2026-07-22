@@ -2,15 +2,15 @@
 #include "stdafx.h"
 
 #include "audio/SoundChannel.h"
-#include "V8DataModel/ContentProvider.h"
+#include "v8datamodel/ContentProvider.h"
 #include "audio/SoundService.h"
 
-#include "V8DataModel/Workspace.h"
-#include "V8DataModel/PartInstance.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/PartInstance.h"
 
-#include "V8DataModel/GameSettings.h"
-#include "V8DataModel/PlayerGui.h"
-#include "Network/Players.h"
+#include "v8datamodel/GameSettings.h"
+#include "v8datamodel/PlayerGui.h"
+#include "network/Players.h"
 
 #include "FastLog.h"
 #include "rbx/RbxDbgInfo.h"

@@ -4,7 +4,7 @@
 
 #include "XboxMultiplayerManager.h"
 #include "XboxUtils.h"
-#include "Util/Http.h"
+#include "util/Http.h"
 #include "VoiceChatBase.h"
 #include "VoiceChat.h"
 #include "VoiceChatMaxNet.h"

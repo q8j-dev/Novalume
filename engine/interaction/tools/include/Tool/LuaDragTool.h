@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "V8DataModel/MouseCommand.h"
+#include "v8datamodel/MouseCommand.h"
 #include "Tool/LuaDragger.h"
 #include <boost/shared_ptr.hpp>
 

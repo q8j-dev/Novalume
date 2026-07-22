@@ -1,4 +1,4 @@
-#include "V8DataModel/CanvasGroup.h"
+#include "v8datamodel/CanvasGroup.h"
 
 namespace RBX
 {

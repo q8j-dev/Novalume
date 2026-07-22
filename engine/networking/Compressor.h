@@ -2,7 +2,7 @@
 
 #include "network/PacketBuffer.h"
 
-#include "Util/G3DCore.h"
+#include "util/G3DCore.h"
 
 
 namespace RBX { 

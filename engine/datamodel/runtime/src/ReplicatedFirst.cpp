@@ -4,7 +4,7 @@
 
 #include "network/Players.h"
 
-#include "script/script.h"
+#include "Script/script.h"
 
 
 using namespace RBX;

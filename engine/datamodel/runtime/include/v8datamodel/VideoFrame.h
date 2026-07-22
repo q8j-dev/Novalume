@@ -1,9 +1,9 @@
 #pragma once
 
-#include "V8DataModel/GuiObject.h"
-#include "Util/ContentId.h"
-#include "Util/Content.h"
-#include "Util/SteppedInstance.h"
+#include "v8datamodel/GuiObject.h"
+#include "util/ContentId.h"
+#include "util/Content.h"
+#include "util/SteppedInstance.h"
 
 #include <cstdint>
 #include <memory>

@@ -1,6 +1,6 @@
-#include "V8DataModel/WorldModel.h"
+#include "v8datamodel/WorldModel.h"
 
-#include "V8World/World.h"
+#include "v8world/World.h"
 
 namespace RBX {
 

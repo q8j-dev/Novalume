@@ -1,20 +1,20 @@
 /* Copyright 2003-2005 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8DataModel/PluginManager.h"
+#include "v8datamodel/PluginManager.h"
 
-#include "Script/Script.h"
+#include "Script/script.h"
 #include "Script/ScriptContext.h"
 #include "Script/RobloxExtraSpace.h"
-#include "Util/FileSystem.h"
-#include "Util/standardout.h"
-#include "V8DataModel/ContentProvider.h"
-#include "V8DataModel/DataModel.h"
-#include "V8Xml/SerializerV2.h"
-#include "V8Xml/Serializer.h"
+#include "util/FileSystem.h"
+#include "util/standardout.h"
+#include "v8datamodel/ContentProvider.h"
+#include "v8datamodel/DataModel.h"
+#include "v8xml/SerializerV2.h"
+#include "v8xml/Serializer.h"
 #include "Tool/ToolsArrow.h"
 
 #include "lua/lua.hpp"
-#include "script/LuaInstanceBridge.h"
+#include "Script/LuaInstanceBridge.h"
 
 const char* const RBX::sPluginManager = "PluginManager";
 const char* const RBX::sPlugin = "Plugin";

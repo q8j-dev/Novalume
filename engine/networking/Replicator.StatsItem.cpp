@@ -1,5 +1,5 @@
 #include "Replicator.StatsItem.h"
-#include "script/ScriptContext.h"
+#include "Script/ScriptContext.h"
 #include "ClientReplicator.h"
 
 
@@ -150,5 +150,4 @@ shared_ptr<DeserializedItem> Replicator::StatsItem::read(Replicator& replicator,
 	
 	return deserializedData;
 }
-
 

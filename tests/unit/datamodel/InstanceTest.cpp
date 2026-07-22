@@ -1,9 +1,9 @@
 #include <boost/test/unit_test.hpp>
 
-#include "v8tree/instance.h"
-#include "v8dataModel/BasicPartInstance.h"
+#include "v8tree/Instance.h"
+#include "v8datamodel/BasicPartInstance.h"
 #include "v8datamodel/PartInstance.h"
-#include "v8dataModel/Tool.h"
+#include "v8datamodel/Tool.h"
 
 extern const char* const sInstanceTest;
 class InstanceTest : public RBX::DescribedCreatable<InstanceTest, RBX::Instance, sInstanceTest>
@@ -115,4 +115,3 @@ BOOST_AUTO_TEST_SUITE(Instance)
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
-

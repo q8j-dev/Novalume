@@ -23,11 +23,11 @@
 
 // Roblox Headers
 #include "util/BrickColor.h"
-#include "V8DataModel/ToolsPart.h"
-#include "V8DataModel/Commands.h"
-#include "V8DataModel/DataModel.h"
-#include "V8DataModel/ContentProvider.h"
-#include "appdraw/Draw.h"
+#include "v8datamodel/ToolsPart.h"
+#include "v8datamodel/Commands.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/ContentProvider.h"
+#include "AppDraw/Draw.h"
 
 // Roblox Studio Headers
 #include "PropertyItems.h"

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "V8DataModel/UserInputService.h"
-#include "V8Tree/Service.h"
+#include "v8datamodel/UserInputService.h"
+#include "v8tree/Service.h"
 
 #include <array>
 

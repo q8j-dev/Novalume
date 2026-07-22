@@ -10,7 +10,7 @@
 #include <QIcon>
 
 // Roblox Headers
-#include "RBX/BaldPtr.h"
+#include "rbx/BaldPtr.h"
 
 // Roblox Studio Headers
 #include "IRobloxDoc.h"
@@ -78,4 +78,3 @@ class DocTabManager : public QObject
         RBX::BaldPtr<QWidget>   		m_FakeTab;
 		RBX::BaldPtr<RobloxTabWidget>	m_TabWidget;
 };
-

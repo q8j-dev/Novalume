@@ -18,7 +18,7 @@
 // Roblox Headers
 #include "v8datamodel/GlobalSettings.h"
 #include "v8datamodel/Selection.h"
-#include "ReflectionMetaData.h"
+#include "ReflectionMetadata.h"
 
 // Roblox Studio Headers
 #include "RobloxCustomWidgets.h"

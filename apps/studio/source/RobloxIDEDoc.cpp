@@ -35,7 +35,7 @@
 #include "v8datamodel/GameBasicSettings.h"
 #include "v8datamodel/Lighting.h"
 #include "v8datamodel/Light.h"
-#include "V8DataModel/NonReplicatedCSGDictionaryService.h"
+#include "v8datamodel/NonReplicatedCSGDictionaryService.h"
 #include "v8datamodel/ServerScriptService.h"
 #include "v8datamodel/StarterPlayerService.h"
 #include "v8datamodel/ServerStorage.h"
@@ -45,32 +45,32 @@
 #include "v8xml/SerializerBinary.h"
 #include "rbx/BaldPtr.h"
 #include "AppDraw/Draw.h"
-#include "script/ScriptContext.h"
-#include "script/LuaMemory.h"
-#include "script/DebuggerManager.h"
-#include "script/ModuleScript.h"
-#include "script/Script.h"
+#include "Script/ScriptContext.h"
+#include "Script/LuaMemory.h"
+#include "Script/DebuggerManager.h"
+#include "Script/ModuleScript.h"
+#include "Script/script.h"
 #include "network/Players.h"
 #include "util/ProtectedString.h"
 #include "util/Statistics.h"
 #include "util/Profiling.h"
 #include "util/MD5Hasher.h"
-#include "Util/RobloxGoogleAnalytics.h"
+#include "util/RobloxGoogleAnalytics.h"
 #include "util/ScopedAssign.h"
-#include "Util/LuaWebService.h"
-#include "Util/Hash.h"
+#include "util/LuaWebService.h"
+#include "util/Hash.h"
 #include "GfxBase/FrameRateManager.h"
 #include "GfxBase/ViewBase.h"
 #include "GfxBase/IAdornableCollector.h"
 #include "RenderSettingsItem.h"
 #include "Tool/ToolsArrow.h"
-#include "V8Xml/WebParser.h"
+#include "v8xml/WebParser.h"
 #include "v8datamodel/BasicPartInstance.h"
 #include "v8datamodel/HttpRbxApiService.h"
 #include "v8datamodel/MegaCluster.h"
 #include "StringConv.h"
 
-#include "script/ScriptAnalyzer.h"
+#include "Script/ScriptAnalyzer.h"
 
 // Roblox Studio Headers
 #include "RobloxView.h"
@@ -4613,6 +4613,5 @@ void WorkspaceAnnouncementTooltip::closeText()
 	RobloxSettings().setValue(kWorkspaceNotificationMessageAlreadyClosed, getNotificationId().c_str());
 	setLastClosedMessage(getNotificationId().c_str());
 }
-
 
 

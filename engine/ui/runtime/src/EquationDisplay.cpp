@@ -1,5 +1,5 @@
 #include "Gui/EquationDisplay.h"
-#include "Util/IMetric.h"
+#include "util/IMetric.h"
 
 namespace RBX {
 

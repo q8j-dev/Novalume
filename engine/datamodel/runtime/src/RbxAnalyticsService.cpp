@@ -1,11 +1,11 @@
-#include "V8DataModel/RbxAnalyticsService.h"
+#include "v8datamodel/RbxAnalyticsService.h"
 
-#include "Util/Analytics.h"
-#include "Util/Guid.h"
-#include "Util/RobloxGoogleAnalytics.h"
-#include "Util/Statistics.h"
-#include "V8DataModel/EventIngestService.h"
-#include "V8DataModel/GameBasicSettings.h"
+#include "util/Analytics.h"
+#include "util/Guid.h"
+#include "util/RobloxGoogleAnalytics.h"
+#include "util/Statistics.h"
+#include "v8datamodel/EventIngestService.h"
+#include "v8datamodel/GameBasicSettings.h"
 
 #include <rapidjson/document.h>
 

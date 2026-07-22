@@ -1,10 +1,10 @@
-#include "script/LuaVM.h"
+#include "Script/LuaVM.h"
 #include "v8datamodel/HackDefines.h"
 #include "v8datamodel/DataModel.h"
 #include "security/FuzzyTokens.h"
 #include "security/ApiSecurity.h"
 
-#include "script/ScriptContext.h"
+#include "Script/ScriptContext.h"
 #include "network/api.h"
 
 #include "luaconf.h"

@@ -1,13 +1,13 @@
 
-#include "V8DataModel/HttpService.h"
-#include "V8DataModel/DataModel.h"
+#include "v8datamodel/HttpService.h"
+#include "v8datamodel/DataModel.h"
 #include "v8datamodel/Workspace.h"
 #include "v8datamodel/Stats.h"
-#include "V8Xml/WebParser.h"
-#include "Network/Players.h"
-#include "Util/Http.h"
-#include "Util/RobloxGoogleAnalytics.h"
-#include "Util/standardout.h"
+#include "v8xml/WebParser.h"
+#include "network/Players.h"
+#include "util/Http.h"
+#include "util/RobloxGoogleAnalytics.h"
+#include "util/standardout.h"
 #include "Script/ScriptContext.h"
 
 #include <boost/algorithm/string/predicate.hpp>

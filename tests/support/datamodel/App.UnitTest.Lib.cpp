@@ -3,7 +3,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "V8DataModel/ContentProvider.h"
+#include "v8datamodel/ContentProvider.h"
 #include "util/Statistics.h"
 #include "rbx/Debug.h"
 
@@ -87,5 +87,4 @@ bool AppGlobalFixture::processArg( const std::string arg )
 	return false;
 
 }
-
 

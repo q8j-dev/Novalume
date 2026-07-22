@@ -12,7 +12,7 @@ Copyright   :   Copyright 2015 Oculus VR, LLC. All Rights reserved.
 #ifndef OVR_VrApi_Helpers_h
 #define OVR_VrApi_Helpers_h
 
-#include "math.h"		// for cosf(), sinf(), tanf()
+#include "math.h"		// for cosf(), sinf(), tanf()
 #include "string.h"		// for memset()
 #include "VrApi_Config.h"
 #include "VrApi_Version.h"

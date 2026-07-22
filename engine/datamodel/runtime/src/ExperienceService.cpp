@@ -1,7 +1,7 @@
-#include "V8DataModel/ExperienceService.h"
+#include "v8datamodel/ExperienceService.h"
 
 #include "Script/ScriptContext.h"
-#include "Util/standardout.h"
+#include "util/standardout.h"
 
 #include <stdexcept>
 

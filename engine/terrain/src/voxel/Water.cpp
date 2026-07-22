@@ -1,4 +1,4 @@
-#include "Voxel/Water.h"
+#include "voxel/Water.h"
 
 namespace RBX { namespace Voxel { namespace Water {
 

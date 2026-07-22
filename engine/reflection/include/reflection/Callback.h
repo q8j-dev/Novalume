@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include "reflection/type.h"
-#include "security/securitycontext.h"
+#include "reflection/Type.h"
+#include "security/SecurityContext.h"
 #include "reflection/member.h"
 #include "reflection/Type.h"
 #include <boost/utility/enable_if.hpp>

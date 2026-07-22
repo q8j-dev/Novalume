@@ -13,7 +13,7 @@
 #include <QTextDocument>
 
 #include "LuaSourceBuffer.h"
-#include "Script/Script.h"
+#include "Script/script.h"
 
 class FindData
 {

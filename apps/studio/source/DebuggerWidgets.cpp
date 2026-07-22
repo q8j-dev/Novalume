@@ -20,13 +20,13 @@
 #include <QPainter>
 
 // Roblox Headers
-#include "util/StandardOut.h"
+#include "util/standardout.h"
 #include "util/ScopedAssign.h"
 #include "util/BrickColor.h"
 #include "util/UDim.h"
-#include "script/Script.h"
+#include "Script/script.h"
 #include "v8datamodel/DataModel.h"
-#include "V8DataModel/ChangeHistory.h"
+#include "v8datamodel/ChangeHistory.h"
 #include "reflection/Type.h"
 
 // Roblox Studio Headers

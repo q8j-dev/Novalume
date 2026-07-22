@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Humanoid/Flying.h"
+#include "humanoid/Flying.h"
 
 namespace RBX {
 	namespace HUMAN {
@@ -40,4 +40,3 @@ namespace RBX {
 
 	} // namespace HUMAN
 }	// namespace
-

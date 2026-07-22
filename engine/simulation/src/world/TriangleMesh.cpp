@@ -1,14 +1,14 @@
 
 #include "FastLog.h"
 
-#include "V8World/TriangleMesh.h"
-#include "G3D/CollisionDetection.h"
-#include "G3D/Sphere.h"
-#include "Util/Units.h"
-#include "Util/Math.h"
-#include "Util/RobloxGoogleAnalytics.h"
-#include "V8World/Tolerance.h"
-#include "V8World/MegaClusterPoly.h"
+#include "v8world/TriangleMesh.h"
+#include "g3d/CollisionDetection.h"
+#include "g3d/Sphere.h"
+#include "util/Units.h"
+#include "util/Math.h"
+#include "util/RobloxGoogleAnalytics.h"
+#include "v8world/Tolerance.h"
+#include "v8world/MegaClusterPoly.h"
 
 #include "LinearMath/btConvexHull.h"
 #include "BulletCollision/CollisionShapes/btConvexHullShape.h"

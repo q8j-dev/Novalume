@@ -1,10 +1,10 @@
-#include "V8DataModel/UserService.h"
+#include "v8datamodel/UserService.h"
 
-#include "Network/Player.h"
-#include "Network/Players.h"
-#include "Util/Http.h"
-#include "V8DataModel/DataModel.h"
-#include "V8Xml/WebParser.h"
+#include "network/Player.h"
+#include "network/Players.h"
+#include "util/Http.h"
+#include "v8datamodel/DataModel.h"
+#include "v8xml/WebParser.h"
 
 #include <sstream>
 #include <limits>

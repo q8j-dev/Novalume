@@ -2,9 +2,9 @@
 
 #include "Tool/GrabTool.h"
 
-#include "V8DataModel/PartInstance.h"
-#include "V8DataModel/Workspace.h"
-#include "V8DataModel/UserInputService.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/UserInputService.h"
 #include "Tool/DragTool.h"
 
 namespace RBX {

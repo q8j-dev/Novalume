@@ -18,9 +18,9 @@
 #include "rbx/Tasks/Coordinator.h"
 #include "rbx/CEvent.h"
 #include "rbx/SystemUtil.h"
-#include "Network/Players.h"
-#include "Network/api.h"
-#include "script/script.h"
+#include "network/Players.h"
+#include "network/api.h"
+#include "Script/script.h"
 #include "v8datamodel/BaseRenderJob.h"
 #include "v8datamodel/Workspace.h"
 #include "v8datamodel/Game.h"
@@ -40,7 +40,7 @@
 #include "GfxBase/RenderSettings.h"
 #include "GfxBase/FrameRateManager.h"
 #include "RenderSettingsItem.h"
-#include "tool/ICancelableTool.h"
+#include "Tool/ICancelableTool.h"
 #include "AppDraw/Draw.h"
 
 #ifdef _WIN32
@@ -68,7 +68,7 @@
 #include "RobloxTreeWidget.h"
 #include "CommonInsertWidget.h"
 
-#include "Util/RobloxGoogleAnalytics.h"
+#include "util/RobloxGoogleAnalytics.h"
 #include "RobloxDocManager.h"
 #include "RobloxIDEDoc.h"
 

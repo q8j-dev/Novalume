@@ -1,20 +1,20 @@
 #include "RenderView.h"
 
-#include "Util/FileSystem.h"
+#include "util/FileSystem.h"
 #include "g3d/GImage.h"
 #include "g3d/BinaryOutput.h"
-#include "V8DataModel/Lighting.h"
-#include "V8DataModel/PostEffect.h"
-#include "V8DataModel/Decal.h"
-#include "V8DataModel/PartInstance.h"
-#include "V8DataModel/Workspace.h"
-#include "V8DataModel/Sky.h"
-#include "V8DataModel/ContentProvider.h"
-#include "V8DataModel/MeshContentProvider.h"
-#include "V8DataModel/Camera.h"
-#include "V8DataModel/TextService.h"
-#include "V8DataModel/RenderHooksService.h"
-#include "V8DataModel/Stats.h"
+#include "v8datamodel/Lighting.h"
+#include "v8datamodel/PostEffect.h"
+#include "v8datamodel/Decal.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/Sky.h"
+#include "v8datamodel/ContentProvider.h"
+#include "v8datamodel/MeshContentProvider.h"
+#include "v8datamodel/Camera.h"
+#include "v8datamodel/TextService.h"
+#include "v8datamodel/RenderHooksService.h"
+#include "v8datamodel/Stats.h"
 #include "v8datamodel/DataModel.h"
 #if defined(RBX_PLATFORM_DURANGO)
 #   include "v8datamodel/PlatformService.h"
@@ -71,12 +71,12 @@
 #include "GfxCore/States.h"
 #include "ShaderManager.h"
 
-#include "G3D/Quat.h"
+#include "g3d/Quat.h"
 
 #include "GfxBase/AdornBillboarder.h"
 
 #if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
-#include <mmsystem.h>
+#include <MMSystem.h>
 #endif
 
 LOGGROUP(ThumbnailRender)

@@ -1,8 +1,8 @@
 /* Copyright 2003-2009 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8DataModel/CornerWedgeInstance.h"
-#include "V8World/CornerWedgePoly.h"
-#include "V8World/Primitive.h"
+#include "v8datamodel/CornerWedgeInstance.h"
+#include "v8world/CornerWedgePoly.h"
+#include "v8world/Primitive.h"
 
 #ifdef _PRISM_PYRAMID_
 

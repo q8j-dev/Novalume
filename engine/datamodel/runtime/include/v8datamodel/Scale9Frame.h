@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "V8DataModel/Frame.h"
-#include "Util/TextureId.h"
+#include "v8datamodel/Frame.h"
+#include "util/TextureId.h"
 #include "Gui/GuiDraw.h"
 
 namespace RBX { 

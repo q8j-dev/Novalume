@@ -1,16 +1,16 @@
 
-#include "V8DataModel/SurfaceGui.h"
-#include "V8DataModel/DataModel.h"
-#include "V8DataModel/PartInstance.h"
-#include "Network/Player.h"
-#include "Network/Players.h"
+#include "v8datamodel/SurfaceGui.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/PartInstance.h"
+#include "network/Player.h"
+#include "network/Players.h"
 #include "v8datamodel/TextLabel.h"
 
 #include "GfxBase/AdornSurface.h"
 
 #include "v8datamodel/PlayerGui.h"
 
-#include "Util/RobloxGoogleAnalytics.h"
+#include "util/RobloxGoogleAnalytics.h"
 
 FASTFLAGVARIABLE(GUIZFighterGPU, true)
 

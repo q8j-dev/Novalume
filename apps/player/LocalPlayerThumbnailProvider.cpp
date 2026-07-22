@@ -1,8 +1,8 @@
 #include "LocalPlayerThumbnailProvider.h"
 
-#include "V8DataModel/DataModel.h"
-#include "V8DataModel/ModelInstance.h"
-#include "V8DataModel/PartInstance.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/ModelInstance.h"
+#include "v8datamodel/PartInstance.h"
 #include "network/Player.h"
 #include "network/Players.h"
 #include "util/Extents.h"

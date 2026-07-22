@@ -1,12 +1,12 @@
 #pragma once
 
-#include "V8DataModel/GuiBase2d.h"
-#include "V8DataModel/GuiObject.h"
-#include "V8DataModel/ColorSequence.h"
-#include "V8DataModel/NumberSequence.h"
+#include "v8datamodel/GuiBase2d.h"
+#include "v8datamodel/GuiObject.h"
+#include "v8datamodel/ColorSequence.h"
+#include "v8datamodel/NumberSequence.h"
 #include "Script/ThreadRef.h"
-#include "Util/UDim.h"
-#include "Util/SteppedInstance.h"
+#include "util/UDim.h"
+#include "util/SteppedInstance.h"
 
 #include <vector>
 

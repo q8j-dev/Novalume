@@ -1,6 +1,6 @@
 
-#include "v8Kernel/BuoyancyConnector.h"
-#include "V8Kernel/Body.h"
+#include "v8kernel/BuoyancyConnector.h"
+#include "v8kernel/Body.h"
 
 namespace RBX
 {

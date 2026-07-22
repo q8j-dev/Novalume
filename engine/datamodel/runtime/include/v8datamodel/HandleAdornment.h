@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "V8DataModel/Adornment.h"
+#include "v8datamodel/Adornment.h"
 #include "GfxBase/IAdornable.h"
 #include "AppDraw/Draw.h"
 

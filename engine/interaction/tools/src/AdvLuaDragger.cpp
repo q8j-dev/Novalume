@@ -5,12 +5,12 @@
 #include "Tool/DragUtilities.h"
 #include "Tool/Dragger.h"
 #include "Tool/AdvRunDragger.h"
-#include "V8DataModel/Workspace.h"
-#include "V8DataModel/PartInstance.h"
-#include "V8DataModel/MouseCommand.h"
-#include "V8World/ContactManager.h"
-#include "V8World/World.h"
-#include "V8World/Joint.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/MouseCommand.h"
+#include "v8world/ContactManager.h"
+#include "v8world/World.h"
+#include "v8world/Joint.h"
 #include "Tool/DragTypes.h"
 
 #define DISABLE_GROUP_SNAP

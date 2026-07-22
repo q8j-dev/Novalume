@@ -2,8 +2,8 @@
 #include "rbx/RunningAverage.h"
 #include "boost/weak_ptr.hpp"
 #include "util/Utilities.h"
-#include "V8DataModel/Stats.h"
-#include "script/ScriptContext.h"
+#include "v8datamodel/Stats.h"
+#include "Script/ScriptContext.h"
 #include <stack>
 #include <map>
 

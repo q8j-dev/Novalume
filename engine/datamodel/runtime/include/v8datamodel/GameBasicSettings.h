@@ -1,8 +1,8 @@
 #pragma once
 
-#include "V8DataModel/GlobalSettings.h"
-#include "V8DataModel/GameSettings.h"
-#include "V8DataModel/InteractionEnums.h"
+#include "v8datamodel/GlobalSettings.h"
+#include "v8datamodel/GameSettings.h"
+#include "v8datamodel/InteractionEnums.h"
 #include "rbx/ui/PreferredTextSize.h"
 
 namespace RBX

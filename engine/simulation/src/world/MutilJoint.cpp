@@ -1,11 +1,11 @@
  /* Copyright 2003-2005 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8World/MultiJoint.h"
-#include "V8World/Primitive.h"
-#include "V8World/Tolerance.h"
-#include "V8Kernel/Kernel.h"
-#include "V8Kernel/Connector.h"
-#include "V8Kernel/Point.h"
+#include "v8world/MultiJoint.h"
+#include "v8world/Primitive.h"
+#include "v8world/Tolerance.h"
+#include "v8kernel/Kernel.h"
+#include "v8kernel/Connector.h"
+#include "v8kernel/Point.h"
 
 namespace RBX {
 

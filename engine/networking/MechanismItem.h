@@ -2,11 +2,11 @@
 
 #include "network/NetworkTypes.h"
 
-#include "V8DataModel/PartInstance.h"
-#include "Util/PV.h"
-#include "Util/Memory.h"
+#include "v8datamodel/PartInstance.h"
+#include "util/PV.h"
+#include "util/Memory.h"
 #include "rbx/Debug.h"
-#include "G3D/Array.h"
+#include "g3d/Array.h"
 #include "CompactCFrame.h"
 #include "network/NetworkTypes.h"
 

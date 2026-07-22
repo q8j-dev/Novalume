@@ -1,17 +1,17 @@
 #pragma once
 
-#include "gui/GuiEvent.h"
-#include "V8World/IMoving.h"
-#include "V8DataModel/WorldRoot.h"
-#include "V8DataModel/Selection.h"
+#include "Gui/GuiEvent.h"
+#include "v8world/IMoving.h"
+#include "v8datamodel/WorldRoot.h"
+#include "v8datamodel/Selection.h"
 #include "Script/IScriptFilter.h"
-#include "V8Tree/Service.h"
-#include "V8DataModel/InputObject.h"	
-#include "V8DataModel/Raycast.h"
+#include "v8tree/Service.h"
+#include "v8datamodel/InputObject.h"
+#include "v8datamodel/Raycast.h"
 #include <vector>
 #include <chrono>
 #include <mutex>
-#include "util/runstateowner.h"
+#include "util/RunStateOwner.h"
 #include "util/Region3.h"
 #include "util/SystemAddress.h"
 #include "util/PhysicalProperties.h"

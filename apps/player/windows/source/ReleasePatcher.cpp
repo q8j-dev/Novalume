@@ -6,18 +6,18 @@
 // Todo: determine if the PE can be modified after write to remove .zero entirely.
 #include "stdafx.h"
 #include <windows.h>
-#include <psapi.h>
+#include <Psapi.h>
 #include <vector>
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <sstream>
 #include <algorithm>
-#include "Util/ProgramMemoryChecker.h"
-#include "Util/CheatEngine.h"
+#include "util/ProgramMemoryChecker.h"
+#include "util/CheatEngine.h"
 #include "ReleasePatcher.h"
-#include "Security/ApiSecurity.h"
-#include "Network/NetPmc.h"
+#include "security/ApiSecurity.h"
+#include "network/NetPmc.h"
 
 LOGVARIABLE(Zero,1)
 #pragma optimize("s", on)

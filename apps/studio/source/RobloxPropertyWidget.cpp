@@ -25,7 +25,7 @@
 #include "v8datamodel/DataModel.h"
 #include "v8datamodel/Selection.h"
 #include "rbx/CEvent.h"
-#include "ReflectionMetaData.h"
+#include "ReflectionMetadata.h"
 #include "util/RobloxGoogleAnalytics.h"
 
 // Roblox Studio Headers

@@ -5,24 +5,24 @@
 
 #include "Util.h"
 #include "ConcurrentPeer.h"
-#include "Network/Players.h"
-#include "Network/NetworkOwner.h"
+#include "network/Players.h"
+#include "network/NetworkOwner.h"
 #if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY)
-#include "Util/ProgramMemoryChecker.h"
+#include "util/ProgramMemoryChecker.h"
 #endif
 #include "util/standardout.h"
 #include "util/ProtectedString.h"
-#include "Util/RbxStringTable.h"
+#include "util/RbxStringTable.h"
 #include "CPUCount.h"
 #include "FastLog.h"
 #include "rbx/RbxDbgInfo.h"
 #include "v8datamodel/HackDefines.h"
 #include "v8datamodel/Workspace.h"
 #include "v8datamodel/DataModel.h"
-#include "V8DataModel/DebugSettings.h"
+#include "v8datamodel/DebugSettings.h"
 #include "v8datamodel/TeleportService.h"
 
-#include "Script/scriptcontext.h"
+#include "Script/ScriptContext.h"
 
 #include "network/NetworkTypes.h"
 

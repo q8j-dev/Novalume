@@ -1,6 +1,6 @@
-#include "V8DataModel/ExperienceNotificationService.h"
+#include "v8datamodel/ExperienceNotificationService.h"
 
-#include "Network/Players.h"
+#include "network/Players.h"
 
 #include <stdexcept>
 

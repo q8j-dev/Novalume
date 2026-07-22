@@ -1,13 +1,13 @@
-#include "V8DataModel/ExperienceStateCaptureService.h"
+#include "v8datamodel/ExperienceStateCaptureService.h"
 
-#include "V8DataModel/DataModel.h"
-#include "V8DataModel/InputObject.h"
-#include "V8DataModel/Mouse.h"
-#include "V8DataModel/PartInstance.h"
-#include "V8DataModel/SelectionBox.h"
-#include "V8DataModel/UserInputService.h"
-#include "Network/Player.h"
-#include "Network/Players.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/InputObject.h"
+#include "v8datamodel/Mouse.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/SelectionBox.h"
+#include "v8datamodel/UserInputService.h"
+#include "network/Player.h"
+#include "network/Players.h"
 
 namespace RBX {
 

@@ -1,6 +1,6 @@
 
-#include "Util/SurfaceType.h"
-#include "Reflection/EnumConverter.h"
+#include "util/SurfaceType.h"
+#include "reflection/EnumConverter.h"
 
 
 namespace RBX {
@@ -27,4 +27,3 @@ namespace Reflection {
 	}
 }//namespace Reflection
 }// namespace RBX
-

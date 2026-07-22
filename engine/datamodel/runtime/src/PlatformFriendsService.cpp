@@ -1,4 +1,4 @@
-#include "V8DataModel/PlatformFriendsService.h"
+#include "v8datamodel/PlatformFriendsService.h"
 
 namespace RBX {
 

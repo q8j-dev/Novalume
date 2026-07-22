@@ -4,8 +4,8 @@
 #include "solver/ConstraintJacobian.h"
 #include "solver/SolverBody.h"
 
-#include "G3D/Matrix2.h"
-#include "G3D/Matrix3.h"
+#include "g3d/Matrix2.h"
+#include "g3d/Matrix3.h"
 
 #include "simd/simd.h"
 

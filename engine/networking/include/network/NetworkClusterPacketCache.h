@@ -1,9 +1,9 @@
 #pragma  once
 
 #include "network/PacketBuffer.h"
-#include "V8Tree/Service.h"
+#include "v8tree/Service.h"
 #include "rbx/signal.h"
-#include "Util/StreamRegion.h"
+#include "util/StreamRegion.h"
 
 #include "voxel/CellChangeListener.h"
 #include "voxel2/GridListener.h"

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "V8Tree/Service.h"
-#include "V8DataModel/InputObject.h"
-#include "Util/KeyCode.h"
-#include "Util/UDim.h"
+#include "v8tree/Service.h"
+#include "v8datamodel/InputObject.h"
+#include "util/KeyCode.h"
+#include "util/UDim.h"
 
 namespace RBX {
 

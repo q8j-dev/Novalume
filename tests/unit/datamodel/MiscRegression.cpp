@@ -4,7 +4,7 @@
 
 #include "v8datamodel/DataModel.h"
 #include "v8datamodel/Test.h"
-#include "script/script.h"
+#include "Script/script.h"
 
 BOOST_FIXTURE_TEST_SUITE(MiscRegression, DataModelFixture)
 
@@ -22,4 +22,3 @@ BOOST_AUTO_TEST_CASE(DE2399)
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-

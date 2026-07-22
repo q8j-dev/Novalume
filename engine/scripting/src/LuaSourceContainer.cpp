@@ -1,8 +1,8 @@
 #include "Script/LuaSourceContainer.h"
-#include "Network/Players.h"
-#include "Util/RobloxGoogleAnalytics.h"
-#include "V8DataModel/ContentProvider.h"
-#include "V8DataModel/DataModel.h"
+#include "network/Players.h"
+#include "util/RobloxGoogleAnalytics.h"
+#include "v8datamodel/ContentProvider.h"
+#include "v8datamodel/DataModel.h"
 
 DYNAMIC_LOGVARIABLE(PreloadLinkedScriptsTiming, 0)
 DYNAMIC_FASTFLAGVARIABLE(RejectHashesInLinkedSource, false)

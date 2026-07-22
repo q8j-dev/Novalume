@@ -1,8 +1,8 @@
 /* Copyright 2003-2009 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8DataModel/RightAngleRampInstance.h"
-#include "V8World/RightAngleRampPoly.h"
-#include "V8World/Primitive.h"
+#include "v8datamodel/RightAngleRampInstance.h"
+#include "v8world/RightAngleRampPoly.h"
+#include "v8world/Primitive.h"
 
 #ifdef _PRISM_PYRAMID_
 

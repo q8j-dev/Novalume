@@ -4,7 +4,7 @@
 
 #include "rbx/Debug.h"
 #include "util/G3DCore.h"
-#include "V8DataModel/MegaCluster.h"
+#include "v8datamodel/MegaCluster.h"
 #include "boost/cstdint.hpp"
 
 namespace RBX { 

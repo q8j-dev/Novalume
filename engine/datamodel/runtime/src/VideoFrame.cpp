@@ -1,10 +1,10 @@
-#include "V8DataModel/VideoFrame.h"
+#include "v8datamodel/VideoFrame.h"
 
-#include "V8DataModel/ContentProvider.h"
+#include "v8datamodel/ContentProvider.h"
 #include "audio/SoundService.h"
 #include "media/MediaPlayer.h"
 #include "GfxBase/MediaTextureProvider.h"
-#include "Util/StandardOut.h"
+#include "util/standardout.h"
 
 #include <algorithm>
 #include <iterator>

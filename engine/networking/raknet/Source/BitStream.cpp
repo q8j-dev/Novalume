@@ -20,7 +20,7 @@
 
 
 #if   defined(_WIN32)
-#include <winsock2.h> // htonl
+#include <WinSock2.h> // htonl
 #include <memory.h>
 #include <cmath>
 #include <float.h>

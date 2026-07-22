@@ -17,7 +17,7 @@
 #include <utility>
 
 #if defined(_WIN32)
-#include <ws2tcpip.h>
+#include <WS2tcpip.h>
 #else
 #include <netdb.h>
 #include <netinet/in.h>

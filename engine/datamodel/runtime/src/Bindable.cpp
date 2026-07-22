@@ -1,6 +1,6 @@
 /* Copyright 2011 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8DataModel/Bindable.h"
+#include "v8datamodel/Bindable.h"
 #include "FastLog.h"
 
 namespace RBX {

@@ -25934,7 +25934,7 @@ SQLITE_API int sqlite3_os_end(void){
 ** desktops but not so well in embedded systems.
 */
 
-#include <winbase.h>
+#include <WinBase.h>
 
 #ifdef __CYGWIN__
 # include <sys/cygwin.h>

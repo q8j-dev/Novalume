@@ -1,9 +1,9 @@
 #pragma once 
 
 
-#include "Reflection/Reflection.h"
-#include "script/ThreadRef.h"
-#include "V8Tree/Instance.h"
+#include "reflection/reflection.h"
+#include "Script/ThreadRef.h"
+#include "v8tree/Instance.h"
 #include "rbx/RunningAverage.h"
 #include "v8datamodel/DataStoreService.h"
 #include "util/LuaWebService.h"

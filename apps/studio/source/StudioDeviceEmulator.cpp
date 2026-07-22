@@ -15,7 +15,7 @@
 #include <QToolButton>
 
 //Client Headers
-#include "V8DataModel/UserInputService.h"
+#include "v8datamodel/UserInputService.h"
 
 //Studio Headers
 #include "IRobloxDoc.h"

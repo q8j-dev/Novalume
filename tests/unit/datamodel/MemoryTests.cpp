@@ -4,10 +4,10 @@
 #include "rbx/test/Performance.h"
 #include "rbx/test/DataModelFixture.h"
 
-#include "script/ScriptContext.h"
-#include "v8datamodel/workspace.h"
-#include "v8datamodel/modelinstance.h"
-#include "V8DataModel/BasicPartInstance.h"
+#include "Script/ScriptContext.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/ModelInstance.h"
+#include "v8datamodel/BasicPartInstance.h"
 
 using namespace RBX;
 

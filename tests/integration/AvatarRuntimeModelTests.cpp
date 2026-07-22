@@ -1,14 +1,14 @@
-#include "V8DataModel/FactoryRegistration.h"
-#include "V8DataModel/Bone.h"
-#include "V8DataModel/Attachment.h"
-#include "V8DataModel/MeshPart.h"
-#include "V8DataModel/ModelInstance.h"
-#include "V8DataModel/ModernAvatar.h"
-#include "V8DataModel/JointInstance.h"
-#include "V8DataModel/Value.h"
+#include "v8datamodel/factoryregistration.h"
+#include "v8datamodel/Bone.h"
+#include "v8datamodel/Attachment.h"
+#include "v8datamodel/MeshPart.h"
+#include "v8datamodel/ModelInstance.h"
+#include "v8datamodel/ModernAvatar.h"
+#include "v8datamodel/JointInstance.h"
+#include "v8datamodel/Value.h"
 #include "humanoid/Humanoid.h"
 #include "security/SecurityContext.h"
-#include "V8Xml/SerializerV2.h"
+#include "v8xml/SerializerV2.h"
 
 #include <cmath>
 #include <filesystem>

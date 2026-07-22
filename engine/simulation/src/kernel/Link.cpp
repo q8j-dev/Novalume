@@ -1,7 +1,7 @@
 /* Copyright 2003-2006 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8Kernel/Link.h"
-#include "V8Kernel/Body.h"
+#include "v8kernel/Link.h"
+#include "v8kernel/Body.h"
 
 namespace RBX {
 
@@ -66,4 +66,3 @@ void D6Link::computeChildInParent(CoordinateFrame& answer) const
 
 
 } // namespace
-

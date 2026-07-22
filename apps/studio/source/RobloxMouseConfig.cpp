@@ -7,7 +7,7 @@
 #include "RobloxMouseConfig.h"
 
 #include "util/NavKeys.h"
-#include "V8DataModel/InputObject.h"
+#include "v8datamodel/InputObject.h"
 
 #include <QLayout>
 #include <QLabel>
@@ -211,4 +211,3 @@ void RobloxMouseConfigWidget::restoreAllDefaults()
     updateContextMenuOption();
     Q_EMIT(dataChanged());
 }
-

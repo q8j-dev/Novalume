@@ -1,7 +1,7 @@
 /* Copyright 2003-2007 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8DataModel/TouchTransmitter.h"
-#include "V8DataModel/Workspace.h"
+#include "v8datamodel/TouchTransmitter.h"
+#include "v8datamodel/Workspace.h"
 
 namespace RBX {
 	const char *const sTouchTransmitter = "TouchTransmitter";

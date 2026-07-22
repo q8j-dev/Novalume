@@ -1,8 +1,8 @@
 #include "MegaCluster.h"
 
 #include "v8datamodel/MegaCluster.h"
-#include "Voxel/AreaCopy.h"
-#include "Voxel/Grid.h"
+#include "voxel/AreaCopy.h"
+#include "voxel/Grid.h"
 
 #include "v8world/Primitive.h"
 #include "SceneUpdater.h"
@@ -12,7 +12,7 @@
 
 #include "Water.h"
 
-#include "G3D/Vector4int8.h"
+#include "g3d/Vector4int8.h"
 
 #include "Material.h"
 #include "ShaderManager.h"

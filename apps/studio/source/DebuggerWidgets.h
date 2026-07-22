@@ -17,7 +17,7 @@
 #include "boost/shared_ptr.hpp"
 
 // Roblox Headers
-#include "script/DebuggerManager.h"
+#include "Script/DebuggerManager.h"
 
 // Qt Headers
 #include <QObject>
@@ -390,4 +390,3 @@ private:
 	QString                         m_Key;
 	RBX::Reflection::Variant        m_Value;
 };
-

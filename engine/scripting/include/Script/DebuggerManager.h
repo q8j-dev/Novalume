@@ -1,9 +1,9 @@
 #pragma once
 
-#include "V8Tree/Instance.h"
-#include "V8Tree/Service.h"
-#include "script/ThreadRef.h"
-#include "script/ScriptContext.h"
+#include "v8tree/Instance.h"
+#include "v8tree/Service.h"
+#include "Script/ThreadRef.h"
+#include "Script/ScriptContext.h"
 
 struct lua_State;
 struct lua_Debug;
@@ -397,4 +397,3 @@ namespace RBX
 		};
 	}
 }
-

@@ -5,6 +5,6 @@
 #   include <D3Dcompiler_x.h>
 #   include <xdk.h>
 #else
-#   include <D3D11.h>
+#   include <d3d11.h>
 #   include <D3Dcompiler.h>
 #endif

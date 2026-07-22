@@ -10,7 +10,7 @@
 // Roblox Headers
 #include "util/FileSystem.h"
 #include "util/Guid.h"
-#include "rbx/boost.hpp"
+#include "rbx/Boost.hpp"
 
 // Roblox Studio Headers
 #include "LogProvider.h"

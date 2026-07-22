@@ -16,7 +16,7 @@
 // Roblox Headers
 #include "v8datamodel/ContentProvider.h"
 #include "v8datamodel/DebugSettings.h"
-#include "script/script.h"
+#include "Script/script.h"
 #include "util/Statistics.h"
 
 // Roblox Studio Headers

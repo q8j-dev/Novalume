@@ -2,8 +2,8 @@
 
 #include "rbx/test/DataModelFixture.h"
 
-#include "script/ScriptContext.h"
-#include "script/Script.h"
+#include "Script/ScriptContext.h"
+#include "Script/script.h"
 
 using namespace RBX;
 

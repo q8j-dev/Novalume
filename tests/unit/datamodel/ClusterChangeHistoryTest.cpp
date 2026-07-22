@@ -1,9 +1,9 @@
 #include <boost/test/unit_test.hpp>
 
 #include "rbx/test/DataModelFixture.h"
-#include "V8DataModel/ChangeHistory.h"
-#include "V8DataModel/MegaCluster.h"
-#include "V8World/World.h"
+#include "v8datamodel/ChangeHistory.h"
+#include "v8datamodel/MegaCluster.h"
+#include "v8world/World.h"
 
 using namespace RBX;
 using namespace RBX::Voxel;

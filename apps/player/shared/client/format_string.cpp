@@ -1,5 +1,5 @@
 #ifdef WIN32
-#include <Objbase.h>
+#include <ObjBase.h>
 #include <windows.h>
 #endif
 #include "format_string.h"
@@ -223,5 +223,4 @@ std::vector<std::wstring> splitOn(
 
     return tokens;
 }
-
 

@@ -1,7 +1,7 @@
-#include "V8DataModel/MessageBusService.h"
+#include "v8datamodel/MessageBusService.h"
 
 #include "Script/ScriptContext.h"
-#include "Util/standardout.h"
+#include "util/standardout.h"
 
 #include <vector>
 

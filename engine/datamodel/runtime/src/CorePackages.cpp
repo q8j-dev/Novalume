@@ -1,4 +1,4 @@
-#include "V8DataModel/CorePackages.h"
+#include "v8datamodel/CorePackages.h"
 
 namespace RBX {
 

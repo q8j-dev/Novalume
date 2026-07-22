@@ -1,4 +1,4 @@
-#include "V8DataModel/MeshPart.h"
+#include "v8datamodel/MeshPart.h"
 
 namespace RBX
 {

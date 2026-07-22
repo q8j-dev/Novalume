@@ -3,9 +3,9 @@
 #include "boost/shared_ptr.hpp"
 #include "boost/scoped_ptr.hpp"
 #include "boost/thread.hpp"
-#include "v8datamodel/game.h"
-#include "Util/KeyCode.h"
-#include "G3D/Vector2.h"
+#include "v8datamodel/Game.h"
+#include "util/KeyCode.h"
+#include "g3d/Vector2.h"
 #include "rbx/signal.h"
 
 namespace RBX

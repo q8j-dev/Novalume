@@ -3,14 +3,14 @@
 #pragma once
 
 
-#include "Util/HitTestFilter.h"
+#include "util/HitTestFilter.h"
 #include "GfxBase/IAdornable.h"
-#include "Util/Name.h"
+#include "util/Name.h"
 #include "rbx/Debug.h"
-#include "Util/Velocity.h"
-#include "rbx/boost.hpp"
-#include "Reflection/Event.h"
-#include "G3D/Array.h"
+#include "util/Velocity.h"
+#include "rbx/Boost.hpp"
+#include "reflection/Event.h"
+#include "g3d/Array.h"
 #include "util/PartMaterial.h"
 
 #include <vector>

@@ -1,6 +1,6 @@
 
 #include "reflection/Callback.h"
-#include "reflection/object.h"
+#include "reflection/Object.h"
 
 using namespace RBX;
 using namespace RBX::Reflection;

@@ -4,9 +4,9 @@
 #include <vector>
 
 // Roblox Headers
-#include "V8DataModel/GlobalSettings.h"
+#include "v8datamodel/GlobalSettings.h"
 #include "GfxBase/RenderSettings.h"
-#include "Reflection/Reflection.h"
+#include "reflection/reflection.h"
 
 
 extern const char* const sRenderSettings;

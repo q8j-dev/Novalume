@@ -1,6 +1,6 @@
 #pragma once
 #include "rbx/threadsafe.h"
-#include "rbx/debug.h"
+#include "rbx/Debug.h"
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 #include <boost/unordered_map.hpp>

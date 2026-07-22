@@ -1,9 +1,9 @@
 #pragma once
 
-#include "V8DataModel/InteractionEnums.h"
-#include "V8Tree/Instance.h"
-#include "Util/PartMaterial.h"
-#include "G3D/Vector3.h"
+#include "v8datamodel/InteractionEnums.h"
+#include "v8tree/Instance.h"
+#include "util/PartMaterial.h"
+#include "g3d/Vector3.h"
 
 #include <string>
 

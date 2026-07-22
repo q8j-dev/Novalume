@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Crypt.h"
-#include "Util/MD5Hasher.h"
-#include "shlwapi.h"
+#include "util/MD5Hasher.h"
+#include "Shlwapi.h"
 #pragma comment(lib, "crypt32.lib")
 
 #pragma comment (lib, "wintrust")

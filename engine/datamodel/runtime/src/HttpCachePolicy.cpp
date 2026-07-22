@@ -1,6 +1,6 @@
-#include "V8DataModel/HttpCachePolicy.h"
+#include "v8datamodel/HttpCachePolicy.h"
 
-#include "reflection/enumconverter.h"
+#include "reflection/EnumConverter.h"
 
 namespace RBX {
 namespace Reflection {

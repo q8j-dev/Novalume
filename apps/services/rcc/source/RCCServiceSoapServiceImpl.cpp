@@ -7,7 +7,7 @@
 #include "rbx/ProcessPerfCounter.h"
 #include "rbx/Debug.h"
 #include "util/ProtectedString.h"
-#include "util/StandardOut.h"
+#include "util/standardout.h"
 #include "boost/noncopyable.hpp"
 #include "boost/thread/xtime.hpp"
 #include "boost/property_tree/json_parser.hpp"
@@ -18,13 +18,13 @@
 
 
 
-#include "v8datamodel/workspace.h"
-#include "v8datamodel/contentprovider.h"
-#include "v8datamodel/datamodel.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/ContentProvider.h"
+#include "v8datamodel/DataModel.h"
 #include "v8datamodel/DebugSettings.h"
 #include "v8datamodel/PhysicsSettings.h"
 #include "v8datamodel/FastLogSettings.h"
-#include "script/LuaSettings.h"
+#include "Script/LuaSettings.h"
 #include "v8datamodel/GameSettings.h"
 #include "v8datamodel/MarketplaceService.h"
 #include "v8datamodel/AdService.h"
@@ -32,34 +32,34 @@
 #include "v8datamodel/NonReplicatedCSGDictionaryService.h"
 #include "v8datamodel/Message.h"
 #include "RobloxServicesTools.h"
-#include "script/scriptcontext.h"
-#include "ThumbnailGenerator.h"
+#include "Script/ScriptContext.h"
+#include "thumbnailgenerator.h"
 #include <string>
 #include <sstream>
-#include "V8DataModel/FactoryRegistration.h"
-#include "ThumbnailGenerator.h"
-#include "util/profiling.h"
+#include "v8datamodel/factoryregistration.h"
+#include "thumbnailgenerator.h"
+#include "util/Profiling.h"
 #include "audio/SoundService.h"
-#include "Util/Guid.h"
-#include "Util/Http.h"
-#include "Util/Statistics.h"
+#include "util/Guid.h"
+#include "util/Http.h"
+#include "util/Statistics.h"
 #include "util/rbxrandom.h"
 #include "network/api.h"
 #include "VersionInfo.h"
 #include "LogManager.h"
 #include <queue>
-#include "shlobj.h"
+#include "ShlObj.h"
 #include "DumpErrorUploader.h"
-#include "gui/ProfanityFilter.h"
+#include "Gui/ProfanityFilter.h"
 #include "GfxBase/ViewBase.h"
 #include "util/FileSystem.h"
-#include "Network/Players.h"
+#include "network/Players.h"
 #include "v8xml/XmlSerializer.h"
 #include "v8xml/WebParser.h"
 #include "RobloxServicesTools.h"
 #include "util/Utilities.h"
-#include "Network/ChatFilter.h"
-#include "Util/RobloxGoogleAnalytics.h"
+#include "network/ChatFilter.h"
+#include "util/RobloxGoogleAnalytics.h"
 #include "network/WebChatFilter.h"
 
 #include "CountersClient.h"
@@ -67,8 +67,8 @@
 #include "SimpleJSON.h"
 #include "RbxFormat.h"
 
-#include <tlhelp32.h>
-#include <psapi.h>
+#include <TlHelp32.h>
+#include <Psapi.h>
 #include "util/Analytics.h"
 #include "OperationalSecurity.h"
 
@@ -1838,4 +1838,3 @@ namespace
         return result;
     }
 }
-

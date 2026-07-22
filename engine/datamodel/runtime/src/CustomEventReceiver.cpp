@@ -1,7 +1,7 @@
 
-#include "V8DataModel/CustomEventReceiver.h"
-#include "V8DataModel/CustomEvent.h"
-#include "V8DataModel/CollectionService.h"
+#include "v8datamodel/CustomEventReceiver.h"
+#include "v8datamodel/CustomEvent.h"
+#include "v8datamodel/CollectionService.h"
 #include "reflection/reflection.h"
 
 namespace RBX {

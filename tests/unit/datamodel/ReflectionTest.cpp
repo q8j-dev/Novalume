@@ -1,6 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
-#include "reflection/object.h"
+#include "reflection/Object.h"
 #include "reflection/reflection.h"
 
 using namespace RBX;
@@ -174,4 +174,3 @@ BOOST_AUTO_TEST_CASE(GenericCallbacks)
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-

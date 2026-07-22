@@ -1,6 +1,6 @@
 #pragma once
 
-#include "V8DataModel/RootInstance.h"
+#include "v8datamodel/RootInstance.h"
 
 namespace RBX {
 

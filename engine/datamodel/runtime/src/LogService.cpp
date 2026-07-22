@@ -1,15 +1,15 @@
 /* Copyright 2014 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8DataModel/LogService.h"
-#include "V8DataModel/DataModel.h"
+#include "v8datamodel/LogService.h"
+#include "v8datamodel/DataModel.h"
 
-#include "Network/Player.h"
-#include "Network/Players.h"
-#include "Util/LuaWebService.h"
-#include "Util/RobloxGoogleAnalytics.h"
-#include "Util/ScopedAssign.h"
-#include "script/ScriptContext.h"
-#include "V8DataModel/Remote.h"
+#include "network/Player.h"
+#include "network/Players.h"
+#include "util/LuaWebService.h"
+#include "util/RobloxGoogleAnalytics.h"
+#include "util/ScopedAssign.h"
+#include "Script/ScriptContext.h"
+#include "v8datamodel/Remote.h"
 #include "util/Analytics.h"
 #include "RobloxServicesTools.h"
 

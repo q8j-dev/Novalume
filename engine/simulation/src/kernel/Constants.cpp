@@ -1,8 +1,8 @@
 /* Copyright 2003-2005 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8Kernel/Constants.h"
-#include "Util/Math.h"
-#include "Util/Units.h"
+#include "v8kernel/Constants.h"
+#include "util/Math.h"
+#include "util/Units.h"
 #include "rbx/Debug.h"
 #include <vector>
 #include <algorithm>

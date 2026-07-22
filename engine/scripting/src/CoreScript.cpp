@@ -1,9 +1,9 @@
 
 #include "Script/CoreScript.h"
-#include "script/ScriptContext.h"
+#include "Script/ScriptContext.h"
 #include "Script/LuaVM.h"
 
-#include "V8DataModel/DataModel.h"
+#include "v8datamodel/DataModel.h"
 #include "v8datamodel/ContentProvider.h"
 #include "lua/lua.hpp"
 #include "util/FileSystem.h"

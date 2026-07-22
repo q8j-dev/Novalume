@@ -1,7 +1,7 @@
 
-#include "V8DataModel/Folder.h"
-#include "V8DataModel/GuiBase2d.h"
-#include "V8DataModel/GuiObject.h"
+#include "v8datamodel/Folder.h"
+#include "v8datamodel/GuiBase2d.h"
+#include "v8datamodel/GuiObject.h"
 #include "v8datamodel/LocalizationService.h"
 #include "v8datamodel/LocalizationTable.h"
 #include "v8datamodel/StyleSheet.h"

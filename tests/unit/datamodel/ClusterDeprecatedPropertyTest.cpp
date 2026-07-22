@@ -2,8 +2,8 @@
 #include <exception>
 
 #include "rbx/test/DataModelFixture.h"
-#include "V8DataModel/DataModel.h"
-#include "V8DataModel/Workspace.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/Workspace.h"
 
 using namespace RBX;
 

@@ -1,8 +1,8 @@
 /* Copyright 2014 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8DataModel/CSGMesh.h"
+#include "v8datamodel/CSGMesh.h"
 
-#include "V8World/TriangleMesh.h"
+#include "v8world/TriangleMesh.h"
 
 #include "util/Lcmrand.h"
 
@@ -14,7 +14,7 @@
 #if defined(_WIN32) && !defined(RBX_PLATFORM_DURANGO)
 #include "security/ProtectionMarkers.h"
 #endif
-#include "Util/MD5Hasher.h"
+#include "util/MD5Hasher.h"
 
 FASTFLAGVARIABLE(FixGlowingCSG, true)
 

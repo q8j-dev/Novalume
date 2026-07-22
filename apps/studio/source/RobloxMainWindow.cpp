@@ -46,7 +46,7 @@
 #include "util/ScopedAssign.h"
 #include "util/RbxStringTable.h"
 #include "audio/SoundService.h"
-#include "script/ScriptContext.h"
+#include "Script/ScriptContext.h"
 #include "v8datamodel/DebugSettings.h"
 #include "v8datamodel/PartInstance.h"	
 #include "v8datamodel/ModelInstance.h"
@@ -60,7 +60,7 @@
 #include "v8kernel/ContactConnector.h"
 #include "rbx/BaldPtr.h"
 #include "rbx/CEvent.h"
-#include "Network/Players.h"
+#include "network/Players.h"
 #include "CountersClient.h"
 #include "FastLog.h"
 #include "SharedLauncher.h"
@@ -118,7 +118,7 @@
 #include "FindDialog.h"
 #include "ScriptTextEditor.h"
 
-#include "Util/RobloxGoogleAnalytics.h"
+#include "util/RobloxGoogleAnalytics.h"
 #include "StudioDeviceEmulator.h"
 
 FASTFLAGVARIABLE(StudioCheckForUpgradeEnabled, false)
@@ -3107,4 +3107,3 @@ void RobloxMainWindow::cookieConstraintCheckerLoadFinished(bool ok)
 		m_cookieConstraintCheckDone->exit();
 	}
 }
-

@@ -19,7 +19,7 @@
 
 #include <stdafx.h>
 
-#include <archive.h>
+#include <Archive.h>
 #include <archive_entry.h>
 
 #include <assert.h>

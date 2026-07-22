@@ -1,12 +1,12 @@
 /* Copyright 2003-2005 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8World/AssemblyStage.h"
-#include "V8World/MovingAssemblyStage.h"
-#include "V8World/Assembly.h"
-#include "V8World/Edge.h"
-#include "V8World/Joint.h"
-#include "V8World/Contact.h"
-#include "V8World/Primitive.h"
+#include "v8world/AssemblyStage.h"
+#include "v8world/MovingAssemblyStage.h"
+#include "v8world/Assembly.h"
+#include "v8world/Edge.h"
+#include "v8world/Joint.h"
+#include "v8world/Contact.h"
+#include "v8world/Primitive.h"
 
 namespace RBX {
 

@@ -23,7 +23,7 @@
 */
 #include "stdafx.h"
 
-#include <Filewatcher/FileWatcherLinux.h>
+#include <filewatcher/FileWatcherLinux.h>
 
 #if FILEWATCHER_PLATFORM == FILEWATCHER_PLATFORM_LINUX
 

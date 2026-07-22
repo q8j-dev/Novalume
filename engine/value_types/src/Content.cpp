@@ -1,7 +1,7 @@
-#include "Util/Content.h"
+#include "util/Content.h"
 
-#include "Reflection/EnumConverter.h"
-#include "Reflection/Type.h"
+#include "reflection/EnumConverter.h"
+#include "reflection/Type.h"
 
 #include <stdexcept>
 #include <tuple>

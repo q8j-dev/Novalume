@@ -1,7 +1,7 @@
 #pragma once
 
-#include "V8DataModel/WorldRoot.h"
-#include "Util/SteppedInstance.h"
+#include "v8datamodel/WorldRoot.h"
+#include "util/SteppedInstance.h"
 
 namespace RBX {
 

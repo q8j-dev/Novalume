@@ -1,5 +1,5 @@
 
-#include "V8Datamodel/Decal.h"
+#include "v8datamodel/Decal.h"
 
 using namespace RBX;
 
@@ -223,4 +223,3 @@ void DecalTexture::setOffsetStudsV(float value)
 		raisePropertyChanged(prop_OffsetStudsV);
 	}
 }
-

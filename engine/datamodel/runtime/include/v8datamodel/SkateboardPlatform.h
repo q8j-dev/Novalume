@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "V8DataModel/BasicPartInstance.h"
-#include "V8DataModel/Platform.h"
+#include "v8datamodel/BasicPartInstance.h"
+#include "v8datamodel/Platform.h"
 #include "reflection/reflection.h"
 
 namespace RBX {

@@ -1,7 +1,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "rbx/test/TimeoutFixture.h"
-#include "RBX/CEvent.h"
+#include "rbx/CEvent.h"
 
 
 #ifdef RBX_PLATFORM_IOS
@@ -72,5 +72,4 @@ BOOST_FIXTURE_TEST_SUITE(CEvent, RBX::Test::TimeoutFixture<TIMEOUT>)
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
-
 

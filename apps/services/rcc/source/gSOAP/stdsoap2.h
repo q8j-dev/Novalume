@@ -567,12 +567,12 @@ A commercial use license is available from Genivia, Inc., contact@genivia.com
 #  include <fcntl.h>
 # endif
 # ifdef WITH_IPV6
-#  include <winsock2.h> /* Visual Studio 2005 users: you must install the Platform SDK (R2) */
-#  include <ws2tcpip.h>
-#  include <wspiapi.h>
+#  include <WinSock2.h> /* Visual Studio 2005 users: you must install the Platform SDK (R2) */
+#  include <WS2tcpip.h>
+#  include <WSPiApi.h>
 #  define SOAP_GAI_STRERROR gai_strerrorA
 # else
-#  include <winsock.h> /* Visual Studio 2005 users: you must install the Platform SDK (R2) */
+#  include <WinSock.h> /* Visual Studio 2005 users: you must install the Platform SDK (R2) */
 /* # include <winsock2.h> */ /* Alternative: use winsock2 (not available with eVC) */
 # endif
 #else

@@ -8,8 +8,8 @@
 #include "network/NetworkOwner.h"
 #include "Util.h"
 #include "Compressor.h"
-#include "script/Script.h"
-#include "script/ModuleScript.h"
+#include "Script/script.h"
+#include "Script/ModuleScript.h"
 #include "Replicator.NewInstanceItem.h"
 
 #include "rbx/rbxTime.h"

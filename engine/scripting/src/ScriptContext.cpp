@@ -14,28 +14,28 @@
 #include "Script/LuaSignalBridge.h"
 #include "Script/ModuleScript.h"
 #include "Script/RobloxExtraSpace.h"
-#include "Script/Script.h"
+#include "Script/script.h"
 #include "Script/ScriptEvent.h"
 #include "Script/ScriptStats.h"
 
-#include "Util/AsyncHttpQueue.h"
-#include "Util/RbxStringTable.h"
-#include "Util/standardout.h"	// TODO: This cross-reference of library code sucks
-#include "Util/ScopedAssign.h"
-#include "Util/xxhash.h"
+#include "util/AsyncHttpQueue.h"
+#include "util/RbxStringTable.h"
+#include "util/standardout.h"	// TODO: This cross-reference of library code sucks
+#include "util/ScopedAssign.h"
+#include "util/xxhash.h"
 
 #include "v8datamodel/Stats.h"
 #include "v8datamodel/Workspace.h"
 #include "v8datamodel/DebugSettings.h"
-#include "v8datamodel/contentprovider.h"
-#include "v8datamodel/hackdefines.h"
+#include "v8datamodel/ContentProvider.h"
+#include "v8datamodel/HackDefines.h"
 #include "v8datamodel/PluginManager.h"
 #include "v8datamodel/Stats.h"
 #include "v8datamodel/ServerScriptService.h"
-#include "reflection/type.h"
+#include "reflection/Type.h"
 
-#include "Network/Players.h"
-#include "Network/api.h"
+#include "network/Players.h"
+#include "network/api.h"
 #include "RobloxServicesTools.h"
 
 #include "rbx/Crypt.h"
@@ -45,7 +45,7 @@
 #include "RbxG3D/RbxTime.h"
 #include "rbx/rbxTime.h"
 
-#include "Util/RobloxGoogleAnalytics.h"
+#include "util/RobloxGoogleAnalytics.h"
 
 #include <boost/lexical_cast.hpp>
 

@@ -8,7 +8,7 @@
 #include "v8world/World.h"
 #include "util/RunStateOwner.h"
 
-#include "Network/Players.h"
+#include "network/Players.h"
 
 using namespace RBX;
 
@@ -125,5 +125,4 @@ void GamePerfMonitor::start(DataModel* dataModel)
 		dataModel->closingSignal.connect(boost::bind(&GamePerfMonitor::onGameClose, this, weak_from(dataModel)));
 	}
 }
-
 

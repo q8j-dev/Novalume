@@ -36,11 +36,11 @@ using namespace cat;
 # if defined(CAT_COMPILER_MSVC)
 #  pragma warning(push)
 #  pragma warning(disable: 4201) // Squelch annoying warning from MSVC2005 SDK
-#  include <mmsystem.h>
+#  include <MMSystem.h>
 #  pragma warning(pop)
 #  pragma comment (lib, "winmm")
 # else
-#  include <mmsystem.h>
+#  include <MMSystem.h>
 # endif
 
 // Windows version requires some initialization

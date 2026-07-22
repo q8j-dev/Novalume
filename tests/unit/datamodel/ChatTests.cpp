@@ -7,7 +7,7 @@
 #include "network/Players.h"
 #include "Server.h"
 
-#include "Network/ChatFilter.h"
+#include "network/ChatFilter.h"
 #include "network/WebChatFilter.h"
 #include "util/Http.h"
 #include "util/Statistics.h"
@@ -411,4 +411,3 @@ BOOST_AUTO_TEST_CASE(ReportAbuse)
 
 
 BOOST_AUTO_TEST_SUITE_END()
-

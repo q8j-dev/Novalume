@@ -41,7 +41,7 @@
     #include <atlbase.h>
     #include <atlstr.h>
     #include <atlstr.h>
-    #include <shobjidl.h>
+    #include <ShObjIdl.h>
 #endif
 
 #define NO_SDL_MAIN
@@ -69,7 +69,7 @@
 // Windows Headers
 #ifdef _WIN32
     #include <windows.h>
-    #include <shlobj.h>
+    #include <ShlObj.h>
 #endif
 
 #ifndef QT_NO_KEYWORDS
@@ -96,8 +96,8 @@
 // Roblox Headers
 #include "GfxBase/FrameRateManager.h"
 #include "GfxBase/RenderSettings.h"
-#include "Network/api.h"
-#include "Network/Players.h"
+#include "network/api.h"
+#include "network/Players.h"
 #include "rbx/Boost.hpp"
 #include "rbx/CEvent.h"
 #include "rbx/Debug.h"
@@ -108,7 +108,7 @@
 #include "rbx/threadsafe.h"
 #include "reflection/reflection.h"
 #include "reflection/Type.h"
-#include "script/Script.h"
+#include "Script/script.h"
 #include "util/ContentId.h"
 #include "util/FileSystem.h"
 #include "util/G3DCore.h"
@@ -137,6 +137,6 @@
 
 #include "FastLog.h"
 #include "NetworkSettings.h"
-#include "ReflectionMetaData.h"
+#include "ReflectionMetadata.h"
 
 #endif

@@ -1,5 +1,5 @@
 #include <boost/test/unit_test.hpp>
-#include "V8Xml/WebParser.h"
+#include "v8xml/WebParser.h"
 #include "v8tree/Instance.h"
 
 using namespace RBX;

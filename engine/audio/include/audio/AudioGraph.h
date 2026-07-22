@@ -1,10 +1,10 @@
 #pragma once
 
-#include "V8Tree/Instance.h"
-#include "Reflection/Event.h"
-#include "Util/BinaryString.h"
-#include "Util/Content.h"
-#include "Util/ContentId.h"
+#include "v8tree/Instance.h"
+#include "reflection/Event.h"
+#include "util/BinaryString.h"
+#include "util/Content.h"
+#include "util/ContentId.h"
 #include "v8datamodel/NumberRange.h"
 #include "audio/AudioEngine.h"
 

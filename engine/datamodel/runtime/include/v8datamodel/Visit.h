@@ -2,10 +2,10 @@
 
 #pragma once
 
-#include "V8Tree/Instance.h"
-#include "V8Tree/Service.h"
+#include "v8tree/Instance.h"
+#include "v8tree/Service.h"
 
-#include "rbx/boost.hpp"
+#include "rbx/Boost.hpp"
 #include <boost/thread/condition.hpp>
 
 namespace RBX {

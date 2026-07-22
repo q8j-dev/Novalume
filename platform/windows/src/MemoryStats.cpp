@@ -4,7 +4,7 @@
 #include <Windows.h>
 
 #if !defined(RBX_PLATFORM_DURANGO)
-#include <psapi.h>
+#include <Psapi.h>
 #endif
 
 using namespace RBX;

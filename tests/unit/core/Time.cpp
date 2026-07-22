@@ -1,7 +1,7 @@
 #include <boost/test/unit_test.hpp>
 
-#include "rbx/rbxtime.h"
-#include "rbxformat.h"
+#include "rbx/rbxTime.h"
+#include "RbxFormat.h"
 
 using namespace boost;
 
@@ -85,5 +85,4 @@ BOOST_AUTO_TEST_SUITE(Time)
 	}
 
 BOOST_AUTO_TEST_SUITE_END()
-
 

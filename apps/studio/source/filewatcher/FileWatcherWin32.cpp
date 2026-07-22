@@ -21,7 +21,7 @@
 */
 #include "stdafx.h"
 
-#include <Filewatcher/FileWatcherWin32.h>
+#include <filewatcher/FileWatcherWin32.h>
 
 #if FILEWATCHER_PLATFORM == FILEWATCHER_PLATFORM_WIN32
 

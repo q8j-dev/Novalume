@@ -1,9 +1,9 @@
 /* Copyright 2003-2005 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8World/SendPhysics.h"
-#include "V8World/Assembly.h"
-#include "V8World/Mechanism.h"
-#include "V8World/Primitive.h"
+#include "v8world/SendPhysics.h"
+#include "v8world/Assembly.h"
+#include "v8world/Mechanism.h"
+#include "v8world/Primitive.h"
 
 
 namespace RBX {

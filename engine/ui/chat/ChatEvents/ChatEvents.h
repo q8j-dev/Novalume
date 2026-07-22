@@ -4,8 +4,8 @@
 //* Copyright (c) Microsoft Corporation. All Rights Reserved.          *`
 //**********************************************************************`
 #pragma once
-#include <wmistr.h>
-#include <evntrace.h>
+#include <Wmistr.h>
+#include <Evntrace.h>
 #include "evntprov.h"
 //
 //  Initial Defs
@@ -1454,4 +1454,3 @@ Template_zqtttz(
 #if defined(__cplusplus)
 };
 #endif
-

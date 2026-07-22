@@ -1,24 +1,24 @@
 #include "stdafx.h"
 
-#include "Util/ProgramMemoryChecker.h"
+#include "util/ProgramMemoryChecker.h"
 #include "rbx/rbxTime.h"
 
 #include "FastLog.h"
-#include "Rbx/Debug.h"
-#include "Util/xxhash.h"
+#include "rbx/Debug.h"
+#include "util/xxhash.h"
 
 #include <boost/algorithm/string.hpp>
 
 #include "Windows.h"
 #include "security/ProtectionMarkers.h"
-#include <psapi.h>
+#include <Psapi.h>
 
 #include "security/ApiSecurity.h"
-#include "V8DataModel/HackDefines.h"
+#include "v8datamodel/HackDefines.h"
 #include "humanoid/HumanoidState.h"
 
-#include "g3d/vector3.h"
-#include "g3d/matrix3.h"
+#include "g3d/Vector3.h"
+#include "g3d/Matrix3.h"
 
 #pragma comment(lib, "Psapi.lib")
 

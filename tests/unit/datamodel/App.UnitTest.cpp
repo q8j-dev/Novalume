@@ -6,7 +6,7 @@
 #include "util/Statistics.h"
 #include "GetTime.h"
 
-#include "V8DataModel/ContentProvider.h"
+#include "v8datamodel/ContentProvider.h"
 
 #include "rbx/test/App.UnitTest.Lib.h"
 

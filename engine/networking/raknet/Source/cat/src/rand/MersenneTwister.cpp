@@ -34,7 +34,7 @@ using namespace std;
 
 #if defined(CAT_OS_WINDOWS)
 # include <cat/port/WindowsInclude.hpp>
-# include <wincrypt.h>
+# include <WinCrypt.h>
 # if defined(CAT_COMPILER_MSVC)
 #  pragma comment(lib, "advapi32")
 # endif

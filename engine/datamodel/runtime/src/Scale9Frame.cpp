@@ -1,5 +1,5 @@
 
-#include "V8DataModel/Scale9Frame.h"
+#include "v8datamodel/Scale9Frame.h"
 
 namespace RBX
 {

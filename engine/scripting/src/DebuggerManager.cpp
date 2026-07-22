@@ -1,9 +1,9 @@
-#include "script/DebuggerManager.h"
+#include "Script/DebuggerManager.h"
 
-#include "script/ScriptContext.h"
-#include "script/Script.h"
-#include "script/ModuleScript.h"
-#include "script/LuaArguments.h"
+#include "Script/ScriptContext.h"
+#include "Script/script.h"
+#include "Script/ModuleScript.h"
+#include "Script/LuaArguments.h"
 #include "util/ProtectedString.h"
 
 #include "lua/lua.hpp"

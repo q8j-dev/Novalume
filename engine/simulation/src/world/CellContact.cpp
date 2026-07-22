@@ -1,11 +1,11 @@
 /* Copyright 2003-2005 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8World/CellContact.h"
-#include "V8Kernel/PolyConnectors.h"
-#include "V8Kernel/Kernel.h"
-#include "V8World/Primitive.h"
-#include "Voxel/Grid.h"
-#include "V8DataModel/MegaCluster.h"
+#include "v8world/CellContact.h"
+#include "v8kernel/PolyConnectors.h"
+#include "v8kernel/Kernel.h"
+#include "v8world/Primitive.h"
+#include "voxel/Grid.h"
+#include "v8datamodel/MegaCluster.h"
 
 namespace RBX {
 

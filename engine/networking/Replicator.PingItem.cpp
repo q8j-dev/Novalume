@@ -3,12 +3,12 @@
 #include "Item.h"
 #include "Replicator.h"
 #include "ReplicatorStats.h"
-#include "Security/FuzzyTokens.h"
-#include "Security/ApiSecurity.h"
-#include "V8DataModel/HackDefines.h"
+#include "security/FuzzyTokens.h"
+#include "security/ApiSecurity.h"
+#include "v8datamodel/HackDefines.h"
 
 #include "FastLog.h"
-#include "V8DataModel/DataModel.h"
+#include "v8datamodel/DataModel.h"
 
 #include "network/NetworkTypes.h"
 #include "network/PacketBuffer.h"

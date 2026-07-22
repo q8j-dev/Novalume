@@ -5,7 +5,7 @@
 #include "Item.h"
 #include "Replicator.h"
 
-#include "Reflection/Event.h"
+#include "reflection/Event.h"
 
 namespace RBX {
 namespace Network {

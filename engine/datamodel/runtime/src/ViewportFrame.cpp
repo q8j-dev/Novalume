@@ -1,7 +1,7 @@
-#include "V8DataModel/ViewportFrame.h"
+#include "v8datamodel/ViewportFrame.h"
 
-#include "V8DataModel/Camera.h"
-#include "V8DataModel/WorldModel.h"
+#include "v8datamodel/Camera.h"
+#include "v8datamodel/WorldModel.h"
 #include "GfxBase/ViewportTextureProvider.h"
 
 namespace RBX {

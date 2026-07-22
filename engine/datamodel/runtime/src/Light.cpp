@@ -1,9 +1,9 @@
 
-#include "V8DataModel/Light.h"
+#include "v8datamodel/Light.h"
 
-#include "V8DataModel/PartInstance.h"
+#include "v8datamodel/PartInstance.h"
 
-#include "Util/RobloxGoogleAnalytics.h"
+#include "util/RobloxGoogleAnalytics.h"
 
 static void sendLightingObjectsStats()
 {

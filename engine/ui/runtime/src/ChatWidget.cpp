@@ -1,7 +1,7 @@
 /* Copyright 2003-2005 ROBLOX Corporation, All Rights Reserved */
 
 #include "Gui/ChatWidget.h"
-#include "Network/Players.h"
+#include "network/Players.h"
 #include "audio/SoundService.h"
 
 namespace RBX {

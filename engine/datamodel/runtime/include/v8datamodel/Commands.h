@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "V8Tree/Verb.h"
-#include "Util/RunStateOwner.h"
+#include "v8tree/Verb.h"
+#include "util/RunStateOwner.h"
 #include "Tool/ToolsArrow.h"
 #include "v8datamodel/Workspace.h"
 #include "PartOperation.h"

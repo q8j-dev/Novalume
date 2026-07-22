@@ -1,11 +1,11 @@
 #pragma once
 
-#include "V8DataModel/Attachment.h"
-#include "V8DataModel/JointInstance.h"
-#include "V8DataModel/PartInstance.h"
-#include "V8Tree/Instance.h"
-#include "Util/MeshId.h"
-#include "Util/BinaryString.h"
+#include "v8datamodel/Attachment.h"
+#include "v8datamodel/JointInstance.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8tree/Instance.h"
+#include "util/MeshId.h"
+#include "util/BinaryString.h"
 
 namespace RBX
 {

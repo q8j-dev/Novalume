@@ -1,11 +1,11 @@
-#include "V8DataModel/CaptureService.h"
+#include "v8datamodel/CaptureService.h"
 
-#include "Util/FileSystem.h"
+#include "util/FileSystem.h"
 #include "Script/LuaArguments.h"
 #include "Script/ScriptContext.h"
-#include "V8DataModel/DataModel.h"
+#include "v8datamodel/DataModel.h"
 #include "lua/lua.hpp"
-#include "Util/standardout.h"
+#include "util/standardout.h"
 
 #include <boost/filesystem.hpp>
 

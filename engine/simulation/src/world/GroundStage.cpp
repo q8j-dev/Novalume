@@ -1,10 +1,10 @@
 /* Copyright 2003-2005 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8World/GroundStage.h"
-#include "V8World/EdgeStage.h"
-#include "V8World/Primitive.h"
-#include "V8World/RigidJoint.h"
-#include "V8World/KernelJoint.h"
+#include "v8world/GroundStage.h"
+#include "v8world/EdgeStage.h"
+#include "v8world/Primitive.h"
+#include "v8world/RigidJoint.h"
+#include "v8world/KernelJoint.h"
 
 namespace RBX {
 

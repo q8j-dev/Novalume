@@ -1,10 +1,10 @@
 #pragma once 
-#include "Reflection/Reflection.h"
-#include "V8Tree/Instance.h"
-#include "V8Tree/Service.h"
+#include "reflection/reflection.h"
+#include "v8tree/Instance.h"
+#include "v8tree/Service.h"
 #include "rbx/RunningAverage.h"
 #include "Script/ThreadRef.h"
-#include "Util/HttpAux.h"
+#include "util/HttpAux.h"
 
 #include <atomic>
 

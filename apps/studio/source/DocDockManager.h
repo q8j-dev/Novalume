@@ -10,7 +10,7 @@
 #include <QMap>
 
 // Roblox Headers
-#include "RBX/BaldPtr.h"
+#include "rbx/BaldPtr.h"
 
 // Roblox Studio Headers
 #include "IRobloxDoc.h"
@@ -47,4 +47,3 @@ class DocDockManager : public QObject
         RobloxMainWindow&   m_MainWindow;
         tDocDockMap         m_Docs;
 };
-

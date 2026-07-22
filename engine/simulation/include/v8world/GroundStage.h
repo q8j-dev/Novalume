@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "V8World/IWorldStage.h"
+#include "v8world/IWorldStage.h"
 
 namespace RBX {
 
@@ -50,4 +50,3 @@ namespace RBX {
 
 
 } // namespace
-

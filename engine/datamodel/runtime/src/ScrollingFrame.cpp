@@ -1,9 +1,9 @@
 
-#include "V8DataModel/ScrollingFrame.h"
+#include "v8datamodel/ScrollingFrame.h"
 #include "v8datamodel/GuiService.h"
-#include "V8DataModel/UserInputService.h"
+#include "v8datamodel/UserInputService.h"
 #include "v8datamodel/GamepadService.h"
-#include "V8DataModel/TextBox.h"
+#include "v8datamodel/TextBox.h"
 #include "rbx/ui/ScreenLayout.h"
 
 #define category_Scrolling "Scrolling"

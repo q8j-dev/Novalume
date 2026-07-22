@@ -1,6 +1,6 @@
-#include "V8DataModel/IXPService.h"
+#include "v8datamodel/IXPService.h"
 
-#include "Util/standardout.h"
+#include "util/standardout.h"
 
 namespace RBX {
 

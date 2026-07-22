@@ -15,10 +15,10 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/thread.hpp>
 
-#include <winsock2.h>
+#include <WinSock2.h>
 //#include <ws2def.h>
 #include <ws2ipdef.h>
-#include <ws2tcpip.h>
+#include <WS2tcpip.h>
 
 #include <boost/function.hpp>
 
@@ -124,7 +124,7 @@ namespace Xp2p
     //////////////////////////////////////////////////////////////////////////
     // Packets
 
-#include <pshpack1.h>
+#include <PshPack1.h>
     struct PacketHeader
     {
         // fill these out:
@@ -149,7 +149,7 @@ namespace Xp2p
         enum { MaxPayloadSize = kMaxUdpSize - sizeof(PacketHeader)  };
         uint8 payload[MaxPayloadSize];
     };
-#include <poppack.h>
+#include <PopPack.h>
     //////////////////////////////////////////////////////////////////////////
     // Network
 
@@ -196,5 +196,4 @@ namespace Xp2p
         void          controlThread();
     };
 }
-
 

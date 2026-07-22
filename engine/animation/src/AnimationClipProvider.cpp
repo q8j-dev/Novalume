@@ -1,6 +1,6 @@
-#include "V8DataModel/AnimationClipProvider.h"
+#include "v8datamodel/AnimationClipProvider.h"
 
-#include "V8DataModel/KeyframeSequenceProvider.h"
+#include "v8datamodel/KeyframeSequenceProvider.h"
 
 namespace RBX {
 

@@ -19,7 +19,7 @@
 #include "g3d/Matrix3.h"
 #include "g3d/Array.h"
 #include "g3d/Line.h"
-#include <Math.h>
+#include <math.h>
 #include <string>
 #include <stdio.h>
 #include <cstdarg>

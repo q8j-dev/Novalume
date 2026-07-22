@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "functionHooks.h"
 #include <windows.h>
-#include <psapi.h>
+#include <Psapi.h>
 
 namespace{
 const DWORD kLenHotpatchNop = 2;

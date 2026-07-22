@@ -6,7 +6,7 @@
 
 #include "PhysicsSender.h"
 #include "BoostAppend.h"
-#include "V8DataModel/PartInstance.h"
+#include "v8datamodel/PartInstance.h"
 #include "rbx/signal.h"
 
 #include "boost/pool/pool_alloc.hpp"

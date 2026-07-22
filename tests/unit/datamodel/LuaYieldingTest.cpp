@@ -4,9 +4,9 @@
 #include "rbx/test/ScopedFastFlagSetting.h"
 #include "Script/script.h"
 #include "Script/ScriptContext.h"
-#include "Util/ProtectedString.h"
-#include "V8DataModel/BasicPartInstance.h"
-#include "V8Tree/Instance.h"
+#include "util/ProtectedString.h"
+#include "v8datamodel/BasicPartInstance.h"
+#include "v8tree/Instance.h"
 
 using namespace RBX;
 

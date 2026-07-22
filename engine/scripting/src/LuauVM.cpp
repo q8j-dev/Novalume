@@ -1,7 +1,7 @@
 #include "Script/LuaVM.h"
 
 #include "Script/LuauBytecode.h"
-#include "Util/ProtectedString.h"
+#include "util/ProtectedString.h"
 
 #include "Luau/Compiler.h"
 #include "lua.h"

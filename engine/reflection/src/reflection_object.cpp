@@ -1,5 +1,5 @@
 
-#include "reflection/object.h"
+#include "reflection/Object.h"
 #include "g3d/format.h"
 
 using namespace RBX;

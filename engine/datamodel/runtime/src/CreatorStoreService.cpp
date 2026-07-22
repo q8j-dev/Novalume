@@ -1,7 +1,7 @@
-#include "V8DataModel/CreatorStoreService.h"
+#include "v8datamodel/CreatorStoreService.h"
 
-#include "Util/Http.h"
-#include "V8Xml/WebParser.h"
+#include "util/Http.h"
+#include "v8xml/WebParser.h"
 
 #include <boost/algorithm/string.hpp>
 

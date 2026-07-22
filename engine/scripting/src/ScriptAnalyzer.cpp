@@ -1,5 +1,5 @@
-#include "script/ScriptAnalyzer.h"
-#include "V8DataModel/DataModel.h"
+#include "Script/ScriptAnalyzer.h"
+#include "v8datamodel/DataModel.h"
 
 #include "lua/lua.hpp"
 #include "util/ProtectedString.h"
@@ -9,10 +9,10 @@
 #include "lvm.h"
 #include "ldebug.h"
 
-#include "script/ScriptContext.h"
-#include "script/Script.h"
-#include "script/LuaInstanceBridge.h"
-#include "script/LuaArguments.h"
+#include "Script/ScriptContext.h"
+#include "Script/script.h"
+#include "Script/LuaInstanceBridge.h"
+#include "Script/LuaArguments.h"
 
 #include "rbx/DenseHash.h"
 

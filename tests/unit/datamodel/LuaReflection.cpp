@@ -4,19 +4,19 @@
 #include "rbx/test/Base.UnitTest.Lib.h"
 #include "rbx/test/ScopedFastFlagSetting.h"
 
-#include "script/ScriptContext.h"
-#include "script/Script.h"
+#include "Script/ScriptContext.h"
+#include "Script/script.h"
 #include "util/ProtectedString.h"
-#include "util/udim.h"
-#include "util/axes.h"
+#include "util/UDim.h"
+#include "util/Axes.h"
 #include "v8datamodel/PartInstance.h"
 #include "v8datamodel/Surface.h"
 #include "v8datamodel/ModelInstance.h"
 #include "rbx/make_shared.h"
 
-#include "Util/CellID.h"
+#include "util/CellID.h"
 
-#include "script/LuaArguments.h"
+#include "Script/LuaArguments.h"
 
 enum TestEnum
 {
@@ -1096,4 +1096,3 @@ BOOST_AUTO_TEST_CASE(PerfClone)
 #endif
 
 BOOST_AUTO_TEST_SUITE_END()
-

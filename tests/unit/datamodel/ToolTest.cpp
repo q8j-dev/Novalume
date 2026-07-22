@@ -1,8 +1,8 @@
 #include <boost/test/unit_test.hpp>
 
 #include "rbx/test/DataModelFixture.h"
-#include "V8DataModel/Mouse.h"
-#include "V8DataModel/Tool.h"
+#include "v8datamodel/Mouse.h"
+#include "v8datamodel/Tool.h"
 
 using namespace RBX;
 
@@ -73,4 +73,3 @@ BOOST_AUTO_TEST_CASE( EquipFiresForConnectionsBeforeAndAfterEquip )
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-

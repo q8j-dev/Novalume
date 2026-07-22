@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Humanoid/HumanoidState.h"
+#include "humanoid/HumanoidState.h"
 
 namespace RBX {
 
@@ -45,4 +45,3 @@ namespace RBX {
 
 	} // namespace
 }	// namespace
-

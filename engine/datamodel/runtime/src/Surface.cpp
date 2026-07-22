@@ -1,9 +1,9 @@
 /* Copyright 2003-2005 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8DataModel/Surface.h"
-#include "V8DataModel/PartInstance.h"
-#include "V8World/Primitive.h"
-#include "Util/Hash.h"
+#include "v8datamodel/Surface.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8world/Primitive.h"
+#include "util/Hash.h"
 
 DYNAMIC_FASTFLAGVARIABLE(UseRemoveTypeIDTricks,true)
 

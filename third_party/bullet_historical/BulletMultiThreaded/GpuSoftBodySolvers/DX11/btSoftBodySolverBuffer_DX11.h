@@ -19,8 +19,8 @@ subject to the following restrictions:
 #include <windows.h>
 #include <crtdbg.h>
 #include <d3d11.h>
-#include <d3dx11.h>
-#include <d3dcompiler.h>
+#include <D3DX11.h>
+#include <D3Dcompiler.h>
 
 #ifndef SAFE_RELEASE
 #define SAFE_RELEASE(p)      { if(p) { (p)->Release(); (p)=NULL; } }

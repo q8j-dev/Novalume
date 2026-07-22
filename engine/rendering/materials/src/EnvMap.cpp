@@ -5,7 +5,7 @@
 #include "VisualEngine.h"
 #include "GfxCore/Device.h"
 #include "GfxCore/Texture.h"
-#include "GfxCore/FrameBuffer.h"
+#include "GfxCore/Framebuffer.h"
 #include "GlobalShaderData.h"
 #include "SceneManager.h"
 #include "ShaderManager.h"

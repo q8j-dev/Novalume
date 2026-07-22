@@ -6,12 +6,12 @@
 #include "DebuggerClient.h"
 
 // Roblox Headers
-#include "util/StandardOut.h"
+#include "util/standardout.h"
 #include "util/ScopedAssign.h"
-#include "v8datamodel/datamodel.h"
-#include "v8datamodel/changehistory.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/ChangeHistory.h"
 #include "reflection/Property.h"
-#include "Script/Script.h"
+#include "Script/script.h"
 
 // Qt Headers
 #include <QMutex>

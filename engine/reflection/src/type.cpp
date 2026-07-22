@@ -1,5 +1,5 @@
 
-#include "reflection/type.h"
+#include "reflection/Type.h"
 #include "reflection/member.h"
 
 #include <boost/functional/hash.hpp>

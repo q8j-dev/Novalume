@@ -1,12 +1,12 @@
 /* Copyright 2003-2005 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8Tree/Instance.h"
+#include "v8tree/Instance.h"
 #include "RbxAssert.h"
-#include "V8Xml/Serializer.h"
-#include "V8Tree/Service.h"
+#include "v8xml/Serializer.h"
+#include "v8tree/Service.h"
 #include "util/standardout.h"
-#include "V8DataModel/ScriptService.h"
-#include "V8DataModel/DataModel.h"
+#include "v8datamodel/ScriptService.h"
+#include "v8datamodel/DataModel.h"
 #include "security/ApiSecurity.h"
 #include "v8datamodel/HackDefines.h"
 #include "v8datamodel/NumberSequence.h"

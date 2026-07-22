@@ -5,7 +5,7 @@
 
 
 #include "network/Players.h"
-#include "network/API.h"
+#include "network/api.h"
 #include "NetworkProfiler.h"
 #include "NetworkSettings.h"
 #include "NetworkOwnerJob.h"
@@ -18,10 +18,10 @@
 
 
 #include "v8datamodel/Stats.h"
-#include "v8datamodel/hackdefines.h"
-#include "v8datamodel/partinstance.h"
+#include "v8datamodel/HackDefines.h"
+#include "v8datamodel/PartInstance.h"
 #include "v8datamodel/Workspace.h"			// TODO - move distributed physics switch somewhere else
-#include "v8datamodel/message.h"
+#include "v8datamodel/Message.h"
 #include "v8datamodel/DataModel.h"
 #include "v8datamodel/Hopper.h"
 #include "v8datamodel/Lighting.h"
@@ -32,23 +32,23 @@
 #include "v8datamodel/ReplicatedFirst.h"
 #include "v8datamodel/HttpRbxApiService.h"
 #include "v8datamodel/MegaCluster.h"
-#include "V8World/Assembly.h"
-#include "V8World/Mechanism.h"
-#include "V8World/Primitive.h"
+#include "v8world/Assembly.h"
+#include "v8world/Mechanism.h"
+#include "v8world/Primitive.h"
 #include "v8world/DistributedPhysics.h"
 #include "Script/ModuleScript.h"
-#include "script/script.h"
-#include "util/http.h"
+#include "Script/script.h"
+#include "util/Http.h"
 #include "util/RobloxGoogleAnalytics.h"
 #include "util/xxhash.h"
 #include "rbx/Crypt.h"
 #include "FastLog.h"
-#include "Network/NetworkOwner.h"
-#include "Util/Statistics.h"
+#include "network/NetworkOwner.h"
+#include "util/Statistics.h"
 #include "ConcurrentPeer.h"
 #include "RobloxServicesTools.h"
 
-#include "rbx/boost.hpp"
+#include "rbx/Boost.hpp"
 
 #include <boost/thread/xtime.hpp>
 #include <boost/bind.hpp>
@@ -61,7 +61,7 @@
 #include "Replicator.RockyItem.h"
 #endif
 
-#include "script/LuaVM.h"
+#include "Script/LuaVM.h"
 #if defined(RBX_ENABLE_LEGACY_X86_CLIENT_SECURITY) || defined(RBX_RCC_SECURITY)
 #include "NetPmc.h"
 #endif

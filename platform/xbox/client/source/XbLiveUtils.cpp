@@ -7,7 +7,7 @@
 #include <ppltasks.h>
 #include <map>
 
-#include "Util/Http.h"
+#include "util/Http.h"
 #include "XboxUtils.h"
 #include "UserTranslator.h"
 #include "async.h"
@@ -442,5 +442,4 @@ RBX::AwardResult xboxEvents_send( Microsoft::Xbox::Services::XboxLiveContext^ xb
 
     return r == 0 ?  RBX::Award_OK : RBX::Award_Fail;
 }
-
 

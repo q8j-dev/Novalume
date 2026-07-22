@@ -15,7 +15,7 @@
 #include "g3d/Matrix3.h"
 #include "g3d/Quat.h"
 #include "g3d/CoordinateFrame.h"
-#include <Math.h>
+#include <math.h>
 #include <string>
 
 

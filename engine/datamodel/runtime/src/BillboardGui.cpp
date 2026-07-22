@@ -1,16 +1,16 @@
 
-#include "V8DataModel/BillboardGui.h"
-#include "V8DataModel/DataModel.h"
-#include "V8DataModel/PartInstance.h"
-#include "V8DataModel/Filters.h"
+#include "v8datamodel/BillboardGui.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/Filters.h"
 #include "v8world/ContactManager.h"
 #include "v8world/World.h"
 #include "GfxBase/ViewportBillboarder.h"
 #include "GfxBase/AdornBillboarder.h"
 #include "GfxBase/AdornBillboarder2D.h"
 #include "GfxBase/AdornSurface.h"
-#include "Network/Player.h"
-#include "Network/Players.h"
+#include "network/Player.h"
+#include "network/Players.h"
 
 FASTFLAGVARIABLE(BillboardGuiVR, false)
 

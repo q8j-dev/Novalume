@@ -5,20 +5,20 @@
 #define NOMINMAX
 
 // Grrrr! Need to include this before windows.h
-#include "winsock2.h"
+#include "WinSock2.h"
 #include "windows.h"
-#include "wininet.h"
+#include "WinInet.h"
 
-#include "Util/Http.h"
-#include "Util/SafeToLower.h"
+#include "util/Http.h"
+#include "util/SafeToLower.h"
 #include "util/standardout.h"
 
 #pragma comment (lib , "Wininet.lib")
 #include "atlutil.h"
 #include "g3d/format.h"
-#include "Util/MD5Hasher.h"
+#include "util/MD5Hasher.h"
 
-#include "Strsafe.h"
+#include "strsafe.h"
 
 #include <sstream>
 

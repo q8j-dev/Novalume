@@ -3,8 +3,8 @@
 #include "Tool/GameTool.h"
 
 #include "Tool/RunDragger.h"
-#include "V8DataModel/PartInstance.h"
-#include "V8DataModel/Workspace.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/Workspace.h"
 #include "Tool/PartDragTool.h"
 #include "v8datamodel/UserInputService.h"
 #include "audio/Sound.h"

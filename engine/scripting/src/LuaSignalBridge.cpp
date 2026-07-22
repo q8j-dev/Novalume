@@ -1,15 +1,15 @@
 
 #include "Script/LuaSignalBridge.h"
 
-#include "Script/Script.h"
+#include "Script/script.h"
 #include "Script/ScriptContext.h"
 #include "Script/RobloxExtraSpace.h"
 #include "Script/LuaInstanceBridge.h"
 #include "Script/LuaAtomicClasses.h"
-#include "script/LuaEnum.h"
+#include "Script/LuaEnum.h"
 #include "Script/ScriptEvent.h"
 #include "Script/LuaArguments.h"
-#include "V8DataModel/DataModel.h"
+#include "v8datamodel/DataModel.h"
 #include "reflection/EnumConverter.h"
 #include "util/ScopedAssign.h"
 #include "util/NormalId.h"

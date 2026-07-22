@@ -1,7 +1,7 @@
 
-#include "V8DataModel/SocialService.h"
-#include "Util/LuaWebService.h"
-#include "V8Xml/WebParser.h"
+#include "v8datamodel/SocialService.h"
+#include "util/LuaWebService.h"
+#include "v8xml/WebParser.h"
 
 FASTFLAGVARIABLE(EnableLuaFollowers, true)
 DYNAMIC_FASTFLAGVARIABLE(UserServerFollowers, false)

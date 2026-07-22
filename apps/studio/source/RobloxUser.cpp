@@ -7,7 +7,7 @@
 #include "RobloxUser.h"
 
 // Roblox headers
-#include "Rbx/debug.h"
+#include "rbx/Debug.h"
 
 // Roblox Studio headers
 #include "RobloxCookieJar.h"
@@ -16,8 +16,8 @@
 #include "RobloxSettings.h"
 #include "AuthenticationHelper.h"
 
-#include "Util/RobloxGoogleAnalytics.h"
-#include "V8DataModel/Stats.h"
+#include "util/RobloxGoogleAnalytics.h"
+#include "v8datamodel/Stats.h"
 
 RobloxUser& RobloxUser::singleton()
 {

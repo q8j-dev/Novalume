@@ -17,8 +17,8 @@
 
 // Roblox Headers
 #include "network/api.h"
-#include "script/script.h"
-#include "script/ScriptContext.h"
+#include "Script/script.h"
+#include "Script/ScriptContext.h"
 #include "util/FileSystem.h"
 #include "util/Hash.h"
 #include "util/RobloxGoogleAnalytics.h"
@@ -38,7 +38,7 @@
 #include "reflection/Type.h"
 #include "Client.h"
 #include "ClientReplicator.h"
-#include "Network/Players.h"
+#include "network/Players.h"
 #include "Marker.h"
 
 // Roblox Studio Headers

@@ -1,7 +1,7 @@
-#include "V8DataModel/DataModel.h"
-#include "V8DataModel/FactoryRegistration.h"
-#include "V8DataModel/Folder.h"
-#include "V8Tree/Verb.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/factoryregistration.h"
+#include "v8datamodel/Folder.h"
+#include "v8tree/Verb.h"
 #include "audio/SoundGroups.h"
 #include "audio/SoundService.h"
 

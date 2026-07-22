@@ -1,8 +1,8 @@
 
 #include "UserInputUtil.h"
-#include "Util/Rect.h"
+#include "util/Rect.h"
 #include "util/standardout.h"
-#include "V8DataModel/GameSettings.h"
+#include "v8datamodel/GameSettings.h"
 
 using RBX::Vector2;
 
@@ -231,4 +231,3 @@ RBX::ModCode UserInputUtil::createModCode(const DiKeys& diKeys)
 	unsigned int modCode = 0;
 	return (RBX::ModCode)modCode;
 }
-

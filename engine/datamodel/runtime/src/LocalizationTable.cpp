@@ -1,5 +1,5 @@
-#include "V8DataModel/LocalizationTable.h"
-#include "V8Xml/WebParser.h"
+#include "v8datamodel/LocalizationTable.h"
+#include "v8xml/WebParser.h"
 
 #include <rapidjson/document.h>
 #include <boost/algorithm/string/replace.hpp>

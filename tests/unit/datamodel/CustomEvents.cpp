@@ -2,15 +2,15 @@
 
 #include "rbx/test/DataModelFixture.h"
 #include "rbx/signal.h"
-#include "V8DataModel/BasicPartInstance.h"
-#include "V8DataModel/CustomEvent.h"
-#include "V8DataModel/CustomEventReceiver.h"
-#include "V8DataModel/DataModel.h"
-#include "V8DataModel/Selection.h"
-#include "V8DataModel/Workspace.h"
-#include "V8Xml/Serializer.h"
-#include "V8Xml/XmlElement.h"
-#include "V8Xml/XmlSerializer.h"
+#include "v8datamodel/BasicPartInstance.h"
+#include "v8datamodel/CustomEvent.h"
+#include "v8datamodel/CustomEventReceiver.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/Selection.h"
+#include "v8datamodel/Workspace.h"
+#include "v8xml/Serializer.h"
+#include "v8xml/XmlElement.h"
+#include "v8xml/XmlSerializer.h"
 
 #include <sstream>
 

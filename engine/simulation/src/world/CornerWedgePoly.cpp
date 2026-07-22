@@ -1,10 +1,10 @@
 
-#include "V8World/CornerWedgePoly.h"
-#include "V8World/Mesh.h"
+#include "v8world/CornerWedgePoly.h"
+#include "v8world/Mesh.h"
 
-#include "V8World/GeometryPool.h"
-#include "V8World/CornerWedgeMesh.h"
-#include "Util/Math.h"
+#include "v8world/GeometryPool.h"
+#include "v8world/CornerWedgeMesh.h"
+#include "util/Math.h"
 
 
 namespace RBX {

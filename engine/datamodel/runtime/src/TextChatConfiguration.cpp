@@ -1,8 +1,8 @@
-#include "V8DataModel/TextChatConfiguration.h"
+#include "v8datamodel/TextChatConfiguration.h"
 
-#include "V8DataModel/PlayerGui.h"
-#include "V8DataModel/TextBox.h"
-#include "V8DataModel/TextChannel.h"
+#include "v8datamodel/PlayerGui.h"
+#include "v8datamodel/TextBox.h"
+#include "v8datamodel/TextChannel.h"
 
 #include <algorithm>
 

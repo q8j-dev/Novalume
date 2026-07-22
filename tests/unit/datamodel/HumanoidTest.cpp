@@ -1,6 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
-#include "Humanoid/Humanoid.h"
+#include "humanoid/Humanoid.h"
 
 using namespace RBX;
 

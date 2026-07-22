@@ -6,9 +6,9 @@
 
 #include "Compressor.h"
 #include "rbx/Declarations.h"
-#include "Util/G3DCore.h"
-#include "Util/PV.h"
-#include "rbx/boost.hpp"
+#include "util/G3DCore.h"
+#include "util/PV.h"
+#include "rbx/Boost.hpp"
 #include "rbx/signal.h"
 #include "rbx/rbxTime.h"
 #include <vector>

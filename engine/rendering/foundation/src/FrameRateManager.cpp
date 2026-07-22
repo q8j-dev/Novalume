@@ -2,14 +2,14 @@
 #include "GfxBase/FrameRateManager.h"
 #include "GfxBase/RenderCaps.h"
 
-#include "rbx/debug.h"
+#include "rbx/Debug.h"
 #include "rbx/Log.h"
 #include "FastLog.h"
 #include "RbxFormat.h"
 #include "rbx/TaskScheduler.h"
 
-#include "Util/RobloxGoogleAnalytics.h"
-#include "Util/Math.h"
+#include "util/RobloxGoogleAnalytics.h"
+#include "util/Math.h"
 #include "rbx/SystemUtil.h"
 
 #include <functional>

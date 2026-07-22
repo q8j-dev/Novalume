@@ -1,11 +1,11 @@
 /* Copyright 2003-2005 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8DataModel/PVInstance.h"
-#include "V8DataModel/UserController.h"
-#include "V8DataModel/Workspace.h"
-#include "V8DataModel/PartInstance.h"
-#include "Util/Math.h"
-#include "Util/Action.h"
+#include "v8datamodel/PVInstance.h"
+#include "v8datamodel/UserController.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/PartInstance.h"
+#include "util/Math.h"
+#include "util/Action.h"
 #include "rbx/Debug.h"
 #include "AppDraw/DrawAdorn.h"
 #include "GfxBase/Part.h"

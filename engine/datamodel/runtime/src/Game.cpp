@@ -6,7 +6,7 @@
 #include "v8datamodel/DebugSettings.h"
 #include "v8datamodel/PhysicsSettings.h"
 #include "v8datamodel/Workspace.h"
-#include "v8datamodel/commonverbs.h"
+#include "v8datamodel/CommonVerbs.h"
 #include "v8datamodel/ContentProvider.h"
 #include "v8datamodel/FastLogSettings.h"
 #include "v8datamodel/MegaCluster.h"
@@ -14,7 +14,7 @@
 #include "v8world/World.h"
 #include "v8datamodel/Teams.h"
 #include "v8datamodel/SpawnLocation.h"
-#include "V8World/ContactManager.h"
+#include "v8world/ContactManager.h"
 #include "v8datamodel/ChangeHistory.h"
 #include "v8datamodel/Lighting.h"
 #include "v8datamodel/Test.h"
@@ -23,11 +23,11 @@
 
 #include "v8world/Block.h"
 
-#include "Util/ScriptInformationProvider.h"
-#include "Util/Profiling.h"
+#include "util/ScriptInformationProvider.h"
+#include "util/Profiling.h"
 
 #include "Gui/ProfanityFilter.h"
-#include "script/LuaSettings.h"
+#include "Script/LuaSettings.h"
 #include "network/api.h"
 #include "network/GameConfigurer.h"
 
@@ -35,7 +35,7 @@
 #include "v8datamodel/ImageButton.h"
 #include "v8datamodel/PlayerGui.h"
 #include "v8datamodel/UserController.h"
-#include "script/ScriptContext.h"
+#include "Script/ScriptContext.h"
 #include "FastLog.h"
 
 DYNAMIC_FASTFLAGVARIABLE(PersistenceCurlCookies, false)

@@ -6,13 +6,13 @@
 #include "RobloxIDEDoc.h"
 
 #include "AppDraw/Draw.h"
-#include "V8DataModel/Accoutrement.h"
-#include "V8DataModel/FaceInstance.h"
-#include "V8DataModel/MegaCluster.h"
-#include "V8DataModel/ModelInstance.h"
-#include "V8DataModel/PartInstance.h"
-#include "V8DataModel/Tool.h"
-#include "V8DataModel/Workspace.h"
+#include "v8datamodel/Accoutrement.h"
+#include "v8datamodel/FaceInstance.h"
+#include "v8datamodel/MegaCluster.h"
+#include "v8datamodel/ModelInstance.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/Tool.h"
+#include "v8datamodel/Workspace.h"
 
 FASTFLAG(StudioDE6194FixEnabled)
 

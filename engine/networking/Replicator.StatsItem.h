@@ -5,8 +5,8 @@
 #include "network/PacketBuffer.h"
 
 #include "Replicator.h"
-#include "V8DataModel/Stats.h"
-#include "util/profiling.h"
+#include "v8datamodel/Stats.h"
+#include "util/Profiling.h"
 #include "network/NetworkTypes.h"
 #include "ConcurrentPeer.h"
 #include "InterpolatingPhysicsReceiver.h"

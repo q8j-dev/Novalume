@@ -1,11 +1,11 @@
 /* Copyright 2003-2007 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8DataModel/Backpack.h"
-#include "V8DataModel/Hopper.h"
-#include "V8DataModel/Workspace.h"
-#include "Network/Player.h"
-#include "Network/Players.h"
-#include "Script/Script.h"
+#include "v8datamodel/Backpack.h"
+#include "v8datamodel/Hopper.h"
+#include "v8datamodel/Workspace.h"
+#include "network/Player.h"
+#include "network/Players.h"
+#include "Script/script.h"
 
 namespace RBX {
 

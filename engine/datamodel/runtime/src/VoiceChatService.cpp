@@ -1,6 +1,6 @@
-#include "V8DataModel/VoiceChatService.h"
+#include "v8datamodel/VoiceChatService.h"
 
-#include "Util/Guid.h"
+#include "util/Guid.h"
 
 namespace RBX {
 

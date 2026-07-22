@@ -5,9 +5,9 @@
 // early to prevent errors on mac builds, but on windows builds RbxPlatform
 // needs to come before property_tree, to prevent a winsock conflict.
 #include "RbxPlatform.h"
-#include "Util/MachineIdUploader.h"
-#include "Util/Http.h"
-#include "V8DataModel/Stats.h"
+#include "util/MachineIdUploader.h"
+#include "util/Http.h"
+#include "v8datamodel/Stats.h"
 #include "FastLog.h"
 #include "format_string.h"
 #include "RobloxServicesTools.h"

@@ -13,11 +13,11 @@
 #include <atlsync.h>
 #include <atlwin.h>
 #include <atlbase.h>
-#include <Sensapi.h>
-#include <Shellapi.h>
-#include <Softpub.h>
-#include <wincrypt.h>
-#include <wintrust.h>
+#include <SensAPI.h>
+#include <ShellAPI.h>
+#include <SoftPub.h>
+#include <WinCrypt.h>
+#include <WinTrust.h>
 #include <comutil.h>
 
 // C RunTime Header Files

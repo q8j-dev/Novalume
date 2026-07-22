@@ -1,8 +1,8 @@
 #include <boost/test/unit_test.hpp>
 
-#include "Rbx/Debug.h"
-#include "Util/Base64BinaryInputStream.h"
-#include "Util/Base64BinaryOutputStream.h"
+#include "rbx/Debug.h"
+#include "util/Base64BinaryInputStream.h"
+#include "util/Base64BinaryOutputStream.h"
 
 using namespace RBX;
 

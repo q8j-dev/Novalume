@@ -13,8 +13,8 @@
 #include <QMetaType>
 
 #include "rbx/signal.h"
-#include "V8Tree/Instance.h"
-#include "Util/HttpAsync.h"
+#include "v8tree/Instance.h"
+#include "util/HttpAsync.h"
 
 namespace RBX {
 	class DataModel;

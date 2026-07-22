@@ -1,9 +1,9 @@
 #pragma once
-#include "V8Tree/Instance.h"
-#include "V8Tree/Service.h"
-#include "V8DataModel/ContentProvider.h"
+#include "v8tree/Instance.h"
+#include "v8tree/Service.h"
+#include "v8datamodel/ContentProvider.h"
 #include "rbx/signal.h"
-#include "rbx/boost.hpp"
+#include "rbx/Boost.hpp"
 #include "boost/thread.hpp"
 #include <boost/unordered_set.hpp>
 

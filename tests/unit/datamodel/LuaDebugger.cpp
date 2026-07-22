@@ -11,9 +11,9 @@
 #include "v8xml/Serializer.h"
 #include "v8xml/XmlSerializer.h"
 
-#include "script/DebuggerManager.h"
-#include "script/Script.h"
-#include "script/ScriptContext.h"
+#include "Script/DebuggerManager.h"
+#include "Script/script.h"
+#include "Script/ScriptContext.h"
 
 FASTFLAG(LuaDebugger)
 

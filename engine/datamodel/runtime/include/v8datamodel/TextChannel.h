@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Util/DateTime.h"
-#include "Util/Font.h"
-#include "V8Tree/Instance.h"
+#include "util/DateTime.h"
+#include "util/Font.h"
+#include "v8tree/Instance.h"
 
 #include <string>
 

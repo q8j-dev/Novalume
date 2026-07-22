@@ -1,6 +1,6 @@
 
 #include "Script/LuaSettings.h"
-#include "LuaConf.h"
+#include "luaconf.h"
 
 const char *const RBX::sLuaSettings = "LuaSettings";
 

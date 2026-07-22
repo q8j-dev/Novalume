@@ -1,8 +1,8 @@
 /* Copyright 2003-2009 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8DataModel/ParallelRampInstance.h"
-#include "V8World/ParallelRampPoly.h"
-#include "V8World/Primitive.h"
+#include "v8datamodel/ParallelRampInstance.h"
+#include "v8world/ParallelRampPoly.h"
+#include "v8world/Primitive.h"
 
 #ifdef _PRISM_PYRAMID_
 

@@ -1,13 +1,13 @@
 /* Copyright 2003-2009 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8DataModel/HandlesBase.h"
-#include "V8World/Primitive.h"
-#include "V8DataModel/Workspace.h"
-#include "V8DataModel/PartInstance.h"
-#include "V8DataModel/MouseCommand.h"
-#include "Network/Players.h"
+#include "v8datamodel/HandlesBase.h"
+#include "v8world/Primitive.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/MouseCommand.h"
+#include "network/Players.h"
 #include "AppDraw/DrawAdorn.h"
-#include "Util/HitTest.h"
+#include "util/HitTest.h"
 
 namespace RBX {
 

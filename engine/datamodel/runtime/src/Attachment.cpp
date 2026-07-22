@@ -2,16 +2,16 @@
 
 #if 1 // disable until we are ready for new joint schema
 
-#include "V8DataModel/Attachment.h"
-#include "V8DataModel/Bone.h"
-#include "V8DataModel/PartInstance.h"
-#include "V8DataModel/Surface.h"
-#include "V8DataModel/Workspace.h"
+#include "v8datamodel/Attachment.h"
+#include "v8datamodel/Bone.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/Surface.h"
+#include "v8datamodel/Workspace.h"
 #include "AppDraw/Draw.h"
 #include "AppDraw/DrawAdorn.h"
 #include "GfxBase/Adorn.h"
-#include "V8World/Primitive.h"
-#include "Util/Color.h"
+#include "v8world/Primitive.h"
+#include "util/Color.h"
 
 // #define ENABLE_AXES_API
 

@@ -12,7 +12,7 @@
 #include <QMimeData>
 #include <QApplication>
 
-#include "V8DataModel/DataModel.h"
+#include "v8datamodel/DataModel.h"
 
 // ROBLOX Headers
 #include "AuthoringSettings.h"
@@ -215,4 +215,3 @@ void InsertObjectListWidget::onSelectionChanged()
         }
     }
 }
-

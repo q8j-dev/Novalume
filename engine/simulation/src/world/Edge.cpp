@@ -1,6 +1,6 @@
 /* Copyright 2003-2005 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8World/Edge.h"
+#include "v8world/Edge.h"
 
 
 namespace RBX {

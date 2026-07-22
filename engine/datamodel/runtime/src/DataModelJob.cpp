@@ -1,9 +1,9 @@
 /* Copyright 2003-2006 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8DataModel/DataModelJob.h"
+#include "v8datamodel/DataModelJob.h"
 #include "rbx/Debug.h"
 #include "boost/cast.hpp"
-#include "reflection/enumconverter.h"
+#include "reflection/EnumConverter.h"
 #include "util/Object.h"
 
 #include "rbx/Profiler.h"
@@ -182,4 +182,3 @@ void DataModelArbiter::preStep(TaskScheduler::Job* job) {
 void DataModelArbiter::postStep(TaskScheduler::Job* job) { 
 	activityMeter.decrement(); 
 }
-

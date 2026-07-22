@@ -2,9 +2,9 @@
 
 #include "Tool/AdvRotateTool.h"
 #include "Tool/Dragger.h"
-#include "V8DataModel/Workspace.h"
-#include "V8DataModel/PartInstance.h"
-#include "Util/HitTest.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/PartInstance.h"
+#include "util/HitTest.h"
 #include "AppDraw/HitTest.h"
 
 namespace RBX {

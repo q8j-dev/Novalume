@@ -1,11 +1,11 @@
-#include "V8DataModel/IAnimatableJoint.h"
-#include "V8DataModel/Animation.h"
-#include "V8DataModel/AnimationTrack.h"
-#include "V8DataModel/AnimationTrackState.h"
-#include "V8DataModel/Animator.h"
-#include "V8DataModel/Keyframe.h"
-#include "V8DataModel/KeyframeSequence.h"
-#include "V8DataModel/Pose.h"
+#include "v8datamodel/IAnimatableJoint.h"
+#include "v8datamodel/Animation.h"
+#include "v8datamodel/AnimationTrack.h"
+#include "v8datamodel/AnimationTrackState.h"
+#include "v8datamodel/Animator.h"
+#include "v8datamodel/Keyframe.h"
+#include "v8datamodel/KeyframeSequence.h"
+#include "v8datamodel/Pose.h"
 
 #include <algorithm>
 #include <cmath>

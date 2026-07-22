@@ -5,7 +5,7 @@
 #include "network/NetworkTypes.h"
 
 #include "Peer.h"
-#include "Util/SystemAddress.h"
+#include "util/SystemAddress.h"
 
 
 namespace RBX { 

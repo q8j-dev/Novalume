@@ -15,10 +15,10 @@
 #include <QDesktopWidget>
 
 //Roblox Headers
-#include "script/ScriptContext.h"
+#include "Script/ScriptContext.h"
 #include "util/UDim.h"
-#include "Util/RobloxGoogleAnalytics.h"
-#include "Util/PhysicalProperties.h"
+#include "util/RobloxGoogleAnalytics.h"
+#include "util/PhysicalProperties.h"
 
 // Roblox Studio Headers
 #include "StudioIntellesense.h"

@@ -341,4 +341,3 @@ select(floatInVec vec0, floatInVec vec1, boolInVec select_vec1)
 } // namespace Vectormath
 
 #endif // floatInVec_h
-

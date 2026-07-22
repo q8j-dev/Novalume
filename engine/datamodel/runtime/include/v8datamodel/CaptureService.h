@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Util/Content.h"
-#include "Util/DateTime.h"
+#include "util/Content.h"
+#include "util/DateTime.h"
 #include "Script/ThreadRef.h"
-#include "V8DataModel/InteractionEnums.h"
-#include "V8Tree/Service.h"
+#include "v8datamodel/InteractionEnums.h"
+#include "v8tree/Service.h"
 
 #include "rbx/signal.h"
 

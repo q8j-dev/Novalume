@@ -4,12 +4,12 @@
 #include "boost/shared_ptr.hpp"
 #include "boost/weak_ptr.hpp"
 #include "rbx/Intrusive/Set.h"
-#include "RBX/Debug.h"
+#include "rbx/Debug.h"
 #include "Script/LuaVM.h"
 #include "Script/ScriptContext.h"
 #include "Script/ThreadRef.h"
 #include "security/FuzzyTokens.h"
-#include "security/securityContext.h"
+#include "security/SecurityContext.h"
 
 struct lua_State;
 

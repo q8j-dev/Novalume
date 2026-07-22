@@ -1,5 +1,5 @@
 
-#include "V8DataModel/AnimatableRootJoint.h"
+#include "v8datamodel/AnimatableRootJoint.h"
 
 using namespace RBX;
 

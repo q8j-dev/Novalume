@@ -1,9 +1,9 @@
 
-#include "V8DataModel/RenderHooksService.h"
-#include "Network/Players.h"
-#include "V8Xml/WebParser.h"
-#include "Util/Http.h"
-#include "Util/Profiling.h"
+#include "v8datamodel/RenderHooksService.h"
+#include "network/Players.h"
+#include "v8xml/WebParser.h"
+#include "util/Http.h"
+#include "util/Profiling.h"
 #include "rbx/Log.h"
 
 namespace RBX

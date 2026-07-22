@@ -1,13 +1,13 @@
 #include <boost/test/unit_test.hpp>
 
 #include "RbxG3D/RbxRay.h"
-#include "G3D/AABox.h"
-#include "G3D/Color3.h"
-#include "G3D/CoordinateFrame.h"
-#include "V8DataModel/Camera.h"
-#include "Util/Math.h"
-#include "Util/NormalId.h"
-#include "Util/Extents.h"
+#include "g3d/AABox.h"
+#include "g3d/Color3.h"
+#include "g3d/CoordinateFrame.h"
+#include "v8datamodel/Camera.h"
+#include "util/Math.h"
+#include "util/NormalId.h"
+#include "util/Extents.h"
 
 
 BOOST_AUTO_TEST_SUITE(G3D)

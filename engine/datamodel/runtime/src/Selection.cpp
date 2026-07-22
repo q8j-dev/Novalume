@@ -1,6 +1,6 @@
 
-#include "V8DataModel/Selection.h"
-#include "V8DataModel/DataModel.h"
+#include "v8datamodel/Selection.h"
+#include "v8datamodel/DataModel.h"
 
 const char* const RBX::sSelection			= "Selection";
 const char* const RBX::sFilteredSelection	= NULL;
@@ -280,4 +280,3 @@ void Selection::removeFromSelection(Instance* instance)
 		raiseRemoved(nonConst);
 	}
 }
-

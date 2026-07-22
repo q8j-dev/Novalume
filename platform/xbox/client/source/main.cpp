@@ -13,7 +13,7 @@
 #include "async.h"
 
 #include "v8datamodel/GameSettings.h"
-#include "V8DataModel/GameBasicSettings.h"
+#include "v8datamodel/GameBasicSettings.h"
 
 using namespace Windows::Foundation;
 using namespace Windows::ApplicationModel;
@@ -272,5 +272,4 @@ extern void dprintf( const char* fmt, ... )
     va_end(va);
     OutputDebugStringA(buffer);
 }
-
 

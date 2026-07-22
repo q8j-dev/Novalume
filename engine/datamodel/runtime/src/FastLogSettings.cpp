@@ -1,5 +1,5 @@
 
-#include "V8DataModel/FastLogSettings.h"
+#include "v8datamodel/FastLogSettings.h"
 
 // Client
 LOGVARIABLE(VideoCapture, 0)

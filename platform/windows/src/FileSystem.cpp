@@ -5,7 +5,7 @@
 #ifdef _WIN32
 #define _WINSOCKAPI_  
 
-#include "Util/FileSystem.h"
+#include "util/FileSystem.h"
 
 #include <ATLPath.h>
 
@@ -14,7 +14,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/system/error_code.hpp>
 
-#include "shlobj.h"
+#include "ShlObj.h"
 #include "rbx/Debug.h"
 #include "util/standardout.h"
 

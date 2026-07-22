@@ -1,7 +1,7 @@
 
-#include "V8DataModel/TextButton.h"
-#include "Util/Rect.h"
-#include "Network/Players.h"
+#include "v8datamodel/TextButton.h"
+#include "util/Rect.h"
+#include "network/Players.h"
 
 namespace RBX {
 

@@ -4,8 +4,8 @@
 #undef min
 #undef max
 
-#include "util/StandardOut.h"
-#include "rbx/boost.hpp"
+#include "util/standardout.h"
+#include "rbx/Boost.hpp"
 
 namespace RBX {
 

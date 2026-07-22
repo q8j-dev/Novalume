@@ -223,4 +223,3 @@ select(boolInVec vec0, boolInVec vec1, boolInVec select_vec1)
 } // namespace Vectormath
 
 #endif // boolInVec_h
-

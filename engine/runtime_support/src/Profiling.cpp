@@ -1,8 +1,8 @@
 /* Copyright 2003-2005 ROBLOX Corporation, All Rights Reserved */
 #include "stdafx.h"
 
-#include "Util/Profiling.h"
-#include "G3D/System.h"
+#include "util/Profiling.h"
+#include "g3d/System.h"
 #include "rbx/Debug.h"
 #include "v8datamodel/DebugSettings.h"
 
@@ -279,4 +279,3 @@ void BucketProfile::removeValue(int v)
 	data[bucket]--;
 	RBXASSERT(data[bucket] >= 0);
 }
-

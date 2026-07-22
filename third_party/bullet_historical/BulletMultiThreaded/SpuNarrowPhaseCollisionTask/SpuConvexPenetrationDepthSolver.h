@@ -21,7 +21,7 @@ subject to the following restrictions:
 
 
 class btIDebugDraw;
-#include "BulletCollision/NarrowphaseCollision/btConvexPenetrationDepthSolver.h"
+#include "BulletCollision/NarrowPhaseCollision/btConvexPenetrationDepthSolver.h"
 
 #include "LinearMath/btTransform.h"
 
@@ -47,4 +47,3 @@ public:
 
 
 #endif //SPU_CONVEX_PENETRATION_DEPTH_H
-

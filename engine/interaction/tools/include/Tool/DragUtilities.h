@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "Util/Object.h"
-#include "Util/G3DCore.h"
-#include "Util/Extents.h"
+#include "util/Object.h"
+#include "util/G3DCore.h"
+#include "util/Extents.h"
 #include "Tool/Dragger.h"
 #include "v8tree/Instance.h"
 

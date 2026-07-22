@@ -1,8 +1,8 @@
 /* Copyright 2003-2005 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8DataModel/Fire.h"
-#include "V8DataModel/Workspace.h"
-#include "V8DataModel/PartInstance.h"
+#include "v8datamodel/Fire.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/PartInstance.h"
 
 FASTFLAGVARIABLE(RenderNewParticles2Enable,true);
 

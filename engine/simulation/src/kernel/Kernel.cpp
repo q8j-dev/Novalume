@@ -1,13 +1,13 @@
 /* Copyright 2003-2006 ROBLOX Corporation, All Rights Reserved */
 #include "FastLog.h"
 
-#include "V8Kernel/Kernel.h"
-#include "V8Kernel/KernelData.h"
-#include "V8Kernel/Constants.h"
-#include "V8Kernel/Connector.h"
-#include "V8Kernel/ContactConnector.h"
+#include "v8kernel/Kernel.h"
+#include "v8kernel/KernelData.h"
+#include "v8kernel/Constants.h"
+#include "v8kernel/Connector.h"
+#include "v8kernel/ContactConnector.h"
 #include "rbx/Debug.h"
-#include "Util/Profiling.h"
+#include "util/Profiling.h"
 #include "util/Units.h"
 #include "rbx/rbxTime.h"
 

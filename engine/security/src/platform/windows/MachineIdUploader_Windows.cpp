@@ -1,11 +1,11 @@
 #include "stdafx.h"
 
-#include "Util/MachineIdUploader.h"
+#include "util/MachineIdUploader.h"
 
-#include "Rbx/Debug.h"
+#include "rbx/Debug.h"
 
-#include <winsock2.h>
-#include <Iphlpapi.h>
+#include <WinSock2.h>
+#include <IPHlpApi.h>
 
 #pragma comment(lib, "Iphlpapi.lib")
 

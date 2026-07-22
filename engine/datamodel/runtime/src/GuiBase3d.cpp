@@ -1,6 +1,6 @@
 /* Copyright 2003-2009 ROBLOX Corporation, All Rights Reserved */
 
-#include "V8DataModel/GuiBase3d.h"
+#include "v8datamodel/GuiBase3d.h"
 
 namespace RBX {
 
@@ -54,4 +54,3 @@ void GuiBase3d::setVisible(bool value)
 }
 
 }
-

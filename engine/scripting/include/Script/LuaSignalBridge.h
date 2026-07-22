@@ -1,8 +1,8 @@
 #pragma once
 
 #include "lua/LuaBridge.h"
-#include "reflection/object.h"
-#include "Reflection/Event.h"
+#include "reflection/Object.h"
+#include "reflection/Event.h"
 
 namespace RBX
 {

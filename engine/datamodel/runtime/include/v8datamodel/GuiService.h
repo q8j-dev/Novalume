@@ -1,10 +1,10 @@
 #pragma once 
 
-#include "V8DataModel/InputObject.h"
+#include "v8datamodel/InputObject.h"
 #include "v8datamodel/GuiObject.h"
-#include "V8Tree/Service.h"
+#include "v8tree/Service.h"
 #include "rbx/ui/PreferredTextSize.h"
-#include "V8DataModel/InteractionEnums.h"
+#include "v8datamodel/InteractionEnums.h"
 
 namespace RBX {
 	enum ScreenInsetsType : int;

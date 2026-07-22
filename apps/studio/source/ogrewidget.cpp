@@ -30,10 +30,10 @@
 #include "InsertObjectListWidgetItem.h"
 #include "RobloxDocManager.h"
 #include "RobloxIDEDoc.h"
-#include "V8DataModel/InputObject.h"
+#include "v8datamodel/InputObject.h"
 
-#include "Util/RobloxGoogleAnalytics.h"
-#include "Util/PhysicalProperties.h"
+#include "util/RobloxGoogleAnalytics.h"
+#include "util/PhysicalProperties.h"
 #include "v8datamodel/Workspace.h"
 #include "RobloxPluginHost.h"
 #include "StudioUtilities.h"

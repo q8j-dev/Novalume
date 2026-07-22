@@ -1,7 +1,7 @@
 #pragma once
-#include "reflection/property.h"
-#include "reflection/object.h"
-#include "reflection/enumconverter.h"
+#include "reflection/Property.h"
+#include "reflection/Object.h"
+#include "reflection/EnumConverter.h"
 #include "reflection/Type.h"
 #include "rbx/make_shared.h"
 #include <boost/static_assert.hpp>

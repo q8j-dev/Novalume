@@ -1,9 +1,9 @@
 #pragma once
 
-#include "V8DataModel/GlobalSettings.h"
+#include "v8datamodel/GlobalSettings.h"
 #include "network/NetworkTypes.h"
 #include "rbx/TaskScheduler.h"
-#include "Util/ObscureValue.h"
+#include "util/ObscureValue.h"
 
 namespace RBX
 {
@@ -155,4 +155,3 @@ namespace RBX
 	};
 
 }
-

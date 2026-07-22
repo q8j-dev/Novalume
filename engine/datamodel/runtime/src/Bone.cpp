@@ -1,5 +1,5 @@
-#include "V8DataModel/Bone.h"
-#include "V8DataModel/PartInstance.h"
+#include "v8datamodel/Bone.h"
+#include "v8datamodel/PartInstance.h"
 
 namespace RBX
 {

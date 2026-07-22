@@ -1,10 +1,10 @@
 #include "stdafx.h"
 
-#include "Util/Guid.h"
+#include "util/Guid.h"
 #include "rbx/atomic.h"
 
 #ifdef _WIN32
-#include "objbase.h"
+#include "ObjBase.h"
 #elif defined(__APPLE__)
 #include <CoreFoundation/CoreFoundation.h>
 #include <boost/algorithm/string/case_conv.hpp>
