@@ -1,7 +1,7 @@
 #include "rbx/SystemUtil.h"
 
 #include <windows.h>
-#include <dxgi1_1.h>
+#include <dxgi.h>
 #include <winternl.h>
 
 #include <algorithm>
@@ -140,8 +140,8 @@ struct GraphicsAdapterInformation
 
 GraphicsAdapterInformation primaryGraphicsAdapter()
 {
-    IDXGIFactory1* factory = nullptr;
-    if (FAILED(CreateDXGIFactory1(__uuidof(IDXGIFactory1),
+    IDXGIFactory* factory = nullptr;
+    if (FAILED(CreateDXGIFactory(__uuidof(IDXGIFactory),
             reinterpret_cast<void**>(&factory))))
     {
         return {};
@@ -150,16 +150,15 @@ GraphicsAdapterInformation primaryGraphicsAdapter()
     GraphicsAdapterInformation result;
     for (UINT index = 0;; ++index)
     {
-        IDXGIAdapter1* adapter = nullptr;
-        const HRESULT enumerate = factory->EnumAdapters1(index, &adapter);
+        IDXGIAdapter* adapter = nullptr;
+        const HRESULT enumerate = factory->EnumAdapters(index, &adapter);
         if (enumerate == DXGI_ERROR_NOT_FOUND)
             break;
         if (FAILED(enumerate) || !adapter)
             continue;
 
-        DXGI_ADAPTER_DESC1 description = {};
-        if (SUCCEEDED(adapter->GetDesc1(&description)) &&
-            (description.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) == 0)
+        DXGI_ADAPTER_DESC description = {};
+        if (SUCCEEDED(adapter->GetDesc(&description)))
         {
             result.description = wideToUtf8(description.Description);
             result.memoryBytes = description.DedicatedVideoMemory;
